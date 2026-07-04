@@ -45,6 +45,9 @@
       <button class="rgn-cat-tab" data-cat="식음료" onclick="setVenueFilter('식음료')">🍕 식음료</button>
       <button class="rgn-cat-tab" data-cat="관람" onclick="setVenueFilter('관람')">🎭 관람</button>
       <button class="rgn-cat-tab" data-cat="체험" onclick="setVenueFilter('체험')">🚀 체험</button>
+      <button class="rgn-cat-tab" data-cat="쇼핑" onclick="setVenueFilter('쇼핑')">🛍️ 쇼핑</button>
+      <button class="rgn-cat-tab" data-cat="숙박" onclick="setVenueFilter('숙박')">🏨 숙박</button>
+      <button class="rgn-cat-tab" data-cat="기타" onclick="setVenueFilter('기타')">💬 기타</button>
     </div>
     <div class="rgn-sort">
       <span class="active" id="sortLatest" onclick="setSort('latest')">최신순</span>
@@ -53,6 +56,33 @@
     </div>
     <div class="rgn-venue-grid" id="venueGrid"></div>
     <div class="rgn-empty" id="venueEmpty" style="display:none">해당 조건의 사용처가 없어요</div>
+    <div class="rgn-pagination" id="venuePagination"></div>
+  </div>
+
+  <div class="rgn-review-wrap">
+    <div class="rgn-review-head">
+      <h3 id="rgnReviewTitle">여행 노하우!</h3>
+      <p>#주민증 마을회관 #랜선 주민 여행을 준비하는 분들을 위해 방문 시 참고할 정보를 제보해주세요</p>
+    </div>
+    <button class="rgn-review-join" onclick="toast('리뷰 작성 화면')">나도 참여 ›</button>
+    <div class="rgn-review-list" id="rgnReviewList"></div>
+  </div>
+
+  <div class="rgn-other-wrap">
+    <h3>다른 지역보기</h3>
+    <div class="rgn-sido-tabs" id="rgnSidoTabs"></div>
+    <div class="rgn-other-list" id="rgnOtherList"></div>
+  </div>
+</div>
+
+<div class="site-footer">
+  <div class="f-links">
+    <span class="bold">개인정보처리방침</span><span>이용약관</span><span>위치기반서비스 이용약관</span><span>저작권 보호정책</span><span>고객서비스헌장</span><span>전자우편 무단수집거부</span><span>찾아오시는 길</span>
+  </div>
+  <div class="f-info">
+    우) 26464 강원특별자치도 원주시 세계로 10 &nbsp;고객센터 : 02-6271-2016 (한국관광공사 대표번호 : 033-738-3000) &nbsp;사업자등록번호 : 202-81-50707<br>
+    통신판매업신고 : 제2009-서울중구-1234호<br>
+    ⓒ한국관광공사
   </div>
 </div>
 
@@ -87,8 +117,12 @@
     <div onclick="location.href='service-intro.html'">📋 서비스 소개</div>
     <div onclick="location.href='event.html'">🎁 이벤트</div>
     <div onclick="location.href='my.html'">🪪 나의 관광주민증</div>
-    <div onclick="toast('FAQ 페이지');closeDrawer()">❓ 자주 묻는 질문</div>
-    <div onclick="toast('공지사항 페이지');closeDrawer()">📢 공지사항</div>
+    <div onclick="location.href='mypage-history.html'">🕘 나의 활동이력</div>
+    <div onclick="location.href='mypage-coupon.html'">🎟️ 혜택쿠폰</div>
+    <div onclick="location.href='exp.html'">📈 경험치 보유현황</div>
+    <div onclick="location.href='mypage-favorite.html'">🔖 나의 즐겨찾기</div>
+    <div onclick="location.href='mypage-report.html'">📊 활동리포트</div>
+    <div onclick="location.href='mypage-cardbox.html'">🗂️ 관광주민증 보관함</div>
   </nav>
   <div class="drawer-foot">
     <button class="btn-dk" onclick="logoutUser()">로그아웃</button>
@@ -104,7 +138,10 @@
 const CAT_STYLE={
   '식음료':{color:'#7c3aed',bg:'#f5f3ff'},
   '관람':{color:'#e11d48',bg:'#fff1f2'},
-  '체험':{color:'#0d7b6d',bg:'#ecfdf5'}
+  '체험':{color:'#0d7b6d',bg:'#ecfdf5'},
+  '쇼핑':{color:'#b45309',bg:'#fffbeb'},
+  '숙박':{color:'#1d4ed8',bg:'#eff6ff'},
+  '기타':{color:'#555',bg:'#f5f5f5'}
 };
 
 const user=requireUser();
@@ -142,6 +179,33 @@ if(user){
 
   venues=detail.venues;
   renderVenues();
+
+  document.getElementById('rgnReviewTitle').textContent=name?`${sido} ${gunLabel} 여행 노하우!`:'여행 노하우!';
+  document.getElementById('rgnReviewList').innerHTML=getRegionReviews(name||'이 지역').map(r=>`
+    <div class="rgn-review-item">
+      <p>${r.text}</p>
+      <div class="rgn-review-side"><div class="nm">${r.name}</div><div class="lk">♡ ${r.likes}</div></div>
+    </div>`).join('');
+
+  renderSidoTabs(sido);
+}
+
+function renderSidoTabs(currentSido){
+  const groups=getSidoGroups();
+  const sidoList=Object.keys(groups);
+  const tabsEl=document.getElementById('rgnSidoTabs');
+  tabsEl.innerHTML=sidoList.map(s=>
+    `<button class="rgn-sido-tab${s===currentSido?' active':''}" onclick="renderOtherList('${s}',this)">${SIDO_SHORT[s]||s}</button>`
+  ).join('');
+  renderOtherList(currentSido||sidoList[0]);
+}
+function renderOtherList(sido,btn){
+  if(btn){document.querySelectorAll('.rgn-sido-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+  const groups=getSidoGroups();
+  const list=groups[sido]||[];
+  document.getElementById('rgnOtherList').innerHTML=list.map(n=>
+    `<span onclick="location.href='region.html?r=${encodeURIComponent(n)}'">${regionGunLabel(n)}</span>`
+  ).join('');
 }
 
 function setVenueFilter(cat){
@@ -160,6 +224,12 @@ function renderVenues(){
   grid.innerHTML='';
   const list=venues.filter(v=>currentFilter==='전체'||v.cat===currentFilter);
   empty.style.display=list.length?'none':'block';
+
+  const pageEl=document.getElementById('venuePagination');
+  const pageCount=Math.max(1,Math.ceil(list.length/4));
+  pageEl.innerHTML=list.length?Array.from({length:pageCount},(_,i)=>
+    `<button class="${i===0?'active':''}" onclick="toast('${i+1}페이지')">${i+1}</button>`).join(''):'';
+
   list.forEach(v=>{
     const style=CAT_STYLE[v.cat]||{color:'#555',bg:'#f5f5f5'};
     const card=document.createElement('div');

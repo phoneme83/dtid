@@ -49,6 +49,12 @@ button{font-family:inherit;cursor:pointer}
 .banner-text span{font-size:12px;color:rgba(255,255,255,.75)}
 .banner-arrow{color:rgba(255,255,255,.6);font-size:18px}
 
+/* ═══ 공지 티커 ═══ */
+.notice-bar{max-width:480px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid #eee;background:#fff}
+.notice-bar .ico{font-size:13px;flex-shrink:0}
+.notice-bar a{flex:1;font-size:12.5px;color:#333;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.notice-bar .plus{font-size:15px;color:#bbb;flex-shrink:0}
+
 /* ═══ 지도 ═══ */
 .map-section{background:#fff;padding-bottom:150px}
 .map-heading{padding:16px 16px 0;max-width:480px;margin:0 auto}
@@ -61,6 +67,60 @@ button{font-family:inherit;cursor:pointer}
 .r-hit{position:absolute;transform:translate(-50%,-50%);border:none;background:transparent;border-radius:20px;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:0}
 .r-hit:active{background:rgba(255,255,255,.25)}
 .r-hit:focus-visible{outline:2px solid #fff;outline-offset:1px}
+
+/* ═══ 메인: 카테고리 탭 + TOP10 카드 ═══ */
+.top10-wrap{background:#fff;padding:20px 0 8px;border-top:8px solid #f4f4f4}
+.top10-tabs{max-width:480px;margin:0 auto;display:flex;gap:6px;overflow-x:auto;padding:0 16px 14px;scrollbar-width:none}
+.top10-tabs::-webkit-scrollbar{display:none}
+.top10-tab{flex-shrink:0;padding:8px 14px;border-radius:18px;border:1.5px solid #e5e5e5;background:#fff;font-size:12.5px;font-weight:700;color:#888;white-space:nowrap}
+.top10-tab.active{background:#111;border-color:#111;color:#fff}
+.top10-scroll{max-width:480px;margin:0 auto;display:flex;gap:10px;overflow-x:auto;padding:0 16px 6px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.top10-scroll::-webkit-scrollbar{display:none}
+.top10-card{flex-shrink:0;width:150px;scroll-snap-align:start;cursor:pointer}
+.top10-thumb{width:100%;height:110px;border-radius:12px;background-size:cover;background-position:center;position:relative;overflow:hidden;display:flex;align-items:flex-end;color:#fff}
+.top10-thumb .badge{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;font-weight:700;border-radius:5px;padding:2px 7px}
+.top10-name{font-size:12.5px;font-weight:700;color:#111;margin-top:8px;line-height:1.4}
+.top10-discount{font-size:11px;color:#2563eb;font-weight:600;margin-top:2px}
+
+/* ═══ 메인: FAQ 아코디언 ═══ */
+.faq-wrap{max-width:480px;margin:0 auto;padding:20px 16px;border-top:8px solid #f4f4f4;background:#fff}
+.faq-item{border-bottom:1px solid #eee}
+.faq-item:first-child{border-top:1px solid #111}
+.faq-q{width:100%;background:none;border:none;display:flex;align-items:center;justify-content:space-between;padding:15px 2px;font-size:13.5px;font-weight:700;color:#111;text-align:left}
+.faq-q .icon{font-size:16px;color:#999;font-weight:400;flex-shrink:0;margin-left:8px}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .25s ease}
+.faq-item.open .faq-a{max-height:600px}
+.faq-a p{font-size:12.5px;color:#666;line-height:1.7;padding:0 2px 16px}
+
+/* ═══ 메인: 인기 콘텐츠(인스타) ═══ */
+.insta-tour-wrap{background:#fff;padding:20px 0;border-top:8px solid #f4f4f4}
+.insta-tour-wrap h2{font-size:15px;font-weight:700;color:#111;padding:0 16px 12px;max-width:480px;margin:0 auto}
+.insta-scroll{max-width:480px;margin:0 auto;display:flex;gap:8px;overflow-x:auto;padding:0 16px 4px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.insta-scroll::-webkit-scrollbar{display:none}
+.insta-tile{flex-shrink:0;width:110px;height:150px;border-radius:12px;scroll-snap-align:start;position:relative;display:flex;align-items:flex-end;color:#fff;text-decoration:none;overflow:hidden}
+.insta-tile span{position:relative;font-size:11px;font-weight:600;padding:8px;line-height:1.35;text-shadow:0 1px 4px rgba(0,0,0,.5)}
+.insta-tile::before{content:'';position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,0) 55%)}
+
+.insta-banner{max-width:480px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:18px 16px;border-top:8px solid #f4f4f4;background:linear-gradient(120deg,#fdf497 0%,#fd5949 45%,#d6249f 75%,#285AEB 100%);color:#fff;text-decoration:none}
+.insta-banner p{flex:1;font-size:12.5px;line-height:1.5;font-weight:600}
+.insta-banner img{width:26px;height:26px;flex-shrink:0}
+
+/* ═══ 메인: 이벤트 카드 ═══ */
+.main-event-wrap{max-width:480px;margin:0 auto;padding:20px 16px;border-top:8px solid #f4f4f4;background:#fff}
+.main-event-wrap h3{font-size:15px;font-weight:700;color:#111;margin-bottom:12px}
+.main-event-scroll{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.main-event-scroll::-webkit-scrollbar{display:none}
+.main-event-card{flex-shrink:0;width:200px;scroll-snap-align:start;text-decoration:none;color:inherit}
+.main-event-thumb{width:100%;height:110px;border-radius:10px;background-size:cover;background-position:center;background-color:#f0f0f0}
+.main-event-card strong{display:block;font-size:12.5px;font-weight:700;color:#111;margin-top:8px;line-height:1.4}
+.main-event-card span{display:block;font-size:11px;color:#999;margin-top:4px}
+
+/* ═══ 사이트 푸터 ═══ */
+.site-footer{max-width:480px;margin:0 auto;padding:22px 16px 100px;background:#f8f8f8;border-top:8px solid #f4f4f4}
+.site-footer .f-links{display:flex;flex-wrap:wrap;gap:5px 10px;margin-bottom:10px}
+.site-footer .f-links span{font-size:11px;color:#888}
+.site-footer .f-links span.bold{font-weight:700;color:#555}
+.site-footer .f-info{font-size:10px;color:#aaa;line-height:1.8}
 
 /* ═══ QR 플로팅 ═══ */
 .qr-float{position:fixed;bottom:68px;left:0;right:0;z-index:300;padding:0 10px;transition:transform .35s cubic-bezier(.4,0,.2,1)}
@@ -116,6 +176,61 @@ button{font-family:inherit;cursor:pointer}
 .footer-links span{font-size:11px;color:#888;cursor:pointer}
 .footer-links span.bold{font-weight:700;color:#555}
 .footer-info{font-size:10px;color:#bbb;line-height:1.8}
+
+/* ═══ 마이페이지 하위 화면 공통 ═══ */
+.mypage-sub-content{max-width:480px;margin:0 auto;padding-bottom:100px}
+.mypage-empty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:60px 20px;color:#bbb;text-align:center}
+.mypage-empty .ico{font-size:38px}
+.mypage-empty p{font-size:13px;line-height:1.6}
+.mypage-sub-tabs{display:flex;gap:8px;padding:16px;overflow-x:auto;scrollbar-width:none}
+.mypage-sub-tabs::-webkit-scrollbar{display:none}
+.mypage-sub-tab{flex-shrink:0;padding:8px 16px;border-radius:20px;border:1.5px solid #e5e5e5;background:#fff;font-size:12.5px;font-weight:700;color:#888}
+.mypage-sub-tab.active{background:#111;border-color:#111;color:#fff}
+
+/* 활동이력 */
+.hist-list{display:flex;flex-direction:column;padding:8px 16px}
+.hist-item{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid #f2f2f2}
+.hist-ico{width:36px;height:36px;border-radius:50%;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.hist-body{flex:1;min-width:0}
+.hist-title-row{display:flex;align-items:baseline;gap:6px;margin-bottom:3px}
+.hist-title-row strong{font-size:13px;font-weight:700;color:#111}
+.hist-title-row span{font-size:11px;color:#aaa}
+.hist-desc{font-size:12px;color:#777;line-height:1.5}
+.hist-exp{font-size:12px;font-weight:700;color:#2563eb;flex-shrink:0;white-space:nowrap}
+
+/* 활동 리포트 */
+.report-section{padding:20px 16px}
+.report-section h3{font-size:15px;font-weight:700;color:#111;margin-bottom:12px}
+.report-card-list{display:flex;flex-direction:column;gap:10px}
+.report-card{background:#f8f8f8;border-radius:12px;padding:14px 16px}
+.report-card .flag{font-size:12px;color:#888;margin-bottom:6px;display:block}
+.report-card strong{font-size:13px;font-weight:700;color:#bbb}
+
+/* 즐겨찾기 */
+.fav-section{padding:20px 16px}
+.fav-section h3{font-size:15px;font-weight:700;color:#111;margin-bottom:12px}
+
+/* 보관함 */
+.pocket-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 16px}
+.pocket-card{background:#fff;border:1px solid #f0f0f0;border-radius:14px;padding:16px 12px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.04);cursor:pointer}
+.pocket-card .em{font-size:26px;margin-bottom:8px}
+.pocket-card .nm{font-size:12.5px;font-weight:700;color:#111}
+.pocket-more{display:block;text-align:center;margin:4px 16px 0;padding:12px;border-radius:10px;border:1.5px dashed #ccc;color:#888;font-size:12.5px;font-weight:600}
+
+/* 보관함 상세(카드 1장) */
+.card-detail-wrap{padding:24px 16px}
+.card-detail-wrap h2{font-size:17px;font-weight:700;text-align:center;margin-bottom:20px}
+.card-detail-box{background:#fff;border:1px solid #f0f0f0;border-radius:16px;padding:24px 18px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.card-detail-box .em{font-size:15px;font-weight:700;color:#111;margin-bottom:4px}
+.card-detail-box .slogan{font-size:12px;color:#999;margin-bottom:18px}
+.card-detail-box .mascot{font-size:52px;margin-bottom:14px}
+.card-detail-box .lvl{font-size:12px;color:#999;margin-bottom:4px}
+.card-detail-box .lvl strong{font-size:15px;color:#111}
+.card-detail-box .meta{font-size:11.5px;color:#aaa;margin-top:14px;line-height:1.8}
+.card-detail-btns{display:flex;gap:8px;margin-top:16px}
+.card-detail-btns button{flex:1;padding:11px;border-radius:9px;font-size:12.5px;font-weight:700}
+.card-detail-btns .primary{background:#1a1a1a;color:#fff;border:none}
+.card-detail-btns .secondary{background:#fff;color:#1a1a1a;border:1.5px solid #ddd}
 
 /* ═══ 경험치 페이지 ═══ */
 .page-bar{background:#fff;border-bottom:1px solid #efefef;padding:14px 16px;display:flex;align-items:center;gap:10px}
@@ -182,7 +297,7 @@ button{font-family:inherit;cursor:pointer}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ═══ 서비스 소개 ═══ */
-.svc-content{max-width:480px;margin:0 auto;padding-bottom:100px}
+.svc-content{max-width:480px;margin:0 auto}
 .svc-hero{background:linear-gradient(135deg,#3b6be8 0%,#5b4ee8 50%,#7c3aed 100%);padding:32px 16px;color:#fff}
 .svc-hero h2{font-size:18px;font-weight:700;margin-bottom:14px}
 .svc-hero h3{font-size:14px;font-weight:700;opacity:.9;margin-bottom:6px}
@@ -208,7 +323,7 @@ button{font-family:inherit;cursor:pointer}
 .svc-note{font-size:11px;color:#bbb;line-height:1.7}
 
 /* ═══ 이벤트 ═══ */
-.evt-content{max-width:480px;margin:0 auto;padding-bottom:100px}
+.evt-content{max-width:480px;margin:0 auto}
 .evt-title{padding:20px 16px 0}
 .evt-title h2{font-size:18px;font-weight:700;color:#111}
 .evt-tabs{display:flex;gap:8px;padding:14px 16px}
@@ -244,9 +359,20 @@ button{font-family:inherit;cursor:pointer}
 .evt-sel-bar strong{font-size:13px;font-weight:700;color:#111}
 .evt-sel-bar span{font-size:12px;color:#888}
 .evt-sel-bar span em{color:#7c3aed;font-weight:700}
+.evt-list{display:flex;flex-direction:column;gap:10px;padding:4px 16px 16px}
+.evt-item{display:flex;gap:12px;background:#fff;border:1px solid #f0f0f0;border-radius:12px;padding:10px;cursor:pointer}
+.evt-item-thumb{width:64px;height:64px;border-radius:8px;flex-shrink:0;background-size:cover}
+.evt-item-body{flex:1;min-width:0}
+.evt-item-tag{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:2px 6px;margin-bottom:5px}
+.evt-item-tag.ongoing{background:#eff6ff;color:#1d4ed8}
+.evt-item-tag.upcoming{background:#fff7ed;color:#c2410c}
+.evt-item-title{font-size:12.5px;font-weight:700;color:#111;line-height:1.4;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.evt-item-date{font-size:11px;color:#999}
+.evt-cal-day.has-event::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:#7c3aed}
+.evt-cal-day{position:relative}
 
 /* ═══ 지역 상세(방문 TIP + 사용처) ═══ */
-.rgn-content{max-width:480px;margin:0 auto;padding-bottom:100px}
+.rgn-content{max-width:480px;margin:0 auto}
 .rgn-banner{background:linear-gradient(180deg,#dbe6ff 0%,#e7ddff 100%);padding:28px 16px 24px;text-align:center}
 .rgn-banner h2{font-size:19px;font-weight:700;color:#2b2560;line-height:1.4;margin-bottom:16px}
 .rgn-banner h2 em{color:#2563eb;font-style:normal}
@@ -281,3 +407,30 @@ button{font-family:inherit;cursor:pointer}
 .rgn-venue-discount{font-size:11px;color:#555;margin-bottom:10px}
 .rgn-venue-coupon{width:100%;padding:8px;border-radius:8px;background:#eff6ff;color:#2563eb;border:none;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:5px}
 .rgn-empty{text-align:center;padding:40px 0;color:#bbb;font-size:13px}
+.rgn-pagination{display:flex;justify-content:center;align-items:center;gap:4px;padding:16px 0 4px}
+.rgn-pagination button{width:26px;height:26px;border-radius:6px;border:1px solid #eee;background:#fff;font-size:11.5px;color:#888}
+.rgn-pagination button.active{background:#111;border-color:#111;color:#fff;font-weight:700}
+
+/* ═══ 지역 상세: 여행 노하우(리뷰) ═══ */
+.rgn-review-wrap{padding:28px 16px 8px;background:#fff;border-top:8px solid #f4f4f4}
+.rgn-review-head{margin-bottom:6px}
+.rgn-review-head h3{font-size:16px;font-weight:700;color:#111;margin-bottom:4px}
+.rgn-review-head p{font-size:11.5px;color:#999}
+.rgn-review-join{margin:12px 0 16px;padding:8px 14px;border-radius:8px;border:1.5px solid #111;background:#fff;font-size:12px;font-weight:700;color:#111}
+.rgn-review-list{display:flex;flex-direction:column}
+.rgn-review-item{padding:14px 0;border-bottom:1px solid #f2f2f2;display:flex;justify-content:space-between;gap:10px}
+.rgn-review-item p{font-size:12.5px;color:#333;line-height:1.5;flex:1}
+.rgn-review-side{flex-shrink:0;text-align:right}
+.rgn-review-side .nm{font-size:11.5px;color:#888;margin-bottom:4px}
+.rgn-review-side .lk{font-size:11px;color:#bbb}
+
+/* ═══ 지역 상세: 다른 지역보기 ═══ */
+.rgn-other-wrap{padding:20px 16px 24px;background:#eef1fb}
+.rgn-other-wrap h3{font-size:14.5px;font-weight:700;color:#111;margin-bottom:12px}
+.rgn-sido-tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;scrollbar-width:none}
+.rgn-sido-tabs::-webkit-scrollbar{display:none}
+.rgn-sido-tab{flex-shrink:0;padding:7px 13px;border-radius:16px;border:none;background:#fff;font-size:12px;font-weight:600;color:#888}
+.rgn-sido-tab.active{background:#111;color:#fff;font-weight:700}
+.rgn-other-list{display:flex;flex-wrap:wrap;gap:8px 14px}
+.rgn-other-list span{font-size:12.5px;color:#333;cursor:pointer}
+.rgn-other-list span:hover{color:#2563eb;text-decoration:underline}

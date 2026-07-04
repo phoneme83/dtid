@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>디지털관광주민증 - 경험치 보유현황</title>
+<title>디지털관광주민증 - 활동리포트</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/common.css">
 </head>
@@ -21,29 +21,26 @@
   <button class="back-btn" onclick="location.href='my.html'" aria-label="뒤로가기">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
   </button>
-  <span class="page-bar-title">경험치 보유현황</span>
+  <span class="page-bar-title">활동리포트</span>
 </div>
 
-<div class="exp-content">
-  <div class="current-card">
-    <div class="current-inner">
-      <div class="current-left">
-        <div><div class="grade-label">등급</div><div class="grade-name" id="curGrade">-</div></div>
-        <div class="grade-sep"></div>
-        <div><div class="exp-label">경험치</div><div><span class="exp-value" id="curExp">-</span> <span class="exp-unit">EXP</span></div></div>
-      </div>
+<div class="mypage-sub-content">
+  <div class="report-section">
+    <h3>연간 나의 활동은 어땠을까요?</h3>
+    <div class="report-card-list">
+      <div class="report-card"><span class="flag">가장 많이 방문한 지역</span><strong>방문한 지역이 없어요</strong></div>
+      <div class="report-card"><span class="flag">가장 많이 이용한 가맹점</span><strong>방문한 지역이 없어요</strong></div>
+      <div class="report-card"><span class="flag">자주 이용한 가맹점 분류</span><strong>활동 데이터가 없어요</strong></div>
     </div>
   </div>
-
-  <div class="sec-header">
-    <span class="sec-title2">통합 등급 및 경험치</span>
-    <span class="how-link" onclick="toast('경험치 적립 방법 안내')">
-      경험치 적립 방법
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-    </span>
+  <div class="report-section" style="border-top:8px solid #f4f4f4">
+    <h3>연간 전체 이용 횟수 TOP 3</h3>
+    <div class="report-card-list">
+      <div class="report-card"><span class="flag">연간 지역별 방문 횟수 TOP 3</span><strong>방문한 지역이 없어요</strong></div>
+      <div class="report-card"><span class="flag">연간 가맹점 이용 횟수 TOP 3</span><strong>방문한 가맹점이 없어요</strong></div>
+      <div class="report-card"><span class="flag">연간 이용 가맹점 분류 순위 TOP 3</span><strong>활동 데이터가 없어요</strong></div>
+    </div>
   </div>
-
-  <div class="timeline-card"><div class="tl-rows" id="tlRows"></div></div>
 </div>
 
 <nav class="bottom-nav" id="bottomNav">
@@ -96,78 +93,7 @@
 <script src="assets/common.js"></script>
 <script>
 const user=requireUser();
-if(user){
-  setActiveBottomNav('my');
-  const curIdx=getCurLevelIdx(user.exp);
-  const cur=LEVELS[curIdx];
-  document.getElementById('curGrade').textContent=cur.icon+' '+cur.name;
-  document.getElementById('curExp').textContent=user.exp.toLocaleString();
-
-  const container=document.getElementById('tlRows');
-
-  const lineBg=document.createElement('div');
-  lineBg.className='tl-line-bg';
-  container.appendChild(lineBg);
-  const lineFill=document.createElement('div');
-  lineFill.className='tl-line-fill';
-  container.appendChild(lineFill);
-
-  LEVELS.forEach((lv,idx)=>{
-    const isReached=user.exp>=lv.minExp;
-    const isCurrent=idx===curIdx;
-    const row=document.createElement('div');
-    row.className='tl-row';
-    let iconClass='tl-icon-wrap'+(isCurrent?' active':isReached?' reached':' not-reached');
-    let dotClass='tl-dot'+(isCurrent?' active-dot':isReached?' reached-dot':' not-reached-dot');
-    let nameClass='tl-level-name'+(isReached?'':' nr');
-    let expClass='tl-exp-req'+(isReached?'':' nr');
-
-    let extraHtml='';
-    if(isCurrent&&lv.maxExp){
-      const pct=Math.round(((user.exp-lv.minExp)/(lv.maxExp-lv.minExp))*100);
-      const remaining=(lv.maxExp-user.exp).toLocaleString();
-      extraHtml=`
-        <div class="tl-current-badge">✦ 현재 등급</div>
-        <div class="tl-my-exp">${user.exp.toLocaleString()} / ${lv.maxExp.toLocaleString()} EXP</div>
-        <div class="tl-progress-row">
-          <div class="tl-mini-bar"><div class="tl-mini-fill" style="width:${pct}%"></div></div>
-          <span class="tl-pct">${remaining} EXP 남음</span>
-        </div>`;
-    }else if(isCurrent){
-      extraHtml=`<div class="tl-current-badge">✦ 최고 등급</div>`;
-    }
-
-    row.innerHTML=`
-      <div class="tl-icon-col">
-        <div class="${iconClass}">${lv.icon}<div class="${dotClass}"></div></div>
-      </div>
-      <div class="tl-text-col">
-        <div class="${nameClass}">${lv.name}</div>
-        <div class="${expClass}">${lv.minExp.toLocaleString()} EXP</div>
-        ${extraHtml}
-      </div>`;
-    container.appendChild(row);
-  });
-
-  requestAnimationFrame(()=>{requestAnimationFrame(()=>{
-    const rows=container.querySelectorAll('.tl-row');
-    if(!rows.length)return;
-    const cTop=container.getBoundingClientRect().top;
-    const dotYs=[];
-    rows.forEach(row=>{
-      const dot=row.querySelector('.tl-dot');
-      if(dot){const r=dot.getBoundingClientRect();dotYs.push(r.top+r.height/2-cTop);}
-    });
-    if(dotYs.length<2)return;
-    const s=dotYs[0],e=dotYs[dotYs.length-1],f=dotYs[curIdx];
-    const firstDot=rows[0].querySelector('.tl-dot');
-    const dotRect=firstDot.getBoundingClientRect();
-    const cLeft=container.getBoundingClientRect().left;
-    const lineX=dotRect.left+dotRect.width/2-cLeft-1.5;
-    lineBg.style.cssText=`top:${s}px;height:${e-s}px;left:${lineX}px`;
-    lineFill.style.cssText=`top:${s}px;height:${f-s}px;left:${lineX}px`;
-  });});
-}
+if(user){setActiveBottomNav('my');}
 </script>
 </body>
 </html>

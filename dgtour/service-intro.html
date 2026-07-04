@@ -26,6 +26,13 @@
 
 <div class="svc-content">
   <div class="svc-hero">
+    <div class="rgn-share" style="justify-content:flex-start;margin-bottom:14px">
+      <button onclick="toast('페이스북 공유')">📘</button>
+      <button onclick="toast('X(트위터) 공유')">✖️</button>
+      <button onclick="toast('카카오톡 공유')">💬</button>
+      <button onclick="toast('블로그 공유')">📝</button>
+      <button onclick="toast('링크가 복사되었습니다')">🔗</button>
+    </div>
     <h2>디지털 관광주민증 서비스 소개</h2>
     <h3>디지털 관광주민증 이란?</h3>
     <p>디지털 관광주민증은 인구감소 위기를 겪고 있는 지역의 관광 활성화를 위한 사업입니다.</p>
@@ -95,6 +102,17 @@
   </div>
 </div>
 
+<div class="site-footer">
+  <div class="f-links">
+    <span class="bold">개인정보처리방침</span><span>이용약관</span><span>위치기반서비스 이용약관</span><span>저작권 보호정책</span><span>고객서비스헌장</span><span>전자우편 무단수집거부</span><span>찾아오시는 길</span>
+  </div>
+  <div class="f-info">
+    우) 26464 강원특별자치도 원주시 세계로 10 &nbsp;고객센터 : 02-6271-2016 (한국관광공사 대표번호 : 033-738-3000) &nbsp;사업자등록번호 : 202-81-50707<br>
+    통신판매업신고 : 제2009-서울중구-1234호<br>
+    ⓒ한국관광공사
+  </div>
+</div>
+
 <nav class="bottom-nav" id="bottomNav">
   <button class="bnav-a" data-nav="main" onclick="location.href='main.html'">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
@@ -126,8 +144,12 @@
     <div onclick="location.href='service-intro.html'">📋 서비스 소개</div>
     <div onclick="location.href='event.html'">🎁 이벤트</div>
     <div onclick="location.href='my.html'">🪪 나의 관광주민증</div>
-    <div onclick="toast('FAQ 페이지');closeDrawer()">❓ 자주 묻는 질문</div>
-    <div onclick="toast('공지사항 페이지');closeDrawer()">📢 공지사항</div>
+    <div onclick="location.href='mypage-history.html'">🕘 나의 활동이력</div>
+    <div onclick="location.href='mypage-coupon.html'">🎟️ 혜택쿠폰</div>
+    <div onclick="location.href='exp.html'">📈 경험치 보유현황</div>
+    <div onclick="location.href='mypage-favorite.html'">🔖 나의 즐겨찾기</div>
+    <div onclick="location.href='mypage-report.html'">📊 활동리포트</div>
+    <div onclick="location.href='mypage-cardbox.html'">🗂️ 관광주민증 보관함</div>
   </nav>
   <div class="drawer-foot">
     <button class="btn-dk" onclick="logoutUser()">로그아웃</button>

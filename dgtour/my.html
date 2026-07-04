@@ -53,12 +53,12 @@
   <div class="quickmenu-section">
     <div class="section-title">퀵메뉴</div>
     <div class="qm-grid">
-      <button class="qm-item" onclick="toast('활동이력 페이지')"><div class="qm-icon" style="background:#ede9fe">✅</div><span class="qm-text">활동이력</span></button>
-      <button class="qm-item" onclick="toast('혜택쿠폰 페이지')"><div class="qm-icon" style="background:#dbeafe">🎟️</div><span class="qm-text">혜택쿠폰</span></button>
+      <button class="qm-item" onclick="location.href='mypage-history.html'"><div class="qm-icon" style="background:#ede9fe">✅</div><span class="qm-text">활동이력</span></button>
+      <button class="qm-item" onclick="location.href='mypage-coupon.html'"><div class="qm-icon" style="background:#dbeafe">🎟️</div><span class="qm-text">혜택쿠폰</span></button>
       <button class="qm-item" onclick="location.href='exp.html'"><div class="qm-icon" style="background:#ffedd5">👑</div><span class="qm-text">나의 경험치</span></button>
-      <button class="qm-item" onclick="toast('즐겨찾기 페이지')"><div class="qm-icon" style="background:#fee2e2">🔖</div><span class="qm-text">즐겨찾기</span></button>
-      <button class="qm-item" onclick="toast('활동 리포트 페이지')"><div class="qm-icon" style="background:#cffafe">📊</div><span class="qm-text">활동 리포트</span></button>
-      <button class="qm-item" onclick="toast('주민증 보관함 페이지')"><div class="qm-icon" style="background:#dcfce7">🪪</div><span class="qm-text">주민증 보관함</span></button>
+      <button class="qm-item" onclick="location.href='mypage-favorite.html'"><div class="qm-icon" style="background:#fee2e2">🔖</div><span class="qm-text">즐겨찾기</span></button>
+      <button class="qm-item" onclick="location.href='mypage-report.html'"><div class="qm-icon" style="background:#cffafe">📊</div><span class="qm-text">활동 리포트</span></button>
+      <button class="qm-item" onclick="location.href='mypage-cardbox.html'"><div class="qm-icon" style="background:#dcfce7">🪪</div><span class="qm-text">주민증 보관함</span></button>
     </div>
   </div>
 
@@ -106,8 +106,12 @@
     <div onclick="location.href='service-intro.html'">📋 서비스 소개</div>
     <div onclick="location.href='event.html'">🎁 이벤트</div>
     <div onclick="location.href='my.html'">🪪 나의 관광주민증</div>
-    <div onclick="toast('FAQ 페이지');closeDrawer()">❓ 자주 묻는 질문</div>
-    <div onclick="toast('공지사항 페이지');closeDrawer()">📢 공지사항</div>
+    <div onclick="location.href='mypage-history.html'">🕘 나의 활동이력</div>
+    <div onclick="location.href='mypage-coupon.html'">🎟️ 혜택쿠폰</div>
+    <div onclick="location.href='exp.html'">📈 경험치 보유현황</div>
+    <div onclick="location.href='mypage-favorite.html'">🔖 나의 즐겨찾기</div>
+    <div onclick="location.href='mypage-report.html'">📊 활동리포트</div>
+    <div onclick="location.href='mypage-cardbox.html'">🗂️ 관광주민증 보관함</div>
   </nav>
   <div class="drawer-foot">
     <button class="btn-dk" onclick="logoutUser()">로그아웃</button>
@@ -142,7 +146,7 @@ if(user){
       <div class="rci-icon">${CARD_ICONS[c]||'📍'}</div>
       <div class="rci-info"><div class="rci-name">${c}</div><div class="rci-status">디지털 주민증 발급 완료</div></div>
       <div class="rci-badge">사용가능</div>`;
-    el.onclick=()=>toast(c+' QR 코드 화면');
+    el.onclick=()=>location.href='mypage-card-detail.html?r='+encodeURIComponent(c.split(' ').pop());
     cl.appendChild(el);
   });
 }
