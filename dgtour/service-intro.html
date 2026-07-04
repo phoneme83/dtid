@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>디지털관광주민증 - 서비스 소개</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/common.css">
+</head>
+<body>
+
+<nav class="gnb">
+  <div class="gnb-left">
+    <div class="logo-wrap"><svg width="20" height="13" viewBox="0 0 20 13" fill="none"><circle cx="5" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><circle cx="15" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><path d="M1 6.5V4.5M19 6.5V4.5M9 6.5H11" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+    <span class="gnb-title">디지털관광주민증</span>
+  </div>
+  <button class="gnb-menu" onclick="openDrawer()" aria-label="메뉴"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="subnav">
+  <span class="subnav-a" onclick="location.href='main.html'">메인</span>
+  <span class="subnav-a active">서비스 소개</span>
+  <span class="subnav-a" onclick="location.href='event.html'">이벤트</span>
+  <span class="subnav-a" onclick="location.href='my.html'">나의 관광주민증</span>
+</div>
+
+<div class="svc-content">
+  <div class="svc-hero">
+    <h2>디지털 관광주민증 서비스 소개</h2>
+    <h3>디지털 관광주민증 이란?</h3>
+    <p>디지털 관광주민증은 인구감소 위기를 겪고 있는 지역의 관광 활성화를 위한 사업입니다.</p>
+  </div>
+
+  <div class="svc-section">
+    <h3>디지털 관광주민증 발급방법</h3>
+    <div class="svc-steps">
+      <div class="svc-step"><div class="num">1</div><p>투어원패스 소셜 로그인</p></div>
+      <div class="svc-step"><div class="num">2</div><p>대한민국 구석구석 회원가입</p></div>
+      <div class="svc-step"><div class="num">3</div><p>서비스 이용약관 동의 및 본인인증 완료 후 관광주민증 발급</p></div>
+    </div>
+    <button class="svc-cta" onclick="toast('디민증 발급 페이지')">디지털 관광주민증 발급 받기 ›</button>
+  </div>
+
+  <div class="svc-section">
+    <h3>가맹점 쿠폰 이용방법</h3>
+    <h4>쿠폰 이용 방법은 다음 세 가지가 있으며, 편한 방법으로 사용하시면 됩니다.</h4>
+
+    <div class="svc-coupon-way">
+      <span class="svc-way-label">하나!</span>
+      <div class="svc-steps">
+        <div class="svc-step"><div class="num">1</div><p>나의 통합 관광주민증을 직원에게 제시</p></div>
+        <div class="svc-step"><div class="num">2</div><p>가맹점 직원 확인 (쿠폰 사용 완료)</p></div>
+        <div class="svc-step"><div class="num">3</div><p>관광주민증이 없을 경우 직원의 안내에 따라 단계별 발급 진행</p></div>
+      </div>
+      <p class="svc-way-desc">* 나의 통합 관광주민증은 회원가입이 되어있을 때 나타나는 화면입니다.</p>
+    </div>
+
+    <div class="svc-coupon-way">
+      <span class="svc-way-label">둘!</span>
+      <div class="svc-steps">
+        <div class="svc-step"><div class="num">1</div><p>가맹점 3km 이내에서 모바일 쿠폰 받기 적용</p></div>
+        <div class="svc-step"><div class="num">2</div><p>안내에 따라 단계별 가맹점 쿠폰 발급 진행</p></div>
+        <div class="svc-step"><div class="num">3</div><p>가맹점 쿠폰 발급 완료 후 직원에게 제시</p></div>
+      </div>
+      <p class="svc-way-desc">* 해당 쿠폰은 3km 이내에서만 사용 가능한 쿠폰이며, 로그인이 되어있는 경우 쿠폰 받기 선택 시 바로 적용이 가능합니다.</p>
+    </div>
+
+    <div class="svc-coupon-way">
+      <span class="svc-way-label">셋!</span>
+      <div class="svc-steps">
+        <div class="svc-step"><div class="num">1</div><p>가맹점에서 직접 QR 스캔</p></div>
+        <div class="svc-step"><div class="num">2</div><p>안내에 따라 단계별 가맹점 쿠폰 발급 진행</p></div>
+        <div class="svc-step"><div class="num">3</div><p>가맹점 쿠폰 발급 완료 후 직원에게 제시</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="svc-section">
+    <h3>서비스 이용문의</h3>
+    <div class="svc-contact-list">
+      <div class="svc-contact-card">
+        <span>디지털 관광주민증 콜센터</span>
+        <strong>02-6271-2016</strong>
+        <p>운영시간 : 09:00~18:00</p>
+        <a href="tel:0262712016" class="btn">전화 연결하기</a>
+      </div>
+      <div class="svc-contact-card">
+        <span>디지털 관광주민증</span>
+        <strong>카카오톡 채널</strong>
+        <p>서비스 이용 문의(1:1 챗봇)</p>
+        <a href="https://pf.kakao.com/_eeFYG" target="_blank" class="btn">톡 상담 하기</a>
+      </div>
+    </div>
+    <p class="svc-note">디지털 관광주민증 서비스의 이용은 무료 이며, 회원이면 누구나 이용할 수 있습니다.<br>디지털 관광주민증을 통해 서비스 지역을 대상으로 관광 주민증 발급 및 할인혜택을 받을 수 있습니다.</p>
+  </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bnav-a" data-nav="main" onclick="location.href='main.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+    메인
+  </button>
+  <button class="bnav-a" onclick="toast('검색 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+    검색
+  </button>
+  <button class="bnav-a" onclick="location.href='event.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
+    이벤트
+  </button>
+  <button class="bnav-a" onclick="toast('디민증 발급 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
+    디민증발급
+  </button>
+  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+    마이
+  </button>
+</nav>
+
+<div class="drawer-overlay" id="dOverlay" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head"><span>메뉴</span><button class="drawer-close" onclick="closeDrawer()">✕</button></div>
+  <nav class="drawer-nav">
+    <div onclick="location.href='main.html'">🏠 메인홈</div>
+    <div onclick="location.href='service-intro.html'">📋 서비스 소개</div>
+    <div onclick="location.href='event.html'">🎁 이벤트</div>
+    <div onclick="location.href='my.html'">🪪 나의 관광주민증</div>
+    <div onclick="toast('FAQ 페이지');closeDrawer()">❓ 자주 묻는 질문</div>
+    <div onclick="toast('공지사항 페이지');closeDrawer()">📢 공지사항</div>
+  </nav>
+  <div class="drawer-foot">
+    <button class="btn-dk" onclick="logoutUser()">로그아웃</button>
+    <button class="btn-lt" onclick="closeDrawer()">닫기</button>
+  </div>
+</aside>
+
+<div class="toast" id="toastEl"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/common.js"></script>
+<script>
+const user=requireUser();
+if(user){
+  setActiveBottomNav('main');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>디지털관광주민증 - 이벤트</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/common.css">
+</head>
+<body>
+
+<nav class="gnb">
+  <div class="gnb-left">
+    <div class="logo-wrap"><svg width="20" height="13" viewBox="0 0 20 13" fill="none"><circle cx="5" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><circle cx="15" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><path d="M1 6.5V4.5M19 6.5V4.5M9 6.5H11" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+    <span class="gnb-title">디지털관광주민증</span>
+  </div>
+  <button class="gnb-menu" onclick="openDrawer()" aria-label="메뉴"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="subnav">
+  <span class="subnav-a" onclick="location.href='main.html'">메인</span>
+  <span class="subnav-a" onclick="location.href='service-intro.html'">서비스 소개</span>
+  <span class="subnav-a active">이벤트</span>
+  <span class="subnav-a" onclick="location.href='my.html'">나의 관광주민증</span>
+</div>
+
+<div class="evt-content">
+  <div class="evt-title"><h2>이벤트</h2></div>
+
+  <div class="evt-tabs">
+    <button class="evt-tab-btn active" id="tabWeekBtn" onclick="switchEvtTab('week')">주간 이벤트</button>
+    <button class="evt-tab-btn" id="tabMonthBtn" onclick="switchEvtTab('month')">월간 이벤트</button>
+  </div>
+
+  <div class="evt-panel active" id="panelWeek">
+    <div class="evt-week-strip">
+      <button class="evt-week-nav" onclick="shiftWeek(-1)" aria-label="이전 주">‹</button>
+      <div class="evt-week-days" id="weekDays"></div>
+      <button class="evt-week-nav" onclick="shiftWeek(1)" aria-label="다음 주">›</button>
+    </div>
+    <div class="evt-filter-chips">
+      <button class="evt-chip active" data-f="all" onclick="setEvtFilter('all')">전체</button>
+      <button class="evt-chip" data-f="upcoming" onclick="setEvtFilter('upcoming')">진행예정</button>
+      <button class="evt-chip" data-f="ongoing" onclick="setEvtFilter('ongoing')">진행중</button>
+    </div>
+    <div class="evt-empty">
+      <span class="ico">🎪</span>
+      <p>진행중인 이벤트가 없어요</p>
+    </div>
+  </div>
+
+  <div class="evt-panel" id="panelMonth">
+    <div class="evt-month-top">
+      <button class="evt-month-nav" onclick="shiftMonth(-1)" aria-label="이전 달">‹</button>
+      <strong id="monthTitle">-</strong>
+      <button class="evt-month-nav" onclick="shiftMonth(1)" aria-label="다음 달">›</button>
+    </div>
+    <div class="evt-cal-head">
+      <span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span>
+    </div>
+    <div class="evt-cal-days" id="calDays"></div>
+    <div class="evt-sel-bar">
+      <strong id="selDateLabel">-</strong>
+      <span>총 <em id="selDateCount">0</em> 건</span>
+    </div>
+    <div class="evt-empty">
+      <span class="ico">🎪</span>
+      <p>진행중인 이벤트가 없어요</p>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bnav-a" data-nav="main" onclick="location.href='main.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+    메인
+  </button>
+  <button class="bnav-a" onclick="toast('검색 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+    검색
+  </button>
+  <button class="bnav-a" data-nav="event" onclick="location.href='event.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
+    이벤트
+  </button>
+  <button class="bnav-a" onclick="toast('디민증 발급 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
+    디민증발급
+  </button>
+  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+    마이
+  </button>
+</nav>
+
+<div class="drawer-overlay" id="dOverlay" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head"><span>메뉴</span><button class="drawer-close" onclick="closeDrawer()">✕</button></div>
+  <nav class="drawer-nav">
+    <div onclick="location.href='main.html'">🏠 메인홈</div>
+    <div onclick="location.href='service-intro.html'">📋 서비스 소개</div>
+    <div onclick="location.href='event.html'">🎁 이벤트</div>
+    <div onclick="location.href='my.html'">🪪 나의 관광주민증</div>
+    <div onclick="toast('FAQ 페이지');closeDrawer()">❓ 자주 묻는 질문</div>
+    <div onclick="toast('공지사항 페이지');closeDrawer()">📢 공지사항</div>
+  </nav>
+  <div class="drawer-foot">
+    <button class="btn-dk" onclick="logoutUser()">로그아웃</button>
+    <button class="btn-lt" onclick="closeDrawer()">닫기</button>
+  </div>
+</aside>
+
+<div class="toast" id="toastEl"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/common.js"></script>
+<script>
+const user=requireUser();
+const DOW=['일','월','화','수','목','금','토'];
+let weekOffset=0;
+let monthCursor=new Date();
+monthCursor.setDate(1);
+
+function switchEvtTab(tab){
+  document.getElementById('tabWeekBtn').classList.toggle('active',tab==='week');
+  document.getElementById('tabMonthBtn').classList.toggle('active',tab==='month');
+  document.getElementById('panelWeek').classList.toggle('active',tab==='week');
+  document.getElementById('panelMonth').classList.toggle('active',tab==='month');
+  if(tab==='month')renderMonth();
+}
+
+function setEvtFilter(f){
+  document.querySelectorAll('.evt-chip').forEach(c=>c.classList.toggle('active',c.dataset.f===f));
+}
+
+function renderWeek(){
+  const today=new Date();
+  today.setHours(0,0,0,0);
+  const base=new Date(today);
+  base.setDate(today.getDate()-today.getDay()+weekOffset*7);
+  const wrap=document.getElementById('weekDays');
+  wrap.innerHTML='';
+  for(let i=0;i<7;i++){
+    const d=new Date(base);
+    d.setDate(base.getDate()+i);
+    const isToday=d.getTime()===today.getTime();
+    const el=document.createElement('div');
+    el.className='evt-day'+(isToday?' today':'');
+    el.innerHTML=`<span class="dow">${DOW[i]}</span><span class="dnum">${d.getDate()}</span>`;
+    el.onclick=()=>toast(d.getMonth()+1+'월 '+d.getDate()+'일 이벤트');
+    wrap.appendChild(el);
+  }
+}
+
+function shiftWeek(dir){weekOffset+=dir;renderWeek();}
+
+function renderMonth(){
+  const y=monthCursor.getFullYear(),m=monthCursor.getMonth();
+  document.getElementById('monthTitle').textContent=y+'년 '+(m+1)+'월';
+  const firstDow=new Date(y,m,1).getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const daysInPrevMonth=new Date(y,m,0).getDate();
+  const wrap=document.getElementById('calDays');
+  wrap.innerHTML='';
+  const today=new Date();
+  const isSameDay=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
+
+  for(let i=firstDow-1;i>=0;i--){
+    const btn=document.createElement('button');
+    btn.className='evt-cal-day other';
+    btn.textContent=daysInPrevMonth-i;
+    wrap.appendChild(btn);
+  }
+  for(let d=1;d<=daysInMonth;d++){
+    const btn=document.createElement('button');
+    const cur=new Date(y,m,d);
+    btn.className='evt-cal-day'+(isSameDay(cur,today)?' sel':'');
+    btn.textContent=d;
+    btn.onclick=()=>{
+      wrap.querySelectorAll('.evt-cal-day').forEach(b=>b.classList.remove('sel'));
+      btn.classList.add('sel');
+      document.getElementById('selDateLabel').textContent=(m+1)+'월 '+d+'일';
+      document.getElementById('selDateCount').textContent='0';
+    };
+    wrap.appendChild(btn);
+  }
+  const totalCells=firstDow+daysInMonth;
+  const trailing=(7-(totalCells%7))%7;
+  for(let d=1;d<=trailing;d++){
+    const btn=document.createElement('button');
+    btn.className='evt-cal-day other';
+    btn.textContent=d;
+    wrap.appendChild(btn);
+  }
+  document.getElementById('selDateLabel').textContent=(m+1)+'월 '+today.getDate()+'일';
+  document.getElementById('selDateCount').textContent='0';
+}
+
+function shiftMonth(dir){
+  monthCursor.setMonth(monthCursor.getMonth()+dir);
+  renderMonth();
+}
+
+if(user){
+  setActiveBottomNav('event');
+  renderWeek();
+}
+</script>
+</body>
+</html>
