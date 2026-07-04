@@ -23,6 +23,16 @@ const LEVELS=[
 
 const CARD_ICONS={'강원 정선군':'🏔️','전남 신안군':'🌊','충남 보령시':'🏖️','충북 괴산군':'🌾','경북 봉화군':'🌲','전남 완도군':'⛵','경남 합천군':'🌄','충남 태안군':'🌿'};
 
+/* 보관함 카드 상세 슬로건 — 실제 캡처된 3개 외에는 테스트용 임시 문구 */
+const CARD_SLOGANS={
+  '가평군':'힐링과 행복, 하나되는 가평특별군',
+  '강화군':'소통과 화합으로 함께 만드는 강화',
+  '거창군':'거창하구나! 구경가세!'
+};
+function getCardSlogan(name){
+  return CARD_SLOGANS[name]||`${name}과 함께하는 여행`;
+}
+
 /* 좌표(l,t=중심 %, w,h=클릭 히트박스 %)는 실제 사이트 지도 캡처(assets/img/map-regions.jpg) 위의
    라벨 위치를 그대로 딴 값입니다 — 지도는 캡처 이미지를 배경으로 쓰고, 이 좌표에 투명 버튼만 얹습니다. */
 const REGIONS=[
@@ -98,11 +108,136 @@ function getRegionDetail(name){
     phone:'02-6271-2016',
     venues:[
       {cat:'식음료',name:'지역 대표 맛집',desc:'지역 특산물을 활용한 메뉴를 선보입니다',discount:'이용료 5% 할인'},
-      {cat:'체험',name:'지역 체험 프로그램',desc:'지역 문화를 직접 체험해볼 수 있어요',discount:'입장권 10% 할인'}
+      {cat:'체험',name:'지역 체험 프로그램',desc:'지역 문화를 직접 체험해볼 수 있어요',discount:'입장권 10% 할인'},
+      {cat:'관람',name:'지역 대표 관광지',desc:'지역을 대표하는 명소예요',discount:'입장료 30% 할인'},
+      {cat:'쇼핑',name:'지역 특산물 매장',desc:'지역 특산품을 구매할 수 있어요',discount:'구매 시 10% 할인'},
+      {cat:'숙박',name:'지역 숙박 시설',desc:'편안한 하룻밤을 보낼 수 있어요',discount:'숙박료 5% 할인'},
+      {cat:'기타',name:'지역 안내소',desc:'여행 정보를 안내해드려요',discount:'기념품 증정'}
     ],
     mock:true
   };
 }
+
+/* 실제 사이트 지역코드(mtpcDoCd=시/도 코드, signguCd=시/군/구 코드) — 실 소스코드에서 그대로 추출 */
+const REGION_CODES={
+  철원:{do:'51',sig:'51780'},양양:{do:'51',sig:'51830'},정선:{do:'51',sig:'51770'},삼척:{do:'51',sig:'51230'},
+  태백:{do:'51',sig:'51190'},홍천:{do:'51',sig:'51720'},평창:{do:'51',sig:'51760'},영월:{do:'51',sig:'51750'},
+  연천:{do:'41',sig:'41800'},가평:{do:'41',sig:'41820'},강화:{do:'28',sig:'28710'},
+  태안:{do:'44',sig:'44825'},예산:{do:'44',sig:'44810'},보령:{do:'44',sig:'44180'},
+  제천:{do:'43',sig:'43150'},단양:{do:'43',sig:'43800'},괴산:{do:'43',sig:'43760'},보은:{do:'43',sig:'43720'},옥천:{do:'43',sig:'43730'},영동:{do:'43',sig:'43740'},
+  영주:{do:'47',sig:'47210'},안동:{do:'47',sig:'47170'},영덕:{do:'47',sig:'47770'},청도:{do:'47',sig:'47820'},고령:{do:'47',sig:'47830'},의성:{do:'47',sig:'47730'},울진:{do:'47',sig:'47930'},
+  거창:{do:'48',sig:'48880'},합천:{do:'48',sig:'48890'},산청:{do:'48',sig:'48860'},하동:{do:'48',sig:'48850'},밀양:{do:'48',sig:'48270'},함양:{do:'48',sig:'48870'},
+  부산동구:{do:'26',sig:'26170'},부산영도:{do:'26',sig:'26200'},부산서구:{do:'26',sig:'26140'},
+  김제:{do:'52',sig:'52210'},무주:{do:'52',sig:'52730'},고창:{do:'52',sig:'52790'},임실:{do:'52',sig:'52750'},남원:{do:'52',sig:'52190'},순창:{do:'52',sig:'52770'},
+  담양:{do:'12',sig:'12710'},영광:{do:'12',sig:'12830'},함평:{do:'12',sig:'12820'},곡성:{do:'12',sig:'12720'},신안:{do:'12',sig:'12870'},해남:{do:'12',sig:'12790'},
+  장흥:{do:'12',sig:'12770'},구례:{do:'12',sig:'12730'},고흥:{do:'12',sig:'12740'},완도:{do:'12',sig:'12850'}
+};
+
+/* 메인 상단 탭(실제 사이트 카테고리명 그대로) */
+const TOP10_TABS=['주간 TOP10','즐거운 체험','다양한 볼거리','숙박 고민 끝!','식도락 여행','특산물을 찾아서'];
+
+/* 탭별 카드 — '주간 TOP10'은 실제 캡처 화면 데이터, 나머지는 예시(mock) 데이터 */
+const TOP10_ITEMS={
+  '주간 TOP10':[
+    {tag:'관람',name:'영동와인터널',discount:'입장요금 2,000원 할인'},
+    {tag:'체험',name:'단양하스카이워크',discount:'전망대 30% 할인/체험비 20%'},
+    {tag:'관람',name:'다누리 아쿠아리움',discount:'입장료 50% 할인'},
+    {tag:'식음료',name:'정선 파크로쉐리조트 앤 웰니스',discount:'정가 대비 10% 할인'},
+    {tag:'체험',name:'평창 대관령코스터',discount:'이용권 할인(전 시즌 20%)'}
+  ],
+  mock:[
+    {tag:'체험',name:'지역 체험 프로그램',discount:'예시 데이터'},
+    {tag:'식음료',name:'지역 대표 맛집',discount:'예시 데이터'},
+    {tag:'숙박',name:'지역 숙박 시설',discount:'예시 데이터'}
+  ]
+};
+function getTop10Items(tab){return TOP10_ITEMS[tab]||TOP10_ITEMS.mock;}
+
+/* FAQ — 실제 사이트 문구 그대로 */
+const FAQS=[
+  {q:'디지털 관광주민증이란?',
+   a:'디지털 관광주민증은 인구감소 위기를 겪고 있는 지역의 관광 활성화를 위해 한국관광공사가 운영하는 서비스입니다. 디지털 관광주민증으로 지역 여행에 필요한 다양한 혜택을 받고, 지역 경제도 살리는 착한 여행을 떠나 보세요!'},
+  {q:'어떻게 발급받나요?',
+   a:'디지털 관광주민증은 대한민국 구석구석 회원이라면 누구나 무료로 발급받을 수 있습니다.<br><br>한국관광공사가 운영하는 관광 통합 서비스 ‘투어패스원’에 소셜 로그인한 뒤, 대한민국 구석구석 회원가입 및 서비스 이용약관에 동의합니다. 이후 본인 인증을 완료하고 거주지를 확인한 후, 원하는 지역의 관광주민증을 발급받으면 됩니다.<br><br>발급이 완료되면 모바일에서 바로 관광주민증을 확인하고 다양한 혜택을 이용할 수 있습니다.'},
+  {q:'어떻게 사용하나요?',
+   a:'디지털 관광주민증 혜택은 총 3가지 방법으로 이용할 수 있습니다.<br><br>첫째, 관광주민증 발급 후 마이페이지에 생성되는 ‘나의 통합 관광주민증 QR’을 사용하는 방법입니다. 가맹점에 있는 QR 리더기에 나의 QR을 스캔하면 혜택이 자동으로 적용되며, 직원에게 QR을 직접 제시해 확인 후 이용할 수도 있습니다.<br><br>둘째, 가맹점 3km 이내에서 모바일 쿠폰을 발급받아 사용하는 방법입니다. 발급된 쿠폰을 가맹점 직원에게 제시하면 할인 및 혜택을 받을 수 있습니다.<br><br>셋째, 가맹점에 비치된 혜택업체 QR을 직접 스캔하는 방법입니다. 내 스마트폰으로 QR을 스캔하면 쿠폰이 발급되며, 이를 직원에게 제시하여 혜택을 이용할 수 있습니다.'},
+  {q:'어떤 혜택이 있나요?',
+   a:'식음료, 관람, 체험, 쇼핑, 숙박 등 지역 여행에 필요한 다양한 혜택을 받을 수 있으며, 지역사랑 철도여행 이벤트를 통해 코레일 열차 할인 쿠폰도 제공됩니다.<br><br>자세한 지역별 혜택 내용은 디지털 관광주민증 홈페이지에서 확인할 수 있습니다.'}
+];
+
+/* 인기 여행 콘텐츠(인스타그램) — 실제 게시물 캡션/링크, 이미지는 저작권상 색상 타일로 대체 */
+const INSTA_POSTS=[
+  {cap:'여름꽃',color:'#f9a8d4',url:'https://www.instagram.com/p/DaReMYDE6GS/'},
+  {cap:'완도',color:'#60a5fa',url:'https://www.instagram.com/p/DaJvnNmkzoC/'},
+  {cap:'나만의 바다',color:'#38bdf8',url:'https://www.instagram.com/reel/DZ_cVuJTnGO/'},
+  {cap:'여름혜택',color:'#fb923c',url:'https://www.instagram.com/p/DZ3uKfiCQhO/'},
+  {cap:'담양',color:'#4ade80',url:'https://www.instagram.com/p/DZq3zNVkybT/'},
+  {cap:'신규지역소개',color:'#a78bfa',url:'https://www.instagram.com/p/DZltgPZEyJI/'},
+  {cap:'6월 혜택지',color:'#f87171',url:'https://www.instagram.com/reel/DZbYepzzCjF/'},
+  {cap:'삼척',color:'#22d3ee',url:'https://www.instagram.com/p/DZTq7tjE3Cg/'},
+  {cap:'페스타',color:'#facc15',url:'https://www.instagram.com/p/DZBpa32nwYM/'},
+  {cap:'밀양추천',color:'#fb7185',url:'https://www.instagram.com/p/DZJYozXk4eC/'},
+  {cap:'조용한여행 in 안동',color:'#818cf8',url:'https://www.instagram.com/reel/DY3WeUPTfiE/'},
+  {cap:'거창 여행 BEST4',color:'#34d399',url:'https://www.instagram.com/reel/DYdnHDiE-Xb/'},
+  {cap:'극락도락이다',color:'#fbbf24',url:'https://www.instagram.com/p/DYTTGWADAfv/'},
+  {cap:'청정고원 평창',color:'#93c5fd',url:'https://www.instagram.com/p/DYvx9KZE-9d/'}
+];
+
+/* 메인 하단 이벤트 카드 — 실제 사이트 문구 그대로 */
+const MAIN_EVENTS=[
+  {title:'담양 디지털관광주민증 오픈기념! 담양 고향사랑기부하고 혜택받자!',date:'2026.07.01~2026.07.21',start:'2026-07-01',end:'2026-07-21',color:'#84cc16'},
+  {title:'디지털 관광주민이라면 보령에서 혜택과 체험을 함께 즐겨요',date:'2026.07.03~2026.08.02',start:'2026-07-03',end:'2026-08-02',color:'#0ea5e9'}
+];
+function getEventStatus(ev,today){
+  const t=today.getTime(),s=new Date(ev.start).getTime(),e=new Date(ev.end).getTime();
+  if(t<s)return 'upcoming';
+  if(t>e)return 'ended';
+  return 'ongoing';
+}
+function eventCoversDate(ev,d){
+  const t=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();
+  return t>=new Date(ev.start).getTime()&&t<=new Date(ev.end).getTime();
+}
+
+/* 시/도별 지역 목록(실제 사이트 "다른 지역보기" 탭용) — REGION_SIDO를 역으로 그룹핑 */
+function getSidoGroups(){
+  const groups={};
+  Object.keys(REGION_SIDO).forEach(name=>{
+    const sido=REGION_SIDO[name];
+    (groups[sido]=groups[sido]||[]).push(name);
+  });
+  return groups;
+}
+const SIDO_SHORT={강원특별자치도:'강원',경기도:'경기',인천광역시:'인천',충청남도:'충남',충청북도:'충북',
+  경상북도:'경북',경상남도:'경남',부산광역시:'부산',전북특별자치도:'전북',전라남도:'전남'};
+
+/* 지역 리뷰(여행 노하우) — 지역별 실제 후기 없이 공통 예시 데이터를 지역명에 맞춰 생성 */
+const REVIEW_NAMES=['선경님','안효근님','동슈동슈님','동동밈a님','수호님','여상윤님','거미님','김정수님','김소연님','wewework님','쪼쪼님','호웅이님','모안님','어름치님','솔이엄마님','모모457님'];
+function getRegionReviews(name){
+  const seedTexts=[
+    `${name} 여행 정말 좋았어요, 또 가고싶네요!`,
+    `디지털 관광주민증 혜택 받아서 알뜰하게 여행하고 왔어요`,
+    `${name}은 언제 가도 매력있는 곳 같아요`,
+    `가족들이랑 다녀왔는데 다들 만족했어요`,
+    `현지 맛집 추천받아서 잘 먹고 왔습니다`
+  ];
+  return seedTexts.map((t,i)=>({name:REVIEW_NAMES[(name.length+i)%REVIEW_NAMES.length],text:t,likes:(i*7+name.length)%5}));
+}
+
+/* 활동이력 — 실제 사이트 캡처 데이터 그대로 */
+const HISTORY_ITEMS=[
+  {ico:'🎉',title:'지역 관광주민증 발급',date:'2026.06.08',desc:'(광주 완도군) 지역 관광주민증 발급',exp:20},
+  {ico:'🎉',title:'지역 관광주민증 발급',date:'2026.06.08',desc:'(광주 고흥군) 지역 관광주민증 발급',exp:20},
+  {ico:'🎟️',title:'지역 가맹점 이용',date:'2025.10.29',desc:"(충북 단양군) '고수동굴'에서 할인 혜택 제공 쿠폰을 사용했습니다.",exp:500},
+  {ico:'🎉',title:'지역 관광주민증 발급',date:'2025.10.01',desc:'(충남 보령시) 지역 관광주민증 발급',exp:20},
+  {ico:'🎟️',title:'지역 가맹점 이용',date:'2025.09.27',desc:"(광주 곡성군) '곡성 섬진강 천문대'에서 관람료 500원 할인 쿠폰을 사용했습니다.",exp:500}
+];
+
+/* 즐겨찾는 혜택 가맹점 카테고리(실제 코드) */
+const FAV_CATS=[
+  {code:'',label:'전체'},{code:'FDRK',label:'식음료'},{code:'VWNG',label:'관람'},
+  {code:'EXPRN',label:'체험'},{code:'SHPN',label:'쇼핑'},{code:'STAYNG',label:'숙박'},{code:'ETC',label:'기타'}
+];
 
 function getCurLevelIdx(exp){
   for(let i=LEVELS.length-1;i>=0;i--){if(exp>=LEVELS[i].minExp)return i;}

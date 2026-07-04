@@ -43,7 +43,8 @@
       <button class="evt-chip" data-f="upcoming" onclick="setEvtFilter('upcoming')">진행예정</button>
       <button class="evt-chip" data-f="ongoing" onclick="setEvtFilter('ongoing')">진행중</button>
     </div>
-    <div class="evt-empty">
+    <ul class="evt-list" id="evtList"></ul>
+    <div class="evt-empty" id="evtEmpty" style="display:none">
       <span class="ico">🎪</span>
       <p>진행중인 이벤트가 없어요</p>
     </div>
@@ -63,10 +64,22 @@
       <strong id="selDateLabel">-</strong>
       <span>총 <em id="selDateCount">0</em> 건</span>
     </div>
-    <div class="evt-empty">
+    <ul class="evt-list" id="monthEvtList"></ul>
+    <div class="evt-empty" id="monthEvtEmpty" style="display:none">
       <span class="ico">🎪</span>
       <p>진행중인 이벤트가 없어요</p>
     </div>
+  </div>
+</div>
+
+<div class="site-footer">
+  <div class="f-links">
+    <span class="bold">개인정보처리방침</span><span>이용약관</span><span>위치기반서비스 이용약관</span><span>저작권 보호정책</span><span>고객서비스헌장</span><span>전자우편 무단수집거부</span><span>찾아오시는 길</span>
+  </div>
+  <div class="f-info">
+    우) 26464 강원특별자치도 원주시 세계로 10 &nbsp;고객센터 : 02-6271-2016 (한국관광공사 대표번호 : 033-738-3000) &nbsp;사업자등록번호 : 202-81-50707<br>
+    통신판매업신고 : 제2009-서울중구-1234호<br>
+    ⓒ한국관광공사
   </div>
 </div>
 
@@ -101,8 +114,12 @@
     <div onclick="location.href='service-intro.html'">📋 서비스 소개</div>
     <div onclick="location.href='event.html'">🎁 이벤트</div>
     <div onclick="location.href='my.html'">🪪 나의 관광주민증</div>
-    <div onclick="toast('FAQ 페이지');closeDrawer()">❓ 자주 묻는 질문</div>
-    <div onclick="toast('공지사항 페이지');closeDrawer()">📢 공지사항</div>
+    <div onclick="location.href='mypage-history.html'">🕘 나의 활동이력</div>
+    <div onclick="location.href='mypage-coupon.html'">🎟️ 혜택쿠폰</div>
+    <div onclick="location.href='exp.html'">📈 경험치 보유현황</div>
+    <div onclick="location.href='mypage-favorite.html'">🔖 나의 즐겨찾기</div>
+    <div onclick="location.href='mypage-report.html'">📊 활동리포트</div>
+    <div onclick="location.href='mypage-cardbox.html'">🗂️ 관광주민증 보관함</div>
   </nav>
   <div class="drawer-foot">
     <button class="btn-dk" onclick="logoutUser()">로그아웃</button>
@@ -129,8 +146,29 @@ function switchEvtTab(tab){
   if(tab==='month')renderMonth();
 }
 
+let evtFilter='all';
 function setEvtFilter(f){
+  evtFilter=f;
   document.querySelectorAll('.evt-chip').forEach(c=>c.classList.toggle('active',c.dataset.f===f));
+  renderEvtList();
+}
+
+function renderEvtList(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const withStatus=MAIN_EVENTS.map(e=>({...e,status:getEventStatus(e,today)})).filter(e=>e.status!=='ended');
+  const list=withStatus.filter(e=>evtFilter==='all'||e.status===evtFilter);
+  const ul=document.getElementById('evtList');
+  const empty=document.getElementById('evtEmpty');
+  empty.style.display=list.length?'none':'flex';
+  ul.innerHTML=list.map(e=>`
+    <li class="evt-item" onclick="toast('이벤트 상세')">
+      <div class="evt-item-thumb" style="background:linear-gradient(135deg,${e.color},#111)"></div>
+      <div class="evt-item-body">
+        <span class="evt-item-tag ${e.status}">${e.status==='ongoing'?'진행중':'진행예정'}</span>
+        <div class="evt-item-title">${e.title}</div>
+        <div class="evt-item-date">${e.date}</div>
+      </div>
+    </li>`).join('');
 }
 
 function renderWeek(){
@@ -174,13 +212,13 @@ function renderMonth(){
   for(let d=1;d<=daysInMonth;d++){
     const btn=document.createElement('button');
     const cur=new Date(y,m,d);
-    btn.className='evt-cal-day'+(isSameDay(cur,today)?' sel':'');
+    const hasEvent=MAIN_EVENTS.some(e=>eventCoversDate(e,cur));
+    btn.className='evt-cal-day'+(isSameDay(cur,today)?' sel':'')+(hasEvent?' has-event':'');
     btn.textContent=d;
     btn.onclick=()=>{
       wrap.querySelectorAll('.evt-cal-day').forEach(b=>b.classList.remove('sel'));
       btn.classList.add('sel');
-      document.getElementById('selDateLabel').textContent=(m+1)+'월 '+d+'일';
-      document.getElementById('selDateCount').textContent='0';
+      selectMonthDate(cur,m,d);
     };
     wrap.appendChild(btn);
   }
@@ -192,8 +230,24 @@ function renderMonth(){
     btn.textContent=d;
     wrap.appendChild(btn);
   }
-  document.getElementById('selDateLabel').textContent=(m+1)+'월 '+today.getDate()+'일';
-  document.getElementById('selDateCount').textContent='0';
+  selectMonthDate(today,today.getMonth(),today.getDate());
+}
+
+function selectMonthDate(dateObj,m,d){
+  document.getElementById('selDateLabel').textContent=(m+1)+'월 '+d+'일';
+  const list=MAIN_EVENTS.filter(e=>eventCoversDate(e,dateObj));
+  document.getElementById('selDateCount').textContent=list.length;
+  const ul=document.getElementById('monthEvtList');
+  const empty=document.getElementById('monthEvtEmpty');
+  empty.style.display=list.length?'none':'flex';
+  ul.innerHTML=list.map(e=>`
+    <li class="evt-item" onclick="toast('이벤트 상세')">
+      <div class="evt-item-thumb" style="background:linear-gradient(135deg,${e.color},#111)"></div>
+      <div class="evt-item-body">
+        <div class="evt-item-title">${e.title}</div>
+        <div class="evt-item-date">${e.date}</div>
+      </div>
+    </li>`).join('');
 }
 
 function shiftMonth(dir){
@@ -204,6 +258,7 @@ function shiftMonth(dir){
 if(user){
   setActiveBottomNav('event');
   renderWeek();
+  renderEvtList();
 }
 </script>
 </body>
