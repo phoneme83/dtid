@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>디지털관광주민증 - 메인</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="assets/common.css">
+</head>
+<body>
+
+<nav class="gnb">
+  <div class="gnb-left">
+    <div class="logo-wrap"><svg width="20" height="13" viewBox="0 0 20 13" fill="none"><circle cx="5" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><circle cx="15" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><path d="M1 6.5V4.5M19 6.5V4.5M9 6.5H11" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+    <span class="gnb-title">디지털관광주민증</span>
+  </div>
+  <button class="gnb-menu" onclick="openDrawer()" aria-label="메뉴"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="subnav">
+  <span class="subnav-a active">메인</span>
+  <span class="subnav-a" onclick="toast('서비스 소개 페이지')">서비스 소개</span>
+  <span class="subnav-a" onclick="toast('이벤트 페이지')">이벤트</span>
+  <span class="subnav-a" onclick="location.href='my.html'">나의 관광주민증</span>
+</div>
+
+<div class="banner-hp" onclick="toast('반값여행 서비스 페이지')">
+  <div class="banner-coupon"><div class="pct">50%</div><div class="label">COUPON</div></div>
+  <div class="banner-text"><strong>🧳 대한민국 반값여행</strong><span>지역사랑 휴가지원 ›</span></div>
+  <span class="banner-arrow">›</span>
+</div>
+
+<div class="map-section">
+  <div class="map-outer">
+    <div class="map-heading">
+      <p>디지털 관광주민증 참여지역의<br><strong>다양한 여행정보를 확인해보세요!</strong></p>
+    </div>
+    <div class="map-container">
+      <svg class="map-svg" viewBox="0 35 300 210" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <rect width="300" height="320" fill="#b2e0d9"/>
+        <path d="M 80,50 C 100,44 130,40 160,38 C 185,38 205,44 220,54 L 230,68 L 238,86 L 241,106 L 241,126 L 239,144 L 236,160 L 230,175 L 222,190 L 212,204 L 198,216 L 182,226 L 165,234 L 148,238 L 130,236 L 113,228 L 97,218 L 81,206 C 68,196 57,180 49,164 C 43,151 40,137 39,122 C 39,107 42,92 47,78 L 53,64 L 62,54 Z" fill="#9dd5cf" stroke="#7ab8b3" stroke-width="0.8"/>
+        <ellipse cx="35" cy="58" rx="14" ry="8" fill="rgba(255,255,255,.5)"/>
+        <ellipse cx="44" cy="54" rx="10" ry="7" fill="rgba(255,255,255,.5)"/>
+        <ellipse cx="255" cy="190" rx="16" ry="9" fill="rgba(255,255,255,.45)"/>
+        <ellipse cx="265" cy="185" rx="11" ry="7" fill="rgba(255,255,255,.45)"/>
+      </svg>
+      <div class="map-badges" id="mapBadges"></div>
+    </div>
+  </div>
+</div>
+
+<div class="qr-float" id="qrFloat">
+  <div class="qr-card">
+    <div class="qr-thumb-wrap" id="qrThumb"></div>
+    <div class="qr-text">
+      <strong id="qrName">통합관광주민증</strong>
+      <span>가맹점에서 나의 QR 코드를 보여주세요</span>
+    </div>
+    <button class="qr-close" onclick="document.getElementById('qrFloat').classList.add('hidden')">✕</button>
+  </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bnav-a" data-nav="main" onclick="location.href='main.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+    메인
+  </button>
+  <button class="bnav-a" onclick="toast('검색 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+    검색
+  </button>
+  <button class="bnav-a" onclick="toast('이벤트 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
+    이벤트
+  </button>
+  <button class="bnav-a" onclick="toast('디민증 발급 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
+    디민증발급
+  </button>
+  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+    마이
+  </button>
+</nav>
+
+<div class="drawer-overlay" id="dOverlay" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head"><span>메뉴</span><button class="drawer-close" onclick="closeDrawer()">✕</button></div>
+  <nav class="drawer-nav">
+    <div onclick="location.href='main.html'">🏠 메인홈</div>
+    <div onclick="toast('서비스 소개 페이지');closeDrawer()">📋 서비스 소개</div>
+    <div onclick="toast('이벤트 페이지');closeDrawer()">🎁 이벤트</div>
+    <div onclick="location.href='my.html'">🪪 나의 관광주민증</div>
+    <div onclick="toast('FAQ 페이지');closeDrawer()">❓ 자주 묻는 질문</div>
+    <div onclick="toast('공지사항 페이지');closeDrawer()">📢 공지사항</div>
+  </nav>
+  <div class="drawer-foot">
+    <button class="btn-dk" onclick="logoutUser()">로그아웃</button>
+    <button class="btn-lt" onclick="closeDrawer()">닫기</button>
+  </div>
+</aside>
+
+<div class="toast" id="toastEl"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/common.js"></script>
+<script>
+const user=requireUser();
+if(user){
+  setActiveBottomNav('main');
+  document.getElementById('qrName').textContent=user.name+'님의 통합관광주민증';
+
+  const badges=document.getElementById('mapBadges');
+  REGIONS.forEach(r=>{
+    const d=document.createElement('div');
+    d.className='r-badge';
+    d.style.cssText=`left:${r.l}%;top:${r.t}%;background:${r.c}`;
+    d.textContent=r.n;
+    d.onclick=()=>toast(r.n+' 관광주민증 발급 화면');
+    badges.appendChild(d);
+  });
+
+  const t=document.getElementById('qrThumb');
+  try{new QRCode(t,{text:'DGTOUR:'+user.id+':'+user.name+':2025:VALID',width:48,height:48,colorDark:'#000',colorLight:'#fff'});}catch(e){}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>디지털관광주민증 - 마이페이지</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="assets/common.css">
+</head>
+<body>
+
+<nav class="gnb">
+  <div class="gnb-left">
+    <div class="logo-wrap"><svg width="20" height="13" viewBox="0 0 20 13" fill="none"><circle cx="5" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><circle cx="15" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><path d="M1 6.5V4.5M19 6.5V4.5M9 6.5H11" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+    <span class="gnb-title">디지털관광주민증</span>
+  </div>
+  <button class="gnb-menu" onclick="openDrawer()" aria-label="메뉴"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="my-content">
+  <div class="profile-wrap">
+    <div class="profile-row">
+      <div class="profile-user">
+        <div class="avatar-lg" id="avatarEl">👤</div>
+        <div class="user-name" id="userNameEl">-</div>
+      </div>
+      <button class="settings-btn" onclick="toast('설정 페이지')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+    </div>
+    <div class="grade-card" onclick="location.href='exp.html'">
+      <div class="grade-left">
+        <div><div class="grade-label">등급</div><div class="grade-name" id="gradeName">-</div></div>
+        <div class="grade-sep"></div>
+        <div><div class="exp-label">경험치</div><div><span class="exp-value" id="expValue">-</span> <span class="exp-unit">EXP</span></div></div>
+      </div>
+      <div class="grade-arrow">›</div>
+    </div>
+  </div>
+
+  <div class="qr-section">
+    <div class="qr-section-title">나의 통합 관광주민증</div>
+    <div class="qr-box"><div class="qr-render" id="qrCanvas"></div></div>
+    <div class="qr-user-info"><strong id="qrUserName">-</strong>QR코드를 가맹점에 제시하세요</div>
+  </div>
+
+  <div class="my-cards-section">
+    <div class="section-title">내 관광주민증</div>
+    <div class="card-list" id="cardList"></div>
+  </div>
+
+  <div class="quickmenu-section">
+    <div class="section-title">퀵메뉴</div>
+    <div class="qm-grid">
+      <button class="qm-item" onclick="toast('활동이력 페이지')"><div class="qm-icon" style="background:#ede9fe">✅</div><span class="qm-text">활동이력</span></button>
+      <button class="qm-item" onclick="toast('혜택쿠폰 페이지')"><div class="qm-icon" style="background:#dbeafe">🎟️</div><span class="qm-text">혜택쿠폰</span></button>
+      <button class="qm-item" onclick="location.href='exp.html'"><div class="qm-icon" style="background:#ffedd5">👑</div><span class="qm-text">나의 경험치</span></button>
+      <button class="qm-item" onclick="toast('즐겨찾기 페이지')"><div class="qm-icon" style="background:#fee2e2">🔖</div><span class="qm-text">즐겨찾기</span></button>
+      <button class="qm-item" onclick="toast('활동 리포트 페이지')"><div class="qm-icon" style="background:#cffafe">📊</div><span class="qm-text">활동 리포트</span></button>
+      <button class="qm-item" onclick="toast('주민증 보관함 페이지')"><div class="qm-icon" style="background:#dcfce7">🪪</div><span class="qm-text">주민증 보관함</span></button>
+    </div>
+  </div>
+
+  <div class="footer-section">
+    <div class="footer-links">
+      <span class="bold">개인정보처리방침</span><span>이용약관</span><span>위치기반서비스 이용약관</span>
+      <span>저작권 보호정책</span><span>고객서비스헌장</span><span>전자우편 무단수집거부</span><span>찾아오시는 길</span>
+    </div>
+    <div class="footer-info">
+      우) 26464 강원특별자치도 원주시 세계로 10<br>
+      고객센터: 02-6271-2016 (한국관광공사 대표번호: 033-738-3000)<br>
+      사업자등록번호: 202-81-50707
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bnav-a" data-nav="main" onclick="location.href='main.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+    메인
+  </button>
+  <button class="bnav-a" onclick="toast('검색 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+    검색
+  </button>
+  <button class="bnav-a" onclick="toast('이벤트 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
+    이벤트
+  </button>
+  <button class="bnav-a" onclick="toast('디민증 발급 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
+    디민증발급
+  </button>
+  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+    마이
+  </button>
+</nav>
+
+<div class="drawer-overlay" id="dOverlay" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head"><span>메뉴</span><button class="drawer-close" onclick="closeDrawer()">✕</button></div>
+  <nav class="drawer-nav">
+    <div onclick="location.href='main.html'">🏠 메인홈</div>
+    <div onclick="toast('서비스 소개 페이지');closeDrawer()">📋 서비스 소개</div>
+    <div onclick="toast('이벤트 페이지');closeDrawer()">🎁 이벤트</div>
+    <div onclick="location.href='my.html'">🪪 나의 관광주민증</div>
+    <div onclick="toast('FAQ 페이지');closeDrawer()">❓ 자주 묻는 질문</div>
+    <div onclick="toast('공지사항 페이지');closeDrawer()">📢 공지사항</div>
+  </nav>
+  <div class="drawer-foot">
+    <button class="btn-dk" onclick="logoutUser()">로그아웃</button>
+    <button class="btn-lt" onclick="closeDrawer()">닫기</button>
+  </div>
+</aside>
+
+<div class="toast" id="toastEl"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/common.js"></script>
+<script>
+const user=requireUser();
+if(user){
+  setActiveBottomNav('my');
+  document.getElementById('userNameEl').textContent=user.name+'님';
+  document.getElementById('gradeName').textContent=user.levelIcon+' '+user.level;
+  document.getElementById('expValue').textContent=user.exp.toLocaleString();
+  document.getElementById('qrUserName').textContent=user.name+'님';
+  const avEl=document.getElementById('avatarEl');
+  avEl.textContent=user.emojiAv;
+  avEl.style.background=user.avBg;
+
+  const q=document.getElementById('qrCanvas');
+  try{new QRCode(q,{text:'DGTOUR:'+user.id+':'+user.name+':2025:VALID',width:180,height:180,colorDark:'#000',colorLight:'#fff'});}catch(e){}
+
+  const cl=document.getElementById('cardList');
+  (user.cards||[]).forEach(c=>{
+    const el=document.createElement('div');
+    el.className='region-card-item';
+    el.innerHTML=`
+      <div class="rci-icon">${CARD_ICONS[c]||'📍'}</div>
+      <div class="rci-info"><div class="rci-name">${c}</div><div class="rci-status">디지털 주민증 발급 완료</div></div>
+      <div class="rci-badge">사용가능</div>`;
+    el.onclick=()=>toast(c+' QR 코드 화면');
+    cl.appendChild(el);
+  });
+}
+</script>
+</body>
+</html>
