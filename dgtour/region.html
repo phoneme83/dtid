@@ -152,7 +152,8 @@ if(user){
   setActiveBottomNav('main');
 
   const params=new URLSearchParams(location.search);
-  const name=params.get('r')||'';
+  const rawName=params.get('r')||'';
+  const name=REGIONS.some(r=>r.n===rawName)?rawName:'';
   const sido=REGION_SIDO[name]||'';
   const gunLabel=name?regionGunLabel(name):'';
   document.getElementById('rgnTitle').innerHTML=name?`<em>${sido} ${gunLabel}</em> 지역방문 TIP!`:'지역방문 TIP!';
