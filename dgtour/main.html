@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>디지털관광주민증 - 메인</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="stylesheet" href="assets/common.css">
 </head>
 <body>
@@ -84,7 +83,7 @@
 
 <div class="qr-float" id="qrFloat">
   <div class="qr-card">
-    <div class="qr-thumb-wrap" id="qrThumb"></div>
+    <div class="qr-thumb-wrap" id="qrThumb"><img src="https://api.qrserver.com/v1/create-qr-code/?size=96x96&data=https%3A%2F%2Fphoneme83.github.io%2Fdtid%2F" width="48" height="48" alt="디지털 관광주민증 홈페이지 QR 코드"></div>
     <div class="qr-text">
       <strong id="qrName">통합관광주민증</strong>
       <span>가맹점에서 나의 QR 코드를 보여주세요</span>
@@ -156,9 +155,6 @@ if(user){
     b.onclick=()=>location.href='region.html?r='+encodeURIComponent(r.n);
     badges.appendChild(b);
   });
-
-  const t=document.getElementById('qrThumb');
-  try{new QRCode(t,{text:'DGTOUR:'+user.id+':'+user.name+':2025:VALID',width:48,height:48,colorDark:'#000',colorLight:'#fff'});}catch(e){}
 
   renderTop10('주간 TOP10');
   renderFaq();
