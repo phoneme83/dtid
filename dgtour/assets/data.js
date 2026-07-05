@@ -10,7 +10,24 @@ const ACCOUNTS=[
   {id:'user3',name:'박성준',emojiAv:'🧭',avBg:'#fff7ed',
    level:'여행 길잡이',levelIcon:'🧭',pillBg:'#fff7ed',pillColor:'#c2410c',
    exp:5200,nextExp:10000,barPct:52,barColor:'linear-gradient(90deg,#fb923c,#dc2626)',
-   cards:['강원 정선군','전남 완도군','경남 합천군','충남 태안군','충북 괴산군']}
+   cards:['강원 정선군','전남 완도군','경남 합천군','충남 태안군','충북 괴산군']},
+  {id:'user4',name:'최유리',emojiAv:'🌷',avBg:'#f0f9ff',
+   level:'여행 새싹',levelIcon:'🏝️',pillBg:'#f0f9ff',pillColor:'#0369a1',
+   exp:200,nextExp:1000,barPct:20,barColor:'linear-gradient(90deg,#38bdf8,#0ea5e9)',
+   cards:['전남 신안군']},
+  {id:'user5',name:'정하늘',emojiAv:'🦅',avBg:'#fefce8',
+   level:'여행 고수',levelIcon:'🌍',pillBg:'#fefce8',pillColor:'#a16207',
+   exp:15000,nextExp:15000,barPct:100,barColor:'linear-gradient(90deg,#facc15,#ea580c)',
+   cards:['강원 정선군','전남 신안군','경남 합천군','전남 완도군']}
+];
+
+/* SNS 로그인 버튼 ↔ 테스트 계정 매핑 (실제 인증 없이 지정된 목업 계정으로 로그인) */
+const SNS_LOGIN=[
+  {key:'naver',label:'네이버',aria:'네이버로 로그인',bg:'#03c75a',fg:'#fff',icon:'N',userId:'user1'},
+  {key:'kakao',label:'카카오',aria:'카카오로 로그인',bg:'#fee500',fg:'#3c1e1e',icon:'💬',userId:'user2'},
+  {key:'facebook',label:'페이스북',aria:'페이스북으로 로그인',bg:'#1877f2',fg:'#fff',icon:'f',userId:'user3'},
+  {key:'google',label:'구글',aria:'구글로 로그인',bg:'#fff',fg:'#111',border:'#ddd',icon:'G',userId:'user4'},
+  {key:'apple',label:'애플',aria:'애플로 로그인',bg:'#000',fg:'#fff',icon:'🍎',userId:'user5'}
 ];
 
 const LEVELS=[
