@@ -4,7 +4,7 @@ button{font-family:inherit;cursor:pointer}
 
 /* ═══ GNB ═══ */
 .gnb{position:sticky;top:0;height:52px;background:#1a1a1a;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
-.gnb-left{display:flex;align-items:center;gap:8px}
+.gnb-left{display:flex;align-items:center;gap:8px;cursor:pointer}
 .logo-wrap{width:32px;height:32px;background:#333;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .gnb-title{color:#fff;font-size:14px;font-weight:700;letter-spacing:-0.3px}
 .gnb-menu{background:transparent;border:none;display:flex;flex-direction:column;gap:4px;padding:4px}
