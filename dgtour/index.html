@@ -51,6 +51,8 @@
 <script src="assets/data.js"></script>
 <script src="assets/common.js"></script>
 <script>
+localStorage.removeItem(USER_STORAGE_KEY);
+
 document.getElementById('snsRow').innerHTML=SNS_LOGIN.map(s=>`
   <button type="button" class="sns-btn" style="background:${s.bg};color:${s.fg}${s.border?`;border:1px solid ${s.border}`:''}" onclick="snsLogin('${s.userId}')" aria-label="${s.aria}">${s.icon}</button>
 `).join('');
