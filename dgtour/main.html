@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>디지털관광주민증 - 메인</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/common.css?v=20260707d">
+<link rel="stylesheet" href="assets/common.css?v=20260707e">
 </head>
 <body>
 
@@ -144,10 +144,38 @@
 
 <div class="toast" id="toastEl"></div>
 
-<script src="assets/data.js?v=20260707d"></script>
-<script src="assets/common.js?v=20260707d"></script>
+<div class="pop-event-overlay" id="popEventOverlay" onclick="if(event.target===this)closePopEvent()">
+  <div class="pop-event" role="dialog">
+    <div class="pop-event-frame">
+      <div class="pop-event-track" id="popEventTrack">
+        <div class="pop-event-slide a" onclick="toast('공지사항 상세')">
+          <span class="tag">NEW OPEN</span>
+          <strong>전국 52개 지역으로<br>확대되는 여행 특권</strong>
+          <p>디지털 관광주민증 신규 참여지역 8곳 오픈!<br>보은 · 순창 · 고흥 · 담양 · 완도 · 울진 · 산청 · 함양</p>
+        </div>
+        <div class="pop-event-slide b" onclick="location.href='tour50.html'">
+          <span class="tag">지역사랑 휴가지원</span>
+          <strong>대한민국 반값여행<br>OPEN!</strong>
+          <p>여행경비 50% 환급, 1인 최대 10만원<br>지금 바로 신청하세요</p>
+        </div>
+      </div>
+      <button class="pop-event-nav prev" onclick="popEventMove(-1)" aria-label="이전">‹</button>
+      <button class="pop-event-nav next" onclick="popEventMove(1)" aria-label="다음">›</button>
+      <div class="pop-event-dots" id="popEventDots"></div>
+    </div>
+    <div class="pop-event-btns">
+      <button onclick="closePopEventToday()">오늘은 그만보기</button>
+      <button onclick="closePopEvent()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/data.js?v=20260707e"></script>
+<script src="assets/common.js?v=20260707e"></script>
 <script>
 const user=requireUser();
+const POP_EVENT_COUNT=2;
+let popEventIdx=0;
 if(user){
   setActiveBottomNav('main');
   document.getElementById('qrName').textContent=user.name+'님의 통합관광주민증';
@@ -166,6 +194,33 @@ if(user){
   renderFaq();
   renderInsta();
   renderMainEvents();
+  openPopEventIfNeeded();
+}
+
+/* ── 진입 이벤트 팝업(popEvent 재현) — '오늘은 그만보기'는 당일에 한해 숨김 ── */
+function todayStr(){const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
+function openPopEventIfNeeded(){
+  if(localStorage.getItem('popEventDismissed')===todayStr())return;
+  popEventRender();
+  document.getElementById('popEventOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function popEventRender(){
+  document.getElementById('popEventTrack').style.transform=`translateX(-${popEventIdx*100}%)`;
+  document.getElementById('popEventDots').innerHTML=Array.from({length:POP_EVENT_COUNT},(_,i)=>
+    `<span class="${i===popEventIdx?'on':''}"></span>`).join('');
+}
+function popEventMove(d){
+  popEventIdx=(popEventIdx+d+POP_EVENT_COUNT)%POP_EVENT_COUNT;
+  popEventRender();
+}
+function closePopEvent(){
+  document.getElementById('popEventOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function closePopEventToday(){
+  localStorage.setItem('popEventDismissed',todayStr());
+  closePopEvent();
 }
 
 function renderTop10(tab){

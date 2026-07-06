@@ -694,3 +694,48 @@ button{font-family:inherit;cursor:pointer}
 .qr-btns{display:flex;gap:8px;justify-content:center;margin-top:14px}
 .qr-btn{flex:1;max-width:170px;padding:11px 0;border:1.5px solid #1a1a1a;border-radius:10px;background:#fff;color:#1a1a1a;font-size:13px;font-weight:700;cursor:pointer}
 .qr-btn.dark{background:#1a1a1a;color:#fff}
+
+/* ── 여행 노하우 작성 모달(popKnowhow 재현) ── */
+.knowhow-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;display:none;align-items:center;justify-content:center;padding:24px 16px}
+.knowhow-overlay.open{display:flex}
+.knowhow-pop{width:100%;max-width:360px;background:#fff;border:1px solid #000;border-radius:16px;padding:22px 18px;position:relative}
+.knowhow-pop h3{font-size:15.5px;font-weight:700;color:#111;margin-bottom:14px;padding-right:28px}
+.knowhow-close{position:absolute;top:16px;right:14px;width:28px;height:28px;border:none;background:none;font-size:17px;font-weight:700;color:#111;cursor:pointer}
+.knowhow-txtbox{position:relative;margin-bottom:16px}
+.knowhow-txtbox textarea{width:100%;box-sizing:border-box;height:110px;padding:12px 12px 26px;border:1px solid #ddd;border-radius:10px;font-size:13.5px;font-family:inherit;resize:none;color:#111}
+.knowhow-txtbox .cnt{position:absolute;right:12px;bottom:10px;font-size:11.5px;color:#999}
+.knowhow-save{display:block;width:100%;padding:13px 0;border:none;border-radius:10px;background:#1a1a1a;color:#fff;font-size:14.5px;font-weight:700;cursor:pointer}
+
+/* ── 반값여행 상단 배너 캐러셀 ── */
+.t50-banner-wrap{max-width:var(--content-max);margin:0 auto;position:relative;overflow:hidden}
+.t50-banner-track{display:flex;transition:transform .4s ease}
+.t50-banner-track .t50-banner{flex:0 0 100%;margin:0;cursor:pointer}
+.t50-banner.slide-b{background:linear-gradient(120deg,#0ea5e9,#2563eb)}
+.t50-banner.slide-b .k1{color:#e0f2fe}
+.t50-banner.slide-b .k2,.t50-banner.slide-b .k2 em{color:#fff}
+.t50-banner-ctrl{display:flex;align-items:center;justify-content:flex-end;gap:4px;max-width:var(--content-max);margin:0 auto;padding:6px 16px 0}
+.t50-banner-ctrl button{border:1px solid #ddd;background:#fff;border-radius:6px;font-size:11px;padding:4px 8px;color:#555;cursor:pointer;line-height:1}
+.t50-banner-ctrl .dots{display:flex;gap:4px;margin-right:auto}
+.t50-banner-ctrl .dots span{width:6px;height:6px;border-radius:50%;background:#ddd}
+.t50-banner-ctrl .dots span.on{background:#1a1a1a}
+
+/* ── 메인 진입 이벤트 팝업(popEvent 재현) ── */
+.pop-event-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:950;display:none;align-items:center;justify-content:center;padding:24px 16px}
+.pop-event-overlay.open{display:flex}
+.pop-event{width:100%;max-width:340px}
+.pop-event-frame{position:relative;overflow:hidden;border-radius:14px}
+.pop-event-track{display:flex;transition:transform .4s ease}
+.pop-event-slide{flex:0 0 100%;aspect-ratio:4/5;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:26px 22px;box-sizing:border-box;color:#fff;cursor:pointer}
+.pop-event-slide.a{background:linear-gradient(150deg,#7c3aed,#2563eb)}
+.pop-event-slide.b{background:linear-gradient(150deg,#f59e0b,#e2543d)}
+.pop-event-slide .tag{font-size:12px;font-weight:700;opacity:.9}
+.pop-event-slide strong{font-size:21px;font-weight:700;line-height:1.4}
+.pop-event-slide p{font-size:13px;opacity:.92;line-height:1.5}
+.pop-event-nav{position:absolute;top:50%;transform:translateY(-50%);width:30px;height:30px;border:none;border-radius:50%;background:rgba(0,0,0,.28);color:#fff;font-size:14px;cursor:pointer}
+.pop-event-nav.prev{left:8px}
+.pop-event-nav.next{right:8px}
+.pop-event-dots{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:5px}
+.pop-event-dots span{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.45)}
+.pop-event-dots span.on{background:#fff}
+.pop-event-btns{display:flex;gap:1px;margin-top:1px;border-radius:0 0 14px 14px;overflow:hidden}
+.pop-event-btns button{flex:1;padding:13px 0;border:none;background:#1a1a1a;color:#fff;font-size:13px;font-weight:500;cursor:pointer}

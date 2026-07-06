@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>디지털관광주민증 - 지역방문 TIP</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/common.css?v=20260707d">
+<link rel="stylesheet" href="assets/common.css?v=20260707e">
 </head>
 <body>
 
@@ -70,7 +70,7 @@
       <h3 id="rgnReviewTitle">여행 노하우!</h3>
       <p>#주민증 마을회관 #랜선 주민 여행을 준비하는 분들을 위해 방문 시 참고할 정보를 제보해주세요</p>
     </div>
-    <button class="rgn-review-join" onclick="toast('리뷰 작성 화면')">나도 참여 ›</button>
+    <button class="rgn-review-join" onclick="openKnowhowPop()">나도 참여 ›</button>
     <div class="rgn-review-list" id="rgnReviewList"></div>
   </div>
 
@@ -138,8 +138,20 @@
 
 <div class="toast" id="toastEl"></div>
 
-<script src="assets/data.js?v=20260707d"></script>
-<script src="assets/common.js?v=20260707d"></script>
+<div class="knowhow-overlay" id="knowhowOverlay" onclick="if(event.target===this)closeKnowhowPop()">
+  <div class="knowhow-pop" role="dialog">
+    <h3 id="knowhowTitle">방문 여행 노하우 작성하기</h3>
+    <button class="knowhow-close" onclick="closeKnowhowPop()" aria-label="팝업 닫기">✕</button>
+    <div class="knowhow-txtbox">
+      <textarea id="knowhowText" maxlength="100" placeholder="여러분의 여행 노하우를 작성해주세요!" oninput="updateKnowhowCnt()"></textarea>
+      <span class="cnt"><span id="knowhowCnt">0</span>/100</span>
+    </div>
+    <button class="knowhow-save" onclick="saveKnowhow()">참여완료</button>
+  </div>
+</div>
+
+<script src="assets/data.js?v=20260707e"></script>
+<script src="assets/common.js?v=20260707e"></script>
 <script>
 const CAT_STYLE={
   '식음료':{color:'#7c3aed',bg:'#f5f3ff'},
@@ -216,6 +228,38 @@ function renderOtherList(sido,btn){
     `<span onclick="location.href='region.html?r=${encodeURIComponent(n)}'">${regionGunLabel(n)}</span>`
   ).join('');
 }
+
+function openKnowhowPop(){
+  const t=document.getElementById('rgnReviewTitle').textContent.replace(' 여행 노하우!','');
+  document.getElementById('knowhowTitle').textContent=(t==='여행 노하우!'?'':t+' ')+'방문 여행 노하우 작성하기';
+  document.getElementById('knowhowText').value='';
+  document.getElementById('knowhowCnt').textContent='0';
+  document.getElementById('knowhowOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeKnowhowPop(){
+  document.getElementById('knowhowOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function updateKnowhowCnt(){
+  document.getElementById('knowhowCnt').textContent=document.getElementById('knowhowText').value.length;
+}
+function saveKnowhow(){
+  const text=document.getElementById('knowhowText').value.trim();
+  if(!text){toast('노하우 내용을 입력해주세요');return;}
+  const item=document.createElement('div');
+  item.className='rgn-review-item';
+  const p=document.createElement('p');
+  p.textContent=text;
+  const side=document.createElement('div');
+  side.className='rgn-review-side';
+  side.innerHTML=`<div class="nm">${user.name}님</div><div class="lk">♡ 0</div>`;
+  item.append(p,side);
+  document.getElementById('rgnReviewList').prepend(item);
+  closeKnowhowPop();
+  toast('여행 노하우가 등록되었습니다');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeKnowhowPop();});
 
 function setVenueFilter(cat){
   currentFilter=cat;
