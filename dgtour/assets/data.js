@@ -256,8 +256,19 @@ const FAV_CATS=[
   {code:'EXPRN',label:'체험'},{code:'SHPN',label:'쇼핑'},{code:'STAYNG',label:'숙박'},{code:'ETC',label:'기타'}
 ];
 
+/* 반값여행 모달 공용 기본값 — 지역별 실데이터가 없는 경우(횡성 제외) 이 값으로 대체됨 */
+const TOUR50_DEFAULT_CURRENCY='환급금은 지역사랑상품권으로 지급됩니다';
+const TOUR50_DEFAULT_NOTES=[
+  '대표자 개인 신용·체크카드 1개만 결제 인정',
+  '지정관광지 1개소 이상 방문 및 인증사진 필수',
+  '숙박 이용 시 숙박확인서 제출 필수',
+  '정산실적 인정 제외 업체 확인 필요(연 30억원 초과 매출업소, 금은방, 유흥시설, 주유소, 카센터 등)'
+];
+const TOUR50_DEFAULT_PHONE='02-6271-2016';
+
 /* 대한민국 반값여행(지역사랑 휴가지원) 참여 16개 지역 — 실제 사이트(tour50.do) 소스에서 그대로 추출한
-   진행현황·회차별 일정 + 지역별 전용 사이트 URL(실제 접속 검증 완료). status: open=신청접수중, prep=준비중, closed=마감 */
+   진행현황·회차별 일정 + 지역별 전용 사이트 URL(실제 접속 검증 완료). status: open=신청접수중, prep=준비중, closed=마감
+   currency/notes/phone은 횡성만 실사이트 캡처 원문이며, 그 외 지역은 공통 기본값(TOUR50_DEFAULT_*)을 사용함 */
 const TOUR50_REGIONS=[
   {name:'영광',sido:'전라남도',applyUrl:'https://yeonggwang.go.kr/travel',status:'open',star:true,l:12.0,t:68.0,
    rounds:[{n:'3차',period:'6.01~6.30',deadline:'5.26 마감'},{n:'4차',period:'7.01~7.31',deadline:'6.23 10시~'}]},
@@ -274,7 +285,11 @@ const TOUR50_REGIONS=[
   {name:'하동',sido:'경상남도',applyUrl:'https://hadongtrip.kr/index.php',status:'closed',star:true,l:45.5,t:73.0,
    rounds:[{n:'3차',period:'6.01~6.30',deadline:'5.26 마감'},{n:'4차',period:'6.10~6.30',deadline:'6.09 마감'}]},
   {name:'횡성',sido:'강원특별자치도',applyUrl:'https://hs.halftrip.kr/',status:'closed',star:false,l:50.5,t:22.0,
-   rounds:[{n:'1차',period:'5.21~7.30',deadline:'5.20 마감'},{n:'2차',period:'미정',deadline:'미정'}]},
+   rounds:[{n:'1차',period:'5.21~7.30',deadline:'5.20 마감'},{n:'2차',period:'미정',deadline:'미정'}],
+   applyPeriod:'2026.05.20-2026.08.31',
+   currency:'환급금은 제로페이로 지급됨',
+   notes:['대표자 개인 신용,체크카드 1개만 결제 인정','여행경비 총 소비금액 최소 10만원 이상 결제(개인, 단체 동일)','지정관광지 1개소 이상 방문 및 인증사진 필수','숙박 이용 시 숙박확인서 제출 필수','정산실적 인정 제외 업체 확인 필요(연 30억원 초과 매출업소, 금은방, 유흥시설, 주유소, 카센터 등)'],
+   phone:'033-340-5975'},
   {name:'고흥',sido:'전라남도',applyUrl:'https://tour.goheung.go.kr/front/M0000361/content/view.do',status:'closed',star:true,l:33.0,t:85.5,
    rounds:[{n:'2차',period:'5.12~6.30',deadline:'5.18 마감'},{n:'3차',period:'7.01~8.31',deadline:'6.16 마감'}]},
   {name:'영암',sido:'전라남도',applyUrl:'https://yeongam.go.kr/oneplusone',status:'closed',star:false,l:16.0,t:74.5,
@@ -297,6 +312,13 @@ const TOUR50_STATUS_LABEL={open:'신청접수중',prep:'준비중',closed:'마�
    choiceSigungu() JS 팝업으로 처리되어 지역별 딥링크가 존재하지 않음(확인됨).
    그래서 모든 지역이 동일하게 대한민국 구석구석의 실제 canonical 지역 메인 주소로 연결됨. */
 const AREA_LIST_URL='https://korean.visitkorea.or.kr/main/area.do';
+TOUR50_REGIONS.forEach(r=>{
+  if(!r.currency)r.currency=TOUR50_DEFAULT_CURRENCY;
+  if(!r.notes)r.notes=TOUR50_DEFAULT_NOTES;
+  if(!r.phone)r.phone=TOUR50_DEFAULT_PHONE;
+  if(!r.homepage)r.homepage=r.applyUrl;
+  if(!r.visitUrl)r.visitUrl=AREA_LIST_URL;
+});
 
 function getCurLevelIdx(exp){
   for(let i=LEVELS.length-1;i>=0;i--){if(exp>=LEVELS[i].minExp)return i;}

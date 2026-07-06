@@ -219,6 +219,36 @@ button{font-family:inherit;cursor:pointer}
 
 .t50-note{max-width:var(--content-max);margin:0 auto;padding:0 16px 8px;font-size:10.5px;color:#bbb;line-height:1.6}
 
+/* ═══ 반값여행 지역 상세 모달 ═══ */
+.t50-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;display:none;align-items:center;justify-content:center;padding:24px 16px}
+.t50-modal-overlay.open{display:flex}
+.t50-modal{width:100%;max-width:440px;max-height:90vh;overflow-y:auto;background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.t50-modal-hero{position:relative;height:180px;background:linear-gradient(135deg,#60a5fa,#1d4ed8);display:flex;align-items:center;justify-content:center;border-radius:16px 16px 0 0;overflow:hidden}
+.t50-modal-hero img{width:100%;height:100%;object-fit:cover}
+.t50-modal-hero .ph-ic{font-size:52px;opacity:.85}
+.t50-modal-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:rgba(20,20,20,.55);color:#fff;border:none;font-size:15px;display:flex;align-items:center;justify-content:center;line-height:1}
+.t50-modal-body{padding:20px}
+.t50-modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+.t50-modal-head h3{font-size:22px;font-weight:800;color:#111}
+.t50-modal-badge{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:16px;border:1.3px solid #ddd;background:#fff;font-size:12px;font-weight:700;color:#555}
+.t50-modal-badge .ic{font-size:11px}
+.t50-modal-badge.open{border-color:#fb923c;color:#c2410c;background:#fff7ed}
+.t50-modal-badge.prep{border-color:#93c5fd;color:#1d4ed8;background:#eff6ff}
+.t50-modal-badge.closed{border-color:#ddd;color:#888;background:#f7f7f7}
+.t50-modal-row{display:flex;gap:8px;font-size:13px;color:#333;line-height:1.7;margin-bottom:14px}
+.t50-modal-row .arrow{flex-shrink:0;color:#1d4ed8;font-size:11px;margin-top:3px}
+.t50-modal-row .lbl{flex-shrink:0;font-weight:700;color:#111}
+.t50-modal-row .val{color:#444}
+.t50-modal-row .val .rd{display:block;margin-top:2px}
+.t50-modal-row .val .rd b{color:#111;font-weight:700;margin-right:4px}
+.t50-modal-row .val .sub{display:block;color:#888;font-size:12px;margin-top:1px}
+.t50-modal-row .val .note-ln{display:block;margin-bottom:3px}
+.t50-modal-row a.tel{color:#1d4ed8;font-weight:700;text-decoration:none}
+.t50-modal-actions{display:flex;flex-direction:column;gap:8px;margin-top:18px}
+.t50-modal-btn{display:block;text-align:center;padding:13px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none}
+.t50-modal-btn.primary{background:#2563eb;color:#fff}
+.t50-modal-btn.dark{background:#3a3a3a;color:#fff}
+
 /* ═══ 사이트 푸터 ═══ */
 .site-footer{max-width:var(--content-max);margin:0 auto;padding:22px 16px 100px;background:#f8f8f8;border-top:8px solid #f4f4f4}
 .site-footer .f-links{display:flex;flex-wrap:wrap;gap:5px 10px;margin-bottom:10px}

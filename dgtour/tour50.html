@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>디지털관광주민증 - 대한민국 반값여행</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/common.css?v=20260706b">
+<link rel="stylesheet" href="assets/common.css?v=20260706c">
 </head>
 <body>
 
@@ -154,8 +154,27 @@
 
 <div class="toast" id="toastEl"></div>
 
-<script src="assets/data.js?v=20260706b"></script>
-<script src="assets/common.js?v=20260706b"></script>
+<div class="t50-modal-overlay" id="t50ModalOverlay" onclick="if(event.target===this)closeT50Modal()">
+  <div class="t50-modal">
+    <div class="t50-modal-hero" id="t50ModalHero">
+      <button class="t50-modal-close" onclick="closeT50Modal()" aria-label="닫기">✕</button>
+    </div>
+    <div class="t50-modal-body">
+      <div class="t50-modal-head">
+        <h3 id="t50ModalName"></h3>
+        <span class="t50-modal-badge" id="t50ModalBadge"></span>
+      </div>
+      <div id="t50ModalInfo"></div>
+      <div class="t50-modal-actions">
+        <a class="t50-modal-btn primary" id="t50ModalHomepage" href="#" target="_blank" rel="noopener">홈페이지 바로가기</a>
+        <a class="t50-modal-btn dark" id="t50ModalVisit" href="#" target="_blank" rel="noopener"></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/data.js?v=20260706c"></script>
+<script src="assets/common.js?v=20260706c"></script>
 <script>
 const user=requireUser();
 let t50Filter='all';
@@ -171,10 +190,52 @@ if(user){
 
 function renderT50Map(){
   document.getElementById('t50MapPins').innerHTML=TOUR50_REGIONS.map(r=>`
-    <div class="t50-map-pin is-${r.status}" style="left:${r.l}%;top:${r.t}%" onclick="location.href='${r.applyUrl}'">
+    <div class="t50-map-pin is-${r.status}" style="left:${r.l}%;top:${r.t}%" onclick="openT50Modal('${r.name}')">
       <span class="ic ${r.status}">${T50_ICON[r.status]}</span>${r.name}${r.star?'<span class="star">★</span>':''}
     </div>`).join('');
 }
+
+/* 회차별 period/deadline에서 전체 신청기간 문구를 추정(정확한 전체기간은 applyPeriod로 직접 지정 가능) */
+function t50ApplyPeriod(r){
+  if(r.applyPeriod)return r.applyPeriod;
+  const known=r.rounds.filter(rd=>rd.period!=='미정');
+  if(!known.length)return '추후 공지';
+  const start=known[0].period.split(/[~-]/)[0];
+  const end=known[known.length-1].period.split(/[~-]/).pop();
+  return `2026년 ${start}~${end}`;
+}
+
+function openT50Modal(name){
+  const r=TOUR50_REGIONS.find(x=>x.name===name);
+  if(!r)return;
+  document.getElementById('t50ModalHero').innerHTML=r.image
+    ?`<img src="${r.image}" alt="${r.name}"><button class="t50-modal-close" onclick="closeT50Modal()" aria-label="닫기">✕</button>`
+    :`<span class="ph-ic">🏞️</span><button class="t50-modal-close" onclick="closeT50Modal()" aria-label="닫기">✕</button>`;
+  document.getElementById('t50ModalName').textContent=r.name;
+  const badge=document.getElementById('t50ModalBadge');
+  badge.className=`t50-modal-badge ${r.status}`;
+  badge.innerHTML=`<span class="ic">${T50_ICON[r.status]}</span>${TOUR50_STATUS_LABEL[r.status]}`;
+  document.getElementById('t50ModalInfo').innerHTML=`
+    <div class="t50-modal-row"><span class="arrow">▶</span><span class="lbl">신청기간 :</span><span class="val">
+      ${t50ApplyPeriod(r)}
+      ${r.rounds.map(rd=>`<span class="rd"><b>●</b>${rd.n} 여행기간 : ${rd.period==='미정'?'추후 공지':rd.period}${rd.deadline!=='미정'?'<span class="sub">- '+rd.deadline+'</span>':''}</span>`).join('')}
+    </span></div>
+    <div class="t50-modal-row"><span class="arrow">▶</span><span class="lbl">지역화폐 :</span><span class="val">${r.currency}</span></div>
+    <div class="t50-modal-row"><span class="arrow">▶</span><span class="lbl">특이사항 :</span><span class="val">${r.notes.map(n=>`<span class="note-ln">${n}</span>`).join('')}</span></div>
+    <div class="t50-modal-row"><span class="arrow">▶</span><span class="lbl">문의전화 :</span><span class="val"><a class="tel" href="tel:${r.phone}">${r.phone}</a></span></div>`;
+  const home=document.getElementById('t50ModalHomepage');
+  home.href=r.homepage;
+  const visit=document.getElementById('t50ModalVisit');
+  visit.href=r.visitUrl;
+  visit.textContent=`'${r.name}' 인기 여행지 모아보기`;
+  document.getElementById('t50ModalOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeT50Modal(){
+  document.getElementById('t50ModalOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeT50Modal();});
 
 function renderT50Tabs(){
   const counts={all:TOUR50_REGIONS.length,open:0,prep:0,closed:0};
@@ -190,7 +251,7 @@ function renderT50Sched(){
   const list=TOUR50_REGIONS.filter(r=>t50Filter==='all'||r.status===t50Filter);
   document.getElementById('t50Sched').innerHTML=list.map(r=>`
     <div class="t50-sched-card">
-      <strong>${r.name}</strong>
+      <strong style="cursor:pointer" onclick="openT50Modal('${r.name}')">${r.name}</strong>
       ${r.rounds.map(rd=>`<div class="t50-sched-round"><b>${rd.n}</b>${rd.period==='미정'?'미정':'여행기간 : '+rd.period}${rd.deadline!=='미정'?'<br>신청접수 : '+rd.deadline:''}</div>`).join('')}
       <a class="${r.status}" href="${r.applyUrl}" target="_blank" rel="noopener">${TOUR50_STATUS_LABEL[r.status]}</a>
     </div>`).join('');
