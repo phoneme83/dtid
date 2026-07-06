@@ -256,6 +256,31 @@ const FAV_CATS=[
   {code:'EXPRN',label:'체험'},{code:'SHPN',label:'쇼핑'},{code:'STAYNG',label:'숙박'},{code:'ETC',label:'기타'}
 ];
 
+/* 대한민국 반값여행(지역사랑 휴가지원) 참여 16개 지역 — 실제 외부 사이트로 검증된 URL
+   (신청하러 가기: 지역별 전용 반값여행 사이트, 실제 접속 확인함 / 인기여행지 모아보기: 구석구석 지역 목록) */
+const TOUR50_REGIONS=[
+  {name:'평창',sido:'강원특별자치도',applyUrl:'https://pc.halftrip.kr/',status:'closed'},
+  {name:'횡성',sido:'강원특별자치도',applyUrl:'https://hs.halftrip.kr/',status:null},
+  {name:'영월',sido:'강원특별자치도',applyUrl:'https://halftour.kr/',status:null},
+  {name:'제천',sido:'충청북도',applyUrl:'https://jctour.kr/',status:null},
+  {name:'거창',sido:'경상남도',applyUrl:'https://geochangtour.kr/',status:null},
+  {name:'고창',sido:'전북특별자치도',applyUrl:'https://gochangtrip.co.kr/',status:null},
+  {name:'합천',sido:'경상남도',applyUrl:'https://hctour.kr/',status:'closed'},
+  {name:'밀양',sido:'경상남도',applyUrl:'https://mybanhada.com/',status:null},
+  {name:'영암',sido:'전라남도',applyUrl:'https://yeongam.go.kr/oneplusone',status:null},
+  {name:'하동',sido:'경상남도',applyUrl:'https://hadongtrip.kr/index.php',status:'closed'},
+  {name:'강진',sido:'전라남도',applyUrl:'https://gangjintour.com/main/main.html',status:null},
+  {name:'남해',sido:'경상남도',applyUrl:'https://namhae.go.kr/',status:'closed'},
+  {name:'해남',sido:'전라남도',applyUrl:'https://haenam50.kr/index',status:null},
+  {name:'고흥',sido:'전라남도',applyUrl:'https://tour.goheung.go.kr/front/M0000361/content/view.do',status:'closed'},
+  {name:'완도',sido:'전라남도',applyUrl:'https://wandotrip.kr/index.php',status:'open'},
+  {name:'영광',sido:'전라남도',applyUrl:'https://yeonggwang.go.kr/travel',status:'open'}
+];
+/* 인기여행지 모아보기 — 실제 사이트는 지역 선택이 URL 파라미터가 아니라
+   choiceSigungu() JS 팝업으로 처리되어 지역별 딥링크가 존재하지 않음(확인됨).
+   그래서 모든 지역이 동일하게 대한민국 구석구석의 실제 canonical 지역 메인 주소로 연결됨. */
+const AREA_LIST_URL='https://korean.visitkorea.or.kr/main/area.do';
+
 function getCurLevelIdx(exp){
   for(let i=LEVELS.length-1;i>=0;i--){if(exp>=LEVELS[i].minExp)return i;}
   return 0;
