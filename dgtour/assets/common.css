@@ -144,22 +144,73 @@ button{font-family:inherit;cursor:pointer}
 .main-event-card span{display:block;font-size:11px;color:#999;margin-top:4px}
 
 /* ═══ 대한민국 반값여행 ═══ */
-.t50-hero{max-width:480px;margin:0 auto;padding:32px 16px;background:linear-gradient(120deg,#5b21b6 0%,#4338ca 60%,#1d4ed8 100%);color:#fff;text-align:center}
-.t50-hero h2{font-size:19px;font-weight:700;margin-bottom:6px}
-.t50-hero p{font-size:12.5px;color:rgba(255,255,255,.85);line-height:1.6}
-.t50-list{max-width:480px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:12px}
-.t50-card{background:#fff;border:1px solid #f0f0f0;border-radius:14px;padding:16px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
-.t50-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-.t50-card-head strong{font-size:14.5px;font-weight:700;color:#111}
-.t50-status{font-size:10.5px;font-weight:700;border-radius:5px;padding:3px 8px}
-.t50-status.open{background:#e8f5e9;color:#2e7d32}
-.t50-status.closed{background:#f5f5f5;color:#999}
-.t50-status.unknown{background:#eff6ff;color:#1d4ed8}
-.t50-sido{font-size:11px;color:#999;margin-bottom:12px}
-.t50-btns{display:flex;gap:8px}
-.t50-btns a{flex:1;text-align:center;padding:10px;border-radius:8px;font-size:12.5px;font-weight:700;text-decoration:none}
-.t50-btn-apply{background:#1a1a1a;color:#fff}
-.t50-btn-area{background:#f5f5f5;color:#555}
+.t50-hero{max-width:480px;margin:0 auto;padding:28px 16px 20px;text-align:center;background:#fff}
+.t50-hero .word{display:inline-flex;align-items:center;gap:8px;font-size:20px;font-weight:800;color:#111;margin-bottom:6px}
+.t50-hero .word .ic{font-size:22px}
+.t50-hero h3{font-size:13px;color:#888;font-weight:500}
+.t50-banner{max-width:480px;margin:0 auto;padding:16px;background:linear-gradient(120deg,#fff8d6 0%,#ffe9a8 100%);cursor:pointer}
+.t50-banner p.k1{font-size:13.5px;font-weight:700;color:#6b5300;margin-bottom:4px}
+.t50-banner p.k2{font-size:15px;font-weight:800;color:#1a1a1a;line-height:1.4}
+.t50-banner p.k2 em{color:#5b21b6}
+
+.t50-find{max-width:480px;margin:0 auto;padding:20px 16px;display:flex;align-items:center;justify-content:space-between;border-top:8px solid #f4f4f4}
+.t50-find h2{font-size:16px;font-weight:700;color:#111;margin-bottom:4px}
+.t50-find h3{font-size:11px;color:#999;font-weight:500}
+.t50-find button{flex-shrink:0;padding:9px 16px;border-radius:20px;background:#1a1a1a;color:#fff;border:none;font-size:12.5px;font-weight:700}
+
+.t50-legend{max-width:480px;margin:0 auto;padding:0 16px 16px}
+.t50-legend h4{font-size:12.5px;font-weight:700;color:#111;margin-bottom:10px}
+.t50-legend h4 span{font-weight:500;color:#999;font-size:11px}
+.t50-legend-row{display:flex;gap:16px}
+.t50-legend-row .li{display:flex;align-items:center;gap:5px;font-size:11.5px;color:#666}
+.t50-legend-row .ic{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.t50-legend-row .ic.prep{background:#eff6ff;color:#1d4ed8}
+.t50-legend-row .ic.open{background:#fff7ed;color:#c2410c}
+.t50-legend-row .ic.closed{background:#f0f0f0;color:#999}
+
+.t50-status-tabs{max-width:480px;margin:0 auto;display:flex;gap:8px;padding:0 16px 14px;overflow-x:auto;scrollbar-width:none}
+.t50-status-tabs::-webkit-scrollbar{display:none}
+.t50-status-tab{flex-shrink:0;padding:8px 14px;border-radius:18px;border:1.5px solid #e5e5e5;background:#fff;font-size:12px;font-weight:700;color:#888;white-space:nowrap}
+.t50-status-tab.active{background:#111;border-color:#111;color:#fff}
+
+.t50-grid{max-width:480px;margin:0 auto;padding:0 16px 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.t50-pin{background:#f8f8f8;border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer}
+.t50-pin .ic{width:26px;height:26px;border-radius:50%;margin:0 auto 5px;display:flex;align-items:center;justify-content:center;font-size:12px}
+.t50-pin .ic.prep{background:#eff6ff;color:#1d4ed8}
+.t50-pin .ic.open{background:#fff7ed;color:#c2410c}
+.t50-pin .ic.closed{background:#eaeaea;color:#999}
+.t50-pin .nm{font-size:12px;font-weight:700;color:#111}
+.t50-pin .nm .star{color:#f59e0b;font-size:9px;vertical-align:top}
+
+.t50-schedule{max-width:480px;margin:0 auto;padding:20px 0;background:linear-gradient(180deg,#fffbe8,#fff);border-top:8px solid #f4f4f4}
+.t50-schedule .head{padding:0 16px;margin-bottom:4px}
+.t50-schedule .head p.k1{font-size:13px;font-weight:700;color:#111;line-height:1.5;margin-bottom:2px}
+.t50-schedule .head p.k1 span{color:#e03131;font-weight:500;font-size:11.5px;display:block;margin-top:2px}
+.t50-schedule h3{font-size:14px;font-weight:700;color:#111;margin:14px 0 10px;padding:0 16px}
+.t50-schedule h3 span{font-weight:500;color:#999;font-size:11px}
+.t50-sched-scroll{display:flex;gap:10px;overflow-x:auto;padding:0 16px 4px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.t50-sched-scroll::-webkit-scrollbar{display:none}
+.t50-sched-card{flex-shrink:0;width:210px;scroll-snap-align:start;background:#fff;border:1px solid #f0f0f0;border-radius:12px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.t50-sched-card strong{display:block;font-size:13.5px;font-weight:700;color:#111;text-align:center;margin-bottom:10px}
+.t50-sched-round{font-size:11.5px;color:#555;line-height:1.7;margin-bottom:6px}
+.t50-sched-round b{color:#111;font-weight:700;margin-right:4px}
+.t50-sched-card a{display:block;margin-top:8px;text-align:center;padding:9px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none}
+.t50-sched-card a.open{background:#fb923c;color:#fff}
+.t50-sched-card a.prep{background:#eff6ff;color:#1d4ed8}
+.t50-sched-card a.closed{background:#f0f0f0;color:#999}
+
+.t50-promo{max-width:480px;margin:0 auto;padding:20px 16px;border-top:8px solid #f4f4f4}
+.t50-promo h2{font-size:15px;font-weight:700;color:#111;margin-bottom:12px}
+.t50-promo-grid{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none}
+.t50-promo-grid::-webkit-scrollbar{display:none}
+.t50-promo-card{flex-shrink:0;width:220px;text-decoration:none;color:inherit}
+.t50-promo-thumb{width:100%;height:130px;border-radius:12px;display:flex;flex-direction:column;justify-content:center;padding:16px;color:#fff}
+.t50-promo-thumb.a{background:linear-gradient(135deg,#38bdf8,#6366f1)}
+.t50-promo-thumb.b{background:linear-gradient(135deg,#166534,#14532d)}
+.t50-promo-thumb strong{font-size:13.5px;font-weight:800;line-height:1.4;margin-bottom:8px}
+.t50-promo-thumb .pill{display:inline-block;font-size:10px;font-weight:700;background:rgba(255,255,255,.2);border-radius:5px;padding:2px 6px;margin-bottom:4px;width:fit-content}
+.t50-promo-card p{font-size:12px;color:#333;font-weight:600;margin-top:8px;text-align:center}
+
 .t50-note{max-width:480px;margin:0 auto;padding:0 16px 8px;font-size:10.5px;color:#bbb;line-height:1.6}
 
 /* ═══ 사이트 푸터 ═══ */

@@ -25,15 +25,68 @@
 </div>
 
 <div class="t50-hero">
-  <h2>🧳 대한민국 반값여행</h2>
-  <p>지역사랑 휴가지원 사업 — 참여지역 16곳 중 한 곳을 선택해<br>여행하고 여행경비의 최대 50~75%를 지역화폐로 돌려받으세요!</p>
+  <div class="word"><span class="ic">🧳</span> 대한민국 반값여행</div>
+  <h3>지역사랑 휴가지원 사업</h3>
 </div>
 
-<div class="t50-list" id="t50List"></div>
-
-<div class="t50-note">
-  * 지역별 신청기간·환급조건은 각 지역 사이트에서 최신 공고를 확인해주세요. 일부 지역은 신청기간이 마감되었을 수 있습니다.
+<div class="t50-banner" onclick="toast('반값여행 여행상품 모아보기')">
+  <p class="k1">여행비는 반값으로, 추억은 두 배로!</p>
+  <p class="k2"><em>반값여행 기회!</em> 혜택 지역 여행상품 모아보기</p>
 </div>
+
+<div class="t50-find">
+  <div>
+    <h2>나의 반값여행지 찾기</h2>
+    <h3>※ 거주지(주민등록상 주소지) 인접 지역은 신청 제한</h3>
+  </div>
+  <button onclick="toast('거주 지역 선택 화면')">찾기</button>
+</div>
+
+<div class="t50-legend">
+  <h4>지역별 진행 현황 <span>(예산 소진 시 자동 마감)</span></h4>
+  <div class="t50-legend-row">
+    <span class="li"><span class="ic prep">●</span>준비중(예정)</span>
+    <span class="li"><span class="ic open">✎</span>신청접수중</span>
+    <span class="li"><span class="ic closed">🔒</span>마감</span>
+  </div>
+</div>
+
+<div class="t50-status-tabs" id="t50Tabs"></div>
+<div class="t50-grid" id="t50Grid"></div>
+<div class="t50-note" style="padding-top:0">★ 디지털 관광주민증 혜택 지역</div>
+
+<div class="t50-schedule">
+  <div class="head">
+    <p class="k1">방문 지역 신청 페이지에서 반드시 사전 여행 신청을 완료해 주세요.
+      <span>※ 사전에 신청하지 않을 경우 지원 불가</span>
+    </p>
+  </div>
+  <h3>지역별 신청 일정 <span>(추진상황에 따라 변경될 수 있음)</span></h3>
+  <div class="t50-sched-scroll" id="t50Sched"></div>
+</div>
+
+<div class="t50-promo">
+  <h2>반값여행 알아보기</h2>
+  <div class="t50-promo-grid">
+    <a class="t50-promo-card" href="https://korean.visitkorea.or.kr/list/all_list.do?choiceTag=%EB%B0%98%EA%B0%92%EC%97%AC%ED%96%89_%ED%98%9C%ED%83%9D%EC%A7%80_%EC%97%AC%ED%96%89%EC%BD%94%EC%8A%A4" target="_blank" rel="noopener">
+      <div class="t50-promo-thumb a">
+        <span class="pill">COUPON</span>
+        <strong>가성비 넘치는 여행의 시작!<br>전국 반값 여행지<br>추천 여행 코스</strong>
+      </div>
+      <p>전국 반값 여행지 추천 여행 코스</p>
+    </a>
+    <a class="t50-promo-card" href="javascript:void(0)" onclick="toast('신청방법 안내')">
+      <div class="t50-promo-thumb b">
+        <strong>'대한민국 반값여행'<br>이렇게 신청하세요!</strong>
+        <span class="pill">신청방법 : 4~8월 각 지자체 홈페이지 접수</span>
+        <span class="pill">신청자격 : 해당 지자체 관외거주자</span>
+      </div>
+      <p>여행 경비 절반 돌려받기!</p>
+    </a>
+  </div>
+</div>
+
+<div class="faq-wrap" id="t50Faq"></div>
 
 <div class="site-footer">
   <div class="f-links">
@@ -96,24 +149,65 @@
 <script src="assets/common.js"></script>
 <script>
 const user=requireUser();
+let t50Filter='all';
+const T50_ICON={prep:'●',open:'✎',closed:'🔒'};
+
 if(user){
   setActiveBottomNav('main');
-  const STATUS_LABEL={open:'신청접수중',closed:'마감',unknown:'신청기간 확인'};
-  document.getElementById('t50List').innerHTML=TOUR50_REGIONS.map(r=>{
-    const st=r.status||'unknown';
-    return `
-    <div class="t50-card">
-      <div class="t50-card-head">
-        <strong>${r.name}</strong>
-        <span class="t50-status ${st}">${STATUS_LABEL[st]}</span>
-      </div>
-      <div class="t50-sido">${r.sido}</div>
-      <div class="t50-btns">
-        <a class="t50-btn-apply" href="${r.applyUrl}" target="_blank" rel="noopener">${st==='closed'?'홈페이지 바로가기':'신청하러 가기'}</a>
-        <a class="t50-btn-area" href="${AREA_LIST_URL}" target="_blank" rel="noopener">'${r.name}' 인기 여행지 모아보기</a>
-      </div>
-    </div>`;
-  }).join('');
+  renderT50Tabs();
+  renderT50Grid();
+  renderT50Sched();
+  renderT50Faq();
+}
+
+function renderT50Tabs(){
+  const counts={all:TOUR50_REGIONS.length,open:0,prep:0,closed:0};
+  TOUR50_REGIONS.forEach(r=>counts[r.status]++);
+  const tabs=[['all','전체'],['open','신청접수중'],['prep','준비중'],['closed','마감']];
+  document.getElementById('t50Tabs').innerHTML=tabs.map(([k,label])=>
+    `<button class="t50-status-tab${k===t50Filter?' active':''}" onclick="setT50Filter('${k}')">${label} ${counts[k]}</button>`
+  ).join('');
+}
+function setT50Filter(k){t50Filter=k;renderT50Tabs();renderT50Grid();}
+
+function renderT50Grid(){
+  const list=TOUR50_REGIONS.filter(r=>t50Filter==='all'||r.status===t50Filter);
+  document.getElementById('t50Grid').innerHTML=list.map(r=>`
+    <div class="t50-pin" onclick="location.href='${r.applyUrl}'">
+      <div class="ic ${r.status}">${T50_ICON[r.status]}</div>
+      <div class="nm">${r.name}${r.star?'<span class="star">★</span>':''}</div>
+    </div>`).join('');
+}
+
+function renderT50Sched(){
+  document.getElementById('t50Sched').innerHTML=TOUR50_REGIONS.map(r=>`
+    <div class="t50-sched-card">
+      <strong>${r.name}</strong>
+      ${r.rounds.map(rd=>`<div class="t50-sched-round"><b>${rd.n}</b>${rd.period==='미정'?'미정':'여행기간 : '+rd.period}${rd.deadline!=='미정'?'<br>신청접수 : '+rd.deadline:''}</div>`).join('')}
+      <a class="${r.status}" href="${r.applyUrl}" target="_blank" rel="noopener">${TOUR50_STATUS_LABEL[r.status]}</a>
+    </div>`).join('');
+}
+
+const T50_FAQ=[
+  {q:'지역사랑 휴가지원 사업이란?',a:'농어촌 인구감소대응 사업으로 인구감소지역 관광객 유입을 유도하여 국내 여행 관광소비를 촉진하고, 체류형 관광을 통한 관광생활 인구 확대를 도모하고자 한국관광공사와 지자체가 공동으로 추진하는 사업입니다.'},
+  {q:'얼마까지 지원받을 수 있나요?',a:'숙박, 식사, 체험 등 여행 중 사용한 금액의 <b>50%를 환급받을 수 있으며, 1인 최대 10만원, 2인 이상은 최대 20만원</b>까지 지원됩니다.'},
+  {q:'어떻게 신청하면 되나요?',a:'여행을 가고자 하는 지역의 신청 페이지에서 기간 내 구비서류와 함께 신청하시면 됩니다. 보다 상세한 내용은 <b>각 지역별 반값여행 페이지에서 확인</b>하시길 바라며, <b>반값여행지 지역을 선택</b>하시면 <b>해당 지역의 반값여행 페이지로 이동</b>됩니다. 단, 거주지 인접지역은 불가하니 반값여행지 찾기를 통해 확인해 보세요.'},
+  {q:'지원금은 어떻게 받을 수 있나요?',a:'여행 후 증빙서류와 함께 정해진 기간 내 정산을 신청하면, <b>사용 금액의 50%를 지역화폐로 환급</b>받을 수 있습니다. 환급된 금액은 해당 지역 가맹점이나 지역 쇼핑몰에서 사용할 수 있습니다.'}
+];
+function renderT50Faq(){
+  document.getElementById('t50Faq').innerHTML=T50_FAQ.map((f,i)=>`
+    <div class="faq-item${i===0?' open':''}">
+      <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        ${f.q}<span class="icon">${i===0?'−':'+'}</span>
+      </button>
+      <div class="faq-a"><p>${f.a}</p></div>
+    </div>`).join('');
+  document.querySelectorAll('#t50Faq .faq-q').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const icon=btn.querySelector('.icon');
+      icon.textContent=btn.parentElement.classList.contains('open')?'−':'+';
+    });
+  });
 }
 </script>
 </body>
