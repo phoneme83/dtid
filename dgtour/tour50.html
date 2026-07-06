@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>디지털관광주민증 - 대한민국 반값여행</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/common.css?v=20260707d">
+<link rel="stylesheet" href="assets/common.css?v=20260707e">
 </head>
 <body>
 
@@ -35,9 +35,23 @@
   <h3>지역사랑 휴가지원 사업</h3>
 </div>
 
-<div class="t50-banner" onclick="toast('반값여행 여행상품 모아보기')">
-  <p class="k1">여행비는 반값으로, 추억은 두 배로!</p>
-  <p class="k2"><em>반값여행 기회!</em> 혜택 지역 여행상품 모아보기</p>
+<div class="t50-banner-wrap">
+  <div class="t50-banner-track" id="t50BannerTrack">
+    <div class="t50-banner" onclick="window.open('https://korean.visitkorea.or.kr/list/all_list.do?choiceTag=%EB%B0%98%EA%B0%92%EC%97%AC%ED%96%89_%ED%98%9C%ED%83%9D%EC%A7%80_%EC%97%AC%ED%96%89%EC%BD%94%EC%8A%A4','_blank','noopener')">
+      <p class="k1">여행비는 반값으로, 추억은 두 배로!</p>
+      <p class="k2"><em>반값여행 기회!</em> 혜택 지역 여행상품 모아보기</p>
+    </div>
+    <div class="t50-banner slide-b" onclick="toast('공지사항 상세')">
+      <p class="k1">지역사랑 휴가지원 사업</p>
+      <p class="k2"><em>대한민국 반값여행 OPEN!</em> 여행경비 50% 환급</p>
+    </div>
+  </div>
+</div>
+<div class="t50-banner-ctrl">
+  <div class="dots" id="t50BannerDots"></div>
+  <button onclick="t50BannerMove(-1)" aria-label="이전">‹</button>
+  <button id="t50BannerToggle" onclick="t50BannerPlayPause()" aria-label="재생/중지">⏸</button>
+  <button onclick="t50BannerMove(1)" aria-label="다음">›</button>
 </div>
 
 <div class="t50-find">
@@ -186,8 +200,8 @@
   </div>
 </div>
 
-<script src="assets/data.js?v=20260707d"></script>
-<script src="assets/common.js?v=20260707d"></script>
+<script src="assets/data.js?v=20260707e"></script>
+<script src="assets/common.js?v=20260707e"></script>
 <script>
 const user=requireUser();
 let t50Filter='all';
@@ -333,12 +347,32 @@ function renderT50Faq(){
   });
 }
 
+/* ── 상단 배너 캐러셀 ── */
+const T50_BANNER_COUNT=2;
+let t50BannerIdx=0,t50BannerTimer=null;
+function t50BannerRender(){
+  document.getElementById('t50BannerTrack').style.transform=`translateX(-${t50BannerIdx*100}%)`;
+  document.getElementById('t50BannerDots').innerHTML=Array.from({length:T50_BANNER_COUNT},(_,i)=>
+    `<span class="${i===t50BannerIdx?'on':''}"></span>`).join('');
+}
+function t50BannerMove(d){
+  t50BannerIdx=(t50BannerIdx+d+T50_BANNER_COUNT)%T50_BANNER_COUNT;
+  t50BannerRender();
+}
+function t50BannerPlayPause(){
+  const btn=document.getElementById('t50BannerToggle');
+  if(t50BannerTimer){clearInterval(t50BannerTimer);t50BannerTimer=null;btn.textContent='▶';}
+  else{t50BannerTimer=setInterval(()=>t50BannerMove(1),4000);btn.textContent='⏸';}
+}
+
 if(user){
   setActiveBottomNav('main');
   renderT50Map();
   renderT50Tabs();
   renderT50Sched();
   renderT50Faq();
+  t50BannerRender();
+  t50BannerTimer=setInterval(()=>t50BannerMove(1),4000);
 }
 </script>
 </body>
