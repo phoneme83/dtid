@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>디지털관광주민증 - 지역방문 TIP</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/common.css?v=20260707a">
+<link rel="stylesheet" href="assets/common.css?v=20260707b">
 </head>
 <body>
 
@@ -138,8 +138,8 @@
 
 <div class="toast" id="toastEl"></div>
 
-<script src="assets/data.js?v=20260707a"></script>
-<script src="assets/common.js?v=20260707a"></script>
+<script src="assets/data.js?v=20260707b"></script>
+<script src="assets/common.js?v=20260707b"></script>
 <script>
 const CAT_STYLE={
   '식음료':{color:'#7c3aed',bg:'#f5f3ff'},
@@ -178,7 +178,7 @@ if(user){
     const box=document.createElement('div');
     box.className='rgn-festival';
     box.innerHTML=`<strong>${gunLabel} 주요 축제</strong>`+detail.festivals.map(f=>
-      `<div>- ${f.name}(${f.month}) : ${f.date}</div>`
+      `<div>- ${f.name}${f.month?`(${f.month})`:''}${f.date?` : ${f.date}`:''}</div>`
     ).join('');
     wrap.appendChild(box);
   }
