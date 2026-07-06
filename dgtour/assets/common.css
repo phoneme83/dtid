@@ -624,3 +624,73 @@ button{font-family:inherit;cursor:pointer}
   .login-sheet{max-width:420px;left:50%;right:auto;transform:translateX(-50%);border-radius:20px;bottom:-100%}
   .login-sheet.open{bottom:auto;top:50%;transform:translate(-50%,-50%)}
 }
+
+/* ── 반값여행지 찾기(거주지 선택) 팝업 ── */
+.t50-finder-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;display:none;align-items:center;justify-content:center;padding:24px 16px}
+.t50-finder-overlay.open{display:flex}
+.t50-finder{width:100%;max-width:340px;background:#fff;border-radius:16px;padding:24px 20px;box-shadow:0 10px 40px rgba(0,0,0,.25);text-align:center}
+.t50-finder h4{font-size:16px;font-weight:700;color:#111;margin-bottom:16px}
+.t50-finder-selects{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.t50-finder-selects select{width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:10px;font-size:14px;color:#111;background:#fff;appearance:auto}
+.t50-finder h5{font-size:12px;color:#888;font-weight:500;line-height:1.5;margin-bottom:16px}
+.t50-finder-ok{width:100%;padding:13px 0;border:none;border-radius:10px;background:#1a1a1a;color:#fff;font-size:14.5px;font-weight:700}
+.t50-finder-ok:disabled{background:#ccc}
+.t50-find button.refresh{background:#fff;color:#1a1a1a;border:1.5px solid #1a1a1a}
+.t50-search-pop{display:none;max-width:var(--content-max);margin:0 auto;padding:10px 16px;font-size:13px;font-weight:700;color:#0b7a3e;background:#eaf7ef;border-radius:10px;text-align:center}
+.t50-search-pop.on{display:block}
+
+/* ── 쿠폰함 리스트 + 가맹점 쿠폰 팝업(evtStorePop 재현) ── */
+.coupon-list{display:flex;flex-direction:column;gap:12px;padding:4px 0 12px}
+.coupon-card{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #e5e5e5;border-radius:14px;padding:16px;cursor:pointer;position:relative;overflow:hidden}
+.coupon-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:6px;background:#70d3ee}
+.coupon-card.used{opacity:.5}
+.coupon-card .cp-ic{flex-shrink:0;width:44px;height:44px;border-radius:10px;background:#eaf7fb;display:flex;align-items:center;justify-content:center;font-size:22px}
+.coupon-card .cp-body{flex:1;min-width:0}
+.coupon-card .cp-content{font-size:14.5px;font-weight:700;color:#111;margin-bottom:3px}
+.coupon-card .cp-store{font-size:12.5px;color:#555;margin-bottom:2px}
+.coupon-card .cp-period{font-size:11.5px;color:#999}
+.coupon-card .cp-state{flex-shrink:0;font-size:11.5px;font-weight:700;color:#0b7a3e}
+.coupon-card.used .cp-state{color:#999}
+.cpn-pop-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:900;display:none;align-items:center;justify-content:center;padding:24px 16px}
+.cpn-pop-overlay.open{display:flex}
+.cpn-pop{width:100%;max-width:400px;max-height:90vh;overflow-y:auto;background:#70d3ee;border-radius:16px;padding:32px 18px 24px;position:relative;text-align:center}
+.cpn-pop h3{font-size:20px;font-weight:700;color:#111;margin-bottom:26px}
+.cpn-pop-close{position:absolute;top:14px;right:14px;width:28px;height:28px;border:none;background:none;font-size:18px;font-weight:700;color:#111;cursor:pointer}
+.cpn-info{background:#fff;border-radius:12px 12px 0 0;padding:8px 16px 20px;text-align:left}
+.cpn-info li{display:flex;align-items:center;padding:14px 0;border-bottom:1px solid #e2e2e2;list-style:none}
+.cpn-info li:last-child{border-bottom:none}
+.cpn-info span{width:70px;flex-shrink:0;font-size:12px;color:#676767;font-weight:500}
+.cpn-info p{flex:1;font-size:14px;font-weight:500;color:#111;margin:0}
+.cpn-info .note p{font-size:11px;color:#555;line-height:1.6}
+.cpn-info .btn-storeinfo{display:inline-block;margin-top:6px;padding:5px 10px;background:#004a83;border-radius:4px;font-size:12px;color:#fff;font-weight:700;text-decoration:none}
+.cpn-code{background:#004a83;border-radius:0 0 12px 12px;padding:16px 12px 18px;margin-bottom:18px}
+.cpn-code p{font-size:12px;color:#fff;margin-bottom:8px}
+.cpn-code input{width:100%;box-sizing:border-box;padding:16px 0;text-align:center;background:#fff7db;border:none;border-radius:8px;font-size:13px;color:#333}
+.cpn-check{display:block;margin:0 auto;padding:11px 34px;border:none;border-radius:5px;background:#303030;color:#fff;font-size:14px;font-weight:700;cursor:pointer}
+
+/* ── 경험치 적립방법 패널 + 적립 이력 리스트 ── */
+.exp-rules{display:none;background:#f7f8fa;border:1px solid #e5e5e5;border-radius:12px;padding:16px;margin:0 0 14px}
+.exp-rules.open{display:block}
+.exp-rules .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.exp-rules .head strong{font-size:14px;color:#111}
+.exp-rules .head button{border:none;background:none;font-size:12px;color:#888;text-decoration:underline;cursor:pointer}
+.exp-rules>p{font-size:13px;color:#333;line-height:1.7;margin-bottom:10px}
+.exp-rules ul{padding-left:16px}
+.exp-rules li{font-size:12px;color:#888;line-height:1.7;list-style:disc}
+.exp-detail-btn{display:block;width:100%;box-sizing:border-box;text-align:center;padding:13px 0;margin:14px 0 0;border:1.5px solid #1a1a1a;border-radius:10px;background:#fff;color:#1a1a1a;font-size:14px;font-weight:700;cursor:pointer}
+.exp-hist{margin-top:22px}
+.exp-hist>h3{font-size:15.5px;font-weight:700;color:#111;margin-bottom:10px}
+.exp-hist-list{display:flex;flex-direction:column}
+.exp-hist-item{display:flex;align-items:center;gap:12px;padding:14px 2px;border-bottom:1px solid #eee}
+.exp-hist-item .ic{flex-shrink:0;width:38px;height:38px;border-radius:50%;background:#f0f4ff;display:flex;align-items:center;justify-content:center;font-size:18px}
+.exp-hist-item .body{flex:1;min-width:0}
+.exp-hist-item .t1{font-size:13.5px;font-weight:700;color:#111}
+.exp-hist-item .t1 .dt{font-weight:500;color:#999;font-size:12px;margin-left:4px}
+.exp-hist-item .t2{font-size:12.5px;color:#666;margin-top:2px}
+.exp-hist-item .exp-box{flex-shrink:0;text-align:right;font-size:13.5px;font-weight:700;color:#0b57d0}
+.exp-hist-item .exp-box .expire{display:block;font-size:11px;font-weight:500;color:#d0480b;margin-top:2px}
+
+/* ── 마이페이지 QR 하단 버튼(QR 스캔/이미지 다운로드) ── */
+.qr-btns{display:flex;gap:8px;justify-content:center;margin-top:14px}
+.qr-btn{flex:1;max-width:170px;padding:11px 0;border:1.5px solid #1a1a1a;border-radius:10px;background:#fff;color:#1a1a1a;font-size:13px;font-weight:700;cursor:pointer}
+.qr-btn.dark{background:#1a1a1a;color:#fff}

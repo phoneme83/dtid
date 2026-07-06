@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>디지털관광주민증 - 혜택쿠폰</title>
+<title>디지털관광주민증 - 쿠폰함</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/common.css?v=20260706b">
+<link rel="stylesheet" href="assets/common.css?v=20260707a">
 </head>
 <body>
 
@@ -27,7 +27,7 @@
   <button class="back-btn" onclick="location.href='my.html'" aria-label="뒤로가기">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
   </button>
-  <span class="page-bar-title">혜택쿠폰</span>
+  <span class="page-bar-title">쿠폰함</span>
 </div>
 
 <div class="mypage-sub-content">
@@ -36,6 +36,7 @@
     <button class="mypage-sub-tab" data-t="add" onclick="setCouponTab('add')">추가 쿠폰</button>
     <button class="mypage-sub-tab" data-t="event" onclick="setCouponTab('event')">이벤트 쿠폰</button>
   </div>
+  <div class="coupon-list" id="couponList"></div>
   <div class="mypage-empty" id="couponEmpty">
     <span class="ico">🎟️</span>
     <p>보유하고 있는 쿠폰이 없어요</p>
@@ -88,14 +89,77 @@
 
 <div class="toast" id="toastEl"></div>
 
-<script src="assets/data.js?v=20260706b"></script>
-<script src="assets/common.js?v=20260706b"></script>
+<div class="cpn-pop-overlay" id="cpnPopOverlay" onclick="if(event.target===this)closeCouponPop()">
+  <div class="cpn-pop" role="dialog">
+    <button class="cpn-pop-close" onclick="closeCouponPop()" aria-label="닫기">✕</button>
+    <h3>가맹점 쿠폰</h3>
+    <ul class="cpn-info">
+      <li><span>쿠폰 번호</span><p id="cpnNo"></p></li>
+      <li><span>사용처</span><p id="cpnStore"></p></li>
+      <li><span>쿠폰 내용</span><p id="cpnContent"></p></li>
+      <li><span>사용기간</span><p id="cpnPeriod"></p></li>
+      <li class="note"><p>- 5만원 초과 쿠폰 사용 시, 제세공과금은 당첨자 부담입니다.<br>- 체험장, 원데이클래스 등은 사전예약 후 방문하실 것을 권장드립니다.</p></li>
+    </ul>
+    <div class="cpn-code">
+      <p>해당 쿠폰 사용시 가맹점 담당자에게 제시해주세요!</p>
+      <input type="text" id="cpnCodeInput" placeholder="직원 확인 코드를 입력해 주세요.">
+    </div>
+    <button class="cpn-check" onclick="checkCouponCode()">확인</button>
+  </div>
+</div>
+
+<script src="assets/data.js?v=20260707a"></script>
+<script src="assets/common.js?v=20260707a"></script>
 <script>
 const user=requireUser();
-if(user){setActiveBottomNav('my');}
+let couponTab='default';
+let curCoupon=null;
+if(user){setActiveBottomNav('my');renderCoupons();}
+
 function setCouponTab(t){
+  couponTab=t;
   document.querySelectorAll('.mypage-sub-tab').forEach(b=>b.classList.toggle('active',b.dataset.t===t));
+  renderCoupons();
 }
+function renderCoupons(){
+  const list=COUPON_ITEMS.filter(c=>c.div===couponTab);
+  document.getElementById('couponList').innerHTML=list.map((c,i)=>`
+    <div class="coupon-card${c.used?' used':''}" onclick="openCouponPop('${c.no}')">
+      <div class="cp-ic">🎟️</div>
+      <div class="cp-body">
+        <div class="cp-content">${c.content}</div>
+        <div class="cp-store">${c.store}</div>
+        <div class="cp-period">사용기간 : ${c.period}</div>
+      </div>
+      <span class="cp-state">${c.used?'사용완료':'사용가능'}</span>
+    </div>`).join('');
+  document.getElementById('couponEmpty').style.display=list.length?'none':'';
+}
+function openCouponPop(no){
+  curCoupon=COUPON_ITEMS.find(c=>c.no===no);
+  if(!curCoupon)return;
+  if(curCoupon.used){toast('이미 사용 완료된 쿠폰입니다');return;}
+  document.getElementById('cpnNo').textContent=curCoupon.no;
+  document.getElementById('cpnStore').innerHTML=`${curCoupon.store}<br><a href="javascript:void(0)" class="btn-storeinfo" onclick="toast('사용처 정보 페이지')">사용처 정보보기</a>`;
+  document.getElementById('cpnContent').textContent=curCoupon.content;
+  document.getElementById('cpnPeriod').textContent=curCoupon.period;
+  document.getElementById('cpnCodeInput').value='';
+  document.getElementById('cpnPopOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeCouponPop(){
+  document.getElementById('cpnPopOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function checkCouponCode(){
+  const code=document.getElementById('cpnCodeInput').value.trim();
+  if(!code){toast('직원 확인 코드를 입력해 주세요');return;}
+  curCoupon.used=true;
+  closeCouponPop();
+  toast('쿠폰이 사용 처리되었습니다');
+  renderCoupons();
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCouponPop();});
 </script>
 </body>
 </html>
