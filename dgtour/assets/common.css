@@ -1,6 +1,8 @@
+:root{--content-max:480px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans KR',sans-serif;background:#f4f4f4;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 button{font-family:inherit;cursor:pointer}
+.gnb-nav{display:none}
 
 /* ═══ GNB ═══ */
 .gnb{position:sticky;top:0;height:52px;background:#1a1a1a;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
@@ -11,7 +13,7 @@ button{font-family:inherit;cursor:pointer}
 .gnb-menu span{display:block;width:20px;height:2px;background:#fff;border-radius:1px}
 
 /* ═══ LOGIN ═══ */
-.login-content{max-width:480px;margin:0 auto;padding:28px 16px 40px}
+.login-content{max-width:var(--content-max);margin:0 auto;padding:28px 16px 40px}
 .page-eyebrow{font-size:11px;color:#888;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
 .page-title{font-size:20px;font-weight:700;color:#111;margin-bottom:4px}
 .page-sub{font-size:13px;color:#999;margin-bottom:28px;line-height:1.6}
@@ -46,7 +48,7 @@ button{font-family:inherit;cursor:pointer}
 
 .sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;opacity:0;pointer-events:none;transition:opacity .25s}
 .sheet-overlay.open{opacity:1;pointer-events:all}
-.login-sheet{position:fixed;left:0;right:0;bottom:-100%;max-width:480px;margin:0 auto;background:#fff;border-radius:20px 20px 0 0;z-index:900;padding:26px 20px 30px;transition:bottom .3s cubic-bezier(.4,0,.2,1)}
+.login-sheet{position:fixed;left:0;right:0;bottom:-100%;max-width:var(--content-max);margin:0 auto;background:#fff;border-radius:20px 20px 0 0;z-index:900;padding:26px 20px 30px;transition:bottom .3s cubic-bezier(.4,0,.2,1)}
 .login-sheet.open{bottom:0}
 .sheet-close{position:absolute;top:16px;right:16px;background:transparent;border:none;font-size:18px;color:#888;padding:4px}
 .sheet-logo{font-size:19px;font-weight:800;margin-bottom:16px;padding-right:24px}
@@ -78,17 +80,17 @@ button{font-family:inherit;cursor:pointer}
 .banner-arrow{color:rgba(255,255,255,.6);font-size:18px}
 
 /* ═══ 공지 티커 ═══ */
-.notice-bar{max-width:480px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid #eee;background:#fff}
+.notice-bar{max-width:var(--content-max);margin:0 auto;display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid #eee;background:#fff}
 .notice-bar .ico{font-size:13px;flex-shrink:0}
 .notice-bar a{flex:1;font-size:12.5px;color:#333;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .notice-bar .plus{font-size:15px;color:#bbb;flex-shrink:0}
 
 /* ═══ 지도 ═══ */
 .map-section{background:#fff;padding-bottom:150px}
-.map-heading{padding:16px 16px 0;max-width:480px;margin:0 auto}
+.map-heading{padding:16px 16px 0;max-width:var(--content-max);margin:0 auto}
 .map-heading p{font-size:15px;color:#333;line-height:1.6}
 .map-heading strong{font-weight:700;color:#111}
-.map-outer{max-width:480px;margin:0 auto;position:relative}
+.map-outer{max-width:var(--content-max);margin:0 auto;position:relative}
 .map-container{position:relative;width:100%;padding-bottom:115.1%;background:#b2e0d9;overflow:hidden;margin-top:12px}
 .map-img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:top center}
 .map-badges{position:absolute;top:0;left:0;width:100%;height:100%}
@@ -98,11 +100,11 @@ button{font-family:inherit;cursor:pointer}
 
 /* ═══ 메인: 카테고리 탭 + TOP10 카드 ═══ */
 .top10-wrap{background:#fff;padding:20px 0 8px;border-top:8px solid #f4f4f4}
-.top10-tabs{max-width:480px;margin:0 auto;display:flex;gap:6px;overflow-x:auto;padding:0 16px 14px;scrollbar-width:none}
+.top10-tabs{max-width:var(--content-max);margin:0 auto;display:flex;gap:6px;overflow-x:auto;padding:0 16px 14px;scrollbar-width:none}
 .top10-tabs::-webkit-scrollbar{display:none}
 .top10-tab{flex-shrink:0;padding:8px 14px;border-radius:18px;border:1.5px solid #e5e5e5;background:#fff;font-size:12.5px;font-weight:700;color:#888;white-space:nowrap}
 .top10-tab.active{background:#111;border-color:#111;color:#fff}
-.top10-scroll{max-width:480px;margin:0 auto;display:flex;gap:10px;overflow-x:auto;padding:0 16px 6px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.top10-scroll{max-width:var(--content-max);margin:0 auto;display:flex;gap:10px;overflow-x:auto;padding:0 16px 6px;scroll-snap-type:x mandatory;scrollbar-width:none}
 .top10-scroll::-webkit-scrollbar{display:none}
 .top10-card{flex-shrink:0;width:150px;scroll-snap-align:start;cursor:pointer}
 .top10-thumb{width:100%;height:110px;border-radius:12px;background-size:cover;background-position:center;position:relative;overflow:hidden;display:flex;align-items:flex-end;color:#fff}
@@ -111,7 +113,7 @@ button{font-family:inherit;cursor:pointer}
 .top10-discount{font-size:11px;color:#2563eb;font-weight:600;margin-top:2px}
 
 /* ═══ 메인: FAQ 아코디언 ═══ */
-.faq-wrap{max-width:480px;margin:0 auto;padding:20px 16px;border-top:8px solid #f4f4f4;background:#fff}
+.faq-wrap{max-width:var(--content-max);margin:0 auto;padding:20px 16px;border-top:8px solid #f4f4f4;background:#fff}
 .faq-item{border-bottom:1px solid #eee}
 .faq-item:first-child{border-top:1px solid #111}
 .faq-q{width:100%;background:none;border:none;display:flex;align-items:center;justify-content:space-between;padding:15px 2px;font-size:13.5px;font-weight:700;color:#111;text-align:left}
@@ -122,19 +124,19 @@ button{font-family:inherit;cursor:pointer}
 
 /* ═══ 메인: 인기 콘텐츠(인스타) ═══ */
 .insta-tour-wrap{background:#fff;padding:20px 0;border-top:8px solid #f4f4f4}
-.insta-tour-wrap h2{font-size:15px;font-weight:700;color:#111;padding:0 16px 12px;max-width:480px;margin:0 auto}
-.insta-scroll{max-width:480px;margin:0 auto;display:flex;gap:8px;overflow-x:auto;padding:0 16px 4px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.insta-tour-wrap h2{font-size:15px;font-weight:700;color:#111;padding:0 16px 12px;max-width:var(--content-max);margin:0 auto}
+.insta-scroll{max-width:var(--content-max);margin:0 auto;display:flex;gap:8px;overflow-x:auto;padding:0 16px 4px;scroll-snap-type:x mandatory;scrollbar-width:none}
 .insta-scroll::-webkit-scrollbar{display:none}
 .insta-tile{flex-shrink:0;width:110px;height:150px;border-radius:12px;scroll-snap-align:start;position:relative;display:flex;align-items:flex-end;color:#fff;text-decoration:none;overflow:hidden}
 .insta-tile span{position:relative;font-size:11px;font-weight:600;padding:8px;line-height:1.35;text-shadow:0 1px 4px rgba(0,0,0,.5)}
 .insta-tile::before{content:'';position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,0) 55%)}
 
-.insta-banner{max-width:480px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:18px 16px;border-top:8px solid #f4f4f4;background:linear-gradient(120deg,#fdf497 0%,#fd5949 45%,#d6249f 75%,#285AEB 100%);color:#fff;text-decoration:none}
+.insta-banner{max-width:var(--content-max);margin:0 auto;display:flex;align-items:center;gap:12px;padding:18px 16px;border-top:8px solid #f4f4f4;background:linear-gradient(120deg,#fdf497 0%,#fd5949 45%,#d6249f 75%,#285AEB 100%);color:#fff;text-decoration:none}
 .insta-banner p{flex:1;font-size:12.5px;line-height:1.5;font-weight:600}
 .insta-banner img{width:26px;height:26px;flex-shrink:0}
 
 /* ═══ 메인: 이벤트 카드 ═══ */
-.main-event-wrap{max-width:480px;margin:0 auto;padding:20px 16px;border-top:8px solid #f4f4f4;background:#fff}
+.main-event-wrap{max-width:var(--content-max);margin:0 auto;padding:20px 16px;border-top:8px solid #f4f4f4;background:#fff}
 .main-event-wrap h3{font-size:15px;font-weight:700;color:#111;margin-bottom:12px}
 .main-event-scroll{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
 .main-event-scroll::-webkit-scrollbar{display:none}
@@ -144,21 +146,21 @@ button{font-family:inherit;cursor:pointer}
 .main-event-card span{display:block;font-size:11px;color:#999;margin-top:4px}
 
 /* ═══ 대한민국 반값여행 ═══ */
-.t50-hero{max-width:480px;margin:0 auto;padding:28px 16px 20px;text-align:center;background:#fff}
+.t50-hero{max-width:var(--content-max);margin:0 auto;padding:28px 16px 20px;text-align:center;background:#fff}
 .t50-hero .word{display:inline-flex;align-items:center;gap:8px;font-size:20px;font-weight:800;color:#111;margin-bottom:6px}
 .t50-hero .word .ic{font-size:22px}
 .t50-hero h3{font-size:13px;color:#888;font-weight:500}
-.t50-banner{max-width:480px;margin:0 auto;padding:16px;background:linear-gradient(120deg,#fff8d6 0%,#ffe9a8 100%);cursor:pointer}
+.t50-banner{max-width:var(--content-max);margin:0 auto;padding:16px;background:linear-gradient(120deg,#fff8d6 0%,#ffe9a8 100%);cursor:pointer}
 .t50-banner p.k1{font-size:13.5px;font-weight:700;color:#6b5300;margin-bottom:4px}
 .t50-banner p.k2{font-size:15px;font-weight:800;color:#1a1a1a;line-height:1.4}
 .t50-banner p.k2 em{color:#5b21b6}
 
-.t50-find{max-width:480px;margin:0 auto;padding:20px 16px;display:flex;align-items:center;justify-content:space-between;border-top:8px solid #f4f4f4}
+.t50-find{max-width:var(--content-max);margin:0 auto;padding:20px 16px;display:flex;align-items:center;justify-content:space-between;border-top:8px solid #f4f4f4}
 .t50-find h2{font-size:16px;font-weight:700;color:#111;margin-bottom:4px}
 .t50-find h3{font-size:11px;color:#999;font-weight:500}
 .t50-find button{flex-shrink:0;padding:9px 16px;border-radius:20px;background:#1a1a1a;color:#fff;border:none;font-size:12.5px;font-weight:700}
 
-.t50-legend{max-width:480px;margin:0 auto;padding:0 16px 16px}
+.t50-legend{max-width:var(--content-max);margin:0 auto;padding:0 16px 16px}
 .t50-legend h4{font-size:12.5px;font-weight:700;color:#111;margin-bottom:10px}
 .t50-legend h4 span{font-weight:500;color:#999;font-size:11px}
 .t50-legend-row{display:flex;gap:16px}
@@ -168,21 +170,25 @@ button{font-family:inherit;cursor:pointer}
 .t50-legend-row .ic.open{background:#fff7ed;color:#c2410c}
 .t50-legend-row .ic.closed{background:#f0f0f0;color:#999}
 
-.t50-status-tabs{max-width:480px;margin:0 auto;display:flex;gap:8px;padding:0 16px 14px;overflow-x:auto;scrollbar-width:none}
+.t50-status-tabs{max-width:var(--content-max);margin:0 auto;display:flex;gap:8px;padding:0 16px 14px;overflow-x:auto;scrollbar-width:none}
 .t50-status-tabs::-webkit-scrollbar{display:none}
 .t50-status-tab{flex-shrink:0;padding:8px 14px;border-radius:18px;border:1.5px solid #e5e5e5;background:#fff;font-size:12px;font-weight:700;color:#888;white-space:nowrap}
 .t50-status-tab.active{background:#111;border-color:#111;color:#fff}
 
-.t50-grid{max-width:480px;margin:0 auto;padding:0 16px 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.t50-pin{background:#f8f8f8;border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer}
-.t50-pin .ic{width:26px;height:26px;border-radius:50%;margin:0 auto 5px;display:flex;align-items:center;justify-content:center;font-size:12px}
-.t50-pin .ic.prep{background:#eff6ff;color:#1d4ed8}
-.t50-pin .ic.open{background:#fff7ed;color:#c2410c}
-.t50-pin .ic.closed{background:#eaeaea;color:#999}
-.t50-pin .nm{font-size:12px;font-weight:700;color:#111}
-.t50-pin .nm .star{color:#f59e0b;font-size:9px;vertical-align:top}
+/* 지역별 진행 현황 지도 (실제 site의 map.png 좌표계 그대로 사용) */
+.t50-map-wrap{max-width:var(--content-max);margin:0 auto;padding:0 16px;position:relative}
+.t50-map-img{width:100%;display:block}
+.t50-map-pins{position:absolute;inset:0 16px}
+.t50-map-pin{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:3px;background:#fff;border:1.3px solid #ddd;border-radius:14px;padding:3px 8px 3px 5px;font-size:11px;font-weight:700;color:#333;white-space:nowrap;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.t50-map-pin .ic{width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;flex-shrink:0}
+.t50-map-pin .ic.prep{background:#eff6ff;color:#1d4ed8}
+.t50-map-pin .ic.open{background:#fff7ed;color:#c2410c}
+.t50-map-pin .ic.closed{background:#eaeaea;color:#999}
+.t50-map-pin .star{color:#f59e0b;font-size:9px}
+.t50-map-pin.is-open{border-color:#fb923c;color:#c2410c}
+.t50-map-pin.is-prep{border-color:#93c5fd;color:#1d4ed8}
 
-.t50-schedule{max-width:480px;margin:0 auto;padding:20px 0;background:linear-gradient(180deg,#fffbe8,#fff);border-top:8px solid #f4f4f4}
+.t50-schedule{max-width:var(--content-max);margin:0 auto;padding:20px 0;background:linear-gradient(180deg,#fffbe8,#fff);border-top:8px solid #f4f4f4}
 .t50-schedule .head{padding:0 16px;margin-bottom:4px}
 .t50-schedule .head p.k1{font-size:13px;font-weight:700;color:#111;line-height:1.5;margin-bottom:2px}
 .t50-schedule .head p.k1 span{color:#e03131;font-weight:500;font-size:11.5px;display:block;margin-top:2px}
@@ -199,7 +205,7 @@ button{font-family:inherit;cursor:pointer}
 .t50-sched-card a.prep{background:#eff6ff;color:#1d4ed8}
 .t50-sched-card a.closed{background:#f0f0f0;color:#999}
 
-.t50-promo{max-width:480px;margin:0 auto;padding:20px 16px;border-top:8px solid #f4f4f4}
+.t50-promo{max-width:var(--content-max);margin:0 auto;padding:20px 16px;border-top:8px solid #f4f4f4}
 .t50-promo h2{font-size:15px;font-weight:700;color:#111;margin-bottom:12px}
 .t50-promo-grid{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none}
 .t50-promo-grid::-webkit-scrollbar{display:none}
@@ -211,10 +217,10 @@ button{font-family:inherit;cursor:pointer}
 .t50-promo-thumb .pill{display:inline-block;font-size:10px;font-weight:700;background:rgba(255,255,255,.2);border-radius:5px;padding:2px 6px;margin-bottom:4px;width:fit-content}
 .t50-promo-card p{font-size:12px;color:#333;font-weight:600;margin-top:8px;text-align:center}
 
-.t50-note{max-width:480px;margin:0 auto;padding:0 16px 8px;font-size:10.5px;color:#bbb;line-height:1.6}
+.t50-note{max-width:var(--content-max);margin:0 auto;padding:0 16px 8px;font-size:10.5px;color:#bbb;line-height:1.6}
 
 /* ═══ 사이트 푸터 ═══ */
-.site-footer{max-width:480px;margin:0 auto;padding:22px 16px 100px;background:#f8f8f8;border-top:8px solid #f4f4f4}
+.site-footer{max-width:var(--content-max);margin:0 auto;padding:22px 16px 100px;background:#f8f8f8;border-top:8px solid #f4f4f4}
 .site-footer .f-links{display:flex;flex-wrap:wrap;gap:5px 10px;margin-bottom:10px}
 .site-footer .f-links span{font-size:11px;color:#888}
 .site-footer .f-links span.bold{font-weight:700;color:#555}
@@ -223,7 +229,7 @@ button{font-family:inherit;cursor:pointer}
 /* ═══ QR 플로팅 ═══ */
 .qr-float{position:fixed;bottom:68px;left:0;right:0;z-index:300;padding:0 10px;transition:transform .35s cubic-bezier(.4,0,.2,1)}
 .qr-float.hidden{transform:translateY(140px);pointer-events:none}
-.qr-card{max-width:480px;margin:0 auto;background:#fff;border-radius:14px;box-shadow:0 -4px 24px rgba(0,0,0,.14),0 2px 8px rgba(0,0,0,.06);padding:12px 14px;display:flex;align-items:center;gap:12px;border:1.5px solid #7c3aed}
+.qr-card{max-width:var(--content-max);margin:0 auto;background:#fff;border-radius:14px;box-shadow:0 -4px 24px rgba(0,0,0,.14),0 2px 8px rgba(0,0,0,.06);padding:12px 14px;display:flex;align-items:center;gap:12px;border:1.5px solid #7c3aed}
 .qr-thumb-wrap{width:48px;height:48px;flex-shrink:0;border:1px solid #eee;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#fff}
 .qr-thumb-wrap canvas,.qr-thumb-wrap img{width:100%!important;height:100%!important}
 .qr-text{flex:1;min-width:0}
@@ -232,7 +238,7 @@ button{font-family:inherit;cursor:pointer}
 .qr-close{width:28px;height:28px;border-radius:50%;background:#f0f0f0;border:none;display:flex;align-items:center;justify-content:center;font-size:14px;color:#666;flex-shrink:0}
 
 /* ═══ 마이페이지 ═══ */
-.my-content{max-width:480px;margin:0 auto;padding-bottom:80px}
+.my-content{max-width:var(--content-max);margin:0 auto;padding-bottom:80px}
 .profile-wrap{background:#fff;padding:20px 16px 16px;border-bottom:8px solid #f4f4f4}
 .profile-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .profile-user{display:flex;align-items:center;gap:12px}
@@ -276,7 +282,7 @@ button{font-family:inherit;cursor:pointer}
 .footer-info{font-size:10px;color:#bbb;line-height:1.8}
 
 /* ═══ 마이페이지 하위 화면 공통 ═══ */
-.mypage-sub-content{max-width:480px;margin:0 auto;padding-bottom:100px}
+.mypage-sub-content{max-width:var(--content-max);margin:0 auto;padding-bottom:100px}
 .mypage-empty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:60px 20px;color:#bbb;text-align:center}
 .mypage-empty .ico{font-size:38px}
 .mypage-empty p{font-size:13px;line-height:1.6}
@@ -334,7 +340,7 @@ button{font-family:inherit;cursor:pointer}
 .page-bar{background:#fff;border-bottom:1px solid #efefef;padding:14px 16px;display:flex;align-items:center;gap:10px}
 .back-btn{background:transparent;border:none;font-size:18px;color:#333;padding:0 4px;line-height:1;display:flex;align-items:center}
 .page-bar-title{font-size:16px;font-weight:700;color:#111}
-.exp-content{max-width:480px;margin:0 auto;padding-bottom:80px}
+.exp-content{max-width:var(--content-max);margin:0 auto;padding-bottom:80px}
 .current-card{background:#fff;padding:16px;border-bottom:8px solid #f4f4f4}
 .current-inner{background:#f8f9fb;border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
 .current-left{display:flex;align-items:center;gap:10px}
@@ -395,7 +401,7 @@ button{font-family:inherit;cursor:pointer}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ═══ 서비스 소개 ═══ */
-.svc-content{max-width:480px;margin:0 auto}
+.svc-content{max-width:var(--content-max);margin:0 auto}
 .svc-hero{background:linear-gradient(135deg,#3b6be8 0%,#5b4ee8 50%,#7c3aed 100%);padding:32px 16px;color:#fff}
 .svc-hero h2{font-size:18px;font-weight:700;margin-bottom:14px}
 .svc-hero h3{font-size:14px;font-weight:700;opacity:.9;margin-bottom:6px}
@@ -421,7 +427,7 @@ button{font-family:inherit;cursor:pointer}
 .svc-note{font-size:11px;color:#bbb;line-height:1.7}
 
 /* ═══ 이벤트 ═══ */
-.evt-content{max-width:480px;margin:0 auto}
+.evt-content{max-width:var(--content-max);margin:0 auto}
 .evt-title{padding:20px 16px 0}
 .evt-title h2{font-size:18px;font-weight:700;color:#111}
 .evt-tabs{display:flex;gap:8px;padding:14px 16px}
@@ -470,7 +476,7 @@ button{font-family:inherit;cursor:pointer}
 .evt-cal-day{position:relative}
 
 /* ═══ 지역 상세(방문 TIP + 사용처) ═══ */
-.rgn-content{max-width:480px;margin:0 auto}
+.rgn-content{max-width:var(--content-max);margin:0 auto}
 .rgn-banner{background:linear-gradient(180deg,#dbe6ff 0%,#e7ddff 100%);padding:28px 16px 24px;text-align:center}
 .rgn-banner h2{font-size:19px;font-weight:700;color:#2b2560;line-height:1.4;margin-bottom:16px}
 .rgn-banner h2 em{color:#2563eb;font-style:normal}
@@ -532,3 +538,59 @@ button{font-family:inherit;cursor:pointer}
 .rgn-other-list{display:flex;flex-wrap:wrap;gap:8px 14px}
 .rgn-other-list span{font-size:12.5px;color:#333;cursor:pointer}
 .rgn-other-list span:hover{color:#2563eb;text-decoration:underline}
+
+/* ═══════════════════════════════════════════════════════════
+   PC(데스크톱) 최적화 — 실제 구석구석처럼 넓은 헤더/가로 네비게이션으로 재배치
+   ═══════════════════════════════════════════════════════════ */
+@media (min-width:960px){
+  :root{--content-max:1120px}
+
+  body{background:#eef0f3}
+
+  /* 헤더: 다크 GNB 전체폭 유지 + 가로 메뉴 노출, 햄버거/하단탭 숨김 */
+  .gnb{padding:0 32px;height:60px}
+  .gnb-left{gap:10px}
+  .gnb-title{font-size:15px}
+  .gnb-menu{display:none}
+  .gnb-nav{display:flex;gap:30px;margin-left:40px}
+  .gnb-nav a{color:rgba(255,255,255,.85);font-size:14px;font-weight:600;text-decoration:none;padding:4px 0}
+  .gnb-nav a:hover{color:#fff}
+  .subnav{display:none}
+  .bottom-nav{display:none}
+  .drawer,.drawer-overlay{display:none}
+
+  /* 바텀탭이 사라졌으니 하단 여백 보정 */
+  .map-section,.my-content,.exp-content,.mypage-sub-content,.svc-content{padding-bottom:40px}
+  .site-footer{padding-bottom:40px}
+
+  /* 본문 컨테이너 — 흰 카드처럼 보이도록 여백/그림자 부여 */
+  .login-content,.notice-bar,.map-heading,.map-outer,.top10-tabs,.top10-scroll,
+  .faq-wrap,.insta-scroll,.main-event-wrap,.main-event-scroll,.site-footer,
+  .rgn-content,.evt-content,.svc-content,.my-content,.exp-content,.mypage-sub-content,
+  .t50-hero,.t50-banner,.t50-find,.t50-legend,.t50-status-tabs,.t50-map-wrap,.t50-schedule,
+  .t50-promo,.t50-note,.login-sheet{max-width:var(--content-max)}
+  .t50-map-pins{inset:0 16px}
+
+  /* 가로 스크롤 캐러셀 → 데스크톱에서는 다열 그리드로 전환 */
+  .top10-scroll,.insta-scroll,.main-event-scroll,.t50-sched-scroll{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));overflow-x:visible;scroll-snap-type:none;padding-bottom:4px}
+  .top10-card,.insta-tile,.main-event-card,.t50-sched-card{width:auto}
+
+  /* 카드형 그리드 열 수 확장 */
+  .pocket-grid{grid-template-columns:repeat(5,1fr)}
+  .rgn-venue-grid{grid-template-columns:repeat(4,1fr)}
+  .qm-grid{grid-template-columns:repeat(3,1fr)}
+  .t50-promo-grid{display:grid;grid-template-columns:repeat(2,1fr)}
+  .t50-promo-card{width:auto}
+
+  /* 지역상세 하단(다른지역보기)도 카드 폭에 맞춤 */
+  .rgn-other-wrap{max-width:var(--content-max);margin:0 auto;box-sizing:border-box}
+
+  /* QR 플로팅 배너 — 화면 하단 전체폭 대신 우하단 카드형으로 */
+  .qr-float{left:auto;right:28px;max-width:320px;bottom:28px}
+
+  /* 로그인 화면 중앙 카드 폭 축소(넓은 화면에서 과도하게 안 늘어나도록) */
+  .login-content{max-width:420px}
+  .login-sheet{max-width:420px;left:50%;right:auto;transform:translateX(-50%);border-radius:20px;bottom:-100%}
+  .login-sheet.open{bottom:auto;top:50%;transform:translate(-50%,-50%)}
+}
