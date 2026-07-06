@@ -191,17 +191,8 @@
 <script>
 const user=requireUser();
 let t50Filter='all';
-const T50_ICON={prep:'●',open:'✎',closed:'🔒'};
-
-if(user){
-  setActiveBottomNav('main');
-  renderT50Map();
-  renderT50Tabs();
-  renderT50Sched();
-  renderT50Faq();
-}
-
 let t50Residence=null;
+const T50_ICON={prep:'●',open:'✎',closed:'🔒'};
 
 function renderT50Map(){
   const list=t50Residence
@@ -340,6 +331,14 @@ function renderT50Faq(){
       icon.textContent=btn.parentElement.classList.contains('open')?'−':'+';
     });
   });
+}
+
+if(user){
+  setActiveBottomNav('main');
+  renderT50Map();
+  renderT50Tabs();
+  renderT50Sched();
+  renderT50Faq();
 }
 </script>
 </body>
