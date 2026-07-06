@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>디지털관광주민증 - 대한민국 반값여행</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/common.css?v=20260706d">
+<link rel="stylesheet" href="assets/common.css?v=20260707a">
 </head>
 <body>
 
@@ -42,11 +42,12 @@
 
 <div class="t50-find">
   <div>
-    <h2>나의 반값여행지 찾기</h2>
-    <h3>※ 거주지(주민등록상 주소지) 인접 지역은 신청 제한</h3>
+    <h2 id="t50FindTitle">나의 반값여행지 찾기</h2>
+    <h3 id="t50FindSub">※ 거주지(주민등록상 주소지) 인접 지역은 신청 제한</h3>
   </div>
-  <button onclick="toast('거주 지역 선택 화면')">찾기</button>
+  <button id="t50FindBtn" onclick="onT50FindBtn()">찾기</button>
 </div>
+<div class="t50-search-pop" id="t50SearchPop">신청 가능한 여행지만 표시했어요</div>
 
 <div class="t50-legend">
   <h4>지역별 진행 현황 <span>(예산 소진 시 자동 마감)</span></h4>
@@ -154,6 +155,18 @@
 
 <div class="toast" id="toastEl"></div>
 
+<div class="t50-finder-overlay" id="t50FinderOverlay" onclick="if(event.target===this)closeT50Finder()">
+  <aside class="t50-finder">
+    <h4>나의 거주 지역을 선택해 주세요!</h4>
+    <div class="t50-finder-selects">
+      <select id="t50Sido" onchange="onT50SidoChange()"><option value="">광역시/도</option></select>
+      <select id="t50Sigungu"><option value="">시/군/구</option></select>
+    </div>
+    <h5>선택하신 거주지 및 거주지 인접지역을<br>제외한 반값여행지가 표시됩니다.</h5>
+    <button class="t50-finder-ok" onclick="confirmT50Finder()">확인</button>
+  </aside>
+</div>
+
 <div class="t50-modal-overlay" id="t50ModalOverlay" onclick="if(event.target===this)closeT50Modal()">
   <div class="t50-modal">
     <div class="t50-modal-hero" id="t50ModalHero">
@@ -173,8 +186,8 @@
   </div>
 </div>
 
-<script src="assets/data.js?v=20260706d"></script>
-<script src="assets/common.js?v=20260706d"></script>
+<script src="assets/data.js?v=20260707a"></script>
+<script src="assets/common.js?v=20260707a"></script>
 <script>
 const user=requireUser();
 let t50Filter='all';
@@ -188,11 +201,60 @@ if(user){
   renderT50Faq();
 }
 
+let t50Residence=null;
+
 function renderT50Map(){
-  document.getElementById('t50MapPins').innerHTML=TOUR50_REGIONS.map(r=>`
+  const list=t50Residence
+    ?TOUR50_REGIONS.filter(r=>!T50_ADJ[r.name].includes(t50Residence.sigungu))
+    :TOUR50_REGIONS;
+  document.getElementById('t50MapPins').innerHTML=list.map(r=>`
     <div class="t50-map-pin is-${r.status}" style="left:${r.l}%;top:${r.t}%" onclick="openT50Modal('${r.name}')">
       <span class="ic ${r.status}">${T50_ICON[r.status]}</span>${r.name}${r.star?'<span class="star">★</span>':''}
     </div>`).join('');
+}
+
+/* ── 나의 반값여행지 찾기 ── */
+function onT50FindBtn(){
+  if(t50Residence){resetT50Finder();return;}
+  const sel=document.getElementById('t50Sido');
+  sel.innerHTML='<option value="">광역시/도</option>'+T50_SIDO_LIST.map(s=>`<option value="${s.cd}">${s.name}</option>`).join('');
+  document.getElementById('t50Sigungu').innerHTML='<option value="">시/군/구</option>';
+  document.getElementById('t50FinderOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeT50Finder(){
+  document.getElementById('t50FinderOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function onT50SidoChange(){
+  const cd=document.getElementById('t50Sido').value;
+  document.getElementById('t50Sigungu').innerHTML='<option value="">시/군/구</option>'
+    +(T50_SIGUNGU[cd]||[]).map(n=>`<option value="${n}">${n}</option>`).join('');
+}
+function confirmT50Finder(){
+  const sidoCd=document.getElementById('t50Sido').value;
+  const sigungu=document.getElementById('t50Sigungu').value;
+  if(!sigungu)return;
+  const sidoName=T50_SIDO_LIST.find(s=>s.cd===sidoCd).name;
+  t50Residence={sidoCd,sigungu};
+  closeT50Finder();
+  const btn=document.getElementById('t50FindBtn');
+  btn.classList.add('refresh');
+  btn.textContent='초기화';
+  document.getElementById('t50FindTitle').textContent=`'${sidoName} ${sigungu}' 거주`;
+  document.getElementById('t50FindSub').textContent='거주지·인접 지역을 제외한 신청 가능 여행지입니다.';
+  document.getElementById('t50SearchPop').classList.add('on');
+  renderT50Map();
+}
+function resetT50Finder(){
+  t50Residence=null;
+  const btn=document.getElementById('t50FindBtn');
+  btn.classList.remove('refresh');
+  btn.textContent='찾기';
+  document.getElementById('t50FindTitle').textContent='나의 반값여행지 찾기';
+  document.getElementById('t50FindSub').textContent='※ 거주지(주민등록상 주소지) 인접 지역은 신청 제한';
+  document.getElementById('t50SearchPop').classList.remove('on');
+  renderT50Map();
 }
 
 /* 회차별 period/deadline에서 전체 신청기간 문구를 추정(정확한 전체기간은 applyPeriod로 직접 지정 가능) */
