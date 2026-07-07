@@ -38,6 +38,18 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#e4e
 /* 리스트 */
 .row{display:flex;align-items:center;gap:.8rem;padding:1rem;border-bottom:1.5px solid #f0f2f1;cursor:pointer}
 .row .ic{font-size:1.4rem;flex-shrink:0}
+.row img.th{width:3.2rem;height:3.2rem;border-radius:.7rem;object-fit:cover;flex-shrink:0}
+.notice{margin:.2rem 1rem .8rem;background:#f0faf7;border:1.5px solid #c9ebe2;border-radius:12px;padding:.7rem .9rem;font-size:.8rem;color:#0f766e;font-weight:700;cursor:pointer}
+/* 쿠폰 바코드 제시 */
+.bcov{position:fixed;inset:0;background:#fff;z-index:110;display:none;flex-direction:column;align-items:center;text-align:center;max-width:430px;left:50%;transform:translateX(-50%)}
+.bcov.on{display:flex}
+.bcov .cls{position:absolute;top:.9rem;right:1rem;font-size:1.4rem;background:none;border:none;color:#999;cursor:pointer}
+.bcov img.cimg{width:100%;max-width:430px;height:9rem;object-fit:cover}
+.bcov h3{font-size:1.15rem;font-weight:800;margin-top:1.1rem}
+.bcov .pct2{font-size:.95rem;color:#0f766e;font-weight:800;margin-top:.3rem}
+.bcov .bars{width:15rem;height:5.5rem;margin-top:1.3rem;background:repeating-linear-gradient(90deg,#111 0 3px,#fff 3px 5px,#111 5px 10px,#fff 10px 12px,#111 12px 14px,#fff 14px 19px);border-radius:4px}
+.bcov .num{font-size:.8rem;letter-spacing:.35em;color:#333;margin-top:.5rem}
+.bcov .gd3{font-size:.85rem;color:#788;margin-top:1rem;line-height:1.6}
 .row .tt{font-size:1rem;font-weight:700}
 .row .ds{font-size:.8rem;color:#788;margin-top:.15rem}
 .row .rt{margin-left:auto;font-size:.85rem;color:#0f766e;font-weight:800;flex-shrink:0}
@@ -72,6 +84,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#e4e
   <div class="view on" id="v-home">
     <div class="gnb"><span>디지털 관광주민증</span><button class="aa" onclick="fontUp()" id="aaBtn">가⁺</button></div>
     <div class="hello">김관광님, 무엇을 도와드릴까요?</div>
+    <div class="notice" onclick="toast('공지사항')">📢 7월 반값여행(영월 별빛투어) 신청이 시작되었습니다</div>
     <button class="big hero" onclick="go('card',tabBtn('card'))"><span class="ic">▦</span><div><div class="tt">주민증 QR 보여주기</div><div class="ds">가맹점 할인 받을 때</div></div><span class="ar">›</span></button>
     <button class="big" onclick="openIssue()"><span class="ic">🪪</span><div><div class="tt">주민증 새로 발급받기</div><div class="ds">30초면 됩니다</div></div><span class="ar">›</span></button>
     <button class="big" onclick="show('bene')"><span class="ic">🎁</span><div><div class="tt">내 혜택 · 쿠폰 보기</div><div class="ds">사용 가능 쿠폰 3장</div></div><span class="ar">›</span></button>
@@ -98,18 +111,19 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#e4e
   <!-- 혜택 -->
   <div class="view" id="v-bene">
     <div class="gnb"><span>내 혜택 · 쿠폰</span><button class="aa" onclick="fontUp()">가⁺</button></div>
-    <div class="row" onclick="go('card',tabBtn('card'))"><span class="ic">🏨</span><div><div class="tt">알펜시아 리조트 50%</div><div class="ds">평창군 · 2026.08.31까지</div></div><span class="rt">사용하기</span></div>
-    <div class="row" onclick="go('card',tabBtn('card'))"><span class="ic">🐑</span><div><div class="tt">대관령 양떼목장 30%</div><div class="ds">평창군 · 2026.09.30까지</div></div><span class="rt">사용하기</span></div>
-    <div class="row" onclick="go('card',tabBtn('card'))"><span class="ic">🚲</span><div><div class="tt">정선 레일바이크 40%</div><div class="ds">정선군 · 2026.07.31까지</div></div><span class="rt">사용하기</span></div>
-    <div class="hello" style="padding-top:1rem">쿠폰은 가게에서 QR을 보여주면 자동으로 적용됩니다.</div>
+    <div class="row" onclick="openBc(0)"><img class="th" src="../assets/img/scene/resort.svg" alt=""><div><div class="tt">알펜시아 리조트 50%</div><div class="ds">평창군 · 2026.08.31까지</div></div><span class="rt">사용하기</span></div>
+    <div class="row" onclick="openBc(1)"><img class="th" src="../assets/img/scene/sheep.svg" alt=""><div><div class="tt">대관령 양떼목장 30%</div><div class="ds">평창군 · 2026.09.30까지</div></div><span class="rt">사용하기</span></div>
+    <div class="row" onclick="openBc(2)"><img class="th" src="../assets/img/scene/railbike.svg" alt=""><div><div class="tt">정선 레일바이크 40%</div><div class="ds">정선군 · 2026.07.31까지</div></div><span class="rt">사용하기</span></div>
+    <div class="hello" style="padding-top:1rem">쿠폰을 누르면 가게에 보여줄 바코드가 크게 나옵니다.</div>
   </div>
 
   <!-- 이용내역 -->
   <div class="view" id="v-hist">
     <div class="gnb"><span>이용 내역</span><button class="aa" onclick="fontUp()">가⁺</button></div>
-    <div class="row"><span class="ic">🏨</span><div><div class="tt">알펜시아 리조트</div><div class="ds">2026년 7월 2일 · 50% 할인</div></div></div>
-    <div class="row"><span class="ic">🥩</span><div><div class="tt">평창 한우마을</div><div class="ds">2026년 6월 15일 · 20% 할인</div></div></div>
-    <div class="row"><span class="ic">🎣</span><div><div class="tt">평창 송어축제</div><div class="ds">2026년 2월 1일 · 입장권 반값</div></div></div>
+    <div class="row"><img class="th" src="../assets/img/scene/resort.svg" alt=""><div><div class="tt">알펜시아 리조트</div><div class="ds">2026년 7월 2일 · 50% 할인 (64,000원 아낌)</div></div></div>
+    <div class="row"><img class="th" src="../assets/img/scene/hanwoo.svg" alt=""><div><div class="tt">평창 한우마을</div><div class="ds">2026년 6월 15일 · 20% 할인 (18,000원 아낌)</div></div></div>
+    <div class="row"><img class="th" src="../assets/img/scene/fishfest.svg" alt=""><div><div class="tt">평창 송어축제</div><div class="ds">2026년 2월 1일 · 입장권 반값 (15,000원 아낌)</div></div></div>
+    <div class="hello" style="padding-top:1rem">올해 총 <b style="color:#0f766e">97,000원</b>을 아꼈어요.</div>
   </div>
 
   <!-- 전체메뉴 -->
@@ -154,9 +168,29 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#e4e
     </div>
   </div>
 
+  <!-- 쿠폰 바코드 제시 화면 -->
+  <div class="bcov" id="bcOv">
+    <button class="cls" onclick="document.getElementById('bcOv').classList.remove('on')">✕</button>
+    <img class="cimg" id="bcImg" src="../assets/img/scene/resort.svg" alt="">
+    <h3 id="bcTitle">-</h3>
+    <div class="pct2" id="bcPct">-</div>
+    <div class="bars"></div>
+    <div class="num">8 809462 03214</div>
+    <div class="gd3">이 화면을 가게 직원에게 보여주세요<br>화면이 자동으로 밝아집니다</div>
+  </div>
+
   <div class="toast" id="toastEl"></div>
 </div>
 <script>
+const BC=[['resort.svg','알펜시아 리조트 숙박권','50% 할인 · 평창군 · ~2026.08.31'],
+ ['sheep.svg','대관령 양떼목장 입장권','30% 할인 · 평창군 · ~2026.09.30'],
+ ['railbike.svg','정선 레일바이크','40% 할인 · 정선군 · ~2026.07.31']];
+function openBc(i){
+  document.getElementById('bcImg').src='../assets/img/scene/'+BC[i][0];
+  document.getElementById('bcTitle').textContent=BC[i][1];
+  document.getElementById('bcPct').textContent=BC[i][2];
+  document.getElementById('bcOv').classList.add('on');
+}
 function go(v,btn){
   document.querySelectorAll('.view').forEach(e=>e.classList.remove('on'));
   document.getElementById('v-'+v).classList.add('on');

@@ -24,7 +24,8 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#ddd
 .bar-cap{font-size:11.5px;color:#889;margin-top:7px}
 .secttl{padding:18px 16px 8px;font-size:14.5px;font-weight:800}
 .msn{margin:0 16px 9px;background:#fff;border-radius:15px;padding:13px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 5px rgba(0,0,0,.05)}
-.msn .ic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.msn .ic{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;overflow:hidden}
+.msn .ic img{width:100%;height:100%;object-fit:cover}
 .msn .tt{font-size:13.5px;font-weight:800}
 .msn .rw{font-size:11px;color:#7c3aed;font-weight:800;margin-top:3px}
 .msn .go{margin-left:auto;font-size:11.5px;font-weight:800;color:#fff;background:#7c3aed;border:none;border-radius:16px;padding:8px 14px;flex-shrink:0;cursor:pointer;font-family:inherit}
@@ -60,6 +61,25 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#ddd
 .ov .dt2{font-size:14px;color:#7c3aed;font-weight:800;margin-top:8px}
 .ov .dt3{background:#ede9fe;border-radius:10px;font-size:12.5px;padding:9px 14px;margin-top:14px;color:#555}
 .ov .btn2{margin-top:24px;background:#7c3aed;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:14px;padding:14px 26px;cursor:pointer;font-family:inherit}
+/* 미션 상세 시트 */
+.sheet{position:fixed;inset:0;background:rgba(20,10,50,.5);z-index:95;display:none;align-items:flex-end;max-width:430px;left:50%;transform:translateX(-50%)}
+.sheet.on{display:flex}
+.sheet .body{background:#fff;width:100%;border-radius:22px 22px 0 0;overflow:hidden;max-height:80vh;overflow-y:auto}
+.sheet img.hero{width:100%;height:150px;object-fit:cover;display:block}
+.sheet .pad{padding:18px 18px max(22px,env(safe-area-inset-bottom))}
+.sheet h3{font-size:17px;font-weight:800}
+.sheet .meta{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
+.sheet .meta span{font-size:11px;font-weight:800;background:#ede9fe;color:#7c3aed;border-radius:7px;padding:4px 9px}
+.sheet .desc{font-size:13px;color:#556;line-height:1.65;margin-top:11px}
+.sheet .prog{margin-top:13px;font-size:12px;font-weight:800;color:#7c3aed}
+.sheet .doit{margin-top:15px;background:#7c3aed;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:14px;padding:14px;width:100%;cursor:pointer;font-family:inherit}
+/* 랭킹 */
+.rank{margin:0 16px 8px;background:#fff;border-radius:14px;padding:11px 14px;display:flex;align-items:center;gap:11px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.rank .no{width:24px;font-size:14px;font-weight:800;color:#7c3aed;text-align:center;flex-shrink:0}
+.rank .nm{font-size:13px;font-weight:700}
+.rank .lv{font-size:10.5px;color:#889;margin-top:1px}
+.rank .pt2{margin-left:auto;font-size:12px;font-weight:800;color:#f59e0b}
+.rank.me{outline:2px solid #7c3aed}
 .toast{position:fixed;bottom:114px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:13px;font-weight:700;border-radius:24px;padding:11px 20px;z-index:200;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap}
 .toast.on{opacity:1}
 .reset{margin:20px 16px;background:none;border:1px solid #d5d0e8;color:#889;border-radius:10px;font-size:11.5px;padding:8px;width:calc(100% - 32px);cursor:pointer;font-family:inherit}
@@ -90,7 +110,12 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#ddd
     <div class="secttl" style="padding-top:16px">전체 미션</div>
     <div id="msnList2"></div>
     <div class="secttl">⏰ 시즌 한정</div>
-    <div class="msn"><div class="ic" style="background:#fef3c7">🎣</div><div><div class="tt">평창 송어축제 방문</div><div class="rw">+500P · 한정 스탬프 · ~2월</div></div><button class="go" onclick="openQr()">도전</button></div>
+    <div class="msn" onclick="openMsn(9)"><div class="ic"><img src="../assets/img/scene/fishfest.svg" alt=""></div><div><div class="tt">평창 송어축제 방문</div><div class="rw">+500P · 한정 스탬프 · ~2월</div></div><button class="go" onclick="event.stopPropagation();openQr()">도전</button></div>
+    <div class="msn" onclick="openMsn(10)"><div class="ic"><img src="../assets/img/scene/stars.svg" alt=""></div><div><div class="tt">육백마지기 별보기 인증</div><div class="rw">+400P · 야간 한정</div></div><button class="go" onclick="event.stopPropagation();openQr()">도전</button></div>
+    <div class="secttl">🏆 이번 주 평창 랭킹</div>
+    <div class="rank"><div class="no">1</div><div><div class="nm">별빛여행자</div><div class="lv">평창 주민 Lv.7</div></div><div class="pt2">12,840P</div></div>
+    <div class="rank"><div class="no">2</div><div><div class="nm">감자밭소년</div><div class="lv">평창 주민 Lv.6</div></div><div class="pt2">11,200P</div></div>
+    <div class="rank me"><div class="no">17</div><div><div class="nm">김관광 (나)</div><div class="lv" id="rankLv">평창 주민 Lv.3</div></div><div class="pt2" id="rankPt">2,340P</div></div>
   </div>
 
   <!-- 스탬프 -->
@@ -149,14 +174,28 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#ddd
     <button class="btn2" style="background:#ddd;color:#555" onclick="closeOv('ovLvup')">닫기</button>
   </div>
 
+  <!-- 미션 상세 시트 -->
+  <div class="sheet" id="shMsn" onclick="if(event.target===this)this.classList.remove('on')">
+    <div class="body">
+      <img class="hero" id="mdImg" src="../assets/img/scene/hanwoo.svg" alt="">
+      <div class="pad">
+        <h3 id="mdTitle">-</h3>
+        <div class="meta" id="mdMeta"></div>
+        <div class="desc" id="mdDesc">-</div>
+        <div class="prog" id="mdProg"></div>
+        <button class="doit" onclick="document.getElementById('shMsn').classList.remove('on');openQr()">▦ 가맹점에서 QR 사용하고 달성하기</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toastEl"></div>
 </div>
 <script>
 const DEF={pts:2340,lv:3,prog:64,
  msn:[
-  {ic:'🍜',bg:'#dcfce7',t:'로컬 맛집 2곳에서 QR 사용',rw:300,cur:1,tgt:2},
-  {ic:'☕',bg:'#fef9c3',t:'카페에서 QR 사용하기',rw:200,cur:0,tgt:1},
-  {ic:'🏨',bg:'#e0e7ff',t:'첫 숙박 할인 사용하기',rw:1000,cur:1,tgt:1}
+  {img:'hanwoo.svg',t:'로컬 맛집 2곳에서 QR 사용',rw:300,cur:1,tgt:2,loc:'평창읍 · 진부면',desc:'평창 로컬 맛집 가맹점에서 주민증 QR로 할인받으면 자동으로 카운트됩니다. 한우마을, 메밀꽃집 등 43곳이 대상이에요.'},
+  {img:'cafe.svg',t:'카페에서 QR 사용하기',rw:200,cur:0,tgt:1,loc:'평창 전역',desc:'감자밭카페 등 평창 카페 가맹점 17곳 어디서든 QR을 사용하면 달성됩니다. 시그니처 감자라떼 추천!'},
+  {img:'resort.svg',t:'첫 숙박 할인 사용하기',rw:1000,cur:1,tgt:1,loc:'대관령면',desc:'알펜시아 등 숙박 가맹점에서 첫 할인을 받으면 달성되는 미션입니다. 이미 완료하셨어요!'}
  ],
  stamps:[
   {e:'🎿',n:'알펜시아',got:true},{e:'🐑',n:'양떼목장',got:true},{e:'🎣',n:'송어축제',got:true},
@@ -165,18 +204,21 @@ const DEF={pts:2340,lv:3,prog:64,
  ],
  log:[{t:'첫 숙박 할인 사용',p:'+1,000P'},{t:'송어축제 스탬프',p:'+500P'}]};
 let S=JSON.parse(localStorage.getItem('dtidC')||'null')||JSON.parse(JSON.stringify(DEF));
+if(!S.msn||!S.msn[0]||!S.msn[0].img){S=JSON.parse(JSON.stringify(DEF));localStorage.removeItem('dtidC');}
 function save(){localStorage.setItem('dtidC',JSON.stringify(S));}
 function fmt(n){return n.toLocaleString('ko-KR');}
 function render(){
   document.getElementById('ptEl').textContent='🪙 '+fmt(S.pts)+'P';
   document.getElementById('myPt').textContent='🪙 '+fmt(S.pts)+'P 보유';
+  document.getElementById('rankLv').textContent='평창 주민 Lv.'+S.lv;
+  document.getElementById('rankPt').textContent=fmt(S.pts)+'P';
   document.getElementById('lvEl').textContent='평창 주민 Lv.'+S.lv+' · 정선 주민 Lv.1';
   document.getElementById('lvT').textContent='평창 주민 Lv.'+S.lv+' → Lv.'+(S.lv+1);
   document.getElementById('lvPct').textContent=S.prog+'%';
   document.getElementById('lvBar').style.width=S.prog+'%';
   const remain=Math.ceil((100-S.prog)/18);
   document.getElementById('lvCap').textContent='가맹점 '+remain+'곳만 더 방문하면 레벨업! 🎁 5,000P';
-  const mh=S.msn.map((m,i)=>`<div class="msn"><div class="ic" style="background:${m.bg}">${m.ic}</div><div><div class="tt">${m.t}</div><div class="rw">+${fmt(m.rw)}P${m.tgt>1?' ('+m.cur+'/'+m.tgt+' 완료)':''}</div></div><button class="go ${m.cur>=m.tgt?'done':''}" onclick="openQr()">${m.cur>=m.tgt?'완료':'도전'}</button></div>`).join('');
+  const mh=S.msn.map((m,i)=>`<div class="msn" onclick="openMsn(${i})"><div class="ic"><img src="../assets/img/scene/${m.img}" alt=""></div><div><div class="tt">${m.t}</div><div class="rw">+${fmt(m.rw)}P${m.tgt>1?' ('+m.cur+'/'+m.tgt+' 완료)':''}</div></div><button class="go ${m.cur>=m.tgt?'done':''}" onclick="event.stopPropagation();openQr()">${m.cur>=m.tgt?'완료':'도전'}</button></div>`).join('');
   document.getElementById('msnList').innerHTML=mh;
   document.getElementById('msnList2').innerHTML=mh;
   document.getElementById('stampGrid').innerHTML=S.stamps.map(s=>`<div class="stamp ${s.got?'got':'no'}"><span class="e">${s.e}</span>${s.n}</div>`).join('');
@@ -190,6 +232,18 @@ function go(v,btn){
   btn.classList.add('on');
 }
 function openQr(){document.getElementById('ovQr').classList.add('on');}
+const SEASON={9:{img:'fishfest.svg',t:'평창 송어축제 방문',rw:500,cur:0,tgt:1,loc:'진부면 오대천 일대',desc:'축제장 입구 부스에서 주민증 QR을 찍으면 한정판 송어 스탬프와 500P가 지급됩니다. 축제 기간(~2월)에만 획득 가능!'},
+ 10:{img:'stars.svg',t:'육백마지기 별보기 인증',rw:400,cur:0,tgt:1,loc:'청옥산 정상',desc:'야간(20시~04시)에 육백마지기 전망대 QR을 스캔하면 달성됩니다. 은하수 시즌엔 보너스 100P!'}};
+function openMsn(i){
+  const m=i>=9?SEASON[i]:S.msn[i];
+  if(!m)return;
+  document.getElementById('mdImg').src='../assets/img/scene/'+m.img;
+  document.getElementById('mdTitle').textContent=m.t;
+  document.getElementById('mdMeta').innerHTML=`<span>🪙 +${fmt(m.rw)}P</span><span>📍 ${m.loc}</span><span>🏅 스탬프 지급</span>`;
+  document.getElementById('mdDesc').textContent=m.desc;
+  document.getElementById('mdProg').textContent=m.tgt>1?`진행도 ${m.cur}/${m.tgt}`:(m.cur>=m.tgt?'✓ 달성 완료':'미달성');
+  document.getElementById('shMsn').classList.add('on');
+}
 function closeOv(id){document.getElementById(id).classList.remove('on');}
 let leveled=false;
 function scanDone(){
