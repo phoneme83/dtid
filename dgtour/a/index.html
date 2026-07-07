@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>디지털 관광주민증 · 시안 A 월렛</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#333;-webkit-font-smoothing:antialiased}
+.app{max-width:430px;margin:0 auto;min-height:100vh;min-height:100dvh;background:#111318;color:#fff;display:flex;flex-direction:column;position:relative}
+.demo-bar{background:#ea580c;color:#fff;font-size:11px;font-weight:700;text-align:center;padding:5px;display:flex;justify-content:center;gap:10px}
+.demo-bar a{color:#fff;opacity:.85;text-decoration:underline}
+.view{flex:1;overflow-y:auto;padding-bottom:86px;display:none}
+.view.on{display:block}
+.gnb{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;font-weight:800;font-size:17px}
+.gnb .bell{opacity:.7;font-size:18px;cursor:pointer}
+/* 카드 캐러셀 */
+.carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;padding:4px 18px;scrollbar-width:none}
+.carousel::-webkit-scrollbar{display:none}
+.card{flex:0 0 88%;scroll-snap-align:center;border-radius:20px;padding:22px;position:relative;min-height:150px;cursor:pointer}
+.card.pc{background:linear-gradient(135deg,#ea580c,#c2410c 60%,#9a3412)}
+.card.js{background:linear-gradient(135deg,#0e7490,#155e75 60%,#164e63)}
+.card.add{background:#1d2027;border:2px dashed #3a3f4a;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#8a90a0;font-weight:700;font-size:14px}
+.card.add .pl{font-size:30px;margin-bottom:6px}
+.card .rg{font-size:13px;font-weight:700;opacity:.85}
+.card .nm{font-size:22px;font-weight:800;margin-top:3px}
+.card .no{font-size:11px;opacity:.75;margin-top:26px;letter-spacing:.5px}
+.card .chip{position:absolute;right:18px;top:18px;background:rgba(255,255,255,.2);border-radius:8px;font-size:11px;padding:4px 9px;font-weight:700}
+.dots{display:flex;gap:5px;justify-content:center;margin:12px 0 4px}
+.dots i{width:6px;height:6px;border-radius:50%;background:#3a3f4a;transition:.2s}
+.dots i.on{background:#ea580c;width:18px;border-radius:3px}
+/* QR 버튼 */
+.qrbtn{margin:8px 18px;background:#fff;color:#111;border-radius:18px;display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer}
+.qrbtn .qim{width:46px;height:46px;border-radius:6px}
+.qrbtn .t1{font-weight:800;font-size:15px}
+.qrbtn .t2{font-size:12px;color:#666;margin-top:2px}
+.qrbtn .ar{margin-left:auto;color:#bbb;font-size:18px}
+.secttl{padding:18px 18px 8px;font-size:14px;font-weight:800;color:#aab}
+.bene-row{display:flex;gap:10px;padding:0 18px;overflow-x:auto;scrollbar-width:none}
+.bene-row::-webkit-scrollbar{display:none}
+.bn{flex:0 0 118px;background:#1d2027;border-radius:16px;padding:14px;cursor:pointer}
+.bn .pct{color:#ea580c;font-weight:800;font-size:17px}
+.bn .nm2{font-size:12px;margin-top:4px;color:#ddd;line-height:1.4}
+.bn .st{font-size:10.5px;color:#778;margin-top:7px}
+/* 리스트 공통 */
+.li{display:flex;align-items:center;gap:13px;padding:15px 18px;border-bottom:1px solid #1d2027;cursor:pointer}
+.li .ic{width:40px;height:40px;border-radius:12px;background:#1d2027;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.li .tt{font-size:14px;font-weight:700}
+.li .ds{font-size:11.5px;color:#889;margin-top:2px}
+.li .rt{margin-left:auto;font-size:12px;color:#ea580c;font-weight:800;flex-shrink:0}
+.cpn{margin:10px 18px;background:#1d2027;border-radius:16px;padding:16px;display:flex;align-items:center;gap:12px}
+.cpn .pct{font-size:20px;font-weight:800;color:#ea580c;flex-shrink:0;width:64px}
+.cpn .tt{font-size:13.5px;font-weight:700}
+.cpn .ds{font-size:11px;color:#889;margin-top:3px}
+.cpn .use{margin-left:auto;background:#ea580c;border:none;color:#fff;font-weight:800;font-size:11.5px;border-radius:10px;padding:8px 12px;flex-shrink:0;cursor:pointer}
+/* 탭바 */
+.tab{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#16181d;display:flex;border-top:1px solid #23262d;padding:8px 0 max(10px,env(safe-area-inset-bottom));z-index:50}
+.tab .ti{flex:1;text-align:center;font-size:10.5px;color:#778;padding-top:5px;cursor:pointer;background:none;border:none;font-family:inherit}
+.tab .ti i{display:block;font-size:19px;font-style:normal;margin-bottom:3px}
+.tab .ti.on{color:#ea580c;font-weight:800}
+.qr-fab{position:absolute;left:50%;top:-24px;transform:translateX(-50%);width:56px;height:56px;border-radius:50%;background:#ea580c;border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 5px 14px rgba(234,88,12,.5);cursor:pointer}
+/* QR 오버레이 */
+.ov{position:fixed;inset:0;background:#fff;color:#111;z-index:100;display:none;flex-direction:column;align-items:center;text-align:center;max-width:430px;left:50%;transform:translateX(-50%)}
+.ov.on{display:flex}
+.ov .cls{position:absolute;top:14px;right:16px;font-size:22px;background:none;border:none;color:#999;cursor:pointer}
+.ov .ttl{font-weight:800;font-size:16px;margin-top:56px;color:#ea580c}
+.ov .qim2{width:210px;height:210px;margin-top:22px;border-radius:8px}
+.ov .nm{font-weight:800;font-size:20px;margin-top:18px}
+.ov .gd{font-size:13px;color:#888;margin-top:5px}
+.ov .tm{margin-top:14px;font-size:13px;color:#ea580c;font-weight:800}
+.ov .sim{margin-top:26px;background:#111;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:14px;padding:14px 22px;cursor:pointer}
+.ov .brt{margin-top:auto;margin-bottom:24px;font-size:11px;color:#aaa}
+.ov.done{justify-content:center}
+.ov .big{font-size:56px}
+.ov .dt1{font-size:20px;font-weight:800;margin-top:14px}
+.ov .dt2{font-size:13.5px;color:#777;margin-top:8px;line-height:1.6}
+/* 토스트 */
+.toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:13px;font-weight:700;border-radius:24px;padding:11px 20px;z-index:200;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="demo-bar"><span>시안 A · 월렛 퍼스트 프로토타입</span><a href="../concepts/index.html">다른 시안</a></div>
+
+  <!-- 지갑(홈) -->
+  <div class="view on" id="v-home">
+    <div class="gnb"><span>내 지갑</span><span class="bell" onclick="toast('알림함')">🔔</span></div>
+    <div class="carousel" id="carousel">
+      <div class="card pc" onclick="toast('평창군 주민증 상세')">
+        <div class="chip">이용 12회</div>
+        <div class="rg">평창군 관광주민증</div>
+        <div class="nm">김관광</div>
+        <div class="no">NO. DT-2026-001234 · 발급 2025.03.26</div>
+      </div>
+      <div class="card js" onclick="toast('정선군 주민증 상세')">
+        <div class="chip">이용 3회</div>
+        <div class="rg">정선군 관광주민증</div>
+        <div class="nm">김관광</div>
+        <div class="no">NO. DT-2026-001235 · 발급 2025.11.02</div>
+      </div>
+      <div class="card add" onclick="toast('새 지역 주민증 발급')">
+        <span class="pl">＋</span><span>새 주민증 추가</span>
+      </div>
+    </div>
+    <div class="dots" id="dots"><i class="on"></i><i></i><i></i></div>
+    <div class="qrbtn" onclick="openQr()">
+      <img class="qim" src="../assets/img/qr-code.svg" alt="QR">
+      <div><div class="t1">QR 제시하기</div><div class="t2">가맹점에서 이 버튼을 눌러주세요</div></div>
+      <span class="ar">›</span>
+    </div>
+    <div class="secttl" id="beneTtl">평창군에서 받을 수 있는 혜택</div>
+    <div class="bene-row">
+      <div class="bn" onclick="toast('알펜시아 리조트')"><div class="pct">50%</div><div class="nm2">알펜시아<br>리조트</div><div class="st">숙박</div></div>
+      <div class="bn" onclick="toast('대관령 양떼목장')"><div class="pct">30%</div><div class="nm2">대관령<br>양떼목장</div><div class="st">체험</div></div>
+      <div class="bn" onclick="toast('평창 송어축제')"><div class="pct">20%</div><div class="nm2">평창<br>송어축제</div><div class="st">축제</div></div>
+      <div class="bn" onclick="toast('평창 한우마을')"><div class="pct">20%</div><div class="nm2">평창<br>한우마을</div><div class="st">식사</div></div>
+    </div>
+  </div>
+
+  <!-- 혜택 -->
+  <div class="view" id="v-bene">
+    <div class="gnb"><span>혜택</span></div>
+    <div class="secttl" style="padding-top:4px">사용 가능한 쿠폰 3장</div>
+    <div class="cpn"><div class="pct">50%</div><div><div class="tt">알펜시아 리조트 숙박권</div><div class="ds">~2026.08.31 · 평창군</div></div><button class="use" onclick="openQr()">사용</button></div>
+    <div class="cpn"><div class="pct">30%</div><div><div class="tt">대관령 양떼목장 입장권</div><div class="ds">~2026.09.30 · 평창군</div></div><button class="use" onclick="openQr()">사용</button></div>
+    <div class="cpn"><div class="pct">40%</div><div><div class="tt">정선 레일바이크</div><div class="ds">~2026.07.31 · 정선군</div></div><button class="use" onclick="openQr()">사용</button></div>
+    <div class="secttl">반값여행 · 가맹점</div>
+    <div class="li" onclick="toast('반값여행 신청')"><div class="ic">✈️</div><div><div class="tt">반값여행 신청</div><div class="ds">교통+숙박 최대 50% 지원</div></div><span class="rt">신청</span></div>
+    <div class="li" onclick="toast('가맹점 검색')"><div class="ic">🔍</div><div><div class="tt">가맹점 찾기</div><div class="ds">내 주변 할인 가맹점 검색</div></div></div>
+  </div>
+
+  <!-- 지역 -->
+  <div class="view" id="v-region">
+    <div class="gnb"><span>지역</span></div>
+    <div class="li"><div class="ic">🏔️</div><div><div class="tt">평창군</div><div class="ds">가맹점 128 · 최대 50%</div></div><span class="rt">발급됨</span></div>
+    <div class="li"><div class="ic">⛰️</div><div><div class="tt">정선군</div><div class="ds">가맹점 96 · 최대 40%</div></div><span class="rt">발급됨</span></div>
+    <div class="li" onclick="toast('영월군 주민증 발급')"><div class="ic">🌄</div><div><div class="tt">영월군</div><div class="ds">가맹점 74 · 최대 30%</div></div><span class="rt" style="color:#889">발급받기</span></div>
+    <div class="li" onclick="toast('태백시 주민증 발급')"><div class="ic">🗻</div><div><div class="tt">태백시</div><div class="ds">가맹점 61 · 최대 30%</div></div><span class="rt" style="color:#889">발급받기</span></div>
+    <div class="li" onclick="toast('지역 이벤트·축제')"><div class="ic">🎪</div><div><div class="tt">이벤트 · 축제</div><div class="ds">지역별 진행 중인 행사 보기</div></div></div>
+  </div>
+
+  <!-- 마이 -->
+  <div class="view" id="v-my">
+    <div class="gnb"><span>마이</span></div>
+    <div class="li"><div class="ic">👤</div><div><div class="tt">김관광님</div><div class="ds">lkjlee@example.com</div></div></div>
+    <div class="li" onclick="toast('이용내역')"><div class="ic">📋</div><div><div class="tt">이용내역</div><div class="ds">이번 달 2회 사용</div></div></div>
+    <div class="li" onclick="toast('주민증 보관함')"><div class="ic">🗂️</div><div><div class="tt">주민증 보관함</div></div></div>
+    <div class="li" onclick="toast('서비스 소개')"><div class="ic">ℹ️</div><div><div class="tt">서비스 소개</div></div></div>
+    <div class="li" onclick="toast('설정')"><div class="ic">⚙️</div><div><div class="tt">설정</div></div></div>
+  </div>
+
+  <!-- 탭바 -->
+  <div class="tab">
+    <button class="ti on" data-v="home" onclick="go('home',this)"><i>💳</i>지갑</button>
+    <button class="ti" data-v="bene" onclick="go('bene',this)"><i>🎁</i>혜택</button>
+    <button class="ti" style="visibility:hidden">.</button>
+    <button class="ti" data-v="region" onclick="go('region',this)"><i>🗺️</i>지역</button>
+    <button class="ti" data-v="my" onclick="go('my',this)"><i>👤</i>마이</button>
+    <button class="qr-fab" onclick="openQr()">▦</button>
+  </div>
+
+  <!-- QR 오버레이 -->
+  <div class="ov" id="ovQr">
+    <button class="cls" onclick="closeQr()">✕</button>
+    <div class="ttl">나의 통합 관광주민증</div>
+    <img class="qim2" src="../assets/img/qr-code.svg" alt="QR코드">
+    <div class="nm">김관광님</div>
+    <div class="gd">QR코드를 가맹점에 제시하세요</div>
+    <div class="tm" id="qrTimer">00:60 후 자동 갱신 ↻</div>
+    <button class="sim" onclick="scanDone()">📷 가맹점 스캔 시뮬레이션</button>
+    <div class="brt">화면 밝기가 자동으로 최대로 조정되었습니다</div>
+  </div>
+
+  <!-- 스캔 완료 오버레이 -->
+  <div class="ov done" id="ovDone">
+    <div class="big">✅</div>
+    <div class="dt1">할인 적용 완료</div>
+    <div class="dt2">알펜시아 리조트 50% 할인<br>이용내역에 자동 적립되었습니다 (13회차)</div>
+    <button class="sim" onclick="closeAll()">확인</button>
+  </div>
+
+  <div class="toast" id="toastEl"></div>
+</div>
+<script>
+function go(v,btn){
+  document.querySelectorAll('.view').forEach(e=>e.classList.remove('on'));
+  document.getElementById('v-'+v).classList.add('on');
+  document.querySelectorAll('.tab .ti').forEach(e=>e.classList.remove('on'));
+  btn.classList.add('on');
+}
+let tmr=null;
+function openQr(){
+  document.getElementById('ovQr').classList.add('on');
+  let s=60;
+  const el=document.getElementById('qrTimer');
+  clearInterval(tmr);
+  tmr=setInterval(()=>{
+    s--; if(s<=0){s=60; toast('QR이 갱신되었습니다');}
+    el.textContent='00:'+String(s).padStart(2,'0')+' 후 자동 갱신 ↻';
+  },1000);
+}
+function closeQr(){document.getElementById('ovQr').classList.remove('on');clearInterval(tmr);}
+function scanDone(){closeQr();document.getElementById('ovDone').classList.add('on');}
+function closeAll(){document.getElementById('ovDone').classList.remove('on');}
+let tt=null;
+function toast(m){
+  const t=document.getElementById('toastEl');
+  t.textContent=m+' (데모)';t.classList.add('on');
+  clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),1600);
+}
+// 캐러셀 도트 + 혜택 타이틀 연동
+const car=document.getElementById('carousel');
+const dots=document.querySelectorAll('#dots i');
+const titles=['평창군에서 받을 수 있는 혜택','정선군에서 받을 수 있는 혜택','새 지역을 추가해보세요'];
+car.addEventListener('scroll',()=>{
+  const i=Math.round(car.scrollLeft/(car.scrollWidth/3-40));
+  const idx=Math.min(2,Math.max(0,i));
+  dots.forEach((d,n)=>d.classList.toggle('on',n===idx));
+  document.getElementById('beneTtl').textContent=titles[idx];
+});
+</script>
+</body>
+</html>

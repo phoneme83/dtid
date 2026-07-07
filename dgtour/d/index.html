@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>디지털 관광주민증 · 시안 D 공공 미니멀</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+html.f2{font-size:18px}
+html.f3{font-size:21px}
+body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#e4e7e6;-webkit-font-smoothing:antialiased}
+.app{max-width:430px;margin:0 auto;min-height:100vh;min-height:100dvh;background:#fff;color:#111;display:flex;flex-direction:column;position:relative}
+.demo-bar{background:#0f766e;color:#fff;font-size:11px;font-weight:700;text-align:center;padding:5px;display:flex;justify-content:center;gap:10px}
+.demo-bar a{color:#fff;opacity:.85;text-decoration:underline}
+.view{flex:1;overflow-y:auto;padding-bottom:96px;display:none}
+.view.on{display:block}
+.gnb{padding:1.1rem 1rem .4rem;font-size:1.25rem;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+.gnb .aa{font-size:.8rem;color:#0f766e;font-weight:800;border:2px solid #0f766e;border-radius:8px;padding:.2rem .5rem;background:#fff;cursor:pointer;font-family:inherit}
+.hello{padding:0 1rem .7rem;font-size:.95rem;color:#556}
+.big{margin:0 1rem .7rem;border:2px solid #e2e6e5;border-radius:18px;padding:1.1rem 1rem;display:flex;align-items:center;gap:.9rem;cursor:pointer;background:#fff;width:calc(100% - 2rem);font-family:inherit;text-align:left}
+.big.hero{background:#0f766e;border-color:#0f766e;color:#fff}
+.big .ic{font-size:1.7rem;flex-shrink:0}
+.big .tt{font-size:1.05rem;font-weight:800;line-height:1.35}
+.big .ds{font-size:.8rem;margin-top:.2rem;opacity:.72}
+.big .ar{margin-left:auto;font-size:1.1rem;opacity:.5}
+/* 주민증 */
+.idcard{margin:.6rem 1rem;border-radius:18px;background:linear-gradient(150deg,#0f766e,#115e59);color:#fff;padding:1.2rem}
+.idcard .rg{font-size:.85rem;font-weight:700;opacity:.85}
+.idcard .nm{font-size:1.5rem;font-weight:800;margin-top:.2rem}
+.idcard .no{font-size:.7rem;opacity:.7;margin-top:.9rem}
+.qrbox{margin:.3rem 1rem;border:2px solid #e2e6e5;border-radius:18px;padding:1.1rem;display:flex;flex-direction:column;align-items:center}
+.qrbox img{width:11rem;height:11rem}
+.qrbox .gd{font-size:1rem;font-weight:800;margin-top:.8rem}
+.qrbox .gd2{font-size:.8rem;color:#788;margin-top:.25rem}
+.callbtn{margin:.6rem 1rem 0;border:2px solid #0f766e;color:#0f766e;background:#fff;border-radius:14px;text-align:center;font-size:.95rem;font-weight:800;padding:.85rem;width:calc(100% - 2rem);cursor:pointer;font-family:inherit;display:block;text-decoration:none}
+.swbtn{margin:.6rem 1rem 0;border:none;background:#f0f2f1;color:#333;border-radius:14px;text-align:center;font-size:.9rem;font-weight:700;padding:.8rem;width:calc(100% - 2rem);cursor:pointer;font-family:inherit}
+/* 리스트 */
+.row{display:flex;align-items:center;gap:.8rem;padding:1rem;border-bottom:1.5px solid #f0f2f1;cursor:pointer}
+.row .ic{font-size:1.4rem;flex-shrink:0}
+.row .tt{font-size:1rem;font-weight:700}
+.row .ds{font-size:.8rem;color:#788;margin-top:.15rem}
+.row .rt{margin-left:auto;font-size:.85rem;color:#0f766e;font-weight:800;flex-shrink:0}
+/* 탭바 */
+.tab{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;display:flex;border-top:2px solid #e5e8e7;padding:.5rem 0 max(.7rem,env(safe-area-inset-bottom));z-index:50}
+.tab .ti{flex:1;text-align:center;font-size:.75rem;color:#788;padding-top:.3rem;font-weight:700;cursor:pointer;background:none;border:none;font-family:inherit}
+.tab .ti i{display:block;font-size:1.25rem;font-style:normal;margin-bottom:.2rem}
+.tab .ti.on{color:#0f766e}
+/* 발급 플로우 */
+.ov{position:fixed;inset:0;background:#fff;z-index:100;display:none;flex-direction:column;max-width:430px;left:50%;transform:translateX(-50%)}
+.ov.on{display:flex}
+.ov .hd{display:flex;align-items:center;gap:.6rem;padding:1rem;font-weight:800;font-size:1.05rem;border-bottom:1.5px solid #f0f2f1}
+.ov .hd button{background:none;border:none;font-size:1.3rem;color:#999;cursor:pointer}
+.ov .bd{flex:1;overflow-y:auto;padding:1.4rem 1.2rem;display:none;flex-direction:column}
+.ov .bd.on{display:flex}
+.q{font-size:1.35rem;font-weight:800;line-height:1.45}
+.qs{font-size:.85rem;color:#788;margin-top:.5rem}
+.opt{border:2px solid #e2e6e5;border-radius:16px;padding:1rem;font-size:1rem;font-weight:800;margin-top:.8rem;cursor:pointer;display:flex;align-items:center;gap:.7rem;background:#fff;font-family:inherit;text-align:left;width:100%}
+.opt.hero{background:#0f766e;border-color:#0f766e;color:#fff}
+.done-wrap{margin:auto;text-align:center}
+.done-wrap .big2{font-size:3.4rem}
+.done-wrap .t1{font-size:1.35rem;font-weight:800;margin-top:.8rem}
+.toast{position:fixed;bottom:7.5rem;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:.85rem;font-weight:700;border-radius:24px;padding:.7rem 1.3rem;z-index:200;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="demo-bar"><span>시안 D · 공공 미니멀 프로토타입</span><a href="../concepts/index.html">다른 시안</a></div>
+
+  <!-- 홈 -->
+  <div class="view on" id="v-home">
+    <div class="gnb"><span>디지털 관광주민증</span><button class="aa" onclick="fontUp()" id="aaBtn">가⁺</button></div>
+    <div class="hello">김관광님, 무엇을 도와드릴까요?</div>
+    <button class="big hero" onclick="go('card',tabBtn('card'))"><span class="ic">▦</span><div><div class="tt">주민증 QR 보여주기</div><div class="ds">가맹점 할인 받을 때</div></div><span class="ar">›</span></button>
+    <button class="big" onclick="openIssue()"><span class="ic">🪪</span><div><div class="tt">주민증 새로 발급받기</div><div class="ds">30초면 됩니다</div></div><span class="ar">›</span></button>
+    <button class="big" onclick="show('bene')"><span class="ic">🎁</span><div><div class="tt">내 혜택 · 쿠폰 보기</div><div class="ds">사용 가능 쿠폰 3장</div></div><span class="ar">›</span></button>
+    <button class="big" onclick="show('hist')"><span class="ic">📋</span><div><div class="tt">이용 내역 확인</div><div class="ds">이번 달 2회 사용</div></div><span class="ar">›</span></button>
+  </div>
+
+  <!-- 주민증 -->
+  <div class="view" id="v-card">
+    <div class="gnb"><span>나의 주민증</span><button class="aa" onclick="fontUp()">가⁺</button></div>
+    <div class="idcard" id="cardEl">
+      <div class="rg" id="cardRg">평창군 디지털 관광주민증</div>
+      <div class="nm">김관광</div>
+      <div class="no" id="cardNo">NO. DT-2026-001234 · 발급 2025.03.26</div>
+    </div>
+    <div class="qrbox">
+      <img src="../assets/img/qr-code.svg" alt="주민증 QR코드">
+      <div class="gd">가게 직원에게 보여주세요</div>
+      <div class="gd2">화면이 자동으로 밝아집니다</div>
+    </div>
+    <button class="swbtn" onclick="swapCard()">🔄 다른 지역 주민증 보기 (정선군)</button>
+    <a class="callbtn" href="tel:15880000">📞 사용이 어려우면 전화 문의 (1588-0000)</a>
+  </div>
+
+  <!-- 혜택 -->
+  <div class="view" id="v-bene">
+    <div class="gnb"><span>내 혜택 · 쿠폰</span><button class="aa" onclick="fontUp()">가⁺</button></div>
+    <div class="row" onclick="go('card',tabBtn('card'))"><span class="ic">🏨</span><div><div class="tt">알펜시아 리조트 50%</div><div class="ds">평창군 · 2026.08.31까지</div></div><span class="rt">사용하기</span></div>
+    <div class="row" onclick="go('card',tabBtn('card'))"><span class="ic">🐑</span><div><div class="tt">대관령 양떼목장 30%</div><div class="ds">평창군 · 2026.09.30까지</div></div><span class="rt">사용하기</span></div>
+    <div class="row" onclick="go('card',tabBtn('card'))"><span class="ic">🚲</span><div><div class="tt">정선 레일바이크 40%</div><div class="ds">정선군 · 2026.07.31까지</div></div><span class="rt">사용하기</span></div>
+    <div class="hello" style="padding-top:1rem">쿠폰은 가게에서 QR을 보여주면 자동으로 적용됩니다.</div>
+  </div>
+
+  <!-- 이용내역 -->
+  <div class="view" id="v-hist">
+    <div class="gnb"><span>이용 내역</span><button class="aa" onclick="fontUp()">가⁺</button></div>
+    <div class="row"><span class="ic">🏨</span><div><div class="tt">알펜시아 리조트</div><div class="ds">2026년 7월 2일 · 50% 할인</div></div></div>
+    <div class="row"><span class="ic">🥩</span><div><div class="tt">평창 한우마을</div><div class="ds">2026년 6월 15일 · 20% 할인</div></div></div>
+    <div class="row"><span class="ic">🎣</span><div><div class="tt">평창 송어축제</div><div class="ds">2026년 2월 1일 · 입장권 반값</div></div></div>
+  </div>
+
+  <!-- 전체메뉴 -->
+  <div class="view" id="v-menu">
+    <div class="gnb"><span>전체메뉴</span><button class="aa" onclick="fontUp()">가⁺</button></div>
+    <div class="row" onclick="toast('지역 소개')"><span class="ic">🗺️</span><div class="tt">지역 소개</div></div>
+    <div class="row" onclick="toast('이벤트')"><span class="ic">🎪</span><div class="tt">이벤트</div></div>
+    <div class="row" onclick="toast('반값여행')"><span class="ic">✈️</span><div class="tt">반값여행</div></div>
+    <div class="row" onclick="toast('서비스 소개')"><span class="ic">ℹ️</span><div class="tt">서비스 소개</div></div>
+    <div class="row" onclick="fontUp()"><span class="ic">🔎</span><div class="tt">글자 크기 바꾸기</div><span class="rt" id="fontState">보통</span></div>
+    <div class="row" onclick="toast('설정')"><span class="ic">⚙️</span><div class="tt">설정</div></div>
+  </div>
+
+  <div class="tab">
+    <button class="ti on" data-v="home" onclick="go('home',this)"><i>🏠</i>홈</button>
+    <button class="ti" data-v="card" onclick="go('card',this)"><i>🪪</i>주민증</button>
+    <button class="ti" data-v="menu" onclick="go('menu',this)"><i>☰</i>전체메뉴</button>
+  </div>
+
+  <!-- 발급 플로우: 한 화면 한 질문 -->
+  <div class="ov" id="ovIssue">
+    <div class="hd"><button onclick="closeIssue()">✕</button><span id="issTtl">주민증 발급 (1/3)</span></div>
+    <div class="bd on" id="is1">
+      <div class="q">어느 지역의<br>관광주민이 되시겠어요?</div>
+      <button class="opt" onclick="pick('영월군')">🌄 영월군 <span style="margin-left:auto;font-size:.8rem;color:#788">최대 30% 할인</span></button>
+      <button class="opt" onclick="pick('태백시')">🗻 태백시 <span style="margin-left:auto;font-size:.8rem;color:#788">최대 30% 할인</span></button>
+      <button class="opt" onclick="pick('강릉시')">🌊 강릉시 <span style="margin-left:auto;font-size:.8rem;color:#788">최대 35% 할인</span></button>
+    </div>
+    <div class="bd" id="is2">
+      <div class="q">본인 확인이<br>필요해요</div>
+      <div class="qs">통신사 인증(PASS) 한 번이면 끝나요</div>
+      <button class="opt hero" onclick="issStep(3)">📱 휴대폰으로 인증하기</button>
+      <button class="opt" onclick="issStep(3)">🔐 간편인증으로 하기</button>
+    </div>
+    <div class="bd" id="is3">
+      <div class="done-wrap">
+        <div class="big2">🎉</div>
+        <div class="t1">발급 완료!</div>
+        <div class="idcard" style="margin:1rem 0 0;text-align:left"><div class="rg" id="newRg">영월군 디지털 관광주민증</div><div class="nm">김관광</div><div class="no">NO. DT-2026-001236 · 오늘 발급</div></div>
+        <button class="opt hero" style="justify-content:center" onclick="issFinish()">바로 QR 보여주기</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toastEl"></div>
+</div>
+<script>
+function go(v,btn){
+  document.querySelectorAll('.view').forEach(e=>e.classList.remove('on'));
+  document.getElementById('v-'+v).classList.add('on');
+  document.querySelectorAll('.tab .ti').forEach(e=>e.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  window.scrollTo(0,0);
+}
+function tabBtn(v){return document.querySelector('[data-v='+v+']');}
+function show(v){go(v,null);}
+// 글자 크기 3단계
+const F=['보통','크게','아주 크게'];let fi=+(localStorage.getItem('dtidD_f')||0);
+function applyFont(){document.documentElement.className=fi===1?'f2':fi===2?'f3':'';const el=document.getElementById('fontState');if(el)el.textContent=F[fi];}
+function fontUp(){fi=(fi+1)%3;localStorage.setItem('dtidD_f',fi);applyFont();toast('글자 크기: '+F[fi]);}
+applyFont();
+// 카드 전환
+let cardIdx=0;
+const CARDS=[['평창군 디지털 관광주민증','NO. DT-2026-001234 · 발급 2025.03.26','정선군'],['정선군 디지털 관광주민증','NO. DT-2026-001235 · 발급 2025.11.02','평창군']];
+function swapCard(){
+  cardIdx=1-cardIdx;
+  document.getElementById('cardRg').textContent=CARDS[cardIdx][0];
+  document.getElementById('cardNo').textContent=CARDS[cardIdx][1];
+  document.querySelector('.swbtn').textContent='🔄 다른 지역 주민증 보기 ('+CARDS[cardIdx][2]+')';
+}
+// 발급 플로우
+function openIssue(){document.getElementById('ovIssue').classList.add('on');issStep(1);}
+function closeIssue(){document.getElementById('ovIssue').classList.remove('on');}
+function issStep(n){
+  [1,2,3].forEach(i=>document.getElementById('is'+i).classList.toggle('on',i===n));
+  document.getElementById('issTtl').textContent=n===3?'발급 완료 (3/3)':'주민증 발급 ('+n+'/3)';
+}
+function pick(rg){document.getElementById('newRg').textContent=rg+' 디지털 관광주민증';issStep(2);}
+function issFinish(){closeIssue();go('card',tabBtn('card'));toast('새 주민증이 추가되었습니다');}
+let tt=null;
+function toast(m){
+  const t=document.getElementById('toastEl');
+  t.textContent=m+' (데모)';t.classList.add('on');
+  clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),1600);
+}
+</script>
+</body>
+</html>

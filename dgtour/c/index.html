@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>디지털 관광주민증 · 시안 C 로컬 미션</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#ddd8ee;-webkit-font-smoothing:antialiased}
+.app{max-width:430px;margin:0 auto;min-height:100vh;min-height:100dvh;background:#f6f4ff;color:#1a1a1a;display:flex;flex-direction:column;position:relative}
+.demo-bar{background:#7c3aed;color:#fff;font-size:11px;font-weight:700;text-align:center;padding:5px;display:flex;justify-content:center;gap:10px}
+.demo-bar a{color:#fff;opacity:.85;text-decoration:underline}
+.view{flex:1;overflow-y:auto;padding-bottom:92px;display:none}
+.view.on{display:block}
+.head{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;padding:18px 18px 42px;position:relative}
+.head .hi{font-size:16px;font-weight:800}
+.head .lv{font-size:12px;opacity:.9;margin-top:3px}
+.head .pt{position:absolute;right:18px;top:18px;background:rgba(255,255,255,.2);border-radius:18px;font-size:13px;font-weight:800;padding:6px 12px}
+.lvcard{margin:-28px 16px 0;background:#fff;border-radius:18px;padding:15px 17px;box-shadow:0 4px 14px rgba(124,58,237,.14)}
+.lvcard .t{display:flex;justify-content:space-between;font-size:13.5px;font-weight:800}
+.lvcard .t span:last-child{color:#7c3aed}
+.bar{height:10px;background:#ede9fe;border-radius:6px;margin-top:9px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#a78bfa,#7c3aed);border-radius:6px;transition:width .6s}
+.bar-cap{font-size:11.5px;color:#889;margin-top:7px}
+.secttl{padding:18px 16px 8px;font-size:14.5px;font-weight:800}
+.msn{margin:0 16px 9px;background:#fff;border-radius:15px;padding:13px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 5px rgba(0,0,0,.05)}
+.msn .ic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.msn .tt{font-size:13.5px;font-weight:800}
+.msn .rw{font-size:11px;color:#7c3aed;font-weight:800;margin-top:3px}
+.msn .go{margin-left:auto;font-size:11.5px;font-weight:800;color:#fff;background:#7c3aed;border:none;border-radius:16px;padding:8px 14px;flex-shrink:0;cursor:pointer;font-family:inherit}
+.msn .go.done{background:#d1d5db;pointer-events:none}
+/* 스탬프 */
+.stamp-wrap{padding:14px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stamp{aspect-ratio:1;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:800;gap:3px}
+.stamp.got{background:#ede9fe;border:2.5px solid #7c3aed;color:#7c3aed;animation:pop .3s}
+.stamp.no{background:#fff;border:2.5px dashed #d5d0e8;color:#aab}
+.stamp .e{font-size:22px}
+@keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.reward{margin:6px 16px;background:linear-gradient(135deg,#fbbf24,#f59e0b);border-radius:15px;padding:14px 16px;color:#fff}
+.reward .t{font-size:14px;font-weight:800}
+.reward .s{font-size:11.5px;opacity:.92;margin-top:3px}
+/* 탭바 */
+.tab{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;display:flex;border-top:1px solid #ece8fb;padding:8px 0 max(10px,env(safe-area-inset-bottom));z-index:50}
+.tab .ti{flex:1;text-align:center;font-size:10.5px;color:#99a;padding-top:5px;cursor:pointer;background:none;border:none;font-family:inherit}
+.tab .ti i{display:block;font-size:19px;font-style:normal;margin-bottom:3px}
+.tab .ti.on{color:#7c3aed;font-weight:800}
+.qr-fab{position:absolute;left:50%;top:-24px;transform:translateX(-50%);width:56px;height:56px;border-radius:50%;background:#7c3aed;border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 5px 14px rgba(124,58,237,.45);cursor:pointer}
+/* 오버레이 */
+.ov{position:fixed;inset:0;background:#fff;z-index:100;display:none;flex-direction:column;align-items:center;text-align:center;max-width:430px;left:50%;transform:translateX(-50%)}
+.ov.on{display:flex}
+.ov .cls{position:absolute;top:14px;right:16px;font-size:22px;background:none;border:none;color:#999;cursor:pointer}
+.ov .ttl{font-weight:800;font-size:16px;margin-top:56px;color:#7c3aed}
+.ov img{width:200px;height:200px;margin-top:20px}
+.ov .nm{font-weight:800;font-size:19px;margin-top:16px}
+.ov .gd{font-size:13px;color:#888;margin-top:5px}
+.ov .sim{margin-top:24px;background:#111;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:14px;padding:14px 22px;cursor:pointer;font-family:inherit}
+.ov.center{justify-content:center;background:#f6f4ff}
+.ov .big{font-size:58px}
+.ov .dt1{font-size:21px;font-weight:800;margin-top:12px}
+.ov .dt2{font-size:14px;color:#7c3aed;font-weight:800;margin-top:8px}
+.ov .dt3{background:#ede9fe;border-radius:10px;font-size:12.5px;padding:9px 14px;margin-top:14px;color:#555}
+.ov .btn2{margin-top:24px;background:#7c3aed;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:14px;padding:14px 26px;cursor:pointer;font-family:inherit}
+.toast{position:fixed;bottom:114px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:13px;font-weight:700;border-radius:24px;padding:11px 20px;z-index:200;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1}
+.reset{margin:20px 16px;background:none;border:1px solid #d5d0e8;color:#889;border-radius:10px;font-size:11.5px;padding:8px;width:calc(100% - 32px);cursor:pointer;font-family:inherit}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="demo-bar"><span>시안 C · 로컬 미션 프로토타입</span><a href="../concepts/index.html">다른 시안</a></div>
+
+  <!-- 홈 -->
+  <div class="view on" id="v-home">
+    <div class="head">
+      <div class="pt" id="ptEl">🪙 0P</div>
+      <div class="hi">김관광님은 지금</div>
+      <div class="lv" id="lvEl">평창 주민 Lv.3 · 정선 주민 Lv.1</div>
+    </div>
+    <div class="lvcard">
+      <div class="t"><span id="lvT">평창 주민 Lv.3 → Lv.4</span><span id="lvPct">64%</span></div>
+      <div class="bar"><i id="lvBar" style="width:64%"></i></div>
+      <div class="bar-cap" id="lvCap">가맹점 2곳만 더 방문하면 레벨업! 🎁 5,000P</div>
+    </div>
+    <div class="secttl">🔥 이번 주 미션</div>
+    <div id="msnList"></div>
+  </div>
+
+  <!-- 미션 -->
+  <div class="view" id="v-msn">
+    <div class="secttl" style="padding-top:16px">전체 미션</div>
+    <div id="msnList2"></div>
+    <div class="secttl">⏰ 시즌 한정</div>
+    <div class="msn"><div class="ic" style="background:#fef3c7">🎣</div><div><div class="tt">평창 송어축제 방문</div><div class="rw">+500P · 한정 스탬프 · ~2월</div></div><button class="go" onclick="openQr()">도전</button></div>
+  </div>
+
+  <!-- 스탬프 -->
+  <div class="view" id="v-stamp">
+    <div class="head" style="padding-bottom:18px"><div class="hi">평창 스탬프 투어 🏔️</div><div class="lv" id="stampCnt">0/9 수집 · 다 모으면 반값여행 우선 배정</div></div>
+    <div class="stamp-wrap" id="stampGrid"></div>
+    <div class="reward"><div class="t">🏆 9개 완주 보상</div><div class="s">반값여행 우선 배정권 + 평창 굿즈 패키지</div></div>
+  </div>
+
+  <!-- 마이 -->
+  <div class="view" id="v-my">
+    <div class="secttl" style="padding-top:16px">마이</div>
+    <div class="msn"><div class="ic" style="background:#ede9fe">👤</div><div><div class="tt">김관광님</div><div class="rw" id="myPt">🪙 0P 보유</div></div></div>
+    <div class="msn"><div class="ic" style="background:#ede9fe">💳</div><div><div class="tt">내 주민증 카드</div><div class="rw">평창 · 정선</div></div><button class="go" onclick="openQr()">QR</button></div>
+    <div class="msn"><div class="ic" style="background:#ede9fe">🎫</div><div><div class="tt">쿠폰함</div><div class="rw">사용 가능 3장</div></div></div>
+    <div class="secttl">포인트 내역</div>
+    <div id="ptLog"></div>
+    <button class="reset" onclick="resetAll()">데모 상태 초기화</button>
+  </div>
+
+  <div class="tab">
+    <button class="ti on" data-v="home" onclick="go('home',this)"><i>🏠</i>홈</button>
+    <button class="ti" data-v="msn" onclick="go('msn',this)"><i>🎯</i>미션</button>
+    <button class="ti" style="visibility:hidden">.</button>
+    <button class="ti" data-v="stamp" onclick="go('stamp',this)"><i>🏅</i>스탬프</button>
+    <button class="ti" data-v="my" onclick="go('my',this)"><i>👤</i>마이</button>
+    <button class="qr-fab" onclick="openQr()">▦</button>
+  </div>
+
+  <!-- QR -->
+  <div class="ov" id="ovQr">
+    <button class="cls" onclick="closeOv('ovQr')">✕</button>
+    <div class="ttl">나의 통합 관광주민증</div>
+    <img src="../assets/img/qr-code.svg" alt="QR코드">
+    <div class="nm">김관광님</div>
+    <div class="gd">QR 사용이 곧 미션 달성이 됩니다</div>
+    <button class="sim" onclick="scanDone()">📷 가맹점 스캔 시뮬레이션</button>
+  </div>
+
+  <!-- 미션 달성 -->
+  <div class="ov center" id="ovAchv">
+    <div class="big">🎊</div>
+    <div class="dt1">미션 달성!</div>
+    <div class="dt2" id="achvTxt">+300P · 스탬프 획득</div>
+    <div class="dt3" id="achvSub">Lv.4까지 가맹점 1곳 남음</div>
+    <button class="btn2" onclick="afterAchv()">확인</button>
+  </div>
+
+  <!-- 레벨업 -->
+  <div class="ov center" id="ovLvup">
+    <div class="big">🏆</div>
+    <div class="dt1" id="lvupT">평창 주민 Lv.4 달성!</div>
+    <div class="dt2">레벨업 보상 +5,000P</div>
+    <div class="dt3">SNS에 자랑하고 친구를 초대해보세요</div>
+    <button class="btn2" onclick="closeOv('ovLvup');toast('공유하기')">📤 공유하고 자랑하기</button>
+    <button class="btn2" style="background:#ddd;color:#555" onclick="closeOv('ovLvup')">닫기</button>
+  </div>
+
+  <div class="toast" id="toastEl"></div>
+</div>
+<script>
+const DEF={pts:2340,lv:3,prog:64,
+ msn:[
+  {ic:'🍜',bg:'#dcfce7',t:'로컬 맛집 2곳에서 QR 사용',rw:300,cur:1,tgt:2},
+  {ic:'☕',bg:'#fef9c3',t:'카페에서 QR 사용하기',rw:200,cur:0,tgt:1},
+  {ic:'🏨',bg:'#e0e7ff',t:'첫 숙박 할인 사용하기',rw:1000,cur:1,tgt:1}
+ ],
+ stamps:[
+  {e:'🎿',n:'알펜시아',got:true},{e:'🐑',n:'양떼목장',got:true},{e:'🎣',n:'송어축제',got:true},
+  {e:'🍜',n:'한우마을',got:true},{e:'☕',n:'감자밭카페',got:false},{e:'🏔️',n:'발왕산',got:false},
+  {e:'🛶',n:'동강래프팅',got:false},{e:'🌸',n:'육백마지기',got:false},{e:'🎁',n:'?',got:false}
+ ],
+ log:[{t:'첫 숙박 할인 사용',p:'+1,000P'},{t:'송어축제 스탬프',p:'+500P'}]};
+let S=JSON.parse(localStorage.getItem('dtidC')||'null')||JSON.parse(JSON.stringify(DEF));
+function save(){localStorage.setItem('dtidC',JSON.stringify(S));}
+function fmt(n){return n.toLocaleString('ko-KR');}
+function render(){
+  document.getElementById('ptEl').textContent='🪙 '+fmt(S.pts)+'P';
+  document.getElementById('myPt').textContent='🪙 '+fmt(S.pts)+'P 보유';
+  document.getElementById('lvEl').textContent='평창 주민 Lv.'+S.lv+' · 정선 주민 Lv.1';
+  document.getElementById('lvT').textContent='평창 주민 Lv.'+S.lv+' → Lv.'+(S.lv+1);
+  document.getElementById('lvPct').textContent=S.prog+'%';
+  document.getElementById('lvBar').style.width=S.prog+'%';
+  const remain=Math.ceil((100-S.prog)/18);
+  document.getElementById('lvCap').textContent='가맹점 '+remain+'곳만 더 방문하면 레벨업! 🎁 5,000P';
+  const mh=S.msn.map((m,i)=>`<div class="msn"><div class="ic" style="background:${m.bg}">${m.ic}</div><div><div class="tt">${m.t}</div><div class="rw">+${fmt(m.rw)}P${m.tgt>1?' ('+m.cur+'/'+m.tgt+' 완료)':''}</div></div><button class="go ${m.cur>=m.tgt?'done':''}" onclick="openQr()">${m.cur>=m.tgt?'완료':'도전'}</button></div>`).join('');
+  document.getElementById('msnList').innerHTML=mh;
+  document.getElementById('msnList2').innerHTML=mh;
+  document.getElementById('stampGrid').innerHTML=S.stamps.map(s=>`<div class="stamp ${s.got?'got':'no'}"><span class="e">${s.e}</span>${s.n}</div>`).join('');
+  document.getElementById('stampCnt').textContent=S.stamps.filter(s=>s.got).length+'/9 수집 · 다 모으면 반값여행 우선 배정';
+  document.getElementById('ptLog').innerHTML=S.log.map(l=>`<div class="msn"><div class="ic" style="background:#f3f0fc">🪙</div><div><div class="tt">${l.t}</div></div><div style="margin-left:auto;font-weight:800;color:#7c3aed;font-size:13px">${l.p}</div></div>`).join('');
+}
+function go(v,btn){
+  document.querySelectorAll('.view').forEach(e=>e.classList.remove('on'));
+  document.getElementById('v-'+v).classList.add('on');
+  document.querySelectorAll('.tab .ti').forEach(e=>e.classList.remove('on'));
+  btn.classList.add('on');
+}
+function openQr(){document.getElementById('ovQr').classList.add('on');}
+function closeOv(id){document.getElementById(id).classList.remove('on');}
+let leveled=false;
+function scanDone(){
+  closeOv('ovQr');
+  const m=S.msn.find(x=>x.cur<x.tgt);
+  let msg='+300P';
+  if(m){m.cur++;S.pts+=m.rw;msg='+'+fmt(m.rw)+'P';S.log.unshift({t:m.t,p:'+'+fmt(m.rw)+'P'});}
+  else{S.pts+=100;S.log.unshift({t:'가맹점 QR 사용',p:'+100P'});msg='+100P';}
+  const st=S.stamps.find(x=>!x.got);
+  if(st){st.got=true;msg+=' · '+st.n+' 스탬프';}
+  S.prog+=18;leveled=false;
+  if(S.prog>=100){S.prog=Math.max(0,S.prog-100);S.lv++;S.pts+=5000;leveled=true;S.log.unshift({t:'Lv.'+S.lv+' 레벨업 보상',p:'+5,000P'});}
+  save();render();
+  document.getElementById('achvTxt').textContent=msg;
+  document.getElementById('achvSub').textContent=leveled?'레벨업 달성! 보상을 확인하세요':'Lv.'+(S.lv+1)+'까지 가맹점 '+Math.ceil((100-S.prog)/18)+'곳 남음';
+  document.getElementById('ovAchv').classList.add('on');
+}
+function afterAchv(){
+  closeOv('ovAchv');
+  if(leveled){document.getElementById('lvupT').textContent='평창 주민 Lv.'+S.lv+' 달성!';document.getElementById('ovLvup').classList.add('on');}
+}
+function resetAll(){localStorage.removeItem('dtidC');S=JSON.parse(JSON.stringify(DEF));render();toast('초기화 완료');}
+let tt=null;
+function toast(m){
+  const t=document.getElementById('toastEl');
+  t.textContent=m+' (데모)';t.classList.add('on');
+  clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),1600);
+}
+render();
+</script>
+</body>
+</html>
