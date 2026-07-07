@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">관광주민증 QR</string>
+    <string name="widget_label">관광주민증 QR 위젯</string>
+    <string name="widget_title">디지털 관광주민증</string>
+    <string name="card_title">나의 통합 관광주민증</string>
+    <string name="present_guide">QR코드를 가맹점에 제시하세요</string>
+    <string name="refresh_qr">QR 새로고침</string>
+</resources>
