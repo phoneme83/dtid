@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>시안 B · 여행 탐색 퍼스트 - 디지털 관광주민증 UI/UX 개선 시안</title>
+<link rel="stylesheet" href="concepts.css">
+<style>
+:root{--ac:#2563eb}
+.doc-badge{background:var(--ac)}
+.sec h2 .no{background:var(--ac)}
+.doc-nav a.on{background:var(--ac)}
+.ia .new{background:var(--ac)}
+/* ── 시안 B 목업 전용 ── */
+.b-screen{background:#fff;color:#111}
+.b-search{margin:8px 12px;background:#f1f3f6;border-radius:22px;padding:9px 14px;font-size:10px;color:#889;display:flex;align-items:center;gap:6px}
+.b-map{margin:0 12px;height:120px;border-radius:14px;background:linear-gradient(160deg,#dbeafe,#bfdbfe 55%,#a7f3d0);position:relative;overflow:hidden}
+.b-pin{position:absolute;background:#fff;border-radius:14px;font-size:8.5px;font-weight:800;padding:3px 8px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.b-pin b{color:var(--ac)}
+.b-chiprow{display:flex;gap:6px;padding:10px 12px 4px;overflow:hidden}
+.b-chip{flex-shrink:0;font-size:9px;font-weight:700;border:1px solid #dde;border-radius:16px;padding:4px 10px;color:#556}
+.b-chip.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.b-feed{padding:8px 12px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.b-fc{display:flex;gap:10px;background:#fff;border:1px solid #eef0f3;border-radius:14px;padding:9px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.b-fc .th{width:56px;height:56px;border-radius:10px;flex-shrink:0}
+.b-fc .tt{font-size:10.5px;font-weight:800}
+.b-fc .ds{font-size:8.5px;color:#788;margin-top:3px;line-height:1.5}
+.b-fc .bg{display:inline-block;font-size:8px;font-weight:800;color:var(--ac);background:#eff6ff;border-radius:5px;padding:2px 6px;margin-top:5px}
+.b-tab{margin-top:auto;background:#fff;display:flex;border-top:1px solid #eef0f3;padding:6px 0 10px}
+.b-tab .ti{flex:1;text-align:center;font-size:8.5px;color:#99a;padding-top:4px}
+.b-tab .ti i{display:block;font-size:15px;font-style:normal;margin-bottom:2px}
+.b-tab .ti.on{color:var(--ac);font-weight:800}
+.b-fab{position:absolute;right:12px;bottom:64px;width:46px;height:46px;border-radius:50%;background:var(--ac);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:14px;box-shadow:0 5px 14px rgba(37,99,235,.45)}
+.b-fab span{font-size:7px;font-weight:800;margin-top:1px}
+/* 지역 상세 */
+.b-hero{height:110px;background:linear-gradient(150deg,#60a5fa,#2563eb);color:#fff;padding:14px;display:flex;flex-direction:column;justify-content:flex-end}
+.b-hero .t{font-size:15px;font-weight:800}
+.b-hero .s{font-size:9px;opacity:.85;margin-top:3px}
+.b-cta{margin:12px;background:var(--ac);color:#fff;border-radius:12px;text-align:center;font-weight:800;font-size:11px;padding:12px}
+.b-stat{display:flex;margin:0 12px;border:1px solid #eef0f3;border-radius:12px}
+.b-stat>div{flex:1;text-align:center;padding:9px 0}
+.b-stat .v{font-weight:800;font-size:11px;color:var(--ac)}
+.b-stat .k{font-size:8px;color:#899;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="doc">
+  <a class="back-link" href="index.html">← 시안 목록으로</a>
+  <div class="doc-top">
+    <span class="doc-badge">시안 B</span>
+    <h1>여행 탐색 퍼스트 (Discovery First)</h1>
+  </div>
+  <p class="doc-sub">"주민증은 <b>여행을 떠나게 만드는 도구</b>다" — 트리플·야놀자처럼 지도와 콘텐츠 피드로 <b>탐색 → 발급 → 방문</b>을 이끄는 여행 플랫폼형 구조.</p>
+  <div class="tag-row"><span class="tag">#지도중심</span><span class="tag">#콘텐츠피드</span><span class="tag">#신규유입</span><span class="tag">#트리플</span><span class="tag">#발급전환</span></div>
+
+  <div class="sec">
+    <h2><span class="no">1</span>컨셉 &amp; 의미</h2>
+    <p>디지털 관광주민증의 정책 목표는 '인구감소지역 방문 유도'입니다. 즉 <b>아직 발급받지 않은 사람을 끌어들이는 것</b>이 핵심 성과입니다. 시안 B는 홈을 지도 + 추천 피드로 구성해 "어디로 갈까?"라는 여행 탐색 경험을 전면에 둡니다.</p>
+    <p>지도에는 지역별 대표 할인율이 핀으로 떠서 혜택 규모가 한눈에 보이고, 피드는 축제·계절 콘텐츠로 방문 동기를 만듭니다. 발급자용 QR은 <b>우하단 플로팅 버튼</b>으로 상시 접근을 보장하되, 지면의 주인공은 탐색 콘텐츠입니다.</p>
+  </div>
+
+  <div class="sec">
+    <h2><span class="no">2</span>장점 / 단점</h2>
+    <div class="pc-grid">
+      <div class="pc pros"><h3>👍 장점</h3><ul>
+        <li><b>미발급 신규 사용자</b>의 첫 경험이 풍부함 — 발급 전환 퍼널에 최적</li>
+        <li>지도 핀의 할인율로 <b>혜택이 즉각적으로 지각</b>됨 ("평창 50%!")</li>
+        <li>축제·계절 콘텐츠 운영 지면이 넓어 <b>재방문 콘텐츠 전략</b>과 궁합이 좋음</li>
+        <li>지역(지자체)별 페이지가 구조의 중심이라 지자체 협업·홍보에 유리</li>
+      </ul></div>
+      <div class="pc cons"><h3>👎 단점</h3><ul>
+        <li>기발급 헤비유저에겐 QR까지의 동선이 시안 A보다 김 (플로팅 1탭이긴 하나 지면 우선순위가 낮음)</li>
+        <li>지도·피드·검색 등 <b>개발 난이도와 콘텐츠 운영 비용이 가장 높음</b></li>
+        <li>콘텐츠가 부실하면 빈 느낌이 바로 드러나는 구조 (콘텐츠 의존적)</li>
+        <li>여행 OTA 앱들과 직접 비교되어 기대 수준이 높아짐</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="no">3</span>화면 디자인 시안</h2>
+    <div class="mock-row">
+      <div class="mock-item">
+        <div class="phone"><div class="screen b-screen">
+          <div class="statusbar"><span>9:41</span><span>📶 🔋</span></div>
+          <div class="b-search">🔍 어디로 떠나볼까요? "평창"</div>
+          <div class="b-map">
+            <div class="b-pin" style="left:18px;top:22px">평창 <b>50%</b></div>
+            <div class="b-pin" style="left:120px;top:52px">정선 <b>40%</b></div>
+            <div class="b-pin" style="left:55px;top:82px">영월 <b>30%</b></div>
+            <div class="b-pin" style="right:14px;top:18px">강릉 <b>35%</b></div>
+          </div>
+          <div class="b-chiprow">
+            <div class="b-chip on">전체</div><div class="b-chip">축제</div><div class="b-chip">숙박</div><div class="b-chip">체험</div><div class="b-chip">맛집</div>
+          </div>
+          <div class="b-feed">
+            <div class="b-fc"><div class="th" style="background:linear-gradient(140deg,#fda4af,#fb7185)"></div><div><div class="tt">평창 송어축제 개막 🎣</div><div class="ds">주민증 있으면 입장권 반값</div><div class="bg">주민증 50% 할인</div></div></div>
+            <div class="b-fc"><div class="th" style="background:linear-gradient(140deg,#a7f3d0,#34d399)"></div><div><div class="tt">대관령 양떼목장</div><div class="ds">지금 계절이 제일 예뻐요</div><div class="bg">체험 30% 할인</div></div></div>
+          </div>
+          <div class="b-fab">▦<span>내 QR</span></div>
+          <div class="b-tab">
+            <div class="ti on"><i>🏠</i>홈</div>
+            <div class="ti"><i>🗺️</i>지도</div>
+            <div class="ti"><i>🎁</i>혜택</div>
+            <div class="ti"><i>💳</i>주민증</div>
+            <div class="ti"><i>👤</i>마이</div>
+          </div>
+        </div></div>
+        <div class="phone-label">홈 = 지도 + 추천 피드</div>
+      </div>
+      <div class="mock-item">
+        <div class="phone"><div class="screen b-screen">
+          <div class="statusbar"><span>9:41</span><span>📶 🔋</span></div>
+          <div class="b-hero"><div class="t">평창군 🏔️</div><div class="s">디지털 관광주민이 되면 여기가 반값</div></div>
+          <div class="b-stat">
+            <div><div class="v">128</div><div class="k">가맹점</div></div>
+            <div><div class="v">최대 50%</div><div class="k">할인율</div></div>
+            <div><div class="v">3.2만</div><div class="k">관광주민</div></div>
+          </div>
+          <div class="b-cta">평창군 주민증 발급받기 (30초)</div>
+          <div class="b-feed">
+            <div class="b-fc"><div class="th" style="background:linear-gradient(140deg,#93c5fd,#3b82f6)"></div><div><div class="tt">알펜시아 리조트</div><div class="ds">숙박 50% · 이번 주 예약 가능</div><div class="bg">주민증 혜택</div></div></div>
+            <div class="b-fc"><div class="th" style="background:linear-gradient(140deg,#fcd34d,#f59e0b)"></div><div><div class="tt">평창 한우마을</div><div class="ds">식사 20% 할인</div><div class="bg">주민증 혜택</div></div></div>
+          </div>
+          <div class="b-tab">
+            <div class="ti"><i>🏠</i>홈</div>
+            <div class="ti on"><i>🗺️</i>지도</div>
+            <div class="ti"><i>🎁</i>혜택</div>
+            <div class="ti"><i>💳</i>주민증</div>
+            <div class="ti"><i>👤</i>마이</div>
+          </div>
+        </div></div>
+        <div class="phone-label">지역 상세 = 발급 전환 페이지</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="no">4</span>메뉴 구조 시안</h2>
+    <p>지역(콘텐츠)이 IA의 중심이 되고, 주민증·QR은 독립 탭으로 분리해 명확히 합니다.</p>
+    <div class="ia">
+      <div class="lv1">🏠 홈</div>
+      <div class="lv2">· 검색 / 지도 요약 / 추천 피드(축제·계절·테마) <span class="new">NEW</span></div>
+      <div class="lv1">🗺️ 지도</div>
+      <div class="lv2">· 전국 지도 + 지역별 할인 핀 <span class="new">NEW</span></div>
+      <div class="lv3">· 지역 상세: 가맹점·할인율·관광주민 수 → 발급 CTA</div>
+      <div class="lv1">🎁 혜택</div>
+      <div class="lv2">· 내 쿠폰 / 반값여행 신청 / 가맹점 카테고리 검색</div>
+      <div class="lv1">💳 주민증</div>
+      <div class="lv2">· 내 카드 목록 / QR 제시 / 이용내역</div>
+      <div class="lv2">· 우하단 플로팅 "내 QR" — 전 화면 공통 <span class="new">NEW</span></div>
+      <div class="lv1">👤 마이</div>
+      <div class="lv2">· 관심 지역 / 알림 설정 / 서비스 소개</div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="no">5</span>핵심 프로세스 시안 — 탐색에서 발급까지</h2>
+    <p>신규 사용자의 <b>탐색 → 발급 전환</b> 퍼널을 30초 안에 끝나도록 설계합니다.</p>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="mini"><div class="screen b-screen">
+          <div class="b-search" style="font-size:7px;margin:6px 8px">🔍 평창</div>
+          <div class="b-map" style="margin:0 8px;height:70px"><div class="b-pin" style="left:12px;top:16px;font-size:6.5px">평창 <b>50%</b></div><div class="b-pin" style="right:10px;top:40px;font-size:6.5px">정선 <b>40%</b></div></div>
+          <div style="font-size:6.5px;color:#889;text-align:center;margin-top:8px">지도에서 할인율 발견</div>
+        </div></div>
+        <div class="mini-label">① 지도에서 지역 발견</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="mini"><div class="screen b-screen">
+          <div class="b-hero" style="height:56px;padding:8px"><div class="t" style="font-size:9px">평창군 🏔️</div></div>
+          <div class="b-stat" style="margin:6px 8px 0"><div><div class="v" style="font-size:7px">128</div><div class="k" style="font-size:5.5px">가맹점</div></div><div><div class="v" style="font-size:7px">50%</div><div class="k" style="font-size:5.5px">최대할인</div></div></div>
+          <div class="b-cta" style="margin:8px;font-size:7px;padding:8px">주민증 발급받기 (30초)</div>
+        </div></div>
+        <div class="mini-label">② 지역 상세 → 발급 CTA</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="mini"><div class="screen b-screen" style="padding:10px">
+          <div style="font-size:8px;font-weight:800;margin-top:14px">본인인증 한 번이면 끝</div>
+          <div style="background:#f1f3f6;border-radius:8px;padding:7px;font-size:6.5px;color:#667;margin-top:8px">📱 휴대폰 본인인증 (PASS)</div>
+          <div style="background:#f1f3f6;border-radius:8px;padding:7px;font-size:6.5px;color:#667;margin-top:5px">☑️ 약관 전체 동의</div>
+          <div class="b-cta" style="margin:10px 0 0;font-size:7px;padding:8px">발급 완료하기</div>
+        </div></div>
+        <div class="mini-label">③ 본인인증 1회<br>(약관 통합 동의)</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="mini"><div class="screen b-screen">
+          <div style="margin:auto;text-align:center">
+            <div style="font-size:22px">🎉</div>
+            <div style="font-size:8.5px;font-weight:800;margin-top:5px">평창군 관광주민이<br>되셨어요!</div>
+            <div style="background:#eff6ff;color:#2563eb;font-size:6.5px;font-weight:800;border-radius:6px;padding:4px 8px;margin-top:8px;display:inline-block">웰컴 쿠폰 3장 도착</div>
+          </div>
+        </div></div>
+        <div class="mini-label">④ 발급 완료<br>+ 웰컴 쿠폰 즉시 지급</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-nav">
+    <a href="index.html">전체 비교</a>
+    <a href="concept-a.html">A 월렛</a>
+    <a class="on" href="concept-b.html">B 탐색</a>
+    <a href="concept-c.html">C 미션</a>
+    <a href="concept-d.html">D 공공 미니멀</a>
+  </div>
+</div>
+</body>
+</html>

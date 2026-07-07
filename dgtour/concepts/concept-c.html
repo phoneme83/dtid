@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>시안 C · 로컬 미션 게이미피케이션 - 디지털 관광주민증 UI/UX 개선 시안</title>
+<link rel="stylesheet" href="concepts.css">
+<style>
+:root{--ac:#7c3aed}
+.doc-badge{background:var(--ac)}
+.sec h2 .no{background:var(--ac)}
+.doc-nav a.on{background:var(--ac)}
+.ia .new{background:var(--ac)}
+/* ── 시안 C 목업 전용 ── */
+.c-screen{background:#f6f4ff;color:#1a1a1a}
+.c-head{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;padding:12px 14px 34px;position:relative}
+.c-head .hi{font-size:12px;font-weight:800}
+.c-head .lv{font-size:9px;opacity:.9;margin-top:2px}
+.c-head .pt{position:absolute;right:14px;top:12px;background:rgba(255,255,255,.2);border-radius:14px;font-size:9px;font-weight:800;padding:4px 9px}
+.c-lvcard{margin:-24px 14px 0;background:#fff;border-radius:14px;padding:11px 13px;box-shadow:0 3px 10px rgba(124,58,237,.12)}
+.c-lvcard .t{display:flex;justify-content:space-between;font-size:9.5px;font-weight:800}
+.c-lvcard .t span:last-child{color:var(--ac)}
+.c-bar{height:7px;background:#ede9fe;border-radius:4px;margin-top:7px;overflow:hidden}
+.c-bar i{display:block;height:100%;width:64%;background:linear-gradient(90deg,#a78bfa,#7c3aed);border-radius:4px}
+.c-bar-cap{font-size:8px;color:#889;margin-top:5px}
+.c-secttl{padding:12px 14px 6px;font-size:11px;font-weight:800}
+.c-msn{margin:0 14px 7px;background:#fff;border-radius:12px;padding:9px 11px;display:flex;align-items:center;gap:9px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.c-msn .ic{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.c-msn .tt{font-size:9.5px;font-weight:800}
+.c-msn .rw{font-size:8px;color:var(--ac);font-weight:800;margin-top:2px}
+.c-msn .go{margin-left:auto;font-size:8px;font-weight:800;color:#fff;background:var(--ac);border-radius:12px;padding:4px 9px;flex-shrink:0}
+.c-msn .go.done{background:#d1d5db}
+.c-tab{margin-top:auto;background:#fff;display:flex;border-top:1px solid #ece8fb;padding:6px 0 10px;position:relative}
+.c-tab .ti{flex:1;text-align:center;font-size:8.5px;color:#99a;padding-top:4px}
+.c-tab .ti i{display:block;font-size:15px;font-style:normal;margin-bottom:2px}
+.c-tab .ti.on{color:var(--ac);font-weight:800}
+.c-tab .qr-fab{position:absolute;left:50%;top:-18px;transform:translateX(-50%);width:44px;height:44px;border-radius:50%;background:var(--ac);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 10px rgba(124,58,237,.4)}
+/* 스탬프 지도 */
+.c-stamp-wrap{padding:12px 14px;display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.c-stamp{aspect-ratio:1;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:8px;font-weight:800;gap:2px}
+.c-stamp.got{background:#ede9fe;border:2px solid var(--ac);color:var(--ac)}
+.c-stamp.no{background:#fff;border:2px dashed #d5d0e8;color:#aab}
+.c-stamp .e{font-size:15px}
+.c-reward{margin:4px 14px;background:linear-gradient(135deg,#fbbf24,#f59e0b);border-radius:12px;padding:10px 13px;color:#fff}
+.c-reward .t{font-size:10px;font-weight:800}
+.c-reward .s{font-size:8px;opacity:.9;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="doc">
+  <a class="back-link" href="index.html">← 시안 목록으로</a>
+  <div class="doc-top">
+    <span class="doc-badge">시안 C</span>
+    <h1>로컬 미션 게이미피케이션 (Local Quest)</h1>
+  </div>
+  <p class="doc-sub">"관광주민이 되는 것은 <b>그 지역의 퀘스트를 깨는 놀이</b>다" — 스탬프·레벨·미션으로 방문을 게임처럼 만들어 <b>재방문과 체류시간</b>을 끌어올리는 구조.</p>
+  <div class="tag-row"><span class="tag">#스탬프투어</span><span class="tag">#미션</span><span class="tag">#레벨업</span><span class="tag">#재방문</span><span class="tag">#MZ타겟</span></div>
+
+  <div class="sec">
+    <h2><span class="no">1</span>컨셉 &amp; 의미</h2>
+    <p>발급은 했지만 한 번 쓰고 마는 사용자가 많다면, 문제는 유입이 아니라 <b>리텐션</b>입니다. 시안 C는 QR 사용 한 건 한 건을 스탬프·포인트·레벨로 되돌려주는 보상 루프를 만듭니다. "평창 주민 Lv.3" 같은 지역별 레벨은 <b>그 지역과의 관계가 자란다</b>는 정책 취지(관계인구)를 그대로 UI 언어로 옮긴 것입니다.</p>
+    <p>홈은 진행 중인 미션과 다음 보상까지의 진행률을 보여주고, 가맹점에서 QR을 찍는 순간이 곧 미션 달성이 되도록 기존 QR 인프라를 그대로 재활용합니다. 별도 체크인 시스템 없이 게임 레이어만 얹는 설계입니다.</p>
+  </div>
+
+  <div class="sec">
+    <h2><span class="no">2</span>장점 / 단점</h2>
+    <div class="pc-grid">
+      <div class="pc pros"><h3>👍 장점</h3><ul>
+        <li>QR 사용 → 스탬프 → 보상의 <b>재방문 루프</b>가 구조적으로 생김</li>
+        <li>"레벨·스탬프 모으기"가 <b>SNS 공유 소재</b>가 되어 자연 확산 기대</li>
+        <li>지자체별 미션(축제 방문, 로컬맛집 3곳 등)으로 <b>방문 분산 유도</b> 가능</li>
+        <li>기존 QR 사용 데이터를 그대로 활용 — 백엔드 추가 부담이 상대적으로 작음</li>
+      </ul></div>
+      <div class="pc cons"><h3>👎 단점</h3><ul>
+        <li>보상 예산·운영(쿠폰 소싱, 미션 기획)이 <b>지속적으로 필요</b> — 운영 중단 시 앱 전체가 죽어 보임</li>
+        <li>중장년·실용형 사용자에겐 게임 요소가 <b>소음</b>으로 느껴질 수 있음</li>
+        <li>포인트·보상 관련 <b>정산/회계 이슈</b> 등 공공서비스 제약 검토 필요</li>
+        <li>미션 어뷰징(방문 없이 달성) 방지 설계가 추가로 필요</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="no">3</span>화면 디자인 시안</h2>
+    <div class="mock-row">
+      <div class="mock-item">
+        <div class="phone"><div class="screen c-screen">
+          <div class="statusbar" style="color:#fff;background:#7c3aed"><span>9:41</span><span>📶 🔋</span></div>
+          <div class="c-head">
+            <div class="pt">🪙 2,340P</div>
+            <div class="hi">김관광님은 지금</div>
+            <div class="lv">평창 주민 Lv.3 · 정선 주민 Lv.1</div>
+          </div>
+          <div class="c-lvcard">
+            <div class="t"><span>평창 주민 Lv.3 → Lv.4</span><span>64%</span></div>
+            <div class="c-bar"><i></i></div>
+            <div class="c-bar-cap">가맹점 2곳만 더 방문하면 레벨업! 🎁 5,000P</div>
+          </div>
+          <div class="c-secttl">🔥 이번 주 미션</div>
+          <div class="c-msn"><div class="ic" style="background:#fef3c7">🎣</div><div><div class="tt">평창 송어축제 방문하기</div><div class="rw">+500P · 한정 스탬프</div></div><div class="go">도전</div></div>
+          <div class="c-msn"><div class="ic" style="background:#dcfce7">🍜</div><div><div class="tt">로컬 맛집 2곳에서 QR 사용</div><div class="rw">+300P (1/2 완료)</div></div><div class="go">도전</div></div>
+          <div class="c-msn"><div class="ic" style="background:#e0e7ff">🏨</div><div><div class="tt">첫 숙박 할인 사용하기</div><div class="rw">+1,000P</div></div><div class="go done">완료</div></div>
+          <div class="c-tab">
+            <div class="ti on"><i>🏠</i>홈</div>
+            <div class="ti"><i>🎯</i>미션</div>
+            <div class="ti" style="opacity:0">.</div>
+            <div class="ti"><i>🏅</i>스탬프</div>
+            <div class="ti"><i>👤</i>마이</div>
+            <div class="qr-fab">▦</div>
+          </div>
+        </div></div>
+        <div class="phone-label">홈 = 레벨 + 이번 주 미션</div>
+      </div>
+      <div class="mock-item">
+        <div class="phone"><div class="screen c-screen">
+          <div class="statusbar" style="color:#fff;background:#7c3aed"><span>9:41</span><span>📶 🔋</span></div>
+          <div class="c-head" style="padding-bottom:14px"><div class="hi">평창 스탬프 투어 🏔️</div><div class="lv">4/9 수집 · 다 모으면 반값여행 우선 배정</div></div>
+          <div class="c-stamp-wrap">
+            <div class="c-stamp got"><span class="e">🎿</span>알펜시아</div>
+            <div class="c-stamp got"><span class="e">🐑</span>양떼목장</div>
+            <div class="c-stamp got"><span class="e">🎣</span>송어축제</div>
+            <div class="c-stamp got"><span class="e">🍜</span>한우마을</div>
+            <div class="c-stamp no"><span class="e">☕</span>감자밭카페</div>
+            <div class="c-stamp no"><span class="e">🏔️</span>발왕산</div>
+            <div class="c-stamp no"><span class="e">🛶</span>동강래프팅</div>
+            <div class="c-stamp no"><span class="e">🌸</span>육백마지기</div>
+            <div class="c-stamp no"><span class="e">🎁</span>?</div>
+          </div>
+          <div class="c-reward"><div class="t">🏆 9개 완주 보상</div><div class="s">반값여행 우선 배정권 + 평창 굿즈 패키지</div></div>
+          <div class="c-tab">
+            <div class="ti"><i>🏠</i>홈</div>
+            <div class="ti"><i>🎯</i>미션</div>
+            <div class="ti" style="opacity:0">.</div>
+            <div class="ti on"><i>🏅</i>스탬프</div>
+            <div class="ti"><i>👤</i>마이</div>
+            <div class="qr-fab">▦</div>
+          </div>
+        </div></div>
+        <div class="phone-label">스탬프 투어 (지역별 수집판)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="no">4</span>메뉴 구조 시안</h2>
+    <p>미션·스탬프가 1뎁스로 올라오고, QR은 시안 A처럼 중앙 플로팅을 유지합니다.</p>
+    <div class="ia">
+      <div class="lv1">🏠 홈</div>
+      <div class="lv2">· 내 레벨/포인트 요약 · 이번 주 미션 · 진행률 카드 <span class="new">NEW</span></div>
+      <div class="lv1">🎯 미션</div>
+      <div class="lv2">· 지역별 미션 목록 / 시즌 한정 미션(축제 연동) <span class="new">NEW</span></div>
+      <div class="lv1">▦ QR (중앙 플로팅)</div>
+      <div class="lv2">· QR 제시 = 미션 달성 트리거</div>
+      <div class="lv1">🏅 스탬프</div>
+      <div class="lv2">· 지역별 스탬프판 / 완주 보상 / 획득 이력 <span class="new">NEW</span></div>
+      <div class="lv1">👤 마이</div>
+      <div class="lv2">· 포인트 내역 / 내 주민증 카드 / 쿠폰함 / 설정</div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="no">5</span>핵심 프로세스 시안 — QR 사용이 미션 달성이 되는 흐름</h2>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="mini"><div class="screen c-screen">
+          <div class="c-head" style="padding:8px 9px 10px"><div class="hi" style="font-size:8px">🍜 로컬 맛집 미션</div><div class="lv" style="font-size:6px">2곳 중 1곳 완료</div></div>
+          <div class="c-msn" style="margin:8px"><div class="ic" style="background:#dcfce7;width:20px;height:20px;font-size:10px">🍜</div><div><div class="tt" style="font-size:6.5px">평창 한우마을</div><div class="rw" style="font-size:5.5px">여기서 QR 사용하면 달성</div></div></div>
+        </div></div>
+        <div class="mini-label">① 미션 확인 후<br>가맹점 방문</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="mini"><div class="screen" style="background:#fff;align-items:center;text-align:center">
+          <div style="font-size:6.5px;font-weight:800;color:#7c3aed;margin-top:24px">나의 통합 관광주민증</div>
+          <div style="width:70px;height:70px;margin:10px auto 0;border:3px solid #111;border-radius:6px;background:repeating-linear-gradient(0deg,#111 0 5px,#fff 5px 10px),repeating-linear-gradient(90deg,#111 0 5px,#fff 5px 10px);background-blend-mode:screen"></div>
+          <div style="font-size:7px;font-weight:800;margin-top:8px">김관광님</div>
+        </div></div>
+        <div class="mini-label">② 계산 시 QR 제시<br>(할인 적용)</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="mini"><div class="screen c-screen" style="align-items:center;text-align:center">
+          <div style="margin:auto">
+            <div style="font-size:22px">🎊</div>
+            <div style="font-size:8px;font-weight:800;margin-top:4px">미션 달성!</div>
+            <div style="font-size:6.5px;color:#7c3aed;font-weight:800;margin-top:3px">+300P · 한우마을 스탬프</div>
+            <div style="background:#ede9fe;border-radius:8px;font-size:6px;padding:5px 8px;margin-top:8px;color:#555">Lv.4까지 가맹점 1곳 남음</div>
+          </div>
+        </div></div>
+        <div class="mini-label">③ 할인과 동시에<br>스탬프·포인트 지급</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="mini"><div class="screen c-screen">
+          <div class="c-lvcard" style="margin:20px 8px 0">
+            <div class="t" style="font-size:7px"><span>평창 주민 Lv.4 🎉</span></div>
+            <div class="c-bar"><i style="width:100%"></i></div>
+            <div class="c-bar-cap" style="font-size:6px">레벨업 보상 5,000P 지급</div>
+          </div>
+          <div class="c-reward" style="margin:8px"><div class="t" style="font-size:7px">공유하고 자랑하기 📤</div></div>
+        </div></div>
+        <div class="mini-label">④ 레벨업 →<br>보상 + SNS 공유</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-nav">
+    <a href="index.html">전체 비교</a>
+    <a href="concept-a.html">A 월렛</a>
+    <a href="concept-b.html">B 탐색</a>
+    <a class="on" href="concept-c.html">C 미션</a>
+    <a href="concept-d.html">D 공공 미니멀</a>
+  </div>
+</div>
+</body>
+</html>

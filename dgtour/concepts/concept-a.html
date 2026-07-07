@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>시안 A · 월렛 퍼스트 - 디지털 관광주민증 UI/UX 개선 시안</title>
+<link rel="stylesheet" href="concepts.css">
+<style>
+:root{--ac:#ea580c}
+.doc-badge{background:var(--ac)}
+.sec h2 .no{background:var(--ac)}
+.doc-nav a.on{background:var(--ac)}
+.ia .new{background:var(--ac)}
+/* ── 시안 A 목업 전용 ── */
+.a-screen{background:#111318;color:#fff}
+.a-gnb{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;font-weight:800;font-size:13px}
+.a-gnb .bell{opacity:.7;font-size:14px}
+.a-card{margin:6px 14px;border-radius:16px;padding:16px;background:linear-gradient(135deg,#ea580c,#c2410c 60%,#9a3412);position:relative;overflow:hidden}
+.a-card .rg{font-size:10px;font-weight:700;opacity:.85}
+.a-card .nm{font-size:16px;font-weight:800;margin-top:2px}
+.a-card .no{font-size:9px;opacity:.75;margin-top:14px;letter-spacing:.5px}
+.a-card .chip{position:absolute;right:14px;top:14px;background:rgba(255,255,255,.2);border-radius:6px;font-size:9px;padding:3px 7px;font-weight:700}
+.a-dots{display:flex;gap:4px;justify-content:center;margin:8px 0}
+.a-dots i{width:5px;height:5px;border-radius:50%;background:#444}
+.a-dots i.on{background:var(--ac);width:14px;border-radius:3px}
+.a-qrbtn{margin:4px 14px;background:#fff;color:#111;border-radius:14px;display:flex;align-items:center;gap:10px;padding:12px 14px}
+.a-qrbtn .qr{width:38px;height:38px;background:
+ repeating-linear-gradient(0deg,#111 0 3px,#fff 3px 6px),
+ repeating-linear-gradient(90deg,#111 0 3px,#fff 3px 6px);background-blend-mode:screen;border:3px solid #111;border-radius:4px}
+.a-qrbtn .t1{font-weight:800;font-size:12px}
+.a-qrbtn .t2{font-size:9.5px;color:#666;margin-top:2px}
+.a-bene{display:flex;gap:8px;padding:10px 14px;overflow:hidden}
+.a-bn{flex-shrink:0;width:96px;background:#1d2027;border-radius:12px;padding:10px}
+.a-bn .pct{color:var(--ac);font-weight:800;font-size:13px}
+.a-bn .nm2{font-size:9.5px;margin-top:3px;color:#ddd}
+.a-bn .st{font-size:8.5px;color:#777;margin-top:5px}
+.a-secttl{padding:8px 14px 2px;font-size:11px;font-weight:800;color:#aaa}
+.a-tab{margin-top:auto;background:#16181d;display:flex;border-top:1px solid #23262d;padding:6px 0 10px;position:relative}
+.a-tab .ti{flex:1;text-align:center;font-size:8.5px;color:#777;padding-top:4px}
+.a-tab .ti i{display:block;font-size:15px;font-style:normal;margin-bottom:2px}
+.a-tab .ti.on{color:var(--ac)}
+.a-tab .qr-fab{position:absolute;left:50%;top:-18px;transform:translateX(-50%);width:44px;height:44px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 10px rgba(234,88,12,.5)}
+/* QR 제시 화면 */
+.a-present{background:#fff;color:#111;align-items:center;text-align:center}
+.a-present .ttl{font-weight:800;font-size:13px;margin-top:26px;color:var(--ac)}
+.a-present .bigqr{width:150px;height:150px;margin:18px auto 0;border:4px solid #111;border-radius:8px;background:
+ repeating-linear-gradient(0deg,#111 0 6px,#fff 6px 12px),
+ repeating-linear-gradient(90deg,#111 0 6px,#fff 6px 12px);background-blend-mode:screen}
+.a-present .nm{font-weight:800;font-size:15px;margin-top:16px}
+.a-present .gd{font-size:10px;color:#888;margin-top:4px}
+.a-present .tm{margin-top:12px;font-size:10px;color:var(--ac);font-weight:700}
+.a-present .brt{margin-top:auto;margin-bottom:18px;font-size:9px;color:#aaa}
+</style>
+</head>
+<body>
+<div class="doc">
+  <a class="back-link" href="index.html">← 시안 목록으로</a>
+  <div class="doc-top">
+    <span class="doc-badge">시안 A</span>
+    <h1>월렛 퍼스트 (Wallet First)</h1>
+  </div>
+  <p class="doc-sub">"디지털 관광주민증은 <b>지갑 속 신분증</b>이다" — 앱을 열면 T멤버십·삼성월렛처럼 <b>주민증 카드와 QR이 가장 먼저</b> 나온다.</p>
+  <div class="tag-row"><span class="tag">#카드중심</span><span class="tag">#2탭이내QR</span><span class="tag">#다크UI</span><span class="tag">#T멤버십</span><span class="tag">#월렛패턴</span></div>
+
+  <div class="sec">
+    <h2><span class="no">1</span>컨셉 &amp; 의미</h2>
+    <p>현재 사이트는 포털형 메인(배너·이벤트·지역 소개)이 먼저 나오고, 정작 가맹점에서 매일 꺼내야 하는 <b>QR은 "나의 관광주민증" 메뉴 안쪽</b>에 있습니다. 시안 A는 이 구조를 뒤집어 <b>홈 화면 = 내 주민증 카드</b>로 만듭니다.</p>
+    <p>발급받은 지역 주민증들이 카드 캐러셀로 넘겨지고, 카드 바로 아래에 "QR 제시" 버튼이 상시 고정됩니다. 하단 탭 중앙에는 오렌지색 QR 플로팅 버튼을 두어 <b>어느 화면에서든 1탭이면 QR 제시</b>가 가능합니다. 다크 배경은 카드와 QR의 시인성을 높이고 '지갑'이라는 은유를 강화합니다.</p>
+  </div>
+
+  <div class="sec">
+    <h2><span class="no">2</span>장점 / 단점</h2>
+    <div class="pc-grid">
+      <div class="pc pros"><h3>👍 장점</h3><ul>
+        <li>핵심 과업(QR 제시)까지 <b>탭 수 최소화</b> — 가맹점 계산대 앞에서 헤매지 않음</li>
+        <li>카드 수집(다지역 발급)이 시각적으로 드러나 <b>추가 발급 동기 부여</b></li>
+        <li>T멤버십 등으로 <b>이미 학습된 UI 패턴</b>이라 적응 비용이 낮음</li>
+        <li>홈 위젯(이번에 만든 QR 위젯)과 컨셉이 자연스럽게 이어짐</li>
+      </ul></div>
+      <div class="pc cons"><h3>👎 단점</h3><ul>
+        <li>탐색 콘텐츠(지역 소개·이벤트)가 뒤로 밀려 <b>신규 유입·발급 전 사용자에게 불리</b></li>
+        <li>미발급 사용자의 첫 홈이 빈 카드라 <b>온보딩 화면 별도 설계 필요</b></li>
+        <li>다크 UI는 공공서비스 특유의 밝은 톤과 이질적일 수 있음</li>
+        <li>이벤트·공지 노출 지면이 줄어 운영부서 요구와 충돌 가능</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="no">3</span>화면 디자인 시안</h2>
+    <div class="mock-row">
+      <div class="mock-item">
+        <div class="phone"><div class="screen a-screen">
+          <div class="statusbar"><span>9:41</span><span>📶 🔋</span></div>
+          <div class="a-gnb"><span>내 지갑</span><span class="bell">🔔</span></div>
+          <div class="a-card">
+            <div class="chip">이용 12회</div>
+            <div class="rg">평창군 관광주민증</div>
+            <div class="nm">김관광</div>
+            <div class="no">NO. DT-2026-001234</div>
+          </div>
+          <div class="a-dots"><i class="on"></i><i></i><i></i></div>
+          <div class="a-qrbtn"><div class="qr"></div><div><div class="t1">QR 제시하기</div><div class="t2">가맹점에서 이 버튼을 눌러주세요</div></div></div>
+          <div class="a-secttl">평창군에서 받을 수 있는 혜택</div>
+          <div class="a-bene">
+            <div class="a-bn"><div class="pct">50%</div><div class="nm2">알펜시아 리조트</div><div class="st">숙박</div></div>
+            <div class="a-bn"><div class="pct">30%</div><div class="nm2">대관령 양떼목장</div><div class="st">체험</div></div>
+            <div class="a-bn"><div class="pct">20%</div><div class="nm2">평창 송어축제</div><div class="st">축제</div></div>
+          </div>
+          <div class="a-tab">
+            <div class="ti on"><i>💳</i>지갑</div>
+            <div class="ti"><i>🎁</i>혜택</div>
+            <div class="ti" style="opacity:0">.</div>
+            <div class="ti"><i>🗺️</i>지역</div>
+            <div class="ti"><i>👤</i>마이</div>
+            <div class="qr-fab">▦</div>
+          </div>
+        </div></div>
+        <div class="phone-label">홈 = 내 지갑 (카드 캐러셀)</div>
+      </div>
+      <div class="mock-item">
+        <div class="phone"><div class="screen a-present">
+          <div class="statusbar" style="color:#111"><span>9:41</span><span>📶 🔋</span></div>
+          <div class="ttl">나의 통합 관광주민증</div>
+          <div class="bigqr"></div>
+          <div class="nm">김관광님</div>
+          <div class="gd">QR코드를 가맹점에 제시하세요</div>
+          <div class="tm">00:58 후 자동 갱신 ↻</div>
+          <div class="brt">화면 밝기가 자동으로 최대로 조정되었습니다</div>
+        </div></div>
+        <div class="phone-label">QR 제시 화면 (전체화면·밝기 최대)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="no">4</span>메뉴 구조 시안</h2>
+    <p>기존 상단 서브내비(메인/서비스 소개/이벤트/나의 관광주민증)를 없애고, <b>하단 탭 5개 + 중앙 QR 플로팅</b>으로 단순화합니다.</p>
+    <div class="ia">
+      <div class="lv1">💳 지갑 (홈)</div>
+      <div class="lv2">· 내 주민증 카드 캐러셀 → 카드 상세(이용내역·설정)</div>
+      <div class="lv2">· QR 제시하기 <span class="new">NEW</span></div>
+      <div class="lv2">· 발급 지역 혜택 바로가기</div>
+      <div class="lv1">🎁 혜택</div>
+      <div class="lv2">· 내 쿠폰함 / 반값여행 / 가맹점 검색</div>
+      <div class="lv1">▦ QR (중앙 플로팅) <span class="new">NEW</span></div>
+      <div class="lv2">· 어느 화면에서든 1탭 QR 제시</div>
+      <div class="lv1">🗺️ 지역</div>
+      <div class="lv2">· 지역 탐색 → 주민증 발급 / 이벤트·축제(기존 이벤트 메뉴 통합)</div>
+      <div class="lv1">👤 마이</div>
+      <div class="lv2">· 이용내역 / 보관함 / 서비스 소개(이관) / 설정</div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="no">5</span>핵심 프로세스 시안 — 가맹점에서 QR 사용</h2>
+    <p>현재 <b>메인 → 나의 관광주민증 → QR 확인 (3단계)</b> 를 <b>어디서든 1탭</b>으로 줄입니다.</p>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="mini"><div class="screen a-screen" style="justify-content:flex-end">
+          <div style="text-align:center;color:#888;margin:auto 0;font-size:8px">아무 화면<br>(혜택 탐색 중)</div>
+          <div class="a-tab" style="transform:scale(.9)"><div class="ti"><i>💳</i>지갑</div><div class="ti on"><i>🎁</i>혜택</div><div class="ti" style="opacity:0">.</div><div class="ti"><i>🗺️</i>지역</div><div class="ti"><i>👤</i>마이</div><div class="qr-fab" style="width:30px;height:30px;top:-12px;font-size:12px">▦</div></div>
+        </div></div>
+        <div class="mini-label">① 중앙 QR 버튼 탭</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="mini"><div class="screen a-present">
+          <div class="ttl" style="margin-top:30px;font-size:8px">나의 통합 관광주민증</div>
+          <div class="bigqr" style="width:80px;height:80px;margin-top:10px"></div>
+          <div class="nm" style="font-size:9px;margin-top:8px">김관광님</div>
+          <div class="tm" style="font-size:7px">00:58 후 자동 갱신</div>
+        </div></div>
+        <div class="mini-label">② QR 전체화면<br>(밝기 자동 최대)</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="mini"><div class="screen a-present">
+          <div style="margin:auto;text-align:center">
+            <div style="font-size:26px">✅</div>
+            <div style="font-weight:800;font-size:9px;margin-top:6px">할인 적용 완료</div>
+            <div style="font-size:7.5px;color:#888;margin-top:4px">알펜시아 리조트 50%<br>이용 13회차</div>
+          </div>
+        </div></div>
+        <div class="mini-label">③ 스캔 완료 피드백<br>+ 이용내역 자동 적립</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-nav">
+    <a href="index.html">전체 비교</a>
+    <a class="on" href="concept-a.html">A 월렛</a>
+    <a href="concept-b.html">B 탐색</a>
+    <a href="concept-c.html">C 미션</a>
+    <a href="concept-d.html">D 공공 미니멀</a>
+  </div>
+</div>
+</body>
+</html>

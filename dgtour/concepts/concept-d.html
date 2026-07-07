@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>시안 D · 공공 미니멀 유니버설 - 디지털 관광주민증 UI/UX 개선 시안</title>
+<link rel="stylesheet" href="concepts.css">
+<style>
+:root{--ac:#0f766e}
+.doc-badge{background:var(--ac)}
+.sec h2 .no{background:var(--ac)}
+.doc-nav a.on{background:var(--ac)}
+.ia .new{background:var(--ac)}
+/* ── 시안 D 목업 전용 ── */
+.d-screen{background:#fff;color:#111}
+.d-gnb{padding:14px;font-size:15px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+.d-gnb .aa{font-size:10px;color:var(--ac);font-weight:800;border:1.5px solid var(--ac);border-radius:6px;padding:2px 6px}
+.d-hello{padding:0 14px 10px;font-size:11px;color:#556}
+.d-big{margin:0 14px 10px;border:2px solid #e2e6e5;border-radius:16px;padding:16px 14px;display:flex;align-items:center;gap:12px}
+.d-big.hero{background:var(--ac);border-color:var(--ac);color:#fff}
+.d-big .ic{font-size:24px;flex-shrink:0}
+.d-big .tt{font-size:14px;font-weight:800;line-height:1.35}
+.d-big .ds{font-size:10px;margin-top:3px;opacity:.75}
+.d-big .ar{margin-left:auto;font-size:14px;opacity:.5}
+.d-tab{margin-top:auto;background:#fff;display:flex;border-top:1.5px solid #e5e8e7;padding:8px 0 12px}
+.d-tab .ti{flex:1;text-align:center;font-size:10px;color:#788;padding-top:4px;font-weight:700}
+.d-tab .ti i{display:block;font-size:17px;font-style:normal;margin-bottom:3px}
+.d-tab .ti.on{color:var(--ac)}
+/* 주민증 화면 */
+.d-idcard{margin:10px 14px;border-radius:16px;background:linear-gradient(150deg,#0f766e,#115e59);color:#fff;padding:16px}
+.d-idcard .rg{font-size:11px;font-weight:700;opacity:.85}
+.d-idcard .nm{font-size:19px;font-weight:800;margin-top:3px}
+.d-idcard .no{font-size:9px;opacity:.7;margin-top:12px}
+.d-qrbox{margin:4px 14px;border:2px solid #e2e6e5;border-radius:16px;padding:14px;display:flex;flex-direction:column;align-items:center}
+.d-qrbox .qr{width:120px;height:120px;border:4px solid #111;border-radius:8px;background:repeating-linear-gradient(0deg,#111 0 5px,#fff 5px 10px),repeating-linear-gradient(90deg,#111 0 5px,#fff 5px 10px);background-blend-mode:screen}
+.d-qrbox .gd{font-size:12px;font-weight:800;margin-top:10px}
+.d-qrbox .gd2{font-size:9.5px;color:#788;margin-top:3px}
+.d-callbtn{margin:8px 14px 0;border:2px solid var(--ac);color:var(--ac);border-radius:12px;text-align:center;font-size:12px;font-weight:800;padding:11px}
+</style>
+</head>
+<body>
+<div class="doc">
+  <a class="back-link" href="index.html">← 시안 목록으로</a>
+  <div class="doc-top">
+    <span class="doc-badge">시안 D</span>
+    <h1>공공 미니멀 · 유니버설 (Public Minimal)</h1>
+  </div>
+  <p class="doc-sub">"누구나, 처음 써도, 설명 없이" — 정부24·토스처럼 <b>큰 글자와 적은 메뉴</b>로 전 연령이 쓸 수 있게 만드는 공공 서비스 정석 구조.</p>
+  <div class="tag-row"><span class="tag">#접근성</span><span class="tag">#큰글자</span><span class="tag">#3탭</span><span class="tag">#전연령</span><span class="tag">#WCAG</span></div>
+
+  <div class="sec">
+    <h2><span class="no">1</span>컨셉 &amp; 의미</h2>
+    <p>인구감소지역 방문객에는 <b>중장년·시니어 비중</b>이 낮지 않습니다. 화려한 기능보다 "내가 지금 뭘 눌러야 하는지"가 명확한 것이 공공서비스의 신뢰입니다. 시안 D는 홈을 <b>큰 버튼 3~4개의 할 일 목록</b>으로 만들고, 하단 탭도 홈/주민증/전체메뉴 3개로 줄입니다.</p>
+    <p>기본 글자 크기를 크게 잡고 우상단에 <b>가⁺ (글자 확대)</b> 토글을 상시 제공하며, 모든 색 대비를 WCAG AA 이상으로 맞춥니다. 전화 문의 버튼을 주민증 화면에 두어 <b>디지털이 어려운 사용자의 탈출구</b>를 남겨두는 것도 이 시안의 핵심입니다.</p>
+  </div>
+
+  <div class="sec">
+    <h2><span class="no">2</span>장점 / 단점</h2>
+    <div class="pc-grid">
+      <div class="pc pros"><h3>👍 장점</h3><ul>
+        <li><b>전 연령 사용성</b> — 학습 비용이 거의 없고 민원·문의 감소 기대</li>
+        <li>메뉴가 얕아 유지보수·QA 비용이 가장 낮음 (화면 수 최소)</li>
+        <li>접근성(WCAG)·공공 웹 표준 준수를 <b>구조 차원에서 달성</b></li>
+        <li>정책 홍보물("누구나 30초 발급")과 메시지가 일치</li>
+      </ul></div>
+      <div class="pc cons"><h3>👎 단점</h3><ul>
+        <li>탐색·콘텐츠 지면이 좁아 <b>여행 영감 제공에는 약함</b> — 유입 성장 한계</li>
+        <li>MZ 타겟에겐 밋밋하게 느껴져 <b>화제성·공유성 낮음</b></li>
+        <li>이벤트·배너 노출 공간이 적어 운영부서 요구 수용이 어려움</li>
+        <li>서비스 확장(미션, 커뮤니티 등) 시 구조를 다시 짜야 할 수 있음</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="no">3</span>화면 디자인 시안</h2>
+    <div class="mock-row">
+      <div class="mock-item">
+        <div class="phone"><div class="screen d-screen">
+          <div class="statusbar"><span>9:41</span><span>📶 🔋</span></div>
+          <div class="d-gnb"><span>디지털 관광주민증</span><span class="aa">가⁺</span></div>
+          <div class="d-hello">김관광님, 무엇을 도와드릴까요?</div>
+          <div class="d-big hero"><span class="ic">▦</span><div><div class="tt">주민증 QR 보여주기</div><div class="ds">가맹점 할인 받을 때</div></div><span class="ar">›</span></div>
+          <div class="d-big"><span class="ic">🪪</span><div><div class="tt">주민증 새로 발급받기</div><div class="ds">30초면 됩니다</div></div><span class="ar">›</span></div>
+          <div class="d-big"><span class="ic">🎁</span><div><div class="tt">내 혜택 · 쿠폰 보기</div><div class="ds">사용 가능 쿠폰 3장</div></div><span class="ar">›</span></div>
+          <div class="d-big"><span class="ic">📋</span><div><div class="tt">이용 내역 확인</div><div class="ds">이번 달 2회 사용</div></div><span class="ar">›</span></div>
+          <div class="d-tab">
+            <div class="ti on"><i>🏠</i>홈</div>
+            <div class="ti"><i>🪪</i>주민증</div>
+            <div class="ti"><i>☰</i>전체메뉴</div>
+          </div>
+        </div></div>
+        <div class="phone-label">홈 = 큰 버튼 할 일 목록</div>
+      </div>
+      <div class="mock-item">
+        <div class="phone"><div class="screen d-screen">
+          <div class="statusbar"><span>9:41</span><span>📶 🔋</span></div>
+          <div class="d-gnb"><span>나의 주민증</span><span class="aa">가⁺</span></div>
+          <div class="d-idcard"><div class="rg">평창군 디지털 관광주민증</div><div class="nm">김관광</div><div class="no">NO. DT-2026-001234 · 발급 2025.03.26</div></div>
+          <div class="d-qrbox">
+            <div class="qr"></div>
+            <div class="gd">가게 직원에게 보여주세요</div>
+            <div class="gd2">화면이 자동으로 밝아집니다</div>
+          </div>
+          <div class="d-callbtn">📞 사용이 어려우면 전화 문의 (1588-0000)</div>
+          <div class="d-tab">
+            <div class="ti"><i>🏠</i>홈</div>
+            <div class="ti on"><i>🪪</i>주민증</div>
+            <div class="ti"><i>☰</i>전체메뉴</div>
+          </div>
+        </div></div>
+        <div class="phone-label">주민증 = 카드 + QR + 전화 탈출구</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="no">4</span>메뉴 구조 시안</h2>
+    <p>1뎁스를 3개로 압축하고, 낮은 빈도 기능은 전체메뉴 서랍으로 보냅니다. <b>모든 핵심 과업이 2탭 이내</b>에서 끝납니다.</p>
+    <div class="ia">
+      <div class="lv1">🏠 홈</div>
+      <div class="lv2">· QR 보여주기 / 발급받기 / 혜택·쿠폰 / 이용내역 — 큰 버튼 4개 <span class="new">NEW</span></div>
+      <div class="lv1">🪪 주민증</div>
+      <div class="lv2">· 내 카드 + QR (한 화면 통합) <span class="new">NEW</span></div>
+      <div class="lv3">· 다른 지역 카드 전환 / 전화 문의</div>
+      <div class="lv1">☰ 전체메뉴</div>
+      <div class="lv2">· 지역 소개 / 이벤트 / 반값여행 / 서비스 소개 / 설정 / 글자 크기</div>
+      <div class="lv3">· 사용 빈도가 낮은 메뉴는 모두 이곳으로 이동</div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="no">5</span>핵심 프로세스 시안 — 처음 쓰는 사람의 발급</h2>
+    <p>안내문 없이도 따라올 수 있게 <b>한 화면 = 한 가지 질문</b> 원칙으로 발급을 3단계로 만듭니다.</p>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="mini"><div class="screen d-screen">
+          <div class="d-gnb" style="font-size:8px;padding:9px">주민증 발급 (1/3)</div>
+          <div style="padding:0 9px;font-size:8.5px;font-weight:800;line-height:1.5">어느 지역의<br>관광주민이 되시겠어요?</div>
+          <div class="d-big" style="margin:8px 9px 0;padding:8px"><span class="ic" style="font-size:12px">🏔️</span><div class="tt" style="font-size:7.5px">평창군</div></div>
+          <div class="d-big" style="margin:6px 9px 0;padding:8px"><span class="ic" style="font-size:12px">⛰️</span><div class="tt" style="font-size:7.5px">정선군</div></div>
+        </div></div>
+        <div class="mini-label">① 지역 선택<br>(한 화면 한 질문)</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="mini"><div class="screen d-screen">
+          <div class="d-gnb" style="font-size:8px;padding:9px">주민증 발급 (2/3)</div>
+          <div style="padding:0 9px;font-size:8.5px;font-weight:800;line-height:1.5">본인 확인이<br>필요해요</div>
+          <div class="d-big hero" style="margin:8px 9px 0;padding:9px"><span class="ic" style="font-size:12px">📱</span><div class="tt" style="font-size:7.5px">휴대폰으로 인증하기</div></div>
+          <div style="font-size:6px;color:#899;padding:6px 9px">통신사 인증(PASS) 한 번이면 끝나요</div>
+        </div></div>
+        <div class="mini-label">② 본인인증 1회</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="mini"><div class="screen d-screen">
+          <div class="d-gnb" style="font-size:8px;padding:9px">주민증 발급 (3/3)</div>
+          <div class="d-idcard" style="margin:6px 9px;padding:9px"><div class="rg" style="font-size:6.5px">평창군 디지털 관광주민증</div><div class="nm" style="font-size:10px">김관광</div></div>
+          <div style="text-align:center;font-size:8px;font-weight:800">발급 완료! 🎉</div>
+          <div class="d-callbtn" style="margin:8px 9px 0;font-size:6.5px;padding:7px;background:var(--ac);color:#fff;border:none">바로 QR 보여주기</div>
+        </div></div>
+        <div class="mini-label">③ 완료 → 바로 사용<br>(끝나는 지점이 명확)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-nav">
+    <a href="index.html">전체 비교</a>
+    <a href="concept-a.html">A 월렛</a>
+    <a href="concept-b.html">B 탐색</a>
+    <a href="concept-c.html">C 미션</a>
+    <a class="on" href="concept-d.html">D 공공 미니멀</a>
+  </div>
+</div>
+</body>
+</html>
