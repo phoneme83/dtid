@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>디지털관광주민증 - 경험치 보유현황 · 시안 A</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/common.css?v=20260707f">
+<link rel="stylesheet" href="theme.css?v=1">
+</head>
+<body class="theme-a">
+
+<nav class="gnb">
+  <div class="gnb-left" onclick="location.href='main.html'">
+    <div class="logo-wrap"><svg width="20" height="13" viewBox="0 0 20 13" fill="none"><circle cx="5" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><circle cx="15" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><path d="M1 6.5V4.5M19 6.5V4.5M9 6.5H11" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+    <span class="gnb-title">디지털 관광주민증</span>
+  </div>
+  <nav class="gnb-nav">
+    <a href="main.html">메인</a>
+    <a href="service-intro.html">서비스 소개</a>
+    <a href="event.html">이벤트</a>
+    <a href="my.html">나의 관광주민증</a>
+  </nav>
+  <button class="gnb-menu" onclick="openDrawer()" aria-label="메뉴"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="page-bar">
+  <button class="back-btn" onclick="location.href='my.html'" aria-label="뒤로가기">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <span class="page-bar-title">경험치 보유현황</span>
+</div>
+
+<div class="exp-content">
+  <div class="current-card">
+    <div class="current-inner">
+      <div class="current-left">
+        <div><div class="grade-label">등급</div><div class="grade-name" id="curGrade">-</div></div>
+        <div class="grade-sep"></div>
+        <div><div class="exp-label">경험치</div><div><span class="exp-value" id="curExp">-</span> <span class="exp-unit">EXP</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-header">
+    <span class="sec-title2">통합 등급 및 경험치</span>
+    <span class="how-link" onclick="toggleExpRules()" aria-haspopup="true">
+      경험치 적립 방법
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    </span>
+  </div>
+
+  <div class="exp-rules" id="expRules">
+    <div class="head">
+      <strong>경험치 적립방법</strong>
+      <button onclick="toggleExpRules()">접기</button>
+    </div>
+    <p id="expRulesEarn"></p>
+    <ul id="expRulesNotes"></ul>
+  </div>
+
+  <div class="timeline-card"><div class="tl-rows" id="tlRows"></div></div>
+
+  <button class="exp-detail-btn" onclick="toast('지역별 경험치 페이지')">지역별 확인하기</button>
+
+  <div class="exp-hist">
+    <h3>경험치 적립 이력</h3>
+    <div class="exp-hist-list" id="expHistList"></div>
+  </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bnav-a" data-nav="main" onclick="location.href='main.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+    메인
+  </button>
+  <button class="bnav-a" onclick="toast('검색 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+    검색
+  </button>
+  <button class="bnav-a" onclick="location.href='event.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
+    이벤트
+  </button>
+  <button class="bnav-a" onclick="toast('디민증 발급 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
+    디민증발급
+  </button>
+  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+    마이
+  </button>
+</nav>
+
+<div class="drawer-overlay" id="dOverlay" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head"><span>메뉴</span><button class="drawer-close" onclick="closeDrawer()">✕</button></div>
+  <nav class="drawer-nav">
+    <div onclick="location.href='main.html'">🏠 메인홈</div>
+    <div onclick="location.href='service-intro.html'">📋 서비스 소개</div>
+    <div onclick="location.href='event.html'">🎁 이벤트</div>
+    <div onclick="location.href='my.html'">🪪 나의 관광주민증</div>
+    <div onclick="location.href='mypage-history.html'">🕘 나의 활동이력</div>
+    <div onclick="location.href='mypage-coupon.html'">🎟️ 혜택쿠폰</div>
+    <div onclick="location.href='exp.html'">📈 경험치 보유현황</div>
+    <div onclick="location.href='mypage-favorite.html'">🔖 나의 즐겨찾기</div>
+    <div onclick="location.href='mypage-report.html'">📊 활동리포트</div>
+    <div onclick="location.href='mypage-cardbox.html'">🗂️ 관광주민증 보관함</div>
+  </nav>
+  <div class="drawer-foot">
+    <button class="btn-dk" onclick="logoutUser()">로그아웃</button>
+    <button class="btn-lt" onclick="closeDrawer()">닫기</button>
+  </div>
+</aside>
+
+<div class="toast" id="toastEl"></div>
+
+<script src="../site-assets/data.js?v=20260707f"></script>
+<script src="../assets/common.js?v=20260707f"></script>
+<script>
+const user=requireUser();
+const EXP_TYPE_ICON={'지역 가맹점 이용':'🏪','지역 관광주민증 발급':'🪪','여행 노하우 작성':'✍️','서비스 신규 가입':'🎉'};
+function toggleExpRules(){document.getElementById('expRules').classList.toggle('open');}
+if(user){
+  setActiveBottomNav('my');
+  const curIdx=getCurLevelIdx(user.exp);
+  const cur=LEVELS[curIdx];
+  document.getElementById('curGrade').textContent=cur.icon+' '+cur.name;
+  document.getElementById('curExp').textContent=user.exp.toLocaleString();
+
+  document.getElementById('expRulesEarn').textContent=EXP_RULES.earn;
+  document.getElementById('expRulesNotes').innerHTML=EXP_RULES.notes.map(n=>`<li>${n}</li>`).join('');
+  document.getElementById('expHistList').innerHTML=EXP_HISTORY.map(h=>`
+    <div class="exp-hist-item">
+      <div class="ic">${EXP_TYPE_ICON[h.type]||'⭐'}</div>
+      <div class="body">
+        <div class="t1">${h.type}<span class="dt">(${h.date})</span></div>
+        <div class="t2">${h.region?`(${h.region}) `:''}${h.type}</div>
+      </div>
+      <div class="exp-box">${h.exp.toLocaleString()} EXP${h.expire?`<span class="expire">(${h.expire} 소멸예정)</span>`:''}</div>
+    </div>`).join('');
+
+  const container=document.getElementById('tlRows');
+
+  const lineBg=document.createElement('div');
+  lineBg.className='tl-line-bg';
+  container.appendChild(lineBg);
+  const lineFill=document.createElement('div');
+  lineFill.className='tl-line-fill';
+  container.appendChild(lineFill);
+
+  LEVELS.forEach((lv,idx)=>{
+    const isReached=user.exp>=lv.minExp;
+    const isCurrent=idx===curIdx;
+    const row=document.createElement('div');
+    row.className='tl-row';
+    let iconClass='tl-icon-wrap'+(isCurrent?' active':isReached?' reached':' not-reached');
+    let dotClass='tl-dot'+(isCurrent?' active-dot':isReached?' reached-dot':' not-reached-dot');
+    let nameClass='tl-level-name'+(isReached?'':' nr');
+    let expClass='tl-exp-req'+(isReached?'':' nr');
+
+    let extraHtml='';
+    if(isCurrent&&lv.maxExp){
+      const pct=Math.round(((user.exp-lv.minExp)/(lv.maxExp-lv.minExp))*100);
+      const remaining=(lv.maxExp-user.exp).toLocaleString();
+      extraHtml=`
+        <div class="tl-current-badge">✦ 현재 등급</div>
+        <div class="tl-my-exp">${user.exp.toLocaleString()} / ${lv.maxExp.toLocaleString()} EXP</div>
+        <div class="tl-progress-row">
+          <div class="tl-mini-bar"><div class="tl-mini-fill" style="width:${pct}%"></div></div>
+          <span class="tl-pct">${remaining} EXP 남음</span>
+        </div>`;
+    }else if(isCurrent){
+      extraHtml=`<div class="tl-current-badge">✦ 최고 등급</div>`;
+    }
+
+    row.innerHTML=`
+      <div class="tl-icon-col">
+        <div class="${iconClass}">${lv.icon}<div class="${dotClass}"></div></div>
+      </div>
+      <div class="tl-text-col">
+        <div class="${nameClass}">${lv.name}</div>
+        <div class="${expClass}">${lv.minExp.toLocaleString()} EXP</div>
+        ${extraHtml}
+      </div>`;
+    container.appendChild(row);
+  });
+
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>{
+    const rows=container.querySelectorAll('.tl-row');
+    if(!rows.length)return;
+    const cTop=container.getBoundingClientRect().top;
+    const dotYs=[];
+    rows.forEach(row=>{
+      const dot=row.querySelector('.tl-dot');
+      if(dot){const r=dot.getBoundingClientRect();dotYs.push(r.top+r.height/2-cTop);}
+    });
+    if(dotYs.length<2)return;
+    const s=dotYs[0],e=dotYs[dotYs.length-1],f=dotYs[curIdx];
+    const firstDot=rows[0].querySelector('.tl-dot');
+    const dotRect=firstDot.getBoundingClientRect();
+    const cLeft=container.getBoundingClientRect().left;
+    const lineX=dotRect.left+dotRect.width/2-cLeft-1.5;
+    lineBg.style.cssText=`top:${s}px;height:${e-s}px;left:${lineX}px`;
+    lineFill.style.cssText=`top:${s}px;height:${f-s}px;left:${lineX}px`;
+  });});
+}
+</script>
+<script src="theme.js?v=1"></script>
+</body>
+</html>

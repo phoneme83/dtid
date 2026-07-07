@@ -1,0 +1,232 @@
+/* ═══════════════════════════════════════════════════════════════
+   시안 C · 로컬 미션 게이미피케이션 (Local Quest) 테마
+   - 팔레트: 보라 #7c3aed(주조) / #6d28d9(진보라) / #ede9fe(연보라)
+             배경 #f6f4ff / 보상 골드 #fbbf24→#f59e0b
+   - common.css 위에 얹는 전면 오버라이드
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --c-ac:#7c3aed;
+  --c-ac2:#6d28d9;
+  --c-ac3:#8b5cf6;
+  --c-lite:#ede9fe;
+  --c-line:#ece5fb;
+  --c-bg:#f6f4ff;
+  --c-gold1:#fbbf24;
+  --c-gold2:#f59e0b;
+}
+
+body.theme-c{background:var(--c-bg)}
+
+/* ── 데모 바 (theme.js가 주입) ── */
+.theme-c .c-demo-bar{background:#22103f;color:#fff;font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:12px;padding:6px 12px;letter-spacing:-.2px}
+.theme-c .c-demo-bar a{color:#c4b5fd;text-decoration:underline;font-weight:700}
+
+/* ── GNB / 드로어 / 서브내비 ── */
+.theme-c .gnb{background:linear-gradient(120deg,#6d28d9,#7c3aed 70%,#8b5cf6)}
+.theme-c .logo-wrap{background:rgba(255,255,255,.22)}
+.theme-c .drawer-head{background:linear-gradient(120deg,#6d28d9,#7c3aed)}
+.theme-c .drawer-nav div{border-bottom-color:#f3effd}
+.theme-c .drawer-nav div:active{background:var(--c-bg)}
+.theme-c .subnav{border-bottom:1px solid var(--c-line)}
+.theme-c .subnav-a.active{color:var(--c-ac)}
+.theme-c .subnav-a.active::after{background:var(--c-ac)}
+
+/* ── 하단 내비 + 중앙 QR FAB ── */
+.theme-c .bottom-nav{border-top-color:var(--c-line)}
+.theme-c .bnav-a.active{color:var(--c-ac);font-weight:700}
+.theme-c .c-qr-fab{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:3px solid #fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;z-index:600;box-shadow:0 6px 16px rgba(124,58,237,.45);cursor:pointer;padding:0}
+.theme-c .c-qr-fab .fab-ic{font-size:19px;line-height:1}
+.theme-c .c-qr-fab .fab-tx{font-size:8.5px;font-weight:800;letter-spacing:.5px}
+.theme-c .c-qr-fab:active{transform:translateX(-50%) scale(.94)}
+/* FAB와 겹치지 않게 기존 QR 플로팅 배너를 살짝 위로 */
+.theme-c .qr-float{bottom:100px}
+.theme-c .qr-card{border-radius:16px;border-color:var(--c-ac)}
+
+/* ── 공통 톤 교정: 검정 활성 칩/버튼 → 보라 ── */
+.theme-c .top10-tab.active,
+.theme-c .t50-status-tab.active,
+.theme-c .mypage-sub-tab.active,
+.theme-c .rgn-cat-tab.active,
+.theme-c .rgn-sido-tab.active,
+.theme-c .evt-chip.active,
+.theme-c .evt-day.today,
+.theme-c .evt-cal-day.sel{background:var(--c-ac);border-color:var(--c-ac);color:#fff}
+.theme-c .top10-tab,.theme-c .t50-status-tab,.theme-c .mypage-sub-tab,
+.theme-c .rgn-cat-tab,.theme-c .rgn-sido-tab{border-radius:20px;border-color:#e4ddf6}
+.theme-c .evt-tab-btn{border-radius:12px}
+.theme-c .evt-tab-btn.active{border-color:var(--c-ac);color:var(--c-ac);background:var(--c-lite)}
+.theme-c .evt-week-nav,.theme-c .evt-month-nav{background:var(--c-lite);color:var(--c-ac)}
+.theme-c .evt-item-tag.ongoing{background:var(--c-lite);color:var(--c-ac)}
+.theme-c .evt-item{border-radius:16px;border-color:#efe9fc;box-shadow:0 2px 8px rgba(124,58,237,.06)}
+.theme-c .evt-day{border-radius:12px}
+
+/* 어두운 단색 버튼 → 보라 */
+.theme-c .svc-cta,
+.theme-c .t50-find button,
+.theme-c .t50-finder-ok,
+.theme-c .knowhow-save,
+.theme-c .btn-dk,
+.theme-c .qr-btn.dark,
+.theme-c .cpn-check,
+.theme-c .pop-event-btns button,
+.theme-c .card-detail-btns .primary{background:var(--c-ac);color:#fff;border:none;border-radius:12px}
+.theme-c .t50-finder-ok:disabled{background:#d5cdea}
+/* 어두운 테두리 버튼 → 보라 테두리 */
+.theme-c .exp-detail-btn,
+.theme-c .qr-btn,
+.theme-c .btn-lt,
+.theme-c .rgn-review-join,
+.theme-c .onepass-btn,
+.theme-c .t50-find button.refresh,
+.theme-c .card-detail-btns .secondary{border-color:var(--c-ac);color:var(--c-ac);background:#fff;border-radius:12px;border-width:1.5px;border-style:solid}
+
+/* 파랑 강조 → 보라 */
+.theme-c .top10-discount,
+.theme-c .hist-exp,
+.theme-c .rgn-tip-card li::before,
+.theme-c .exp-hist-item .exp-box,
+.theme-c .rgn-banner h2 em,
+.theme-c .t50-modal-row .arrow,
+.theme-c .t50-modal-row a.tel{color:var(--c-ac)}
+.theme-c .rgn-venue-coupon{background:var(--c-lite);color:var(--c-ac);border-radius:10px}
+.theme-c .svc-way-label{background:var(--c-lite);color:var(--c-ac)}
+.theme-c .t50-modal-btn.primary{background:var(--c-ac)}
+.theme-c .acct-card:active{border-color:var(--c-ac)}
+.theme-c .exp-hist-item .ic{background:var(--c-lite)}
+.theme-c .hist-ico{background:var(--c-lite)}
+.theme-c .tl-line-fill{background:linear-gradient(180deg,#a78bfa,#6d28d9)}
+.theme-c .tl-mini-fill{background:linear-gradient(90deg,#a78bfa,#7c3aed)}
+.theme-c .tl-dot.reached-dot{border-color:var(--c-ac)}
+
+/* ── 섹션 구분선/배경을 연보라 톤으로 ── */
+.theme-c .top10-wrap,.theme-c .faq-wrap,.theme-c .insta-tour-wrap,.theme-c .insta-banner,
+.theme-c .main-event-wrap,.theme-c .site-footer,.theme-c .profile-wrap,
+.theme-c .my-cards-section,.theme-c .quickmenu-section,.theme-c .footer-section,
+.theme-c .svc-section,.theme-c .rgn-review-wrap,.theme-c .t50-find,.theme-c .t50-schedule,
+.theme-c .t50-promo,.theme-c .current-card{border-color:var(--c-line)}
+.theme-c .notice-bar{border-bottom-color:var(--c-line)}
+.theme-c .site-footer{background:#f3effd}
+.theme-c .rgn-other-wrap{background:var(--c-lite)}
+
+/* ── 카드류: 더 둥글고 보라빛 그림자 ── */
+.theme-c .top10-thumb,.theme-c .main-event-thumb,.theme-c .rgn-venue-card,
+.theme-c .pocket-card,.theme-c .coupon-card,.theme-c .timeline-card,
+.theme-c .onepass-card,.theme-c .acct-card,.theme-c .rgn-tip-card,
+.theme-c .t50-sched-card,.theme-c .svc-contact-card,.theme-c .report-card{border-radius:18px}
+.theme-c .rgn-venue-card,.theme-c .t50-sched-card,.theme-c .pocket-card{border-color:#efe9fc;box-shadow:0 2px 10px rgba(124,58,237,.07)}
+.theme-c .onepass-card,.theme-c .acct-card,.theme-c .rgn-tip-card{box-shadow:0 4px 14px rgba(124,58,237,.12)}
+.theme-c .grade-card,.theme-c .region-card-item,.theme-c .qm-item,.theme-c .svc-step,.theme-c .current-inner{background:#f6f3fe;border-radius:14px}
+.theme-c .qm-item:active,.theme-c .region-card-item:active{background:var(--c-lite)}
+.theme-c .rci-badge{background:var(--c-lite);color:var(--c-ac2)}
+.theme-c .faq-item:first-child{border-top-color:var(--c-ac)}
+
+/* ── 섹션 타이틀: 게임 배지 느낌의 보라 바 ── */
+.theme-c .section-title,.theme-c .insta-tour-wrap h2,.theme-c .main-event-wrap h3,
+.theme-c .svc-section h3,.theme-c .t50-promo h2,.theme-c .fav-section h3,
+.theme-c .report-section h3,.theme-c .rgn-section-head h3,.theme-c .rgn-review-head h3,
+.theme-c .exp-hist>h3,.theme-c .sec-title2,.theme-c .evt-title h2{position:relative;padding-left:11px}
+.theme-c .section-title::before,.theme-c .insta-tour-wrap h2::before,.theme-c .main-event-wrap h3::before,
+.theme-c .svc-section h3::before,.theme-c .t50-promo h2::before,.theme-c .fav-section h3::before,
+.theme-c .report-section h3::before,.theme-c .rgn-section-head h3::before,.theme-c .rgn-review-head h3::before,
+.theme-c .exp-hist>h3::before,.theme-c .sec-title2::before,.theme-c .evt-title h2::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:4px;height:.95em;border-radius:3px;background:linear-gradient(180deg,#a78bfa,var(--c-ac))}
+
+/* ── 상단 배너/히어로 그라디언트 통일 ── */
+.theme-c .banner-hp{background:linear-gradient(120deg,#5b21b6,#7c3aed 60%,#8b5cf6)}
+.theme-c .qr-section{background:linear-gradient(135deg,#7c3aed,#6d28d9)}
+.theme-c .svc-hero{background:linear-gradient(135deg,#7c3aed,#6d28d9)}
+.theme-c .rgn-banner{background:linear-gradient(180deg,#ede9fe 0%,#f6e9ff 100%)}
+.theme-c .banner-coupon{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.45)}
+.theme-c .tl-icon-wrap.active{box-shadow:0 0 0 3px var(--c-ac),0 2px 8px rgba(124,58,237,.2)}
+
+/* ── 반값여행(tour50) 톤 교정 ── */
+.theme-c .t50-banner{background:linear-gradient(120deg,#fdf3c9 0%,#fbe29b 100%)}
+.theme-c .t50-banner p.k2 em{color:var(--c-ac2)}
+.theme-c .t50-banner.slide-b{background:linear-gradient(120deg,#8b5cf6,#6d28d9)}
+.theme-c .t50-legend-row .ic.prep,.theme-c .t50-map-pin .ic.prep{background:var(--c-lite);color:var(--c-ac2)}
+.theme-c .t50-map-pin.is-prep{border-color:#c4b5fd;color:var(--c-ac2)}
+.theme-c .t50-sched-card a.prep{background:var(--c-lite);color:var(--c-ac2)}
+.theme-c .t50-modal-badge.prep{border-color:#c4b5fd;color:var(--c-ac2);background:var(--c-lite)}
+.theme-c .t50-schedule{background:linear-gradient(180deg,#fbf7ff,#fff)}
+.theme-c .t50-banner-ctrl .dots span.on{background:var(--c-ac)}
+
+/* ── 쿠폰함 팝업 톤 교정 ── */
+.theme-c .coupon-card::before{background:var(--c-ac)}
+.theme-c .coupon-card .cp-ic{background:var(--c-lite)}
+.theme-c .coupon-card .cp-state{color:var(--c-ac2)}
+.theme-c .cpn-pop{background:#c4b5fd}
+.theme-c .cpn-code{background:#4c1d95}
+.theme-c .cpn-info .btn-storeinfo{background:var(--c-ac2)}
+.theme-c .pocket-more{border-color:#c4b5fd;color:var(--c-ac)}
+
+/* ── 토스트 ── */
+.theme-c .toast{background:#3b1a72;border-radius:20px;box-shadow:0 4px 14px rgba(59,26,114,.35)}
+
+/* ═══ 게이미피케이션 컴포넌트 (theme.js / 페이지에서 사용) ═══ */
+/* 홈 상단: 레벨 헤더 + 진행바 카드 */
+.theme-c .c-home-panel{max-width:var(--content-max);margin:0 auto;background:transparent;padding-bottom:16px}
+.theme-c .c-head{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;padding:18px 16px 44px;position:relative}
+.theme-c .c-head .c-hi{font-size:16px;font-weight:800}
+.theme-c .c-head .c-lv{font-size:12px;opacity:.92;margin-top:3px}
+.theme-c .c-head .c-pt{position:absolute;right:16px;top:16px;background:rgba(255,255,255,.2);border-radius:18px;font-size:12.5px;font-weight:800;padding:6px 12px}
+.theme-c .c-lvcard{margin:-30px 16px 0;background:#fff;border-radius:18px;padding:15px 17px;box-shadow:0 4px 14px rgba(124,58,237,.14);position:relative;z-index:2}
+.theme-c .c-lvcard .c-lv-t{display:flex;justify-content:space-between;font-size:13.5px;font-weight:800;color:#1a1a1a}
+.theme-c .c-lvcard .c-lv-t span:last-child{color:var(--c-ac)}
+.theme-c .c-bar{height:10px;background:var(--c-lite);border-radius:6px;margin-top:9px;overflow:hidden}
+.theme-c .c-bar i{display:block;height:100%;background:linear-gradient(90deg,#a78bfa,#7c3aed);border-radius:6px;transition:width .6s}
+.theme-c .c-bar-cap{font-size:11.5px;color:#889;margin-top:7px}
+.theme-c .c-secttl{padding:18px 16px 8px;font-size:14.5px;font-weight:800;color:#1a1a1a}
+/* 미션 카드 */
+.theme-c .c-msn-list{display:flex;flex-direction:column;gap:9px;padding:0 16px}
+.theme-c .c-msn{background:#fff;border-radius:15px;padding:13px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 5px rgba(50,20,110,.06)}
+.theme-c .c-msn .c-ic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.theme-c .c-msn .c-tt{font-size:13.5px;font-weight:800;color:#1a1a1a;line-height:1.35}
+.theme-c .c-msn .c-rw{font-size:11px;color:var(--c-ac);font-weight:800;margin-top:3px}
+.theme-c .c-msn .c-go{margin-left:auto;font-size:11.5px;font-weight:800;color:#fff;background:var(--c-ac);border:none;border-radius:16px;padding:8px 14px;flex-shrink:0;cursor:pointer;white-space:nowrap}
+.theme-c .c-msn .c-go.done{background:#d1d5db;pointer-events:none}
+/* 스탬프판 */
+.theme-c .c-stamp-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:4px 0 12px}
+.theme-c .c-stamp{aspect-ratio:1;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10.5px;font-weight:800;gap:3px;text-align:center;padding:4px}
+.theme-c .c-stamp.got{background:var(--c-lite);border:2.5px solid var(--c-ac);color:var(--c-ac);animation:c-pop .3s}
+.theme-c .c-stamp.no{background:#fff;border:2.5px dashed #d5d0e8;color:#aab}
+.theme-c .c-stamp .c-e{font-size:21px}
+@keyframes c-pop{0%{transform:scale(.6)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+/* 완주 보상 카드 (골드) */
+.theme-c .c-reward{background:linear-gradient(135deg,var(--c-gold1),var(--c-gold2));border-radius:15px;padding:14px 16px;color:#fff}
+.theme-c .c-reward .c-rt{font-size:14px;font-weight:800}
+.theme-c .c-reward .c-rs{font-size:11.5px;opacity:.92;margin-top:3px}
+/* 홈 하단 스탬프 바로가기 */
+.theme-c .c-strip-link{margin:10px 16px 0;background:#fff;border:1.5px dashed #c4b5fd;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;color:var(--c-ac);cursor:pointer}
+.theme-c .c-strip-link .arr{margin-left:auto;color:#c4b5fd}
+/* 마이페이지 포인트 로그 */
+.theme-c .c-log-item{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid #f3effd;font-size:12.5px;color:#333}
+.theme-c .c-log-item .p{margin-left:auto;font-weight:800;color:var(--c-ac)}
+
+/* ═══ QR 제시 / 미션달성 오버레이 ═══ */
+.theme-c .c-ov{position:fixed;inset:0;z-index:1000;background:rgba(30,16,51,.6);display:none;padding:24px 16px;overflow-y:auto}
+.theme-c .c-ov.on{display:flex}
+.theme-c .c-ov-inner{margin:auto;width:100%;max-width:400px;background:#fff;border-radius:24px;padding:34px 22px 26px;text-align:center;position:relative;box-shadow:0 12px 40px rgba(30,16,51,.35)}
+.theme-c .c-ov-cls{position:absolute;top:14px;right:16px;font-size:20px;background:none;border:none;color:#999;cursor:pointer;line-height:1}
+.theme-c .c-ov-ttl{font-weight:800;font-size:16px;color:var(--c-ac)}
+.theme-c .c-ov-inner>img{width:190px;height:190px;margin-top:18px}
+.theme-c .c-ov-nm{font-weight:800;font-size:19px;margin-top:14px;color:#1a1a1a}
+.theme-c .c-ov-gd{font-size:12.5px;color:#888;margin-top:5px;line-height:1.6}
+.theme-c .c-ov-sim{margin-top:22px;background:#1a1a1a;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:14px;padding:14px 22px;cursor:pointer;width:100%}
+.theme-c .c-ov-big{font-size:56px;line-height:1}
+.theme-c .c-ov-dt1{font-size:21px;font-weight:800;margin-top:12px;color:#1a1a1a}
+.theme-c .c-ov-dt2{font-size:14px;color:var(--c-ac);font-weight:800;margin-top:8px}
+.theme-c .c-ov-dt3{background:var(--c-lite);border-radius:10px;font-size:12.5px;padding:9px 14px;margin-top:14px;color:#555;line-height:1.6}
+.theme-c .c-ov-btn2{margin-top:22px;background:var(--c-ac);color:#fff;border:none;border-radius:14px;font-weight:800;font-size:14px;padding:14px 26px;cursor:pointer;width:100%}
+
+/* ═══ 데스크톱(≥960px) 보정 ═══ */
+@media (min-width:960px){
+  .theme-c .c-qr-fab{display:none}      /* 하단탭이 없는 데스크톱에선 기존 QR 플로팅 카드 사용 */
+  .theme-c .qr-float{bottom:28px}
+  .theme-c .c-home-panel{padding-top:16px}
+  .theme-c .c-head{border-radius:20px 20px 0 0}
+  .theme-c .c-msn-list{display:grid;grid-template-columns:repeat(3,1fr);align-items:stretch}
+  .theme-c .c-msn{flex-direction:column;text-align:center;gap:10px;padding:18px 14px}
+  .theme-c .c-msn .c-go{margin-left:0}
+  .theme-c .c-msn>div:nth-child(2){flex:1}
+  .theme-c .c-stamp-wrap{grid-template-columns:repeat(9,1fr)}
+  .theme-c .c-stamp{font-size:11px}
+}

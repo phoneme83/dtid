@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>디지털 관광주민증 · 시안 적용 홈페이지 5종</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f4f5f7;color:#1a1a1a;padding:28px 16px 60px}
+.wrap{max-width:860px;margin:0 auto}
+h1{font-size:22px;font-weight:800;margin-bottom:6px}
+.sub{font-size:13.5px;color:#667;line-height:1.7;margin-bottom:22px}
+.sub b{font-weight:800}
+a.back{display:inline-block;font-size:12.5px;color:#556;margin-bottom:14px;text-decoration:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.site{background:#fff;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,.07);overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;transition:transform .15s}
+.site:hover{transform:translateY(-3px)}
+.site .top{height:64px;display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff}
+.site .bd{padding:14px 16px 16px}
+.site .lb{font-size:11px;font-weight:800;color:#fff;border-radius:5px;padding:2px 8px;display:inline-block}
+.site h3{font-size:15.5px;font-weight:800;margin:7px 0 5px}
+.site p{font-size:12px;color:#667;line-height:1.6}
+.note{margin-top:22px;background:#fff;border-left:4px solid #1a1a1a;border-radius:0 12px 12px 0;padding:14px 16px;font-size:12.5px;color:#445;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="main.html">← 현재 홈페이지(원본)로</a>
+  <h1>시안 적용 홈페이지 5종</h1>
+  <p class="sub">현재 홈페이지 소스는 그대로 두고, <b>시안 A~E의 디자인을 전체 페이지(메인·지역상세·마이페이지·이벤트 등 14개)에 적용한 별도 홈페이지</b>입니다. 각 사이트는 원본과 동일한 기능·데이터로 동작합니다. 컨셉 설명은 <a href="concepts/index.html">시안 문서</a>에서 볼 수 있습니다.</p>
+  <div class="grid">
+    <a class="site" href="site-a/main.html">
+      <div class="top" style="background:linear-gradient(135deg,#ea580c,#9a3412)">💳</div>
+      <div class="bd"><span class="lb" style="background:#ea580c">시안 A</span><h3>월렛 퍼스트</h3><p>주민증 카드와 QR이 가장 먼저. 다크 월렛 UI, 어디서든 1탭 QR 제시.</p></div>
+    </a>
+    <a class="site" href="site-b/main.html">
+      <div class="top" style="background:linear-gradient(135deg,#60a5fa,#2563eb)">🗺️</div>
+      <div class="bd"><span class="lb" style="background:#2563eb">시안 B</span><h3>여행 탐색 퍼스트</h3><p>지도와 추천 피드로 "어디로 갈까?"를 자극. 탐색→발급 30초 퍼널.</p></div>
+    </a>
+    <a class="site" href="site-c/main.html">
+      <div class="top" style="background:linear-gradient(135deg,#a78bfa,#6d28d9)">🎯</div>
+      <div class="bd"><span class="lb" style="background:#7c3aed">시안 C</span><h3>로컬 미션 게이미피케이션</h3><p>QR 사용이 곧 스탬프·레벨업. 방문을 퀘스트로 만드는 재방문 루프.</p></div>
+    </a>
+    <a class="site" href="site-d/main.html">
+      <div class="top" style="background:linear-gradient(135deg,#2dd4bf,#0f766e)">🪪</div>
+      <div class="bd"><span class="lb" style="background:#0f766e">시안 D</span><h3>공공 미니멀 · 유니버설</h3><p>큰 글자, 얕은 메뉴, 한 화면 한 질문. 전 연령이 설명 없이 쓰는 구조.</p></div>
+    </a>
+    <a class="site" href="site-e/main.html">
+      <div class="top" style="background:linear-gradient(135deg,#404040,#1a1a1a)">★</div>
+      <div class="bd"><span class="lb" style="background:#1a1a1a">시안 E</span><h3>통합안 (추천)</h3><p>D의 뼈대 + A의 QR 접근 + C 라이트 스탬프 + B의 지역 랜딩·발급 퍼널.</p></div>
+    </a>
+  </div>
+  <p class="note">원본 소스(<code>main.html</code> 등 루트 페이지, <code>assets/</code>)는 수정하지 않았습니다. 각 시안 사이트는 <code>site-a/</code>~<code>site-e/</code> 폴더에 독립 사본으로 존재하며, 공용 데이터(<code>data.js</code>)와 이미지·지역 실데이터를 그대로 공유합니다.</p>
+</div>
+</body>
+</html>

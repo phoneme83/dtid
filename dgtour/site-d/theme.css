@@ -1,0 +1,383 @@
+/* ═══════════════════════════════════════════════════════════════
+   시안 D · 공공 미니멀 유니버설 (Public Minimal) — 전 페이지 오버라이드
+   팔레트: 흰 배경(#fff) / 페이지 배경 #f2f5f4 / 텍스트 #111827
+           강조 청록 #0f766e / 진한 청록 #115e59 / 옅은 청록 배경 #e7f4f1
+           테두리 #d8e0de — 대비 WCAG AA 이상, 큰 글자, 48px 터치 타깃
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 기본 ── */
+body.theme-d{background:#f2f5f4;color:#111827;font-size:17px}
+.theme-d :focus-visible{outline:3px solid #0f766e;outline-offset:2px;border-radius:4px}
+.theme-d button{cursor:pointer}
+
+/* ── 데모 바 (theme.js 주입) ── */
+.theme-d .dtd-demobar{background:#115e59;color:#fff;font-size:13px;font-weight:700;text-align:center;padding:7px 12px;display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap}
+.theme-d .dtd-demobar a{color:#fff;text-decoration:underline;opacity:.92;font-weight:600}
+
+/* ── 하단 고정 스트립: 전화 문의 + 글자 크게 (theme.js 주입) ── */
+.theme-d .dtd-foot{position:fixed;left:0;right:0;bottom:66px;z-index:490;display:flex;gap:8px;padding:8px 10px;background:rgba(255,255,255,.97);border-top:2px solid #d8e0de;justify-content:center;align-items:stretch}
+.theme-d .dtd-foot .dtd-call{flex:1;max-width:360px;display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border:2px solid #0f766e;color:#0f766e;font-weight:800;font-size:16px;border-radius:12px;min-height:48px;text-decoration:none}
+.theme-d .dtd-foot .dtd-call:active{background:#e7f4f1}
+.theme-d .dtd-foot .dtd-font{flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#0f766e;color:#fff;border:2px solid #0f766e;font-weight:800;font-size:15px;border-radius:12px;min-height:48px;padding:0 16px;font-family:inherit}
+body.theme-d.dtd-big .dtd-foot .dtd-font{background:#115e59;border-color:#115e59}
+body.theme-d.dtd-no-bnav .dtd-foot{bottom:0}
+/* 스트립이 콘텐츠를 가리지 않도록 문서 끝 여백 확보 */
+body.theme-d::after{content:'';display:block;height:76px}
+
+/* ── 글자 크게 모드 (하단 '가⁺' 토글) ── */
+body.theme-d.dtd-big{zoom:1.15}
+
+/* ── GNB: 어두운 바 → 흰 바탕 고대비 ── */
+.theme-d .gnb{background:#fff;border-bottom:2px solid #d8e0de;height:60px}
+.theme-d .gnb-title{color:#0f172a;font-size:16.5px}
+.theme-d .logo-wrap{background:#0f766e}
+.theme-d .gnb-menu{padding:10px}
+.theme-d .gnb-menu span{background:#12332f;width:22px;height:2.5px}
+.theme-d .gnb-nav a{color:#1f2937}
+.theme-d .gnb-nav a:hover{color:#0f766e}
+
+/* ── 서브내비 ── */
+.theme-d .subnav{border-bottom:2px solid #d8e0de}
+.theme-d .subnav-a{font-size:15.5px;font-weight:600;color:#3d4a47;padding:15px 18px}
+.theme-d .subnav-a.active{color:#0f766e;font-weight:800}
+.theme-d .subnav-a.active::after{background:#0f766e;height:3px}
+
+/* ── 메인: 큰 과업 버튼 ── */
+.theme-d .dtd-tasks{max-width:var(--content-max);margin:0 auto;padding:18px 16px 8px;background:#fff}
+.theme-d .dtd-hello{font-size:15.5px;color:#374151;font-weight:600;margin:0 0 12px 2px}
+.theme-d .dtd-task-grid{display:grid;gap:10px}
+.theme-d .dtd-task{display:flex;align-items:center;gap:14px;border:2px solid #d8e0de;border-radius:18px;background:#fff;color:#111827;text-decoration:none;padding:17px 16px;min-height:64px}
+.theme-d .dtd-task:active{transform:scale(.985)}
+.theme-d .dtd-task .ic{font-size:27px;flex-shrink:0;line-height:1}
+.theme-d .dtd-task .tx{min-width:0}
+.theme-d .dtd-task .tx strong{display:block;font-size:18px;font-weight:800;line-height:1.3;letter-spacing:-.3px}
+.theme-d .dtd-task .tx small{display:block;font-size:13.5px;font-weight:500;margin-top:3px;opacity:.78}
+.theme-d .dtd-task .ar{margin-left:auto;font-size:20px;opacity:.5;flex-shrink:0}
+.theme-d .dtd-task.hero{background:#0f766e;border-color:#0f766e;color:#fff}
+
+/* ── 메인: 반값여행 배너/공지/지도 ── */
+.theme-d .banner-hp{background:#115e59;padding:14px 16px}
+.theme-d .notice-bar{padding:14px 16px;border-bottom:1.5px solid #e4eae8}
+.theme-d .notice-bar a{font-size:15px;font-weight:600;color:#1f2937}
+.theme-d .notice-bar .plus{color:#4b5563;font-size:18px}
+.theme-d .map-heading p{font-size:17.5px;color:#1f2937}
+
+/* ── 메인: TOP10 / FAQ / 인기 콘텐츠 / 이벤트 카드 ── */
+.theme-d .top10-wrap,.theme-d .faq-wrap,.theme-d .insta-tour-wrap,.theme-d .main-event-wrap{border-top:10px solid #eef2f1}
+.theme-d .top10-tab{font-size:14.5px;padding:12px 18px;min-height:48px;border:2px solid #cfd8d6;color:#374151;border-radius:26px}
+.theme-d .top10-tab.active{background:#0f766e;border-color:#0f766e;color:#fff}
+.theme-d .top10-card{width:168px}
+.theme-d .top10-name{font-size:14.5px}
+.theme-d .top10-discount{font-size:13px;color:#0f766e;font-weight:700}
+.theme-d .faq-item:first-child{border-top:2px solid #0f766e}
+.theme-d .faq-q{font-size:15.5px;padding:18px 2px;color:#111827}
+.theme-d .faq-q .icon{color:#0f766e;font-size:19px}
+.theme-d .faq-a p{font-size:14.5px;color:#374151;padding-bottom:18px}
+.theme-d .insta-tour-wrap h2{font-size:17px}
+.theme-d .insta-tile span{font-size:12.5px}
+.theme-d .insta-banner{background:#0f766e}
+.theme-d .insta-banner p{font-size:14px}
+.theme-d .main-event-wrap h3{font-size:17px}
+.theme-d .main-event-card strong{font-size:14px}
+.theme-d .main-event-card span{font-size:13px;color:#4b5563}
+
+/* ── 사이트 푸터 ── */
+.theme-d .site-footer{border-top:10px solid #eef2f1;background:#fff}
+.theme-d .site-footer .f-links span{font-size:13px;color:#4b5563}
+.theme-d .site-footer .f-links span.bold{color:#111827}
+.theme-d .site-footer .f-info{font-size:12px;color:#57534e}
+.theme-d .footer-links span{font-size:13px;color:#4b5563}
+.theme-d .footer-links span.bold{color:#111827}
+.theme-d .footer-info{font-size:12px;color:#57534e}
+
+/* ── QR 플로팅 ── */
+.theme-d .qr-float{bottom:136px}
+.theme-d .qr-card{border:2px solid #0f766e;box-shadow:0 4px 18px rgba(15,118,110,.18)}
+.theme-d .qr-text strong{font-size:14.5px}
+.theme-d .qr-text span{font-size:12.5px;color:#4b5563}
+.theme-d .qr-close{width:36px;height:36px;font-size:16px;color:#374151}
+
+/* ── 하단 내비 ── */
+.theme-d .bottom-nav{height:66px;border-top:2px solid #d8e0de}
+.theme-d .bnav-a{font-size:11.5px;font-weight:600;color:#4b5563;gap:3px}
+.theme-d .bnav-a.active{color:#0f766e;font-weight:800}
+
+/* ── 서랍(전체메뉴) ── */
+.theme-d .drawer{width:300px;right:-300px}
+.theme-d .drawer.open{right:0}
+.theme-d .drawer-head{background:#0f766e;height:60px}
+.theme-d .drawer-close{font-size:24px;padding:8px}
+.theme-d .drawer-nav div{padding:17px 20px;font-size:16px;font-weight:600;min-height:56px}
+.theme-d .drawer-foot button{padding:14px;font-size:15px;border-radius:10px;min-height:50px}
+.theme-d .btn-dk{background:#0f766e}
+.theme-d .btn-lt{color:#0f766e;border-color:#0f766e}
+
+/* ── 토스트 ── */
+.theme-d .toast{bottom:148px;font-size:14px;padding:13px 22px;border-radius:12px;background:#134e4a}
+
+/* ── 로그인(index) ── */
+.theme-d .page-title{font-size:24px}
+.theme-d .page-sub{font-size:15px;color:#4b5563}
+.theme-d .visitkorea-badge{font-size:13px;color:#115e59;border-color:#115e59;padding:6px 14px}
+.theme-d .onepass-card{border:2px solid #d8e0de;box-shadow:none}
+.theme-d .onepass-desc{font-size:14.5px;color:#374151}
+.theme-d .onepass-btn{font-size:17px;font-weight:800;min-height:56px;border:2px solid #0f766e;color:#0f766e;border-radius:14px}
+.theme-d .onepass-btn:active{background:#e7f4f1}
+.theme-d .onepass-auto{font-size:14px;color:#374151}
+.theme-d .onepass-auto input{accent-color:#0f766e;width:20px;height:20px}
+.theme-d .notice{font-size:13px;color:#57534e;border:1.5px solid #e4eae8}
+.theme-d .notice strong{color:#115e59}
+.theme-d .sheet-close{font-size:22px;padding:8px}
+.theme-d .sheet-desc{font-size:14.5px;color:#374151}
+.theme-d .sheet-desc strong{color:#115e59}
+.theme-d .sheet-desc2{font-size:16px;border-bottom-color:#0f766e}
+.theme-d .sheet-desc2 strong{color:#0f766e}
+.theme-d .sns-btn{width:56px;height:56px}
+.theme-d .sheet-terms{font-size:15px;padding:15px 16px;min-height:52px;color:#1f2937}
+.theme-d .sheet-contact{font-size:12.5px;color:#4b5563}
+
+/* ── 마이페이지(my) ── */
+.theme-d .user-name{font-size:21px}
+.theme-d .settings-btn{width:44px;height:44px;color:#374151}
+.theme-d .grade-card{background:#f0faf7;border:1.5px solid #c9ebe2}
+.theme-d .grade-label,.theme-d .exp-label{font-size:12.5px;color:#3d4a47}
+.theme-d .grade-name{font-size:16px}
+.theme-d .exp-value{font-size:16px}
+.theme-d .exp-unit{font-size:12.5px;color:#3d4a47}
+.theme-d .qr-section{background:linear-gradient(150deg,#0f766e,#115e59)}
+.theme-d .qr-section-title{font-size:17px}
+.theme-d .qr-user-info{font-size:14px;color:rgba(255,255,255,.92)}
+.theme-d .qr-user-info strong{font-size:16px}
+.theme-d .qr-btn{font-size:15px;min-height:50px;border:2px solid #fff;background:transparent;color:#fff;border-radius:12px}
+.theme-d .qr-btn.dark{background:#fff;border-color:#fff;color:#115e59}
+.theme-d .section-title{font-size:17px}
+.theme-d .region-card-item{background:#fff;border:1.5px solid #d8e0de;padding:14px;min-height:64px}
+.theme-d .rci-name{font-size:15.5px}
+.theme-d .rci-status{font-size:13px;color:#4b5563}
+.theme-d .rci-badge{background:#d9f0ec;color:#115e59;font-size:12px;padding:4px 9px}
+.theme-d .qm-item{background:#fff;border:1.5px solid #d8e0de;padding:16px;min-height:64px}
+.theme-d .qm-item:active{background:#e7f4f1}
+.theme-d .qm-text{font-size:15.5px;font-weight:700;color:#111827}
+
+/* ── 뒤로가기 헤더(page-bar) ── */
+.theme-d .page-bar{padding:15px 16px;border-bottom:2px solid #d8e0de}
+.theme-d .page-bar-title{font-size:18px}
+.theme-d .back-btn{font-size:22px;min-width:44px;min-height:44px;justify-content:center}
+
+/* ── 경험치(exp) ── */
+.theme-d .current-inner{background:#f0faf7;border:1.5px solid #c9ebe2}
+.theme-d .sec-title2{font-size:17px}
+.theme-d .how-link{font-size:13.5px;color:#374151}
+.theme-d .tl-line-fill{background:#0f766e}
+.theme-d .tl-icon-wrap.active{box-shadow:0 0 0 3px #0f766e,0 2px 8px rgba(15,118,110,.25)}
+.theme-d .tl-dot.active-dot{background:#0f766e;border-color:#0f766e}
+.theme-d .tl-dot.reached-dot{border-color:#0f766e}
+.theme-d .tl-current-badge{background:#d9f0ec;color:#115e59;font-size:12px}
+.theme-d .tl-my-exp{color:#0f766e;font-size:13.5px}
+.theme-d .tl-mini-fill{background:#0f766e}
+.theme-d .tl-level-name{font-size:16.5px}
+.theme-d .tl-exp-req{font-size:14.5px}
+.theme-d .tl-pct{font-size:12px;color:#4b5563}
+.theme-d .exp-rules>p{font-size:14.5px}
+.theme-d .exp-rules li{font-size:13.5px;color:#4b5563}
+.theme-d .exp-detail-btn{border:2px solid #0f766e;color:#0f766e;font-size:15.5px;min-height:52px}
+.theme-d .exp-hist>h3{font-size:17px}
+.theme-d .exp-hist-item .ic{background:#e7f4f1}
+.theme-d .exp-hist-item .t1{font-size:15px}
+.theme-d .exp-hist-item .t1 .dt{font-size:13px;color:#57534e}
+.theme-d .exp-hist-item .t2{font-size:13.5px;color:#4b5563}
+.theme-d .exp-hist-item .exp-box{color:#0f766e;font-size:15px}
+
+/* ── 마이페이지 하위 공통(탭·이력·리포트·보관함) ── */
+.theme-d .mypage-sub-tab{font-size:14.5px;padding:12px 20px;min-height:48px;border:2px solid #cfd8d6;color:#374151}
+.theme-d .mypage-sub-tab.active{background:#0f766e;border-color:#0f766e;color:#fff}
+.theme-d .mypage-empty p{font-size:14.5px;color:#57534e}
+.theme-d .mypage-empty{color:#57534e}
+.theme-d .hist-title-row strong{font-size:15px}
+.theme-d .hist-title-row span{font-size:12.5px;color:#57534e}
+.theme-d .hist-desc{font-size:13.5px;color:#4b5563}
+.theme-d .hist-exp{color:#0f766e;font-size:13.5px}
+.theme-d .report-section h3{font-size:17px}
+.theme-d .report-card .flag{font-size:13.5px;color:#374151}
+.theme-d .report-card strong{color:#57534e;font-size:14px}
+.theme-d .fav-section h3{font-size:17px}
+.theme-d .pocket-card{border:1.5px solid #d8e0de}
+.theme-d .pocket-card .nm{font-size:14px}
+.theme-d .pocket-more{font-size:14px;color:#374151;border-color:#9fb3ae;min-height:50px}
+.theme-d .card-detail-wrap h2{font-size:19px}
+.theme-d .card-detail-box{border:1.5px solid #d8e0de}
+.theme-d .card-detail-box .em{font-size:16.5px}
+.theme-d .card-detail-box .slogan{font-size:13px;color:#57534e}
+.theme-d .card-detail-box .lvl{font-size:13px;color:#4b5563}
+.theme-d .card-detail-box .meta{font-size:12.5px;color:#57534e}
+.theme-d .card-detail-btns button{font-size:14px;min-height:50px}
+.theme-d .card-detail-btns .primary{background:#0f766e}
+.theme-d .card-detail-btns .secondary{color:#0f766e;border:2px solid #0f766e}
+
+/* ── 쿠폰함 ── */
+.theme-d .coupon-card{border:1.5px solid #d8e0de}
+.theme-d .coupon-card::before{background:#0f766e}
+.theme-d .coupon-card .cp-ic{background:#e7f4f1}
+.theme-d .coupon-card .cp-content{font-size:16px}
+.theme-d .coupon-card .cp-store{font-size:14px;color:#374151}
+.theme-d .coupon-card .cp-period{font-size:12.5px;color:#57534e}
+.theme-d .coupon-card .cp-state{color:#115e59;font-size:12.5px}
+.theme-d .cpn-pop{background:#d9f0ec}
+.theme-d .cpn-pop h3{font-size:21px}
+.theme-d .cpn-info span{font-size:13px;color:#3d4a47}
+.theme-d .cpn-info p{font-size:15px}
+.theme-d .cpn-info .note p{font-size:12.5px;color:#374151}
+.theme-d .cpn-info .btn-storeinfo{background:#115e59;font-size:13px;padding:8px 12px}
+.theme-d .cpn-code{background:#115e59}
+.theme-d .cpn-code p{font-size:13px}
+.theme-d .cpn-code input{font-size:14px;background:#f0faf7}
+.theme-d .cpn-check{background:#0f766e;min-height:48px;font-size:15px}
+
+/* ── 이벤트(event) ── */
+.theme-d .evt-title h2{font-size:20px}
+.theme-d .evt-tab-btn{font-size:15px;min-height:52px;border:2px solid #cfd8d6;color:#374151;border-radius:12px}
+.theme-d .evt-tab-btn.active{border-color:#0f766e;color:#115e59;background:#e7f4f1}
+.theme-d .evt-week-nav,.theme-d .evt-month-nav{width:38px;height:38px;color:#374151}
+.theme-d .evt-day{min-height:56px}
+.theme-d .evt-day .dow{font-size:11.5px;color:#4b5563}
+.theme-d .evt-day .dnum{font-size:14.5px}
+.theme-d .evt-day.today{background:#0f766e}
+.theme-d .evt-chip{font-size:13.5px;padding:11px 18px;min-height:44px;color:#374151}
+.theme-d .evt-chip.active{background:#0f766e}
+.theme-d .evt-month-top strong{font-size:16.5px}
+.theme-d .evt-cal-head{font-size:12.5px;color:#4b5563}
+.theme-d .evt-cal-day{font-size:14px;color:#1f2937}
+.theme-d .evt-cal-day.other{color:#b6c2bf}
+.theme-d .evt-cal-day.sel{background:#0f766e}
+.theme-d .evt-cal-day.has-event::after{background:#0f766e}
+.theme-d .evt-sel-bar strong{font-size:14.5px}
+.theme-d .evt-sel-bar span{font-size:13.5px;color:#4b5563}
+.theme-d .evt-sel-bar span em{color:#0f766e}
+.theme-d .evt-empty{color:#57534e}
+.theme-d .evt-empty p{font-size:14.5px}
+.theme-d .evt-item{border:1.5px solid #d8e0de}
+.theme-d .evt-item-tag.ongoing{background:#e7f4f1;color:#115e59}
+.theme-d .evt-item-title{font-size:14.5px}
+.theme-d .evt-item-date{font-size:12.5px;color:#4b5563}
+
+/* ── 반값여행(tour50) ── */
+.theme-d .t50-hero .word{font-size:22px}
+.theme-d .t50-hero h3{font-size:14.5px;color:#4b5563}
+.theme-d .t50-banner{background:#e7f4f1}
+.theme-d .t50-banner p.k1{color:#115e59;font-size:14.5px}
+.theme-d .t50-banner p.k2{font-size:16px}
+.theme-d .t50-banner p.k2 em{color:#0f766e}
+.theme-d .t50-banner.slide-b{background:#115e59}
+.theme-d .t50-banner.slide-b .k1{color:#d9f0ec}
+.theme-d .t50-banner-ctrl .dots span.on{background:#0f766e}
+.theme-d .t50-banner-ctrl button{font-size:12px;padding:7px 10px;color:#374151}
+.theme-d .t50-find h2{font-size:18px}
+.theme-d .t50-find h3{font-size:12.5px;color:#4b5563}
+.theme-d .t50-find button{background:#0f766e;font-size:14px;min-height:48px;padding:10px 20px}
+.theme-d .t50-find button.refresh{background:#fff;color:#0f766e;border:2px solid #0f766e}
+.theme-d .t50-legend h4{font-size:14px}
+.theme-d .t50-legend h4 span{font-size:12px;color:#4b5563}
+.theme-d .t50-legend-row .li{font-size:13px;color:#374151}
+.theme-d .t50-status-tab{font-size:13.5px;padding:11px 16px;min-height:44px;border:2px solid #cfd8d6;color:#374151}
+.theme-d .t50-status-tab.active{background:#0f766e;border-color:#0f766e;color:#fff}
+.theme-d .t50-map-pin{font-size:12px;border-width:1.5px}
+.theme-d .t50-schedule{background:#fff;border-top:10px solid #eef2f1}
+.theme-d .t50-schedule .head p.k1{font-size:14.5px}
+.theme-d .t50-schedule h3{font-size:16px}
+.theme-d .t50-sched-card{border:1.5px solid #d8e0de}
+.theme-d .t50-sched-card strong{font-size:15px}
+.theme-d .t50-sched-round{font-size:13px;color:#374151}
+.theme-d .t50-sched-card a{font-size:13.5px;padding:12px;min-height:44px}
+.theme-d .t50-promo h2{font-size:17px}
+.theme-d .t50-promo-card p{font-size:13.5px}
+.theme-d .t50-note{font-size:12px;color:#57534e}
+.theme-d .t50-modal-head h3{font-size:23px}
+.theme-d .t50-modal-row{font-size:14.5px}
+.theme-d .t50-modal-row a.tel{color:#0f766e}
+.theme-d .t50-modal-btn{font-size:15px;min-height:52px}
+.theme-d .t50-modal-btn.primary{background:#0f766e}
+.theme-d .t50-modal-btn.dark{background:#134e4a}
+.theme-d .t50-finder h4{font-size:17px}
+.theme-d .t50-finder h5{font-size:13px;color:#4b5563}
+.theme-d .t50-finder-selects select{font-size:15px;min-height:50px;border:1.5px solid #9fb3ae}
+.theme-d .t50-finder-ok{background:#0f766e;min-height:52px;font-size:16px}
+.theme-d .t50-search-pop{color:#115e59;background:#e7f4f1;font-size:14px}
+
+/* ── 지역 상세(region) ── */
+.theme-d .rgn-banner{background:#e7f4f1}
+.theme-d .rgn-banner h2{color:#0f3d3a;font-size:21px}
+.theme-d .rgn-banner h2 em{color:#0f766e}
+.theme-d .rgn-share button{width:46px;height:46px;font-size:17px}
+.theme-d .rgn-tip-card{border:1.5px solid #d8e0de;box-shadow:0 3px 14px rgba(15,118,110,.08)}
+.theme-d .rgn-tip-card li{font-size:15px;color:#1f2937}
+.theme-d .rgn-tip-card li::before{color:#0f766e}
+.theme-d .rgn-festival{background:#f0faf7;border:1.5px solid #c9ebe2}
+.theme-d .rgn-festival div{font-size:14px}
+.theme-d .rgn-phone{font-size:14px;color:#374151}
+.theme-d .rgn-mock-note{font-size:11.5px;color:#57534e}
+.theme-d .rgn-section-head h3{font-size:18px}
+.theme-d .rgn-cat-tab{font-size:14.5px;padding:12px 20px;min-height:48px;border:2px solid #cfd8d6;color:#374151}
+.theme-d .rgn-cat-tab.active{background:#0f766e;border-color:#0f766e;color:#fff}
+.theme-d .rgn-sort{font-size:13px;color:#57534e}
+.theme-d .rgn-sort span.active{color:#0f766e}
+.theme-d .rgn-venue-card{border:1.5px solid #d8e0de}
+.theme-d .rgn-venue-name{font-size:15px}
+.theme-d .rgn-venue-desc{font-size:13px;color:#4b5563}
+.theme-d .rgn-venue-discount{font-size:13px;color:#374151}
+.theme-d .rgn-venue-bkmk{width:32px;height:32px;font-size:13px;color:#374151}
+.theme-d .rgn-venue-coupon{background:#0f766e;color:#fff;font-size:14px;min-height:46px;border-radius:10px}
+.theme-d .rgn-empty{font-size:14.5px;color:#57534e}
+.theme-d .rgn-pagination button{width:38px;height:38px;font-size:13.5px;color:#374151}
+.theme-d .rgn-pagination button.active{background:#0f766e;border-color:#0f766e;color:#fff}
+.theme-d .rgn-review-head h3{font-size:17px}
+.theme-d .rgn-review-head p{font-size:13px;color:#4b5563}
+.theme-d .rgn-review-join{border:2px solid #0f766e;color:#0f766e;font-size:13.5px;padding:12px 18px;border-radius:10px}
+.theme-d .rgn-review-item p{font-size:14px}
+.theme-d .rgn-review-side .nm{font-size:12.5px;color:#4b5563}
+.theme-d .rgn-review-side .lk{font-size:12px;color:#57534e}
+.theme-d .rgn-other-wrap{background:#eef4f2}
+.theme-d .rgn-other-wrap h3{font-size:16px}
+.theme-d .rgn-sido-tab{font-size:13.5px;padding:10px 16px;min-height:44px;color:#374151}
+.theme-d .rgn-sido-tab.active{background:#0f766e;color:#fff}
+.theme-d .rgn-other-list span{font-size:14px;color:#1f2937;padding:6px 0;display:inline-block}
+.theme-d .rgn-other-list span:hover{color:#0f766e}
+.theme-d .knowhow-pop{border:2px solid #0f766e}
+.theme-d .knowhow-pop h3{font-size:17px}
+.theme-d .knowhow-txtbox textarea{font-size:15px;border:1.5px solid #9fb3ae}
+.theme-d .knowhow-save{background:#0f766e;min-height:52px;font-size:16px}
+
+/* ── 서비스 소개(service-intro) ── */
+.theme-d .svc-hero{background:linear-gradient(150deg,#0f766e,#115e59)}
+.theme-d .svc-hero h2{font-size:21px}
+.theme-d .svc-hero h3{font-size:15.5px}
+.theme-d .svc-hero p{font-size:14.5px;opacity:.95}
+.theme-d .svc-section{border-top:10px solid #eef2f1}
+.theme-d .svc-section h3{font-size:17px}
+.theme-d .svc-section h4{font-size:13.5px;color:#4b5563}
+.theme-d .svc-step{background:#f0faf7;border:1.5px solid #dcebe6}
+.theme-d .svc-step .num{background:#d9f0ec;color:#115e59;font-size:12.5px}
+.theme-d .svc-step p{font-size:14.5px}
+.theme-d .svc-cta{background:#0f766e;font-size:16px;min-height:54px;border-radius:12px}
+.theme-d .svc-way-label{background:#e7f4f1;color:#115e59;font-size:13px}
+.theme-d .svc-way-desc{font-size:12.5px;color:#57534e}
+.theme-d .svc-contact-card{background:#f0faf7;border:1.5px solid #dcebe6}
+.theme-d .svc-contact-card span{font-size:12.5px;color:#3d4a47}
+.theme-d .svc-contact-card strong{font-size:18px}
+.theme-d .svc-contact-card p{font-size:12.5px;color:#4b5563}
+.theme-d .svc-contact-card a.btn{color:#115e59;background:#d9f0ec;font-size:14px;padding:10px 16px}
+.theme-d .svc-note{font-size:12.5px;color:#57534e}
+
+/* ── 진입 이벤트 팝업 ── */
+.theme-d .pop-event-btns button{background:#115e59;font-size:14.5px;padding:15px 0;font-weight:700}
+
+/* ── 데스크톱 보정 ── */
+@media (min-width:960px){
+  .theme-d .gnb{height:64px}
+  .theme-d .gnb-nav a{color:#1f2937;font-size:15px;font-weight:700}
+  .theme-d .gnb-nav a:hover{color:#0f766e}
+  .theme-d .dtd-tasks{padding-top:24px}
+  .theme-d .dtd-task-grid{grid-template-columns:1fr 1fr}
+  .theme-d .dtd-foot{bottom:0}
+  .theme-d .qr-float{bottom:96px}
+  .theme-d .toast{bottom:110px}
+}

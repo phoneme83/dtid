@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>디지털관광주민증 - 대한민국 반값여행 · 시안 D</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/common.css?v=20260707f">
+<link rel="stylesheet" href="theme.css?v=d2">
+</head>
+<body class="theme-d">
+
+<nav class="gnb">
+  <div class="gnb-left" onclick="location.href='main.html'">
+    <div class="logo-wrap"><svg width="20" height="13" viewBox="0 0 20 13" fill="none"><circle cx="5" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><circle cx="15" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><path d="M1 6.5V4.5M19 6.5V4.5M9 6.5H11" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+    <span class="gnb-title">디지털 관광주민증</span>
+  </div>
+  <nav class="gnb-nav">
+    <a href="main.html">메인</a>
+    <a href="service-intro.html">서비스 소개</a>
+    <a href="event.html">이벤트</a>
+    <a href="my.html">나의 관광주민증</a>
+  </nav>
+  <button class="gnb-menu" onclick="openDrawer()" aria-label="메뉴"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="page-bar">
+  <button class="back-btn" onclick="location.href='main.html'" aria-label="뒤로가기">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <span class="page-bar-title">대한민국 반값여행</span>
+</div>
+
+<div class="t50-hero">
+  <div class="word"><span class="ic">🧳</span> 대한민국 반값여행</div>
+  <h3>지역사랑 휴가지원 사업</h3>
+</div>
+
+<div class="t50-banner-wrap">
+  <div class="t50-banner-track" id="t50BannerTrack">
+    <div class="t50-banner" onclick="window.open('https://korean.visitkorea.or.kr/list/all_list.do?choiceTag=%EB%B0%98%EA%B0%92%EC%97%AC%ED%96%89_%ED%98%9C%ED%83%9D%EC%A7%80_%EC%97%AC%ED%96%89%EC%BD%94%EC%8A%A4','_blank','noopener')">
+      <p class="k1">여행비는 반값으로, 추억은 두 배로!</p>
+      <p class="k2"><em>반값여행 기회!</em> 혜택 지역 여행상품 모아보기</p>
+    </div>
+    <div class="t50-banner slide-b" onclick="toast('공지사항 상세')">
+      <p class="k1">지역사랑 휴가지원 사업</p>
+      <p class="k2"><em>대한민국 반값여행 OPEN!</em> 여행경비 50% 환급</p>
+    </div>
+  </div>
+</div>
+<div class="t50-banner-ctrl">
+  <div class="dots" id="t50BannerDots"></div>
+  <button onclick="t50BannerMove(-1)" aria-label="이전">‹</button>
+  <button id="t50BannerToggle" onclick="t50BannerPlayPause()" aria-label="재생/중지">⏸</button>
+  <button onclick="t50BannerMove(1)" aria-label="다음">›</button>
+</div>
+
+<div class="t50-find">
+  <div>
+    <h2 id="t50FindTitle">나의 반값여행지 찾기</h2>
+    <h3 id="t50FindSub">※ 거주지(주민등록상 주소지) 인접 지역은 신청 제한</h3>
+  </div>
+  <button id="t50FindBtn" onclick="onT50FindBtn()">찾기</button>
+</div>
+<div class="t50-search-pop" id="t50SearchPop">신청 가능한 여행지만 표시했어요</div>
+
+<div class="t50-legend">
+  <h4>지역별 진행 현황 <span>(예산 소진 시 자동 마감)</span></h4>
+  <div class="t50-legend-row">
+    <span class="li"><span class="ic prep">●</span>준비중(예정)</span>
+    <span class="li"><span class="ic open">✎</span>신청접수중</span>
+    <span class="li"><span class="ic closed">🔒</span>마감</span>
+  </div>
+</div>
+
+<div class="t50-map-wrap">
+  <img class="t50-map-img" src="../assets/img/half-map.png" alt="우리나라 지도">
+  <div class="t50-map-pins" id="t50MapPins"></div>
+</div>
+<div class="t50-note" style="padding-top:8px">★ 디지털 관광주민증 혜택 지역</div>
+
+<div class="t50-schedule">
+  <div class="head">
+    <p class="k1">방문 지역 신청 페이지에서 반드시 사전 여행 신청을 완료해 주세요.
+      <span>※ 사전에 신청하지 않을 경우 지원 불가</span>
+    </p>
+  </div>
+  <h3>지역별 신청 일정 <span>(추진상황에 따라 변경될 수 있음)</span></h3>
+  <div class="t50-status-tabs" id="t50Tabs"></div>
+  <div class="t50-sched-scroll" id="t50Sched"></div>
+</div>
+
+<div class="t50-promo">
+  <h2>반값여행 알아보기</h2>
+  <div class="t50-promo-grid">
+    <a class="t50-promo-card" href="https://korean.visitkorea.or.kr/list/all_list.do?choiceTag=%EB%B0%98%EA%B0%92%EC%97%AC%ED%96%89_%ED%98%9C%ED%83%9D%EC%A7%80_%EC%97%AC%ED%96%89%EC%BD%94%EC%8A%A4" target="_blank" rel="noopener">
+      <div class="t50-promo-thumb a">
+        <span class="pill">COUPON</span>
+        <strong>가성비 넘치는 여행의 시작!<br>전국 반값 여행지<br>추천 여행 코스</strong>
+      </div>
+      <p>전국 반값 여행지 추천 여행 코스</p>
+    </a>
+    <a class="t50-promo-card" href="javascript:void(0)" onclick="toast('신청방법 안내')">
+      <div class="t50-promo-thumb b">
+        <strong>'대한민국 반값여행'<br>이렇게 신청하세요!</strong>
+        <span class="pill">신청방법 : 4~8월 각 지자체 홈페이지 접수</span>
+        <span class="pill">신청자격 : 해당 지자체 관외거주자</span>
+      </div>
+      <p>여행 경비 절반 돌려받기!</p>
+    </a>
+  </div>
+</div>
+
+<div class="faq-wrap" id="t50Faq"></div>
+
+<div class="site-footer">
+  <div class="f-links">
+    <span class="bold">개인정보처리방침</span><span>이용약관</span><span>위치기반서비스 이용약관</span><span>저작권 보호정책</span><span>고객서비스헌장</span><span>전자우편 무단수집거부</span><span>찾아오시는 길</span>
+  </div>
+  <div class="f-info">
+    우) 26464 강원특별자치도 원주시 세계로 10 &nbsp;고객센터 : 02-6271-2016 (한국관광공사 대표번호 : 033-738-3000) &nbsp;사업자등록번호 : 202-81-50707<br>
+    통신판매업신고 : 제2009-서울중구-1234호<br>
+    ⓒ한국관광공사
+  </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bnav-a" data-nav="main" onclick="location.href='main.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+    메인
+  </button>
+  <button class="bnav-a" onclick="toast('검색 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+    검색
+  </button>
+  <button class="bnav-a" onclick="location.href='event.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
+    이벤트
+  </button>
+  <button class="bnav-a" onclick="toast('디민증 발급 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
+    디민증발급
+  </button>
+  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+    마이
+  </button>
+</nav>
+
+<div class="drawer-overlay" id="dOverlay" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head"><span>메뉴</span><button class="drawer-close" onclick="closeDrawer()">✕</button></div>
+  <nav class="drawer-nav">
+    <div onclick="location.href='main.html'">🏠 메인홈</div>
+    <div onclick="location.href='service-intro.html'">📋 서비스 소개</div>
+    <div onclick="location.href='event.html'">🎁 이벤트</div>
+    <div onclick="location.href='my.html'">🪪 나의 관광주민증</div>
+    <div onclick="location.href='mypage-history.html'">🕘 나의 활동이력</div>
+    <div onclick="location.href='mypage-coupon.html'">🎟️ 혜택쿠폰</div>
+    <div onclick="location.href='exp.html'">📈 경험치 보유현황</div>
+    <div onclick="location.href='mypage-favorite.html'">🔖 나의 즐겨찾기</div>
+    <div onclick="location.href='mypage-report.html'">📊 활동리포트</div>
+    <div onclick="location.href='mypage-cardbox.html'">🗂️ 관광주민증 보관함</div>
+  </nav>
+  <div class="drawer-foot">
+    <button class="btn-dk" onclick="logoutUser()">로그아웃</button>
+    <button class="btn-lt" onclick="closeDrawer()">닫기</button>
+  </div>
+</aside>
+
+<div class="toast" id="toastEl"></div>
+
+<div class="t50-finder-overlay" id="t50FinderOverlay" onclick="if(event.target===this)closeT50Finder()">
+  <aside class="t50-finder">
+    <h4>나의 거주 지역을 선택해 주세요!</h4>
+    <div class="t50-finder-selects">
+      <select id="t50Sido" onchange="onT50SidoChange()"><option value="">광역시/도</option></select>
+      <select id="t50Sigungu"><option value="">시/군/구</option></select>
+    </div>
+    <h5>선택하신 거주지 및 거주지 인접지역을<br>제외한 반값여행지가 표시됩니다.</h5>
+    <button class="t50-finder-ok" onclick="confirmT50Finder()">확인</button>
+  </aside>
+</div>
+
+<div class="t50-modal-overlay" id="t50ModalOverlay" onclick="if(event.target===this)closeT50Modal()">
+  <div class="t50-modal">
+    <div class="t50-modal-hero" id="t50ModalHero">
+      <button class="t50-modal-close" onclick="closeT50Modal()" aria-label="닫기">✕</button>
+    </div>
+    <div class="t50-modal-body">
+      <div class="t50-modal-head">
+        <h3 id="t50ModalName"></h3>
+        <span class="t50-modal-badge" id="t50ModalBadge"></span>
+      </div>
+      <div id="t50ModalInfo"></div>
+      <div class="t50-modal-actions">
+        <a class="t50-modal-btn primary" id="t50ModalHomepage" href="#" target="_blank" rel="noopener">홈페이지 바로가기</a>
+        <a class="t50-modal-btn dark" id="t50ModalVisit" href="#" target="_blank" rel="noopener"></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../site-assets/data.js?v=20260707f"></script>
+<script src="../assets/common.js?v=20260707f"></script>
+<script>
+const user=requireUser();
+let t50Filter='all';
+let t50Residence=null;
+const T50_ICON={prep:'●',open:'✎',closed:'🔒'};
+
+function renderT50Map(){
+  const list=t50Residence
+    ?TOUR50_REGIONS.filter(r=>!T50_ADJ[r.name].includes(t50Residence.sigungu))
+    :TOUR50_REGIONS;
+  document.getElementById('t50MapPins').innerHTML=list.map(r=>`
+    <div class="t50-map-pin is-${r.status}" style="left:${r.l}%;top:${r.t}%" onclick="openT50Modal('${r.name}')">
+      <span class="ic ${r.status}">${T50_ICON[r.status]}</span>${r.name}${r.star?'<span class="star">★</span>':''}
+    </div>`).join('');
+}
+
+/* ── 나의 반값여행지 찾기 ── */
+function onT50FindBtn(){
+  if(t50Residence){resetT50Finder();return;}
+  const sel=document.getElementById('t50Sido');
+  sel.innerHTML='<option value="">광역시/도</option>'+T50_SIDO_LIST.map(s=>`<option value="${s.cd}">${s.name}</option>`).join('');
+  document.getElementById('t50Sigungu').innerHTML='<option value="">시/군/구</option>';
+  document.getElementById('t50FinderOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeT50Finder(){
+  document.getElementById('t50FinderOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function onT50SidoChange(){
+  const cd=document.getElementById('t50Sido').value;
+  document.getElementById('t50Sigungu').innerHTML='<option value="">시/군/구</option>'
+    +(T50_SIGUNGU[cd]||[]).map(n=>`<option value="${n}">${n}</option>`).join('');
+}
+function confirmT50Finder(){
+  const sidoCd=document.getElementById('t50Sido').value;
+  const sigungu=document.getElementById('t50Sigungu').value;
+  if(!sigungu)return;
+  const sidoName=T50_SIDO_LIST.find(s=>s.cd===sidoCd).name;
+  t50Residence={sidoCd,sigungu};
+  closeT50Finder();
+  const btn=document.getElementById('t50FindBtn');
+  btn.classList.add('refresh');
+  btn.textContent='초기화';
+  document.getElementById('t50FindTitle').textContent=`'${sidoName} ${sigungu}' 거주`;
+  document.getElementById('t50FindSub').textContent='거주지·인접 지역을 제외한 신청 가능 여행지입니다.';
+  document.getElementById('t50SearchPop').classList.add('on');
+  renderT50Map();
+}
+function resetT50Finder(){
+  t50Residence=null;
+  const btn=document.getElementById('t50FindBtn');
+  btn.classList.remove('refresh');
+  btn.textContent='찾기';
+  document.getElementById('t50FindTitle').textContent='나의 반값여행지 찾기';
+  document.getElementById('t50FindSub').textContent='※ 거주지(주민등록상 주소지) 인접 지역은 신청 제한';
+  document.getElementById('t50SearchPop').classList.remove('on');
+  renderT50Map();
+}
+
+/* 회차별 period/deadline에서 전체 신청기간 문구를 추정(정확한 전체기간은 applyPeriod로 직접 지정 가능) */
+function t50ApplyPeriod(r){
+  if(r.applyPeriod)return r.applyPeriod;
+  const known=r.rounds.filter(rd=>rd.period!=='미정');
+  if(!known.length)return '추후 공지';
+  const start=known[0].period.split(/[~-]/)[0];
+  const end=known[known.length-1].period.split(/[~-]/).pop();
+  return `2026년 ${start}~${end}`;
+}
+
+function openT50Modal(name){
+  const r=TOUR50_REGIONS.find(x=>x.name===name);
+  if(!r)return;
+  document.getElementById('t50ModalHero').innerHTML=r.image
+    ?`<img src="${r.image}" alt="${r.name}"><button class="t50-modal-close" onclick="closeT50Modal()" aria-label="닫기">✕</button>`
+    :`<span class="ph-ic">🏞️</span><button class="t50-modal-close" onclick="closeT50Modal()" aria-label="닫기">✕</button>`;
+  document.getElementById('t50ModalName').textContent=r.name;
+  const badge=document.getElementById('t50ModalBadge');
+  badge.className=`t50-modal-badge ${r.status}`;
+  badge.innerHTML=`<span class="ic">${T50_ICON[r.status]}</span>${TOUR50_STATUS_LABEL[r.status]}`;
+  document.getElementById('t50ModalInfo').innerHTML=`
+    <div class="t50-modal-row"><span class="arrow">▶</span><span class="lbl">신청기간 :</span><span class="val">
+      ${t50ApplyPeriod(r)}
+      ${r.rounds.map(rd=>`<span class="rd"><b>●</b>${rd.n} 여행기간 : ${rd.period==='미정'?'추후 공지':rd.period}${rd.deadline!=='미정'?'<span class="sub">- '+rd.deadline+'</span>':''}</span>`).join('')}
+    </span></div>
+    <div class="t50-modal-row"><span class="arrow">▶</span><span class="lbl">지역화폐 :</span><span class="val">${r.currency}</span></div>
+    <div class="t50-modal-row"><span class="arrow">▶</span><span class="lbl">특이사항 :</span><span class="val">${r.notes.map(n=>`<span class="note-ln">${n}</span>`).join('')}</span></div>
+    <div class="t50-modal-row"><span class="arrow">▶</span><span class="lbl">문의전화 :</span><span class="val"><a class="tel" href="tel:${r.phone}">${r.phone}</a></span></div>
+    ${r.hours?`<div class="t50-modal-row"><span class="arrow">▶</span><span class="lbl">운영시간 :</span><span class="val">${r.hours}</span></div>`:''}`;
+  const home=document.getElementById('t50ModalHomepage');
+  home.href=r.homepage;
+  const visit=document.getElementById('t50ModalVisit');
+  visit.href=r.visitUrl;
+  visit.textContent=`'${r.name}' 인기 여행지 모아보기`;
+  document.getElementById('t50ModalOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeT50Modal(){
+  document.getElementById('t50ModalOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeT50Modal();});
+
+function renderT50Tabs(){
+  const counts={all:TOUR50_REGIONS.length,open:0,prep:0,closed:0};
+  TOUR50_REGIONS.forEach(r=>counts[r.status]++);
+  const tabs=[['all','전체'],['open','신청접수중'],['prep','준비중'],['closed','마감']];
+  document.getElementById('t50Tabs').innerHTML=tabs.map(([k,label])=>
+    `<button class="t50-status-tab${k===t50Filter?' active':''}" onclick="setT50Filter('${k}')">${label} ${counts[k]}</button>`
+  ).join('');
+}
+function setT50Filter(k){t50Filter=k;renderT50Tabs();renderT50Sched();}
+
+function renderT50Sched(){
+  const list=TOUR50_REGIONS.filter(r=>t50Filter==='all'||r.status===t50Filter);
+  document.getElementById('t50Sched').innerHTML=list.map(r=>`
+    <div class="t50-sched-card">
+      <strong style="cursor:pointer" onclick="openT50Modal('${r.name}')">${r.name}</strong>
+      ${r.rounds.map(rd=>`<div class="t50-sched-round"><b>${rd.n}</b>${rd.period==='미정'?'미정':'여행기간 : '+rd.period}${rd.deadline!=='미정'?'<br>신청접수 : '+rd.deadline:''}</div>`).join('')}
+      <a class="${r.status}" href="${r.applyUrl}" target="_blank" rel="noopener">${TOUR50_STATUS_LABEL[r.status]}</a>
+    </div>`).join('');
+}
+
+const T50_FAQ=[
+  {q:'지역사랑 휴가지원 사업이란?',a:'농어촌 인구감소대응 사업으로 인구감소지역 관광객 유입을 유도하여 국내 여행 관광소비를 촉진하고, 체류형 관광을 통한 관광생활 인구 확대를 도모하고자 한국관광공사와 지자체가 공동으로 추진하는 사업입니다.'},
+  {q:'얼마까지 지원받을 수 있나요?',a:'숙박, 식사, 체험 등 여행 중 사용한 금액의 <b>50%를 환급받을 수 있으며, 1인 최대 10만원, 2인 이상은 최대 20만원</b>까지 지원됩니다.'},
+  {q:'어떻게 신청하면 되나요?',a:'여행을 가고자 하는 지역의 신청 페이지에서 기간 내 구비서류와 함께 신청하시면 됩니다. 보다 상세한 내용은 <b>각 지역별 반값여행 페이지에서 확인</b>하시길 바라며, <b>반값여행지 지역을 선택</b>하시면 <b>해당 지역의 반값여행 페이지로 이동</b>됩니다. 단, 거주지 인접지역은 불가하니 반값여행지 찾기를 통해 확인해 보세요.'},
+  {q:'지원금은 어떻게 받을 수 있나요?',a:'여행 후 증빙서류와 함께 정해진 기간 내 정산을 신청하면, <b>사용 금액의 50%를 지역화폐로 환급</b>받을 수 있습니다. 환급된 금액은 해당 지역 가맹점이나 지역 쇼핑몰에서 사용할 수 있습니다.'}
+];
+function renderT50Faq(){
+  document.getElementById('t50Faq').innerHTML=T50_FAQ.map((f,i)=>`
+    <div class="faq-item${i===0?' open':''}">
+      <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        ${f.q}<span class="icon">${i===0?'−':'+'}</span>
+      </button>
+      <div class="faq-a"><p>${f.a}</p></div>
+    </div>`).join('');
+  document.querySelectorAll('#t50Faq .faq-q').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const icon=btn.querySelector('.icon');
+      icon.textContent=btn.parentElement.classList.contains('open')?'−':'+';
+    });
+  });
+}
+
+/* ── 상단 배너 캐러셀 ── */
+const T50_BANNER_COUNT=2;
+let t50BannerIdx=0,t50BannerTimer=null;
+function t50BannerRender(){
+  document.getElementById('t50BannerTrack').style.transform=`translateX(-${t50BannerIdx*100}%)`;
+  document.getElementById('t50BannerDots').innerHTML=Array.from({length:T50_BANNER_COUNT},(_,i)=>
+    `<span class="${i===t50BannerIdx?'on':''}"></span>`).join('');
+}
+function t50BannerMove(d){
+  t50BannerIdx=(t50BannerIdx+d+T50_BANNER_COUNT)%T50_BANNER_COUNT;
+  t50BannerRender();
+}
+function t50BannerPlayPause(){
+  const btn=document.getElementById('t50BannerToggle');
+  if(t50BannerTimer){clearInterval(t50BannerTimer);t50BannerTimer=null;btn.textContent='▶';}
+  else{t50BannerTimer=setInterval(()=>t50BannerMove(1),4000);btn.textContent='⏸';}
+}
+
+if(user){
+  setActiveBottomNav('main');
+  renderT50Map();
+  renderT50Tabs();
+  renderT50Sched();
+  renderT50Faq();
+  t50BannerRender();
+  t50BannerTimer=setInterval(()=>t50BannerMove(1),4000);
+}
+</script>
+<script src="theme.js?v=d2"></script>
+</body>
+</html>

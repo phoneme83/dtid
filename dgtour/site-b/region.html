@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>디지털관광주민증 - 지역방문 TIP · 시안 B</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/common.css?v=20260707f">
+<link rel="stylesheet" href="theme.css?v=1">
+</head>
+<body class="theme-b">
+
+<nav class="gnb">
+  <div class="gnb-left" onclick="location.href='main.html'">
+    <div class="logo-wrap"><svg width="20" height="13" viewBox="0 0 20 13" fill="none"><circle cx="5" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><circle cx="15" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><path d="M1 6.5V4.5M19 6.5V4.5M9 6.5H11" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+    <span class="gnb-title">디지털 관광주민증</span>
+  </div>
+  <nav class="gnb-nav">
+    <a href="main.html">메인</a>
+    <a href="service-intro.html">서비스 소개</a>
+    <a href="event.html">이벤트</a>
+    <a href="my.html">나의 관광주민증</a>
+  </nav>
+  <button class="gnb-menu" onclick="openDrawer()" aria-label="메뉴"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="rgn-content">
+  <div class="rgn-banner">
+    <h2 id="rgnTitle">지역 지역방문 TIP!</h2>
+    <div class="rgn-share">
+      <button onclick="toast('페이스북 공유')">📘</button>
+      <button onclick="toast('X(트위터) 공유')">✖️</button>
+      <button onclick="toast('카카오톡 공유')">💬</button>
+      <button onclick="toast('밴드 공유')">🎵</button>
+      <button onclick="toast('링크가 복사되었습니다')">🔗</button>
+    </div>
+    <!-- 시안 B: 지역 상세 = 발급 전환 히어로 (가맹점 통계 + 30초 발급 CTA) -->
+    <div class="rgn-stat" id="rgnStat" style="display:none"></div>
+    <button type="button" class="rgn-cta" id="rgnCta" style="display:none" onclick="rgnIssueClick()">주민증 발급받기 (30초)</button>
+  </div>
+
+  <div class="rgn-tip-card">
+    <ol id="rgnTips"></ol>
+    <div id="rgnFestivalWrap"></div>
+    <div class="rgn-phone">*대표 문의번호: <strong id="rgnPhone">-</strong></div>
+    <div class="rgn-mock-note" id="rgnMockNote" style="display:none">* 화면 기획용 예시 데이터입니다</div>
+  </div>
+
+  <div class="rgn-section">
+    <div class="rgn-section-head">
+      <h3>디지털 관광주민증 사용처 목록</h3>
+    </div>
+    <div class="rgn-cat-tabs">
+      <button class="rgn-cat-tab active" data-cat="전체" onclick="setVenueFilter('전체')">전체</button>
+      <button class="rgn-cat-tab" data-cat="식음료" onclick="setVenueFilter('식음료')">🍕 식음료</button>
+      <button class="rgn-cat-tab" data-cat="관람" onclick="setVenueFilter('관람')">🎭 관람</button>
+      <button class="rgn-cat-tab" data-cat="체험" onclick="setVenueFilter('체험')">🚀 체험</button>
+      <button class="rgn-cat-tab" data-cat="쇼핑" onclick="setVenueFilter('쇼핑')">🛍️ 쇼핑</button>
+      <button class="rgn-cat-tab" data-cat="숙박" onclick="setVenueFilter('숙박')">🏨 숙박</button>
+      <button class="rgn-cat-tab" data-cat="기타" onclick="setVenueFilter('기타')">💬 기타</button>
+    </div>
+    <div class="rgn-sort">
+      <span class="active" id="sortLatest" onclick="setSort('latest')">최신순</span>
+      <span>|</span>
+      <span id="sortPopular" onclick="setSort('popular')">인기순</span>
+    </div>
+    <div class="rgn-venue-grid" id="venueGrid"></div>
+    <div class="rgn-empty" id="venueEmpty" style="display:none">해당 조건의 사용처가 없어요</div>
+    <div class="rgn-pagination" id="venuePagination"></div>
+  </div>
+
+  <div class="rgn-review-wrap">
+    <div class="rgn-review-head">
+      <h3 id="rgnReviewTitle">여행 노하우!</h3>
+      <p>#주민증 마을회관 #랜선 주민 여행을 준비하는 분들을 위해 방문 시 참고할 정보를 제보해주세요</p>
+    </div>
+    <button class="rgn-review-join" onclick="openKnowhowPop()">나도 참여 ›</button>
+    <div class="rgn-review-list" id="rgnReviewList"></div>
+  </div>
+
+  <div class="rgn-other-wrap">
+    <h3>다른 지역보기</h3>
+    <div class="rgn-sido-tabs" id="rgnSidoTabs"></div>
+    <div class="rgn-other-list" id="rgnOtherList"></div>
+  </div>
+</div>
+
+<div class="site-footer">
+  <div class="f-links">
+    <span class="bold">개인정보처리방침</span><span>이용약관</span><span>위치기반서비스 이용약관</span><span>저작권 보호정책</span><span>고객서비스헌장</span><span>전자우편 무단수집거부</span><span>찾아오시는 길</span>
+  </div>
+  <div class="f-info">
+    우) 26464 강원특별자치도 원주시 세계로 10 &nbsp;고객센터 : 02-6271-2016 (한국관광공사 대표번호 : 033-738-3000) &nbsp;사업자등록번호 : 202-81-50707<br>
+    통신판매업신고 : 제2009-서울중구-1234호<br>
+    ⓒ한국관광공사
+  </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bnav-a" data-nav="main" onclick="location.href='main.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+    메인
+  </button>
+  <button class="bnav-a" onclick="toast('검색 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+    검색
+  </button>
+  <button class="bnav-a" onclick="location.href='event.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
+    이벤트
+  </button>
+  <button class="bnav-a" onclick="toast('디민증 발급 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
+    디민증발급
+  </button>
+  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+    마이
+  </button>
+</nav>
+
+<div class="drawer-overlay" id="dOverlay" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head"><span>메뉴</span><button class="drawer-close" onclick="closeDrawer()">✕</button></div>
+  <nav class="drawer-nav">
+    <div onclick="location.href='main.html'">🏠 메인홈</div>
+    <div onclick="location.href='service-intro.html'">📋 서비스 소개</div>
+    <div onclick="location.href='event.html'">🎁 이벤트</div>
+    <div onclick="location.href='my.html'">🪪 나의 관광주민증</div>
+    <div onclick="location.href='mypage-history.html'">🕘 나의 활동이력</div>
+    <div onclick="location.href='mypage-coupon.html'">🎟️ 혜택쿠폰</div>
+    <div onclick="location.href='exp.html'">📈 경험치 보유현황</div>
+    <div onclick="location.href='mypage-favorite.html'">🔖 나의 즐겨찾기</div>
+    <div onclick="location.href='mypage-report.html'">📊 활동리포트</div>
+    <div onclick="location.href='mypage-cardbox.html'">🗂️ 관광주민증 보관함</div>
+  </nav>
+  <div class="drawer-foot">
+    <button class="btn-dk" onclick="logoutUser()">로그아웃</button>
+    <button class="btn-lt" onclick="closeDrawer()">닫기</button>
+  </div>
+</aside>
+
+<div class="toast" id="toastEl"></div>
+
+<div class="knowhow-overlay" id="knowhowOverlay" onclick="if(event.target===this)closeKnowhowPop()">
+  <div class="knowhow-pop" role="dialog">
+    <h3 id="knowhowTitle">방문 여행 노하우 작성하기</h3>
+    <button class="knowhow-close" onclick="closeKnowhowPop()" aria-label="팝업 닫기">✕</button>
+    <div class="knowhow-txtbox">
+      <textarea id="knowhowText" maxlength="100" placeholder="여러분의 여행 노하우를 작성해주세요!" oninput="updateKnowhowCnt()"></textarea>
+      <span class="cnt"><span id="knowhowCnt">0</span>/100</span>
+    </div>
+    <button class="knowhow-save" onclick="saveKnowhow()">참여완료</button>
+  </div>
+</div>
+
+<script src="../site-assets/data.js?v=20260707f"></script>
+<script src="../assets/common.js?v=20260707f"></script>
+<script>
+const CAT_STYLE={
+  '식음료':{color:'#7c3aed',bg:'#f5f3ff'},
+  '관람':{color:'#e11d48',bg:'#fff1f2'},
+  '체험':{color:'#0d7b6d',bg:'#ecfdf5'},
+  '쇼핑':{color:'#b45309',bg:'#fffbeb'},
+  '숙박':{color:'#1d4ed8',bg:'#eff6ff'},
+  '기타':{color:'#555',bg:'#f5f5f5'}
+};
+
+const user=requireUser();
+let currentFilter='전체';
+let currentSort='latest';
+let venues=[];
+let rgnCtaLabel=''; /* 시안 B 발급 CTA — 파싱 시 실행 코드보다 위에 선언(TDZ 방지) */
+
+if(user){
+  setActiveBottomNav('main');
+
+  const params=new URLSearchParams(location.search);
+  const rawName=params.get('r')||'';
+  const name=REGIONS.some(r=>r.n===rawName)?rawName:'';
+  const sido=REGION_SIDO[name]||'';
+  const gunLabel=name?regionGunLabel(name):'';
+  document.getElementById('rgnTitle').innerHTML=name?`<em>${sido} ${gunLabel}</em> 지역방문 TIP!`:'지역방문 TIP!';
+
+  const detail=getRegionDetail(name);
+  const tipsEl=document.getElementById('rgnTips');
+  detail.tips.forEach(t=>{
+    const li=document.createElement('li');
+    li.textContent=t;
+    tipsEl.appendChild(li);
+  });
+
+  if(detail.festivals&&detail.festivals.length){
+    const wrap=document.getElementById('rgnFestivalWrap');
+    const box=document.createElement('div');
+    box.className='rgn-festival';
+    box.innerHTML=`<strong>${gunLabel} 주요 축제</strong>`+detail.festivals.map(f=>
+      `<div>- ${f.name}${f.month?`(${f.month})`:''}${f.date?` : ${f.date}`:''}</div>`
+    ).join('');
+    wrap.appendChild(box);
+  }
+  document.getElementById('rgnPhone').textContent=detail.phone;
+  if(detail.mock)document.getElementById('rgnMockNote').style.display='block';
+
+  venues=detail.venues;
+  renderVenues();
+
+  initRgnCta(name,gunLabel,detail);
+
+  document.getElementById('rgnReviewTitle').textContent=name?`${sido} ${gunLabel} 여행 노하우!`:'여행 노하우!';
+  document.getElementById('rgnReviewList').innerHTML=getRegionReviews(name||'이 지역').map(r=>`
+    <div class="rgn-review-item">
+      <p>${r.text}</p>
+      <div class="rgn-review-side"><div class="nm">${r.name}</div><div class="lk">♡ ${r.likes}</div></div>
+    </div>`).join('');
+
+  renderSidoTabs(sido);
+}
+
+/* ═══ 시안 B: 발급 전환 히어로(통계 + 30초 발급 CTA) ═══ */
+function initRgnCta(name,gunLabel,detail){
+  if(!name)return;
+  rgnCtaLabel=gunLabel;
+  const stat=document.getElementById('rgnStat');
+  const btn=document.getElementById('rgnCta');
+  const list=detail.venues||[];
+  let maxPct=0,popSum=0;
+  list.forEach(v=>{
+    const m=(v.discount||'').match(/(\d+)\s*%/);
+    if(m)maxPct=Math.max(maxPct,parseInt(m[1],10));
+    popSum+=(v.pop||0);
+  });
+  stat.innerHTML=`
+    <div><div class="v">${list.length}곳</div><div class="k">가맹점</div></div>
+    <div><div class="v">${maxPct?'최대 '+maxPct+'%':'다양'}</div><div class="k">할인율</div></div>
+    <div><div class="v">${(popSum*37).toLocaleString()}명</div><div class="k">관광주민</div></div>`;
+  stat.style.display='flex';
+  btn.textContent=`${gunLabel} 주민증 발급받기 (30초)`;
+  btn.style.display='block';
+  /* theme.js(발급 이력 저장)는 이 스크립트보다 나중에 로드되므로 상태 반영은 DOM 로드 후 */
+  document.addEventListener('DOMContentLoaded',()=>{
+    if(typeof tbIsIssued==='function'&&tbIsIssued(gunLabel))markRgnIssued();
+  });
+}
+function markRgnIssued(){
+  const btn=document.getElementById('rgnCta');
+  btn.textContent='✓ 발급 완료 · 아래 가맹점에서 쿠폰을 받아보세요';
+  btn.classList.add('done');
+}
+function rgnIssueClick(){
+  const btn=document.getElementById('rgnCta');
+  if(btn.classList.contains('done')){
+    document.querySelector('.rgn-section').scrollIntoView({behavior:'smooth'});
+    return;
+  }
+  if(typeof tbOpenIssue!=='function'){toast('발급 화면을 준비 중입니다');return;}
+  tbOpenIssue(rgnCtaLabel,()=>{
+    markRgnIssued();
+    document.querySelector('.rgn-section').scrollIntoView({behavior:'smooth'});
+  });
+}
+
+function renderSidoTabs(currentSido){
+  const groups=getSidoGroups();
+  const sidoList=Object.keys(groups).sort((a,b)=>
+    (SIDO_SHORT[a]||a).localeCompare(SIDO_SHORT[b]||b,'ko'));
+  const tabsEl=document.getElementById('rgnSidoTabs');
+  tabsEl.innerHTML=sidoList.map(s=>
+    `<button class="rgn-sido-tab${s===currentSido?' active':''}" onclick="renderOtherList('${s}',this)">${SIDO_SHORT[s]||s}</button>`
+  ).join('');
+  renderOtherList(currentSido||sidoList[0]);
+}
+function renderOtherList(sido,btn){
+  if(btn){document.querySelectorAll('.rgn-sido-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+  const groups=getSidoGroups();
+  const list=groups[sido]||[];
+  document.getElementById('rgnOtherList').innerHTML=list.map(n=>
+    `<span onclick="location.href='region.html?r=${encodeURIComponent(n)}'">${regionGunLabel(n)}</span>`
+  ).join('');
+}
+
+function openKnowhowPop(){
+  const t=document.getElementById('rgnReviewTitle').textContent.replace(' 여행 노하우!','');
+  document.getElementById('knowhowTitle').textContent=(t==='여행 노하우!'?'':t+' ')+'방문 여행 노하우 작성하기';
+  document.getElementById('knowhowText').value='';
+  document.getElementById('knowhowCnt').textContent='0';
+  document.getElementById('knowhowOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeKnowhowPop(){
+  document.getElementById('knowhowOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function updateKnowhowCnt(){
+  document.getElementById('knowhowCnt').textContent=document.getElementById('knowhowText').value.length;
+}
+function saveKnowhow(){
+  const text=document.getElementById('knowhowText').value.trim();
+  if(!text){toast('노하우 내용을 입력해주세요');return;}
+  const item=document.createElement('div');
+  item.className='rgn-review-item';
+  const p=document.createElement('p');
+  p.textContent=text;
+  const side=document.createElement('div');
+  side.className='rgn-review-side';
+  side.innerHTML=`<div class="nm">${user.name}님</div><div class="lk">♡ 0</div>`;
+  item.append(p,side);
+  document.getElementById('rgnReviewList').prepend(item);
+  closeKnowhowPop();
+  toast('여행 노하우가 등록되었습니다');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeKnowhowPop();});
+
+function setVenueFilter(cat){
+  currentFilter=cat;
+  document.querySelectorAll('.rgn-cat-tab').forEach(b=>b.classList.toggle('active',b.dataset.cat===cat));
+  renderVenues();
+}
+function setSort(kind){
+  currentSort=kind;
+  document.getElementById('sortLatest').classList.toggle('active',kind==='latest');
+  document.getElementById('sortPopular').classList.toggle('active',kind==='popular');
+  renderVenues();
+}
+function renderVenues(){
+  const grid=document.getElementById('venueGrid');
+  const empty=document.getElementById('venueEmpty');
+  grid.innerHTML='';
+  /* 배열 원순서 = 최신 등록순, pop = 즐겨찾기 수 기반 인기 지표 */
+  let list=venues.filter(v=>currentFilter==='전체'||v.cat===currentFilter);
+  if(currentSort==='popular')list=[...list].sort((a,b)=>(b.pop||0)-(a.pop||0));
+  empty.style.display=list.length?'none':'block';
+
+  const pageEl=document.getElementById('venuePagination');
+  const pageCount=Math.max(1,Math.ceil(list.length/4));
+  pageEl.innerHTML=list.length?Array.from({length:pageCount},(_,i)=>
+    `<button class="${i===0?'active':''}" onclick="toast('${i+1}페이지')">${i+1}</button>`).join(''):'';
+
+  list.forEach(v=>{
+    const style=CAT_STYLE[v.cat]||{color:'#555',bg:'#f5f5f5'};
+    const card=document.createElement('div');
+    card.className='rgn-venue-card';
+    card.innerHTML=`
+      <span class="rgn-venue-tag" style="color:${style.color};border-color:${style.color};background:${style.bg}">${v.cat}</span>
+      <button class="rgn-venue-bkmk" onclick="toast('즐겨찾기에 추가되었습니다')">🔖</button>
+      <div class="rgn-venue-name">${v.name}</div>
+      <div class="rgn-venue-desc">${v.desc}</div>
+      <div class="rgn-venue-discount">${v.discount}</div>
+      <button class="rgn-venue-coupon" onclick="toast('${v.name} 쿠폰을 받았습니다')">🎫 쿠폰 받기</button>`;
+    grid.appendChild(card);
+  });
+}
+</script>
+<script src="theme.js?v=1"></script>
+</body>
+</html>

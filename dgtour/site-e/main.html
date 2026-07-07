@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>디지털관광주민증 - 메인 · 시안 E</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/common.css?v=20260707f">
+<link rel="stylesheet" href="theme.css?v=1">
+</head>
+<body class="theme-e">
+
+<nav class="gnb">
+  <div class="gnb-left" onclick="location.href='main.html'">
+    <div class="logo-wrap"><svg width="20" height="13" viewBox="0 0 20 13" fill="none"><circle cx="5" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><circle cx="15" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><path d="M1 6.5V4.5M19 6.5V4.5M9 6.5H11" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+    <span class="gnb-title">디지털 관광주민증</span>
+  </div>
+  <nav class="gnb-nav">
+    <a href="main.html">메인</a>
+    <a href="service-intro.html">서비스 소개</a>
+    <a href="event.html">이벤트</a>
+    <a href="my.html">나의 관광주민증</a>
+  </nav>
+  <button class="gnb-menu" onclick="openDrawer()" aria-label="메뉴"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="subnav">
+  <span class="subnav-a active">메인</span>
+  <span class="subnav-a" onclick="location.href='service-intro.html'">서비스 소개</span>
+  <span class="subnav-a" onclick="location.href='event.html'">이벤트</span>
+  <span class="subnav-a" onclick="location.href='my.html'">나의 관광주민증</span>
+</div>
+
+<!-- 시안 E: 과업형 홈 (D 뼈대) — 큰 과업 버튼 + 내 스탬프 미니 스트립 -->
+<div class="e-home">
+  <div class="e-hello" id="eHello">무엇을 도와드릴까요?</div>
+  <button type="button" class="e-big hero" onclick="themeEOpenQr()">
+    <span class="ic">▦</span>
+    <span><span class="tt" style="display:block">주민증 QR 보여주기</span><span class="ds" style="display:block">가맹점 할인 받을 때 · 1탭</span></span>
+    <span class="ar">›</span>
+  </button>
+  <button type="button" class="e-big" onclick="location.href='mypage-coupon.html'">
+    <span class="ic">🎁</span>
+    <span><span class="tt" style="display:block">내 혜택 · 쿠폰 보기</span><span class="ds" style="display:block">받은 쿠폰과 지역 혜택 확인</span></span>
+    <span class="ar">›</span>
+  </button>
+  <button type="button" class="e-big" onclick="themeEGoIssue()">
+    <span class="ic">🗺️</span>
+    <span><span class="tt" style="display:block">지역 둘러보고 발급받기</span><span class="ds" style="display:block">30초면 새 지역 주민증 발급</span></span>
+    <span class="ar">›</span>
+  </button>
+  <div class="e-stcard" onclick="location.href='my.html'">
+    <div class="t"><span>🏅 내 스탬프 투어</span><span id="eStampCnt">-</span></div>
+    <div class="e-stbar"><i id="eStampBar" style="width:0%"></i></div>
+    <div class="cap" id="eStampCap">QR 사용 시 스탬프가 자동 적립됩니다</div>
+  </div>
+</div>
+
+<div class="banner-hp" onclick="location.href='tour50.html'">
+  <div class="banner-coupon"><div class="pct">50%</div><div class="label">COUPON</div></div>
+  <div class="banner-text"><strong>🧳 대한민국 반값여행</strong><span>지역사랑 휴가지원 ›</span></div>
+  <span class="banner-arrow">›</span>
+</div>
+
+<div class="map-section">
+  <div class="map-outer">
+    <div class="map-heading">
+      <p>디지털 관광주민증 참여지역의<br><strong>다양한 여행정보</strong>를 확인해보세요!</p>
+      <p class="e-issue-note">⚡ 지도에서 지역을 누르면 <strong>30초 발급</strong> 화면으로 이동합니다</p>
+    </div>
+    <div class="map-container">
+      <img class="map-img" src="../assets/img/map-regions.jpg" alt="디지털 관광주민증 참여지역 지도">
+      <div class="map-badges" id="mapBadges"></div>
+    </div>
+  </div>
+</div>
+
+<div class="notice-bar">
+  <span class="ico">🔔</span>
+  <a href="javascript:void(0)" onclick="toast('공지사항 상세')">디지털 관광주민증 신규 참여지역 8곳 오픈!!</a>
+  <span class="plus">+</span>
+</div>
+
+<div class="top10-wrap">
+  <div class="top10-tabs" id="top10Tabs"></div>
+  <div class="top10-scroll" id="top10Scroll"></div>
+</div>
+
+<div class="faq-wrap" id="faqWrap"></div>
+
+<div class="insta-tour-wrap">
+  <h2>지금 인기 여행 콘텐츠</h2>
+  <div class="insta-scroll" id="instaScroll"></div>
+</div>
+
+<a class="insta-banner" href="https://www.instagram.com/digitaltourid/?hl=ko" target="_blank" rel="noopener">
+  <p><strong>디지털 관광주민증 인스타그램</strong>에서 더 많은 여행 &amp; 혜택 정보를 확인하세요!</p>
+  <span style="font-size:22px">📷</span>
+</a>
+
+<div class="main-event-wrap">
+  <h3>이벤트와 혜택이 팡팡!</h3>
+  <div class="main-event-scroll" id="mainEventScroll"></div>
+</div>
+
+<div class="site-footer">
+  <div class="f-links">
+    <span class="bold">개인정보처리방침</span><span>이용약관</span><span>위치기반서비스 이용약관</span><span>저작권 보호정책</span><span>고객서비스헌장</span><span>전자우편 무단수집거부</span><span>찾아오시는 길</span>
+  </div>
+  <div class="f-info">
+    우) 26464 강원특별자치도 원주시 세계로 10 &nbsp;고객센터 : 02-6271-2016 (한국관광공사 대표번호 : 033-738-3000) &nbsp;사업자등록번호 : 202-81-50707<br>
+    통신판매업신고 : 제2009-서울중구-1234호<br>
+    ⓒ한국관광공사
+  </div>
+</div>
+
+<div class="qr-float" id="qrFloat">
+  <div class="qr-card">
+    <div class="qr-thumb-wrap" id="qrThumb"><img src="../assets/img/qr-code.svg" width="48" height="48" alt="디지털 관광주민증 홈페이지 QR 코드"></div>
+    <div class="qr-text">
+      <strong id="qrName">통합관광주민증</strong>
+      <span>가맹점에서 나의 QR 코드를 보여주세요</span>
+    </div>
+    <button class="qr-close" onclick="document.getElementById('qrFloat').classList.add('hidden')">✕</button>
+  </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bnav-a" data-nav="main" onclick="location.href='main.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+    메인
+  </button>
+  <button class="bnav-a" onclick="toast('검색 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+    검색
+  </button>
+  <button class="bnav-a" data-nav="event" onclick="location.href='event.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
+    이벤트
+  </button>
+  <button class="bnav-a" onclick="toast('디민증 발급 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
+    디민증발급
+  </button>
+  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+    마이
+  </button>
+</nav>
+
+<div class="drawer-overlay" id="dOverlay" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head"><span>메뉴</span><button class="drawer-close" onclick="closeDrawer()">✕</button></div>
+  <nav class="drawer-nav">
+    <div onclick="location.href='main.html'">🏠 메인홈</div>
+    <div onclick="location.href='service-intro.html'">📋 서비스 소개</div>
+    <div onclick="location.href='event.html'">🎁 이벤트</div>
+    <div onclick="location.href='my.html'">🪪 나의 관광주민증</div>
+    <div onclick="location.href='mypage-history.html'">🕘 나의 활동이력</div>
+    <div onclick="location.href='mypage-coupon.html'">🎟️ 혜택쿠폰</div>
+    <div onclick="location.href='exp.html'">📈 경험치 보유현황</div>
+    <div onclick="location.href='mypage-favorite.html'">🔖 나의 즐겨찾기</div>
+    <div onclick="location.href='mypage-report.html'">📊 활동리포트</div>
+    <div onclick="location.href='mypage-cardbox.html'">🗂️ 관광주민증 보관함</div>
+  </nav>
+  <div class="drawer-foot">
+    <button class="btn-dk" onclick="logoutUser()">로그아웃</button>
+    <button class="btn-lt" onclick="closeDrawer()">닫기</button>
+  </div>
+</aside>
+
+<div class="toast" id="toastEl"></div>
+
+<div class="pop-event-overlay" id="popEventOverlay" onclick="if(event.target===this)closePopEvent()">
+  <div class="pop-event" role="dialog">
+    <div class="pop-event-frame">
+      <div class="pop-event-track" id="popEventTrack">
+        <div class="pop-event-slide a" style="background-image:url('../images/popup_dtid.jpg')" onclick="toast('공지사항 상세')"></div>
+        <div class="pop-event-slide b" style="background-image:url('../images/popup_halfprice.jpg')" onclick="location.href='tour50.html'"></div>
+      </div>
+      <button class="pop-event-nav prev" onclick="popEventMove(-1)" aria-label="이전">‹</button>
+      <button class="pop-event-nav next" onclick="popEventMove(1)" aria-label="다음">›</button>
+      <div class="pop-event-dots" id="popEventDots"></div>
+    </div>
+    <div class="pop-event-btns">
+      <button onclick="closePopEventToday()">오늘은 그만보기</button>
+      <button onclick="closePopEvent()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script src="../site-assets/data.js?v=20260707f"></script>
+<script src="../assets/common.js?v=20260707f"></script>
+<script>
+const user=requireUser();
+const POP_EVENT_COUNT=2;
+let popEventIdx=0;
+if(user){
+  setActiveBottomNav('main');
+  document.getElementById('qrName').textContent=user.name+'님의 통합관광주민증';
+
+  const badges=document.getElementById('mapBadges');
+  REGIONS.forEach(r=>{
+    const b=document.createElement('button');
+    b.className='r-hit';
+    b.style.cssText=`left:${r.l}%;top:${r.t}%;width:${r.w}%;height:${r.h}%`;
+    b.setAttribute('aria-label',r.n+' 관광주민증 발급 화면 이동');
+    b.onclick=()=>location.href='region.html?r='+encodeURIComponent(r.n);
+    badges.appendChild(b);
+  });
+
+  renderTop10('주간 TOP10');
+  renderFaq();
+  renderInsta();
+  renderMainEvents();
+  openPopEventIfNeeded();
+}
+
+/* ── 진입 이벤트 팝업(popEvent 재현) — '오늘은 그만보기'는 당일에 한해 숨김 ── */
+function todayStr(){const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
+function openPopEventIfNeeded(){
+  if(localStorage.getItem('popEventDismissed')===todayStr())return;
+  popEventRender();
+  document.getElementById('popEventOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function popEventRender(){
+  document.getElementById('popEventTrack').style.transform=`translateX(-${popEventIdx*100}%)`;
+  document.getElementById('popEventDots').innerHTML=Array.from({length:POP_EVENT_COUNT},(_,i)=>
+    `<span class="${i===popEventIdx?'on':''}"></span>`).join('');
+}
+function popEventMove(d){
+  popEventIdx=(popEventIdx+d+POP_EVENT_COUNT)%POP_EVENT_COUNT;
+  popEventRender();
+}
+function closePopEvent(){
+  document.getElementById('popEventOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function closePopEventToday(){
+  localStorage.setItem('popEventDismissed',todayStr());
+  closePopEvent();
+}
+
+function renderTop10(tab){
+  const tabsEl=document.getElementById('top10Tabs');
+  tabsEl.innerHTML=TOP10_TABS.map(t=>
+    `<button class="top10-tab${t===tab?' active':''}" onclick="renderTop10('${t}')">${t}</button>`
+  ).join('');
+  const items=getTop10Items(tab);
+  document.getElementById('top10Scroll').innerHTML=items.map(it=>`
+    <div class="top10-card" onclick="toast('${it.name}')">
+      <div class="top10-thumb" style="background:linear-gradient(135deg,#dbeafe,#ede9fe)"><span class="badge">${it.tag}</span></div>
+      <div class="top10-name">${it.name}</div>
+      <div class="top10-discount">${it.discount}</div>
+    </div>`).join('');
+}
+
+function renderFaq(){
+  document.getElementById('faqWrap').innerHTML=FAQS.map((f,i)=>`
+    <div class="faq-item${i===0?' open':''}">
+      <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        ${f.q}<span class="icon">${i===0?'−':'+'}</span>
+      </button>
+      <div class="faq-a"><p>${f.a}</p></div>
+    </div>`).join('');
+  document.querySelectorAll('.faq-q').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const icon=btn.querySelector('.icon');
+      icon.textContent=btn.parentElement.classList.contains('open')?'−':'+';
+    });
+  });
+}
+
+function renderInsta(){
+  document.getElementById('instaScroll').innerHTML=INSTA_POSTS.map(p=>
+    `<a class="insta-tile" style="background:${p.color}" href="${p.url}" target="_blank" rel="noopener"><span>${p.cap}</span></a>`
+  ).join('');
+}
+
+function renderMainEvents(){
+  document.getElementById('mainEventScroll').innerHTML=MAIN_EVENTS.map(e=>`
+    <a class="main-event-card" href="javascript:void(0)" onclick="toast('이벤트 상세')">
+      <div class="main-event-thumb" style="background:linear-gradient(135deg,${e.color},#111)"></div>
+      <strong>${e.title}</strong>
+      <span>${e.date}</span>
+    </a>`).join('');
+}
+</script>
+<script src="theme.js?v=1"></script>
+</body>
+</html>

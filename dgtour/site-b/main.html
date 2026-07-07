@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>디지털관광주민증 - 메인 · 시안 B</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/common.css?v=20260707f">
+<link rel="stylesheet" href="theme.css?v=1">
+</head>
+<body class="theme-b">
+
+<nav class="gnb">
+  <div class="gnb-left" onclick="location.href='main.html'">
+    <div class="logo-wrap"><svg width="20" height="13" viewBox="0 0 20 13" fill="none"><circle cx="5" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><circle cx="15" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><path d="M1 6.5V4.5M19 6.5V4.5M9 6.5H11" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+    <span class="gnb-title">디지털 관광주민증</span>
+  </div>
+  <nav class="gnb-nav">
+    <a href="main.html">메인</a>
+    <a href="service-intro.html">서비스 소개</a>
+    <a href="event.html">이벤트</a>
+    <a href="my.html">나의 관광주민증</a>
+  </nav>
+  <button class="gnb-menu" onclick="openDrawer()" aria-label="메뉴"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="subnav">
+  <span class="subnav-a active">메인</span>
+  <span class="subnav-a" onclick="location.href='service-intro.html'">서비스 소개</span>
+  <span class="subnav-a" onclick="location.href='event.html'">이벤트</span>
+  <span class="subnav-a" onclick="location.href='my.html'">나의 관광주민증</span>
+</div>
+
+<!-- ═══ 탐색 퍼스트: 검색 ═══ -->
+<div class="tb-search-wrap">
+  <div class="tb-search">🔍
+    <input id="tbSearchInput" placeholder="어디로 떠나볼까요? 지역명을 검색해보세요" onkeydown="if(event.key==='Enter')tbSearchGo()">
+  </div>
+  <div class="tb-sug" id="tbSug"></div>
+</div>
+
+<!-- ═══ 탐색 퍼스트: 참여지역 지도 (할인 핀) ═══ -->
+<div class="map-section">
+  <div class="map-outer">
+    <div class="map-heading">
+      <p>지도에서 <strong>여행지와 할인 혜택</strong>을 발견하고<br>바로 관광주민이 되어보세요!</p>
+    </div>
+    <div class="map-container">
+      <img class="map-img" src="../assets/img/map-regions.jpg" alt="디지털 관광주민증 참여지역 지도">
+      <div class="map-badges" id="mapBadges"></div>
+      <div class="map-badges" id="tbMapPins" style="pointer-events:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 30초 발급 CTA 퍼널 ═══ -->
+<div class="tb-cta-section">
+  <div class="tb-cta-card">
+    <div class="txt">
+      <strong>30초만에 주민증 발급</strong>
+      <p>지역을 고르고 본인인증 한 번이면, 그 지역이 반값이 됩니다</p>
+    </div>
+    <button type="button" class="tb-cta-btn" onclick="tbOpenPick()">⚡ 지금 발급받기</button>
+  </div>
+</div>
+
+<!-- ═══ 추천 피드 ═══ -->
+<div class="tb-feed-wrap">
+  <div class="tb-feed-head">
+    <h2>이번 주 추천 여행 피드</h2>
+    <p>주민증이 있으면 더 싸지는 축제·체험·맛집·숙소</p>
+  </div>
+  <div class="tb-chiprow" id="tbChips"></div>
+  <div class="tb-feed" id="tbFeed"></div>
+  <div class="tb-feed-more" id="tbFeedMore" style="display:none">
+    <button type="button" onclick="tbFeedShowAll()">추천 피드 더보기</button>
+  </div>
+</div>
+
+<div class="banner-hp" onclick="location.href='tour50.html'">
+  <div class="banner-coupon"><div class="pct">50%</div><div class="label">COUPON</div></div>
+  <div class="banner-text"><strong>🧳 대한민국 반값여행</strong><span>지역사랑 휴가지원 ›</span></div>
+  <span class="banner-arrow">›</span>
+</div>
+
+<div class="notice-bar">
+  <span class="ico">🔔</span>
+  <a href="javascript:void(0)" onclick="toast('공지사항 상세')">디지털 관광주민증 신규 참여지역 8곳 오픈!!</a>
+  <span class="plus">+</span>
+</div>
+
+<div class="top10-wrap">
+  <div class="top10-tabs" id="top10Tabs"></div>
+  <div class="top10-scroll" id="top10Scroll"></div>
+</div>
+
+<div class="insta-tour-wrap">
+  <h2>지금 인기 여행 콘텐츠</h2>
+  <div class="insta-scroll" id="instaScroll"></div>
+</div>
+
+<a class="insta-banner" href="https://www.instagram.com/digitaltourid/?hl=ko" target="_blank" rel="noopener">
+  <p><strong>디지털 관광주민증 인스타그램</strong>에서 더 많은 여행 &amp; 혜택 정보를 확인하세요!</p>
+  <span style="font-size:22px">📷</span>
+</a>
+
+<div class="main-event-wrap">
+  <h3>이벤트와 혜택이 팡팡!</h3>
+  <div class="main-event-scroll" id="mainEventScroll"></div>
+</div>
+
+<div class="faq-wrap" id="faqWrap"></div>
+
+<div class="site-footer">
+  <div class="f-links">
+    <span class="bold">개인정보처리방침</span><span>이용약관</span><span>위치기반서비스 이용약관</span><span>저작권 보호정책</span><span>고객서비스헌장</span><span>전자우편 무단수집거부</span><span>찾아오시는 길</span>
+  </div>
+  <div class="f-info">
+    우) 26464 강원특별자치도 원주시 세계로 10 &nbsp;고객센터 : 02-6271-2016 (한국관광공사 대표번호 : 033-738-3000) &nbsp;사업자등록번호 : 202-81-50707<br>
+    통신판매업신고 : 제2009-서울중구-1234호<br>
+    ⓒ한국관광공사
+  </div>
+</div>
+
+<div class="qr-float" id="qrFloat">
+  <div class="qr-card">
+    <div class="qr-thumb-wrap" id="qrThumb"><img src="../assets/img/qr-code.svg" width="48" height="48" alt="디지털 관광주민증 홈페이지 QR 코드"></div>
+    <div class="qr-text">
+      <strong id="qrName">통합관광주민증</strong>
+      <span>가맹점에서 나의 QR 코드를 보여주세요</span>
+    </div>
+    <button class="qr-close" onclick="document.getElementById('qrFloat').classList.add('hidden')">✕</button>
+  </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bnav-a" data-nav="main" onclick="location.href='main.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+    메인
+  </button>
+  <button class="bnav-a" onclick="toast('검색 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+    검색
+  </button>
+  <button class="bnav-a" data-nav="event" onclick="location.href='event.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
+    이벤트
+  </button>
+  <button class="bnav-a" onclick="tbOpenPick()">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
+    디민증발급
+  </button>
+  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+    마이
+  </button>
+</nav>
+
+<div class="drawer-overlay" id="dOverlay" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head"><span>메뉴</span><button class="drawer-close" onclick="closeDrawer()">✕</button></div>
+  <nav class="drawer-nav">
+    <div onclick="location.href='main.html'">🏠 메인홈</div>
+    <div onclick="location.href='service-intro.html'">📋 서비스 소개</div>
+    <div onclick="location.href='event.html'">🎁 이벤트</div>
+    <div onclick="location.href='my.html'">🪪 나의 관광주민증</div>
+    <div onclick="location.href='mypage-history.html'">🕘 나의 활동이력</div>
+    <div onclick="location.href='mypage-coupon.html'">🎟️ 혜택쿠폰</div>
+    <div onclick="location.href='exp.html'">📈 경험치 보유현황</div>
+    <div onclick="location.href='mypage-favorite.html'">🔖 나의 즐겨찾기</div>
+    <div onclick="location.href='mypage-report.html'">📊 활동리포트</div>
+    <div onclick="location.href='mypage-cardbox.html'">🗂️ 관광주민증 보관함</div>
+  </nav>
+  <div class="drawer-foot">
+    <button class="btn-dk" onclick="logoutUser()">로그아웃</button>
+    <button class="btn-lt" onclick="closeDrawer()">닫기</button>
+  </div>
+</aside>
+
+<div class="toast" id="toastEl"></div>
+
+<!-- 30초 발급 퍼널 1단계: 지역 선택 -->
+<div class="tb-pick-ov" id="tbPickOv" onclick="if(event.target===this)tbClosePick()">
+  <div class="tb-pick" role="dialog" aria-modal="true" aria-label="발급 지역 선택">
+    <div class="hd"><span>어느 지역의 주민이 되어볼까요?</span><button type="button" onclick="tbClosePick()" aria-label="닫기">✕</button></div>
+    <div class="tb-pick-list" id="tbPickList"></div>
+  </div>
+</div>
+
+<div class="pop-event-overlay" id="popEventOverlay" onclick="if(event.target===this)closePopEvent()">
+  <div class="pop-event" role="dialog">
+    <div class="pop-event-frame">
+      <div class="pop-event-track" id="popEventTrack">
+        <div class="pop-event-slide a" style="background-image:url('../images/popup_dtid.jpg')" onclick="toast('공지사항 상세')"></div>
+        <div class="pop-event-slide b" style="background-image:url('../images/popup_halfprice.jpg')" onclick="location.href='tour50.html'"></div>
+      </div>
+      <button class="pop-event-nav prev" onclick="popEventMove(-1)" aria-label="이전">‹</button>
+      <button class="pop-event-nav next" onclick="popEventMove(1)" aria-label="다음">›</button>
+      <div class="pop-event-dots" id="popEventDots"></div>
+    </div>
+    <div class="pop-event-btns">
+      <button onclick="closePopEventToday()">오늘은 그만보기</button>
+      <button onclick="closePopEvent()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script src="../site-assets/data.js?v=20260707f"></script>
+<script src="../assets/common.js?v=20260707f"></script>
+<script>
+/* 최상위 const/let 은 파싱 시 실행되는 초기화 코드보다 반드시 위에 선언 (TDZ 방지) */
+const user=requireUser();
+const POP_EVENT_COUNT=2;
+let popEventIdx=0;
+
+/* ── 시안 B: 추천 피드/지도 핀/발급 퍼널용 데이터 ──
+   tour50 실사진이 있는 참여지역을 피드 소스로 사용 (사진: ../assets/img/tour50/{지역}.jpg) */
+const TB_FEED_REGIONS=['평창','영월','제천','합천','거창','하동','완도','해남','고창','밀양','영광','고흥'];
+const TB_PIN_REGIONS=['평창','영월','제천','고창','하동','완도'];
+const TB_SUG_REGIONS=['평창','곡성','영월','완도','하동','가평','고창'];
+const TB_CHIP_CATS=['전체','축제','체험','식음료','숙박','관람','쇼핑'];
+const TB_CAT_ICON={'축제':'🎉','체험':'🚀','식음료':'🍕','숙박':'🏨','관람':'🎭','쇼핑':'🛍️','기타':'💬'};
+let tbFeedItems=[];
+let tbFeedCat='전체';
+let tbFeedShowAllFlag=false;
+
+if(user){
+  setActiveBottomNav('main');
+  document.getElementById('qrName').textContent=user.name+'님의 통합관광주민증';
+
+  const badges=document.getElementById('mapBadges');
+  REGIONS.forEach(r=>{
+    const b=document.createElement('button');
+    b.className='r-hit';
+    b.style.cssText=`left:${r.l}%;top:${r.t}%;width:${r.w}%;height:${r.h}%`;
+    b.setAttribute('aria-label',r.n+' 관광주민증 발급 화면 이동');
+    b.onclick=()=>location.href='region.html?r='+encodeURIComponent(r.n);
+    badges.appendChild(b);
+  });
+
+  renderTbSug();
+  renderTbPins();
+  tbBuildFeed();
+  renderTbChips();
+  renderTbFeed();
+  renderTbPickList();
+
+  renderTop10('주간 TOP10');
+  renderFaq();
+  renderInsta();
+  renderMainEvents();
+  openPopEventIfNeeded();
+}
+
+/* ═══ 시안 B: 지역 최대 할인율 계산 ═══ */
+function tbMaxDiscount(name){
+  const detail=getRegionDetail(name);
+  let max=0;
+  (detail.venues||[]).forEach(v=>{
+    const m=(v.discount||'').match(/(\d+)\s*%/);
+    if(m)max=Math.max(max,parseInt(m[1],10));
+  });
+  return max;
+}
+
+/* ═══ 시안 B: 검색 + 추천 태그 ═══ */
+function renderTbSug(){
+  const wrap=document.getElementById('tbSug');
+  TB_SUG_REGIONS.forEach(n=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.textContent='#'+regionGunLabel(n);
+    b.onclick=()=>location.href='region.html?r='+encodeURIComponent(n);
+    wrap.appendChild(b);
+  });
+}
+function tbSearchGo(){
+  const q=document.getElementById('tbSearchInput').value.trim().replace(/(군|시|구)$/,'');
+  if(!q){toast('지역명을 입력해보세요');return;}
+  const hit=REGIONS.find(r=>r.n===q)||REGIONS.find(r=>r.n.indexOf(q)>=0);
+  if(hit)location.href='region.html?r='+encodeURIComponent(hit.n);
+  else toast(`'${q}' 지역은 아직 참여 전이에요. 지도에서 참여지역을 확인해보세요`);
+}
+
+/* ═══ 시안 B: 지도 위 할인율 핀 ═══ */
+function renderTbPins(){
+  const wrap=document.getElementById('tbMapPins');
+  TB_PIN_REGIONS.forEach(n=>{
+    const r=REGIONS.find(x=>x.n===n);
+    if(!r)return;
+    const pct=tbMaxDiscount(n);
+    const pin=document.createElement('span');
+    pin.className='tb-map-pin';
+    pin.style.left=r.l+'%';
+    pin.style.top=r.t+'%';
+    const b=document.createElement('b');
+    b.textContent=pct?`최대 ${pct}%`:'혜택';
+    pin.append(n+' ',b);
+    wrap.appendChild(pin);
+  });
+}
+
+/* ═══ 시안 B: 추천 피드 ═══ */
+function tbBuildFeed(){
+  tbFeedItems=[];
+  TB_FEED_REGIONS.forEach(name=>{
+    const detail=getRegionDetail(name);
+    const label=regionGunLabel(name);
+    const img=`../assets/img/tour50/${name}.jpg`;
+    if(detail.festivals&&detail.festivals.length){
+      const f=detail.festivals[0];
+      tbFeedItems.push({cat:'축제',region:name,img,
+        title:f.name,
+        desc:`${REGION_SIDO[name]||''} ${label}${f.month?' · '+f.month:''}`,
+        badge:'주민증 할인 대상'});
+    }
+    const venues=[...(detail.venues||[])].sort((a,b)=>(b.pop||0)-(a.pop||0));
+    if(venues[0]){
+      const v=venues[0];
+      tbFeedItems.push({cat:v.cat,region:name,img,
+        title:v.name,
+        desc:`${label} · ${v.desc}`,
+        badge:v.discount});
+    }
+  });
+  /* 지역이 골고루 섞이도록 축제/가맹점 항목 교차 정렬 유지 (원순서) */
+}
+function renderTbChips(){
+  const wrap=document.getElementById('tbChips');
+  wrap.innerHTML='';
+  TB_CHIP_CATS.forEach(c=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='tb-chip'+(c===tbFeedCat?' on':'');
+    b.textContent=c==='전체'?'전체':`${TB_CAT_ICON[c]||''} ${c}`;
+    b.onclick=()=>{tbFeedCat=c;tbFeedShowAllFlag=false;renderTbChips();renderTbFeed();};
+    wrap.appendChild(b);
+  });
+}
+function renderTbFeed(){
+  const wrap=document.getElementById('tbFeed');
+  wrap.innerHTML='';
+  const list=tbFeedItems.filter(it=>tbFeedCat==='전체'||it.cat===tbFeedCat);
+  const limit=tbFeedShowAllFlag?list.length:8;
+  list.slice(0,limit).forEach((it,i)=>{
+    const hero=(i===0);
+    const card=document.createElement('button');
+    card.type='button';
+    card.className='tb-fc'+(hero?' herov':' rowc');
+    const img=document.createElement('img');
+    img.className=hero?'hero':'th';
+    img.src=it.img;
+    img.alt=it.title;
+    img.loading='lazy';
+    const bd=document.createElement('div');
+    bd.className='bd';
+    const tt=document.createElement('div');
+    tt.className='tt';
+    tt.textContent=`${TB_CAT_ICON[it.cat]||''} ${it.title}`;
+    const ds=document.createElement('div');
+    ds.className='ds';
+    ds.textContent=it.desc;
+    const bg=document.createElement('span');
+    bg.className='bg';
+    bg.textContent=it.badge;
+    bd.append(tt,ds,bg);
+    card.append(img,bd);
+    card.onclick=()=>location.href='region.html?r='+encodeURIComponent(it.region);
+    wrap.appendChild(card);
+  });
+  document.getElementById('tbFeedMore').style.display=(list.length>limit)?'block':'none';
+}
+function tbFeedShowAll(){tbFeedShowAllFlag=true;renderTbFeed();}
+
+/* ═══ 시안 B: 30초 발급 퍼널 (지역 선택 → 본인인증 → 완료 → 지역 상세) ═══ */
+function renderTbPickList(){
+  const wrap=document.getElementById('tbPickList');
+  wrap.innerHTML='';
+  TB_FEED_REGIONS.forEach(n=>{
+    const pct=tbMaxDiscount(n);
+    const detail=getRegionDetail(n);
+    const item=document.createElement('button');
+    item.type='button';
+    item.className='tb-pick-item';
+    const img=document.createElement('img');
+    img.src=`../assets/img/tour50/${n}.jpg`;
+    img.alt=regionGunLabel(n);
+    img.loading='lazy';
+    const txt=document.createElement('div');
+    const nm=document.createElement('div');
+    nm.className='nm';
+    nm.textContent=`${REGION_SIDO[n]||''} ${regionGunLabel(n)}`;
+    const ds=document.createElement('div');
+    ds.className='ds';
+    ds.textContent=`가맹점 ${detail.venues.length}곳 참여`;
+    txt.append(nm,ds);
+    const pctEl=document.createElement('span');
+    pctEl.className='pct';
+    pctEl.textContent=pct?`최대 ${pct}%`:'혜택';
+    item.append(img,txt,pctEl);
+    item.onclick=()=>tbPickGo(n);
+    wrap.appendChild(item);
+  });
+}
+function tbOpenPick(){
+  document.getElementById('tbPickOv').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+function tbClosePick(){
+  document.getElementById('tbPickOv').classList.remove('on');
+  document.body.style.overflow='';
+}
+function tbPickGo(name){
+  tbClosePick();
+  /* theme.js의 공용 발급 퍼널 → 완료 후 기존 지역 상세(발급/쿠폰) 플로우로 연결 */
+  tbOpenIssue(regionGunLabel(name),()=>{location.href='region.html?r='+encodeURIComponent(name);});
+}
+
+/* ── 진입 이벤트 팝업(popEvent 재현) — '오늘은 그만보기'는 당일에 한해 숨김 ── */
+function todayStr(){const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
+function openPopEventIfNeeded(){
+  if(localStorage.getItem('popEventDismissed')===todayStr())return;
+  popEventRender();
+  document.getElementById('popEventOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function popEventRender(){
+  document.getElementById('popEventTrack').style.transform=`translateX(-${popEventIdx*100}%)`;
+  document.getElementById('popEventDots').innerHTML=Array.from({length:POP_EVENT_COUNT},(_,i)=>
+    `<span class="${i===popEventIdx?'on':''}"></span>`).join('');
+}
+function popEventMove(d){
+  popEventIdx=(popEventIdx+d+POP_EVENT_COUNT)%POP_EVENT_COUNT;
+  popEventRender();
+}
+function closePopEvent(){
+  document.getElementById('popEventOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function closePopEventToday(){
+  localStorage.setItem('popEventDismissed',todayStr());
+  closePopEvent();
+}
+
+function renderTop10(tab){
+  const tabsEl=document.getElementById('top10Tabs');
+  tabsEl.innerHTML=TOP10_TABS.map(t=>
+    `<button class="top10-tab${t===tab?' active':''}" onclick="renderTop10('${t}')">${t}</button>`
+  ).join('');
+  const items=getTop10Items(tab);
+  document.getElementById('top10Scroll').innerHTML=items.map(it=>`
+    <div class="top10-card" onclick="toast('${it.name}')">
+      <div class="top10-thumb" style="background:linear-gradient(135deg,#dbeafe,#ede9fe)"><span class="badge">${it.tag}</span></div>
+      <div class="top10-name">${it.name}</div>
+      <div class="top10-discount">${it.discount}</div>
+    </div>`).join('');
+}
+
+function renderFaq(){
+  document.getElementById('faqWrap').innerHTML=FAQS.map((f,i)=>`
+    <div class="faq-item${i===0?' open':''}">
+      <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        ${f.q}<span class="icon">${i===0?'−':'+'}</span>
+      </button>
+      <div class="faq-a"><p>${f.a}</p></div>
+    </div>`).join('');
+  document.querySelectorAll('.faq-q').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const icon=btn.querySelector('.icon');
+      icon.textContent=btn.parentElement.classList.contains('open')?'−':'+';
+    });
+  });
+}
+
+function renderInsta(){
+  document.getElementById('instaScroll').innerHTML=INSTA_POSTS.map(p=>
+    `<a class="insta-tile" style="background:${p.color}" href="${p.url}" target="_blank" rel="noopener"><span>${p.cap}</span></a>`
+  ).join('');
+}
+
+function renderMainEvents(){
+  document.getElementById('mainEventScroll').innerHTML=MAIN_EVENTS.map(e=>`
+    <a class="main-event-card" href="javascript:void(0)" onclick="toast('이벤트 상세')">
+      <div class="main-event-thumb" style="background:linear-gradient(135deg,${e.color},#111)"></div>
+      <strong>${e.title}</strong>
+      <span>${e.date}</span>
+    </a>`).join('');
+}
+</script>
+<script src="theme.js?v=1"></script>
+</body>
+</html>

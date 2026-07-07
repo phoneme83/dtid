@@ -1,0 +1,295 @@
+/* ═══════════════════════════════════════════════════════════════
+   시안 E · 통합안 테마 (site-e 전용 오버라이드)
+   ─ 팔레트 (e/index.html 프로토타입 기준)
+     주색      : #ea580c (오렌지)  진한색 #c2410c / #9a3412
+     크림 배경 : #fff7ed / #ffedd5 / #fed7aa
+     테두리    : #f0e9e2 / #eee6e0 / #f4f0ec
+     본문      : #111  보조 #556 / #788
+     완료(성공): #16a34a   보상: #fbbf24→#f59e0b
+   ─ 원칙: 과업형 · 큰 글자 · 높은 대비 · 얕은 메뉴 (D 뼈대)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 글자 크게 토글 (D) : 데모바 '가⁺' 버튼이 html에 클래스 부여 ── */
+html.e-f2 body{zoom:1.12}
+html.e-f3 body{zoom:1.28}
+
+/* ── 베이스 ── */
+body.theme-e{background:#f3ede6;color:#111}
+.theme-e button{font-family:inherit}
+
+/* ── GNB: 다크 → 밝은 헤더 + 오렌지 로고 ── */
+.theme-e .gnb{background:#fff;border-bottom:2px solid #f0e9e2;height:56px}
+.theme-e .gnb-title{color:#111;font-size:16px;font-weight:800;letter-spacing:-.4px}
+.theme-e .logo-wrap{background:#ea580c}
+.theme-e .gnb-menu span{background:#111}
+
+/* ── 서브내브 ── */
+.theme-e .subnav-a{font-size:14px}
+.theme-e .subnav-a.active{color:#c2410c}
+.theme-e .subnav-a.active::after{background:#ea580c}
+
+/* ═══ 시안 E 주입 컴포넌트 ═══ */
+
+/* 데모 바 */
+.theme-e .e-demo-bar{background:#ea580c;color:#fff;font-size:12px;font-weight:700;text-align:center;padding:6px 10px;display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;position:relative;z-index:510}
+.theme-e .e-demo-bar a{color:#fff;opacity:.9;text-decoration:underline}
+.theme-e .e-demo-bar b{background:#fff;color:#ea580c;border-radius:6px;padding:0 5px;font-size:11px}
+.theme-e .e-font-btn{background:#fff;color:#c2410c;border:none;border-radius:8px;font-weight:800;font-size:11px;padding:3px 9px;cursor:pointer}
+
+/* 하단 탭바 + 중앙 QR 플로팅 (A) */
+.theme-e .bottom-nav{display:none!important} /* 기존 5탭 → E 탭바로 대체 */
+.theme-e .e-tab{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid #f0e9e2;display:flex;justify-content:center;z-index:600;padding:7px 0 max(9px,env(safe-area-inset-bottom))}
+.theme-e .e-tab .e-ti{flex:1;max-width:110px;text-align:center;font-size:11.5px;color:#889;font-weight:700;background:none;border:none;cursor:pointer;padding-top:2px}
+.theme-e .e-tab .e-ti i{display:block;font-size:20px;font-style:normal;margin-bottom:2px}
+.theme-e .e-tab .e-ti.on{color:#ea580c;font-weight:800}
+.theme-e .e-tab .e-spacer{visibility:hidden;pointer-events:none}
+.theme-e .e-qr-fab{position:absolute;left:50%;top:-26px;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;background:#ea580c;border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:23px;box-shadow:0 5px 14px rgba(234,88,12,.5);cursor:pointer}
+.theme-e .e-qr-fab:active{transform:translateX(-50%) scale(.94)}
+
+/* QR 전체화면 제시 (A) / 사용 완료 (C 적립) */
+.theme-e .e-ov{position:fixed;inset:0;background:#fff;z-index:1000;display:none;flex-direction:column;align-items:center;text-align:center;overflow-y:auto}
+.theme-e .e-ov.on{display:flex}
+.theme-e .e-ov .cls{position:absolute;top:14px;right:16px;font-size:22px;background:none;border:none;color:#999;cursor:pointer;z-index:2}
+.theme-e .e-ov .ttl{font-weight:800;font-size:16px;margin-top:56px;color:#ea580c}
+.theme-e .e-ov img.qim{width:210px;height:210px;margin-top:20px}
+.theme-e .e-ov .nm{font-weight:800;font-size:21px;margin-top:18px}
+.theme-e .e-ov .gd{font-size:14px;color:#888;margin-top:5px}
+.theme-e .e-ov .tm{margin-top:14px;font-size:14px;color:#ea580c;font-weight:800}
+.theme-e .e-ov .sim{margin-top:24px;background:#111;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:14.5px;padding:15px 22px;cursor:pointer}
+.theme-e .e-ov .brt{margin-top:auto;margin-bottom:max(22px,env(safe-area-inset-bottom));font-size:11.5px;color:#aaa;padding-top:16px}
+.theme-e .e-ov-done{justify-content:center;background:#fffaf5}
+.theme-e .e-ov .big2{font-size:54px}
+.theme-e .e-ov .dt1{font-size:21px;font-weight:800;margin-top:12px}
+.theme-e .e-ov .dt2{font-size:14.5px;color:#ea580c;font-weight:800;margin-top:7px;padding:0 20px}
+.theme-e .e-ov .dt3{background:#fff7ed;border-radius:10px;font-size:13px;padding:9px 14px;margin:14px 20px 0;color:#775}
+.theme-e .e-ov .btn2{margin-top:22px;background:#ea580c;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:14.5px;padding:15px 26px;cursor:pointer}
+
+/* 30초 발급 퍼널 (B) */
+.theme-e .e-iss{position:fixed;inset:0;background:#fff;z-index:1050;display:none;flex-direction:column}
+.theme-e .e-iss.on{display:flex}
+.theme-e .e-iss .hd{display:flex;align-items:center;gap:10px;padding:16px;font-weight:800;font-size:16px;border-bottom:2px solid #f4f0ec;max-width:480px;margin:0 auto;width:100%}
+.theme-e .e-iss .hd button{background:none;border:none;font-size:20px;color:#999;cursor:pointer}
+.theme-e .e-iss .bd{flex:1;overflow-y:auto;padding:24px 20px;display:none;flex-direction:column;max-width:480px;margin:0 auto;width:100%}
+.theme-e .e-iss .bd.on{display:flex}
+.theme-e .e-iss .q{font-size:21px;font-weight:800;line-height:1.45}
+.theme-e .e-iss .qs{font-size:13.5px;color:#788;margin-top:8px}
+.theme-e .e-iss .opt{border:2px solid #eee6e0;border-radius:16px;padding:16px;font-size:15px;font-weight:800;margin-top:12px;cursor:pointer;display:flex;align-items:center;gap:10px;background:#fff;text-align:left;width:100%;color:#111}
+.theme-e .e-iss .opt.hero{background:#ea580c;border-color:#ea580c;color:#fff}
+.theme-e .e-iss .agr{font-size:13px;color:#667;margin-top:16px;display:flex;gap:8px;align-items:center}
+.theme-e .e-iss .agr input{width:16px;height:16px;accent-color:#ea580c}
+.theme-e .e-iss .fin{margin:auto;text-align:center}
+.theme-e .e-iss .fin .big2{font-size:54px}
+.theme-e .e-iss .fin .q{margin-top:12px}
+.theme-e .e-iss .wc{display:inline-block;background:#fff7ed;color:#ea580c;font-size:13.5px;font-weight:800;border-radius:8px;padding:8px 13px;margin-top:14px}
+
+/* 공통 CTA / 과업형 홈 (D 뼈대) */
+.theme-e .e-cta{display:block;background:#ea580c;color:#fff;border:none;border-radius:14px;text-align:center;font-weight:800;font-size:15px;padding:15px;width:100%;cursor:pointer;text-decoration:none}
+.theme-e .e-home{max-width:var(--content-max);margin:0 auto;background:#fff;padding:16px 16px 10px}
+.theme-e .e-hello{font-size:15px;color:#556;font-weight:600;margin-bottom:12px}
+.theme-e .e-big{margin:0 0 10px;border:2px solid #eee6e0;border-radius:18px;padding:16px;display:flex;align-items:center;gap:13px;cursor:pointer;background:#fff;width:100%;text-align:left;color:#111}
+.theme-e .e-big.hero{background:#ea580c;border-color:#ea580c;color:#fff}
+.theme-e .e-big .ic{font-size:25px;flex-shrink:0}
+.theme-e .e-big .tt{font-size:16px;font-weight:800;line-height:1.35}
+.theme-e .e-big .ds{font-size:12.5px;margin-top:3px;opacity:.72}
+.theme-e .e-big .ar{margin-left:auto;font-size:17px;opacity:.5}
+.theme-e .e-stcard{background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1.5px solid #fed7aa;border-radius:16px;padding:14px 16px;cursor:pointer;margin-bottom:6px}
+.theme-e .e-stcard .t{display:flex;justify-content:space-between;font-size:13.5px;font-weight:800}
+.theme-e .e-stcard .t span:last-child{color:#ea580c}
+.theme-e .e-stbar{height:9px;background:#fff;border-radius:5px;margin-top:9px;overflow:hidden}
+.theme-e .e-stbar i{display:block;height:100%;background:linear-gradient(90deg,#fb923c,#ea580c);border-radius:5px;transition:width .5s}
+.theme-e .e-stcard .cap{font-size:11.5px;color:#9a5b2f;margin-top:7px;font-weight:700}
+.theme-e .e-issue-note{font-size:12.5px;color:#c2410c;font-weight:700;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:10px;padding:8px 12px;margin-top:10px}
+
+/* 스탬프판 (C 라이트) + 보상 */
+.theme-e .e-stamp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;padding:4px 0 10px}
+.theme-e .e-stamp{aspect-ratio:1;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:800;gap:2px}
+.theme-e .e-stamp.got{background:#fff7ed;border:2.5px solid #ea580c;color:#ea580c;animation:e-pop .3s}
+.theme-e .e-stamp.no{background:#fff;border:2.5px dashed #e5d9cf;color:#b8a99c}
+.theme-e .e-stamp .e{font-size:21px}
+@keyframes e-pop{0%{transform:scale(.6)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.theme-e .e-reward{background:linear-gradient(135deg,#fbbf24,#f59e0b);border-radius:14px;padding:13px 16px;color:#fff}
+.theme-e .e-reward .t{font-size:14px;font-weight:800}
+.theme-e .e-reward .s{font-size:11.5px;opacity:.92;margin-top:2px}
+
+/* 전화 탈출구 (D) — 드로어 하단 주입 */
+.theme-e .e-drawer-call{color:#c2410c!important;font-weight:800;background:#fff7ed}
+
+/* ═══ 기존 화면 오버라이드 ═══ */
+
+/* ── 로그인 ── */
+.theme-e .page-title{font-size:22px;font-weight:800}
+.theme-e .visitkorea-badge{border-color:#ea580c;color:#c2410c}
+.theme-e .login-divider{background:#f0e9e2}
+.theme-e .onepass-desc{font-size:13.5px;color:#556}
+.theme-e .onepass-btn{background:#ea580c;border-color:#ea580c;color:#fff;font-weight:800;border-radius:14px;font-size:15.5px}
+.theme-e .onepass-btn:active{background:#c2410c}
+.theme-e .onepass-auto input{accent-color:#ea580c}
+.theme-e .notice{color:#998;background:#fbf6f0}
+.theme-e .notice strong{color:#c2410c}
+.theme-e .sheet-desc{font-size:13.5px}
+.theme-e .sheet-desc2{border-bottom-color:#ea580c}
+.theme-e .login-sheet{border:2px solid #f0e9e2;border-bottom:none}
+
+/* ── 상단 배너/공지 ── */
+.theme-e .banner-hp{background:linear-gradient(120deg,#9a3412 0%,#c2410c 55%,#ea580c 100%)}
+.theme-e .notice-bar{border-bottom:2px solid #f4f0ec}
+.theme-e .notice-bar a{font-size:13.5px;font-weight:600}
+
+/* ── 메인: 지도/TOP10/FAQ/이벤트 ── */
+.theme-e .map-heading p{font-size:16px}
+.theme-e .top10-tab{border-radius:20px;font-size:13px}
+.theme-e .top10-tab.active{background:#ea580c;border-color:#ea580c}
+.theme-e .top10-name{font-size:13.5px}
+.theme-e .top10-discount{color:#c2410c;font-weight:700;font-size:11.5px}
+.theme-e .top10-thumb .badge{background:rgba(154,52,18,.75)}
+.theme-e .faq-item:first-child{border-top:2px solid #ea580c}
+.theme-e .faq-q{font-size:14.5px}
+.theme-e .faq-a p{font-size:13.5px;color:#556}
+.theme-e .insta-tour-wrap h2,.theme-e .main-event-wrap h3{font-size:16px}
+.theme-e .main-event-card strong{font-size:13.5px}
+
+/* ── QR 플로팅 배너(기존) : 오렌지화 + E 탭바 위로 ── */
+.theme-e .qr-float{bottom:84px}
+.theme-e .qr-card{border-color:#ea580c;cursor:pointer;border-radius:16px}
+.theme-e .qr-text strong{font-size:13.5px}
+
+/* ── 마이페이지 ── */
+.theme-e .user-name{font-size:19px;font-weight:800}
+.theme-e .grade-card{background:#fff7ed}
+.theme-e .grade-name{font-size:15px}
+.theme-e .exp-value{color:#c2410c}
+.theme-e .qr-section{background:linear-gradient(135deg,#ea580c 0%,#c2410c 60%,#9a3412 100%)}
+.theme-e .qr-section-title{font-size:15px}
+.theme-e .qr-btn{border-color:#9a3412;color:#9a3412;font-size:13.5px}
+.theme-e .qr-btn.dark{background:#9a3412;color:#fff}
+.theme-e .section-title{font-size:15.5px;font-weight:800}
+.theme-e .rci-name{font-size:14px}
+.theme-e .rci-status{font-size:11.5px}
+.theme-e .region-card-item{background:#faf5f0;border-radius:12px}
+.theme-e .qm-item{background:#faf5f0}
+.theme-e .qm-text{font-size:14px;font-weight:700}
+
+/* ── 마이페이지 하위/활동이력/보관함 ── */
+.theme-e .page-bar{border-bottom:2px solid #f4f0ec}
+.theme-e .page-bar-title{font-size:17px;font-weight:800}
+.theme-e .mypage-sub-tab{font-size:13px}
+.theme-e .mypage-sub-tab.active{background:#ea580c;border-color:#ea580c}
+.theme-e .hist-title-row strong{font-size:14px}
+.theme-e .hist-desc{font-size:12.5px}
+.theme-e .hist-exp{color:#c2410c}
+.theme-e .hist-ico{background:#fff7ed}
+.theme-e .pocket-card{border:1.5px solid #f0e9e2;border-radius:16px}
+.theme-e .pocket-card .nm{font-size:13px}
+.theme-e .card-detail-btns .primary{background:#ea580c}
+.theme-e .card-detail-btns .secondary{border-color:#ea580c;color:#c2410c}
+.theme-e .report-card{background:#fbf6f0}
+
+/* ── 쿠폰함 ── */
+.theme-e .coupon-card{border:1.5px solid #f0e9e2;border-radius:16px}
+.theme-e .coupon-card::before{background:#ea580c}
+.theme-e .coupon-card .cp-ic{background:#fff7ed}
+.theme-e .coupon-card .cp-content{font-size:15px}
+.theme-e .coupon-card .cp-state{color:#16a34a}
+.theme-e .cpn-pop{background:#fdba74}
+.theme-e .cpn-code{background:#9a3412}
+.theme-e .cpn-info .btn-storeinfo{background:#9a3412}
+.theme-e .cpn-check{background:#ea580c}
+
+/* ── 경험치 ── */
+.theme-e .tl-line-fill{background:linear-gradient(180deg,#fb923c 0%,#ea580c 100%)}
+.theme-e .tl-icon-wrap.active{box-shadow:0 0 0 3px #ea580c,0 2px 8px rgba(234,88,12,.25)}
+.theme-e .tl-dot.active-dot{background:#ea580c;border-color:#ea580c}
+.theme-e .tl-dot.reached-dot{border-color:#fb923c}
+.theme-e .tl-current-badge{background:#ffedd5;color:#c2410c}
+.theme-e .tl-my-exp{color:#c2410c}
+.theme-e .tl-mini-fill{background:linear-gradient(90deg,#fb923c,#ea580c)}
+.theme-e .tl-level-name{font-size:15.5px}
+.theme-e .exp-hist-item .ic{background:#fff7ed}
+.theme-e .exp-hist-item .exp-box{color:#c2410c}
+.theme-e .exp-hist-item .t1{font-size:14px}
+.theme-e .exp-detail-btn{border-color:#ea580c;color:#c2410c}
+
+/* ── 이벤트 ── */
+.theme-e .evt-title h2{font-size:19px;font-weight:800}
+.theme-e .evt-tab-btn{font-size:13.5px}
+.theme-e .evt-tab-btn.active{border-color:#ea580c;color:#c2410c;background:#fff7ed}
+.theme-e .evt-day.today{background:#ea580c}
+.theme-e .evt-chip.active{background:#ea580c}
+.theme-e .evt-cal-day.sel{background:#ea580c}
+.theme-e .evt-cal-day.has-event::after{background:#ea580c}
+.theme-e .evt-sel-bar span em{color:#c2410c}
+.theme-e .evt-item{border:1.5px solid #f0e9e2;border-radius:14px}
+.theme-e .evt-item-title{font-size:13.5px}
+
+/* ── 지역 상세(랜딩) — B ── */
+.theme-e .rgn-banner{background:linear-gradient(180deg,#ffedd5 0%,#fff7ed 100%)}
+.theme-e .rgn-banner h2{color:#7c2d12;font-size:21px;font-weight:800}
+.theme-e .rgn-banner h2 em{color:#c2410c}
+.theme-e .rgn-banner .e-cta{max-width:320px;margin:14px auto 0}
+.theme-e .rgn-tip-card{border:1.5px solid #f0e9e2}
+.theme-e .rgn-tip-card li{font-size:14px}
+.theme-e .rgn-tip-card li::before{color:#ea580c}
+.theme-e .rgn-festival{background:#fbf6f0}
+.theme-e .rgn-section-head h3{font-size:16px;font-weight:800}
+.theme-e .rgn-cat-tab{font-size:13px}
+.theme-e .rgn-cat-tab.active{background:#ea580c;border-color:#ea580c}
+.theme-e .rgn-sort span.active{color:#c2410c}
+.theme-e .rgn-venue-card{border:1.5px solid #f0e9e2;border-radius:16px}
+.theme-e .rgn-venue-name{font-size:14.5px}
+.theme-e .rgn-venue-desc{font-size:11.5px}
+.theme-e .rgn-venue-coupon{background:#fff7ed;color:#c2410c;font-weight:800}
+.theme-e .rgn-pagination button.active{background:#ea580c;border-color:#ea580c}
+.theme-e .rgn-review-head h3{font-size:16.5px}
+.theme-e .rgn-review-join{border-color:#ea580c;color:#c2410c;font-weight:800}
+.theme-e .rgn-review-item p{font-size:13.5px}
+.theme-e .rgn-other-wrap{background:#f7efe6}
+.theme-e .rgn-sido-tab.active{background:#ea580c}
+.theme-e .rgn-other-list span{font-size:13.5px}
+.theme-e .rgn-other-list span:hover{color:#ea580c}
+.theme-e .knowhow-pop{border-color:#ea580c}
+.theme-e .knowhow-save{background:#ea580c}
+
+/* ── 반값여행 ── */
+.theme-e .t50-banner{background:linear-gradient(120deg,#fff7ed 0%,#ffedd5 100%)}
+.theme-e .t50-banner p.k1{color:#9a3412}
+.theme-e .t50-banner p.k2 em{color:#c2410c}
+.theme-e .t50-banner.slide-b{background:linear-gradient(120deg,#fb923c,#ea580c)}
+.theme-e .t50-find button{background:#ea580c}
+.theme-e .t50-find button.refresh{background:#fff;color:#c2410c;border-color:#ea580c}
+.theme-e .t50-status-tab.active{background:#ea580c;border-color:#ea580c}
+.theme-e .t50-hero .word{color:#111}
+.theme-e .t50-modal-btn.primary{background:#ea580c}
+.theme-e .t50-sched-card a.prep{background:#fff7ed;color:#c2410c}
+.theme-e .t50-finder-ok{background:#ea580c}
+.theme-e .t50-schedule{background:linear-gradient(180deg,#fff9f0,#fff)}
+
+/* ── 서비스 소개 ── */
+.theme-e .svc-hero{background:linear-gradient(135deg,#ea580c 0%,#c2410c 60%,#9a3412 100%)}
+.theme-e .svc-hero h2{font-size:19px}
+.theme-e .svc-step .num{background:#ffedd5;color:#c2410c}
+.theme-e .svc-step p{font-size:14px}
+.theme-e .svc-cta{background:#ea580c;border-radius:14px;font-weight:800}
+.theme-e .svc-way-label{background:#fff7ed;color:#c2410c}
+.theme-e .svc-contact-card a.btn{color:#c2410c;background:#fff7ed}
+.theme-e .svc-section h3{font-size:16px;font-weight:800}
+
+/* ── 드로어(얕은 메뉴 — D) ── */
+.theme-e .drawer-head{background:#c2410c}
+.theme-e .drawer-nav div{font-size:15px;font-weight:600;padding:16px 20px}
+.theme-e .btn-dk{background:#ea580c}
+.theme-e .btn-lt{border-color:#ea580c;color:#c2410c}
+
+/* ── 토스트 ── */
+.theme-e .toast{background:rgba(0,0,0,.85);border-radius:24px;font-size:13px;font-weight:700;bottom:96px}
+
+/* ═══ 데스크톱 (≥960px) : E 탭바 숨김, 헤더 내비 색 보정 ═══ */
+@media (min-width:960px){
+  .theme-e .e-tab{display:none}
+  body.theme-e{background:#ece3d8}
+  .theme-e .gnb-nav a{color:#445}
+  .theme-e .gnb-nav a:hover{color:#ea580c}
+  .theme-e .qr-float{bottom:28px}
+  .theme-e .e-home{padding-top:20px}
+  .theme-e .e-home .e-big,.theme-e .e-home .e-stcard{max-width:640px}
+  .theme-e .e-ov,.theme-e .e-iss{max-width:480px;left:50%;right:auto;width:100%;transform:translateX(-50%);box-shadow:0 0 60px rgba(0,0,0,.25)}
+}
