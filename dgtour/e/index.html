@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>디지털 관광주민증 · 시안 E 통합안</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+html.f2{font-size:18px}
+html.f3{font-size:21px}
+body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#e8e6e3;-webkit-font-smoothing:antialiased}
+.app{max-width:430px;margin:0 auto;min-height:100vh;min-height:100dvh;background:#fff;color:#111;display:flex;flex-direction:column;position:relative}
+.demo-bar{background:#ea580c;color:#fff;font-size:11px;font-weight:700;text-align:center;padding:5px;display:flex;justify-content:center;gap:10px}
+.demo-bar a{color:#fff;opacity:.85;text-decoration:underline}
+.view{flex:1;overflow-y:auto;padding-bottom:6.2rem;display:none}
+.view.on{display:block}
+.gnb{padding:1.1rem 1rem .4rem;font-size:1.2rem;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+.gnb .aa{font-size:.78rem;color:#ea580c;font-weight:800;border:2px solid #ea580c;border-radius:8px;padding:.18rem .5rem;background:#fff;cursor:pointer;font-family:inherit}
+.hello{padding:0 1rem .6rem;font-size:.92rem;color:#556}
+.notice{margin:.2rem 1rem .8rem;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:.65rem .9rem;font-size:.78rem;color:#c2410c;font-weight:700;cursor:pointer}
+/* D: 큰 버튼 */
+.big{margin:0 1rem .7rem;border:2px solid #eee6e0;border-radius:18px;padding:1.05rem 1rem;display:flex;align-items:center;gap:.85rem;cursor:pointer;background:#fff;width:calc(100% - 2rem);font-family:inherit;text-align:left}
+.big.hero{background:#ea580c;border-color:#ea580c;color:#fff}
+.big .ic{font-size:1.6rem;flex-shrink:0}
+.big .tt{font-size:1.02rem;font-weight:800;line-height:1.35}
+.big .ds{font-size:.78rem;margin-top:.18rem;opacity:.72}
+.big .ar{margin-left:auto;font-size:1.05rem;opacity:.5}
+/* C 라이트: 스탬프 진행 카드 */
+.stcard{margin:.2rem 1rem .8rem;background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1.5px solid #fed7aa;border-radius:16px;padding:.9rem 1rem;cursor:pointer}
+.stcard .t{display:flex;justify-content:space-between;font-size:.85rem;font-weight:800}
+.stcard .t span:last-child{color:#ea580c}
+.stbar{height:.55rem;background:#fff;border-radius:.35rem;margin-top:.55rem;overflow:hidden}
+.stbar i{display:block;height:100%;background:linear-gradient(90deg,#fb923c,#ea580c);border-radius:.35rem;transition:width .5s}
+.stcard .cap{font-size:.72rem;color:#9a5b2f;margin-top:.45rem;font-weight:700}
+/* 리스트/카드 공통 */
+.secttl{padding:1rem 1rem .4rem;font-size:.92rem;font-weight:800;color:#445}
+.row{display:flex;align-items:center;gap:.8rem;padding:.9rem 1rem;border-bottom:1.5px solid #f4f0ec;cursor:pointer}
+.row img.th{width:3.1rem;height:3.1rem;border-radius:.7rem;object-fit:cover;flex-shrink:0}
+.row .ic2{width:3.1rem;height:3.1rem;border-radius:.7rem;background:#faf5f0;display:flex;align-items:center;justify-content:center;font-size:1.35rem;flex-shrink:0}
+.row .tt{font-size:.95rem;font-weight:700}
+.row .ds{font-size:.76rem;color:#788;margin-top:.15rem}
+.row .rt{margin-left:auto;font-size:.8rem;color:#ea580c;font-weight:800;flex-shrink:0}
+/* 주민증 카드 (A 스타일) */
+.idcard{margin:.6rem 1rem;border-radius:18px;background:linear-gradient(135deg,#ea580c,#c2410c 60%,#9a3412);color:#fff;padding:1.15rem;position:relative;overflow:hidden;cursor:pointer}
+.idcard .deco{position:absolute;right:-30px;bottom:-40px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.09)}
+.idcard .emb{position:absolute;right:1rem;bottom:.7rem;font-size:1.9rem;opacity:.9}
+.idcard .chip{position:absolute;right:1rem;top:1rem;background:rgba(255,255,255,.22);border-radius:8px;font-size:.68rem;padding:.22rem .5rem;font-weight:700}
+.idcard .rg{font-size:.82rem;font-weight:700;opacity:.85}
+.idcard .nm{font-size:1.35rem;font-weight:800;margin-top:.15rem}
+.idcard .no{font-size:.66rem;opacity:.72;margin-top:.85rem;letter-spacing:.03em}
+.swbtn{margin:0 1rem .4rem;border:none;background:#faf5f0;color:#333;border-radius:12px;text-align:center;font-size:.82rem;font-weight:700;padding:.7rem;width:calc(100% - 2rem);cursor:pointer;font-family:inherit}
+/* 스탬프판 (C) */
+.stamp-wrap{padding:.6rem 1rem;display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem}
+.stamp{aspect-ratio:1;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;gap:.15rem}
+.stamp.got{background:#fff7ed;border:2.5px solid #ea580c;color:#ea580c;animation:pop .3s}
+.stamp.no{background:#fff;border:2.5px dashed #e5d9cf;color:#b8a99c}
+.stamp .e{font-size:1.35rem}
+@keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.reward{margin:.3rem 1rem .6rem;background:linear-gradient(135deg,#fbbf24,#f59e0b);border-radius:14px;padding:.85rem 1rem;color:#fff}
+.reward .t{font-size:.88rem;font-weight:800}
+.reward .s{font-size:.72rem;opacity:.92;margin-top:.15rem}
+/* 미션 (C 라이트) */
+.msn{margin:0 1rem .55rem;background:#fff;border:1.5px solid #f0e9e2;border-radius:14px;padding:.75rem .85rem;display:flex;align-items:center;gap:.7rem;cursor:pointer}
+.msn img{width:2.7rem;height:2.7rem;border-radius:.6rem;object-fit:cover;flex-shrink:0}
+.msn .tt{font-size:.85rem;font-weight:800}
+.msn .rw{font-size:.7rem;color:#ea580c;font-weight:800;margin-top:.12rem}
+.msn .go{margin-left:auto;font-size:.72rem;font-weight:800;color:#fff;background:#ea580c;border:none;border-radius:14px;padding:.5rem .8rem;flex-shrink:0;cursor:pointer;font-family:inherit}
+/* 쿠폰 (이미지형) */
+.cpn{margin:.6rem 1rem;border:1.5px solid #f0e9e2;border-radius:16px;overflow:hidden;display:flex;align-items:stretch}
+.cpn img{width:5.2rem;object-fit:cover;flex-shrink:0}
+.cpn .bd{padding:.75rem .85rem;flex:1}
+.cpn .pct{font-size:.95rem;font-weight:800;color:#ea580c}
+.cpn .tt{font-size:.85rem;font-weight:700;margin-top:.12rem}
+.cpn .ds{font-size:.68rem;color:#899;margin-top:.18rem}
+.cpn .use{align-self:center;margin-right:.85rem;background:#ea580c;border:none;color:#fff;font-weight:800;font-size:.72rem;border-radius:10px;padding:.55rem .8rem;cursor:pointer;font-family:inherit}
+/* B 부분: 지역 랜딩 */
+.hero2{height:10.5rem;position:relative;color:#fff;display:flex;flex-direction:column;justify-content:flex-end;padding:1rem;background:url(../assets/img/scene/resort.svg) center/cover}
+.hero2::before{content:'';position:absolute;inset:0;background:linear-gradient(transparent 30%,rgba(60,20,0,.72))}
+.hero2>*{position:relative}
+.hero2 .bk{position:absolute;top:.85rem;left:.85rem;background:rgba(255,255,255,.92);border:none;color:#111;border-radius:50%;width:2.1rem;height:2.1rem;font-size:1rem;cursor:pointer;font-weight:700}
+.hero2 .t{font-size:1.4rem;font-weight:800}
+.hero2 .s{font-size:.78rem;opacity:.92;margin-top:.15rem}
+.gal{display:flex;gap:.5rem;padding:.75rem 1rem 0;overflow-x:auto;scrollbar-width:none}
+.gal::-webkit-scrollbar{display:none}
+.gal img{width:6.8rem;height:4.7rem;object-fit:cover;border-radius:.75rem;flex-shrink:0}
+.stat{display:flex;margin:.85rem 1rem 0;border:1.5px solid #f0e9e2;border-radius:14px}
+.stat>div{flex:1;text-align:center;padding:.8rem 0}
+.stat .v{font-weight:800;font-size:.95rem;color:#ea580c}
+.stat .k{font-size:.68rem;color:#899;margin-top:.15rem}
+.cta{margin:.85rem 1rem;background:#ea580c;color:#fff;border:none;border-radius:14px;text-align:center;font-weight:800;font-size:.95rem;padding:.95rem;width:calc(100% - 2rem);cursor:pointer;font-family:inherit}
+.cta.done{background:#16a34a}
+/* 탭바 + 중앙 QR (A) */
+.tab{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;display:flex;border-top:2px solid #f0e9e2;padding:.5rem 0 max(.7rem,env(safe-area-inset-bottom));z-index:50}
+.tab .ti{flex:1;text-align:center;font-size:.68rem;color:#889;padding-top:.3rem;font-weight:700;cursor:pointer;background:none;border:none;font-family:inherit}
+.tab .ti i{display:block;font-size:1.2rem;font-style:normal;margin-bottom:.15rem}
+.tab .ti.on{color:#ea580c;font-weight:800}
+.qr-fab{position:absolute;left:50%;top:-1.55rem;transform:translateX(-50%);width:3.6rem;height:3.6rem;border-radius:50%;background:#ea580c;border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 5px 14px rgba(234,88,12,.5);cursor:pointer}
+/* QR 오버레이 (A) */
+.ov{position:fixed;inset:0;background:#fff;z-index:100;display:none;flex-direction:column;align-items:center;text-align:center;max-width:430px;left:50%;transform:translateX(-50%)}
+.ov.on{display:flex}
+.ov .cls{position:absolute;top:.9rem;right:1rem;font-size:1.4rem;background:none;border:none;color:#999;cursor:pointer;z-index:2}
+.ov .ttl{font-weight:800;font-size:1rem;margin-top:3.4rem;color:#ea580c}
+.ov img.qim{width:13rem;height:13rem;margin-top:1.3rem}
+.ov .nm{font-weight:800;font-size:1.25rem;margin-top:1.1rem}
+.ov .gd{font-size:.82rem;color:#888;margin-top:.3rem}
+.ov .tm{margin-top:.85rem;font-size:.82rem;color:#ea580c;font-weight:800}
+.ov .sim{margin-top:1.5rem;background:#111;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:.88rem;padding:.9rem 1.4rem;cursor:pointer;font-family:inherit}
+.ov .brt{margin-top:auto;margin-bottom:1.4rem;font-size:.68rem;color:#aaa}
+.ov.center{justify-content:center;background:#fffaf5}
+.ov .big2{font-size:3.4rem}
+.ov .dt1{font-size:1.3rem;font-weight:800;margin-top:.8rem}
+.ov .dt2{font-size:.88rem;color:#ea580c;font-weight:800;margin-top:.45rem}
+.ov .dt3{background:#fff7ed;border-radius:10px;font-size:.78rem;padding:.55rem .85rem;margin-top:.85rem;color:#775}
+.ov .btn2{margin-top:1.4rem;background:#ea580c;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:.88rem;padding:.9rem 1.6rem;cursor:pointer;font-family:inherit}
+/* 발급 플로우 (B) */
+.iss{position:fixed;inset:0;background:#fff;z-index:105;display:none;flex-direction:column;max-width:430px;left:50%;transform:translateX(-50%)}
+.iss.on{display:flex}
+.iss .hd{display:flex;align-items:center;gap:.6rem;padding:1rem;font-weight:800;font-size:1rem;border-bottom:1.5px solid #f4f0ec}
+.iss .hd button{background:none;border:none;font-size:1.25rem;color:#999;cursor:pointer}
+.iss .bd{flex:1;overflow-y:auto;padding:1.4rem 1.2rem;display:none;flex-direction:column}
+.iss .bd.on{display:flex}
+.q{font-size:1.3rem;font-weight:800;line-height:1.45}
+.qs{font-size:.82rem;color:#788;margin-top:.45rem}
+.opt{border:2px solid #eee6e0;border-radius:16px;padding:.95rem;font-size:.95rem;font-weight:800;margin-top:.75rem;cursor:pointer;display:flex;align-items:center;gap:.65rem;background:#fff;font-family:inherit;text-align:left;width:100%}
+.opt.hero{background:#ea580c;border-color:#ea580c;color:#fff}
+/* 바코드 (D) */
+.bcov{position:fixed;inset:0;background:#fff;z-index:110;display:none;flex-direction:column;align-items:center;text-align:center;max-width:430px;left:50%;transform:translateX(-50%)}
+.bcov.on{display:flex}
+.bcov .cls{position:absolute;top:.9rem;right:1rem;font-size:1.4rem;background:none;border:none;color:#999;cursor:pointer}
+.bcov img.cimg{width:100%;height:8.5rem;object-fit:cover}
+.bcov h3{font-size:1.1rem;font-weight:800;margin-top:1rem}
+.bcov .pct2{font-size:.88rem;color:#ea580c;font-weight:800;margin-top:.25rem}
+.bcov .bars{width:14rem;height:5rem;margin-top:1.2rem;background:repeating-linear-gradient(90deg,#111 0 3px,#fff 3px 5px,#111 5px 10px,#fff 10px 12px,#111 12px 14px,#fff 14px 19px);border-radius:4px}
+.bcov .num{font-size:.75rem;letter-spacing:.35em;color:#333;margin-top:.45rem}
+.bcov .gd3{font-size:.8rem;color:#788;margin-top:.9rem;line-height:1.6}
+.callbtn{margin:.6rem 1rem 0;border:2px solid #ea580c;color:#ea580c;background:#fff;border-radius:14px;text-align:center;font-size:.88rem;font-weight:800;padding:.8rem;width:calc(100% - 2rem);cursor:pointer;font-family:inherit;display:block;text-decoration:none}
+.toast{position:fixed;bottom:7.4rem;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:.82rem;font-weight:700;border-radius:24px;padding:.7rem 1.25rem;z-index:200;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="demo-bar"><span>시안 E · 통합안 (D뼈대+A QR+C라이트+B부분)</span><a href="../concepts/index.html">다른 시안</a></div>
+
+  <!-- 홈 (D 뼈대) -->
+  <div class="view on" id="v-home">
+    <div class="gnb"><span>디지털 관광주민증</span><button class="aa" onclick="fontUp()">가⁺</button></div>
+    <div class="hello">김관광님, 무엇을 도와드릴까요?</div>
+    <div class="notice" onclick="toast('공지사항')">📢 7월 반값여행(영월 별빛투어) 신청이 시작되었습니다</div>
+    <button class="big hero" onclick="openQr()"><span class="ic">▦</span><div><div class="tt">주민증 QR 보여주기</div><div class="ds">가맹점 할인 받을 때 · 1탭</div></div><span class="ar">›</span></button>
+    <button class="big" onclick="go('bene',tabBtn('bene'))"><span class="ic">🎁</span><div><div class="tt">내 혜택 · 쿠폰 보기</div><div class="ds">사용 가능 쿠폰 3장</div></div><span class="ar">›</span></button>
+    <button class="big" onclick="go('explore',null)"><span class="ic">🗺️</span><div><div class="tt">지역 둘러보고 발급받기</div><div class="ds">30초면 새 지역 주민증 발급</div></div><span class="ar">›</span></button>
+    <div class="stcard" onclick="go('card',tabBtn('card'))">
+      <div class="t"><span>🏅 평창 스탬프 투어</span><span id="homeStampCnt">4/9</span></div>
+      <div class="stbar"><i id="homeStBar" style="width:44%"></i></div>
+      <div class="cap" id="homeStCap">5개만 더 모으면 반값여행 우선 배정!</div>
+    </div>
+    <div class="secttl">최근 이용</div>
+    <div class="row"><img class="th" src="../assets/img/scene/resort.svg" alt=""><div><div class="tt">알펜시아 리조트</div><div class="ds">7월 2일 · 50% 할인 (64,000원 아낌)</div></div></div>
+  </div>
+
+  <!-- 혜택 (D+이미지) -->
+  <div class="view" id="v-bene">
+    <div class="gnb"><span>내 혜택 · 쿠폰</span><button class="aa" onclick="fontUp()">가⁺</button></div>
+    <div class="cpn"><img src="../assets/img/scene/resort.svg" alt=""><div class="bd"><div class="pct">50%</div><div class="tt">알펜시아 리조트 숙박권</div><div class="ds">~2026.08.31 · 평창군</div></div><button class="use" onclick="openBc(0)">사용</button></div>
+    <div class="cpn"><img src="../assets/img/scene/sheep.svg" alt=""><div class="bd"><div class="pct">30%</div><div class="tt">대관령 양떼목장 입장권</div><div class="ds">~2026.09.30 · 평창군</div></div><button class="use" onclick="openBc(1)">사용</button></div>
+    <div class="cpn"><img src="../assets/img/scene/railbike.svg" alt=""><div class="bd"><div class="pct">40%</div><div class="tt">정선 레일바이크</div><div class="ds">~2026.07.31 · 정선군</div></div><button class="use" onclick="openBc(2)">사용</button></div>
+    <div class="secttl">반값여행</div>
+    <div class="row" onclick="toast('반값여행 신청')"><img class="th" src="../assets/img/scene/stars.svg" alt=""><div><div class="tt">7월 영월 별빛투어</div><div class="ds">교통+숙박 50% · 선착순 200명</div></div><span class="rt">신청</span></div>
+  </div>
+
+  <!-- 주민증 (A 카드 + C 스탬프) -->
+  <div class="view" id="v-card">
+    <div class="gnb"><span>나의 주민증</span><button class="aa" onclick="fontUp()">가⁺</button></div>
+    <div class="idcard" onclick="openQr()">
+      <div class="deco"></div><div class="emb">🏔️</div>
+      <div class="chip" id="useCnt">이용 12회</div>
+      <div class="rg" id="cardRg">평창군 디지털 관광주민증</div>
+      <div class="nm">김관광</div>
+      <div class="no" id="cardNo">NO. DT-2026-001234 · 발급 2025.03.26 · 탭하면 QR</div>
+    </div>
+    <button class="swbtn" onclick="swapCard()">🔄 다른 지역 주민증 보기 (정선군)</button>
+    <div class="secttl">🏅 평창 스탬프 투어 <span style="color:#ea580c" id="stampCnt">4/9</span></div>
+    <div class="stamp-wrap" id="stampGrid"></div>
+    <div class="reward"><div class="t">🏆 9개 완주 보상</div><div class="s">반값여행 우선 배정권 + 평창 굿즈 패키지</div></div>
+    <div class="secttl">⏰ 이번 시즌 미션</div>
+    <div class="msn" onclick="toast('송어축제 미션 상세')"><img src="../assets/img/scene/fishfest.svg" alt=""><div><div class="tt">평창 송어축제 방문</div><div class="rw">+한정 스탬프 · ~2월 · 진부면</div></div><button class="go" onclick="event.stopPropagation();openQr()">도전</button></div>
+    <div class="msn" onclick="toast('카페 미션 상세')"><img src="../assets/img/scene/cafe.svg" alt=""><div><div class="tt">평창 카페에서 QR 사용하기</div><div class="rw">+감자밭카페 스탬프</div></div><button class="go" onclick="event.stopPropagation();openQr()">도전</button></div>
+  </div>
+
+  <!-- 지역 둘러보기 (B 부분: 리스트 → 랜딩) -->
+  <div class="view" id="v-explore">
+    <div class="gnb"><span>지역 둘러보기</span><button class="aa" onclick="fontUp()">가⁺</button></div>
+    <div class="row" onclick="go('region',null)"><img class="th" src="../assets/img/scene/resort.svg" alt=""><div><div class="tt">평창군</div><div class="ds">가맹점 128 · 최대 50%</div></div><span class="rt">발급됨</span></div>
+    <div class="row" onclick="toast('정선군 랜딩')"><img class="th" src="../assets/img/scene/railbike.svg" alt=""><div><div class="tt">정선군</div><div class="ds">가맹점 96 · 최대 40%</div></div><span class="rt">발급됨</span></div>
+    <div class="row" onclick="toast('영월군 랜딩')"><img class="th" src="../assets/img/scene/stars.svg" alt=""><div><div class="tt">영월군</div><div class="ds">가맹점 74 · 최대 30%</div></div><span class="rt" style="color:#889">발급받기</span></div>
+    <div class="row" onclick="toast('강릉시 랜딩')"><img class="th" src="../assets/img/scene/beach.svg" alt=""><div><div class="tt">강릉시</div><div class="ds">가맹점 152 · 최대 35%</div></div><span class="rt" style="color:#889">발급받기</span></div>
+  </div>
+
+  <!-- 지역 랜딩 (B) -->
+  <div class="view" id="v-region">
+    <div class="hero2">
+      <button class="bk" onclick="go('explore',null)">‹</button>
+      <div class="t">평창군 🏔️</div><div class="s">디지털 관광주민이 되면 여기가 반값</div>
+    </div>
+    <div class="gal">
+      <img src="../assets/img/scene/resort.svg" alt="알펜시아"><img src="../assets/img/scene/sheep.svg" alt="양떼목장"><img src="../assets/img/scene/fishfest.svg" alt="송어축제"><img src="../assets/img/scene/hanwoo.svg" alt="한우마을">
+    </div>
+    <div class="stat">
+      <div><div class="v">128</div><div class="k">가맹점</div></div>
+      <div><div class="v">최대 50%</div><div class="k">할인율</div></div>
+      <div><div class="v">3.2만</div><div class="k">관광주민</div></div>
+    </div>
+    <button class="cta" onclick="openIssue()">평창군 주민증 발급받기 (30초)</button>
+    <div class="secttl">주민증으로 받는 혜택</div>
+    <div class="row"><img class="th" src="../assets/img/scene/resort.svg" alt=""><div><div class="tt">알펜시아 리조트 50%</div><div class="ds">숙박 · 대관령면</div></div></div>
+    <div class="row"><img class="th" src="../assets/img/scene/hanwoo.svg" alt=""><div><div class="tt">평창 한우마을 20%</div><div class="ds">식사 · 평창읍</div></div></div>
+  </div>
+
+  <!-- 전체메뉴 (D) -->
+  <div class="view" id="v-menu">
+    <div class="gnb"><span>전체메뉴</span><button class="aa" onclick="fontUp()">가⁺</button></div>
+    <div class="row" onclick="toast('이용내역')"><span class="ic2">📋</span><div class="tt">이용 내역</div><span class="rt">97,000원 아낌</span></div>
+    <div class="row" onclick="toast('홈 화면 위젯 안내')"><span class="ic2">▦</span><div><div class="tt">홈 화면 QR 위젯 추가</div><div class="ds">앱을 열지 않고 QR 제시</div></div></div>
+    <div class="row" onclick="toast('이벤트')"><span class="ic2">🎪</span><div class="tt">이벤트</div></div>
+    <div class="row" onclick="toast('서비스 소개')"><span class="ic2">ℹ️</span><div class="tt">서비스 소개</div></div>
+    <div class="row" onclick="fontUp()"><span class="ic2">🔎</span><div class="tt">글자 크기 바꾸기</div><span class="rt" id="fontState">보통</span></div>
+    <div class="row" onclick="toast('설정')"><span class="ic2">⚙️</span><div class="tt">설정</div></div>
+    <a class="callbtn" href="tel:15880000">📞 사용이 어려우면 전화 문의 (1588-0000)</a>
+  </div>
+
+  <!-- 탭바: D 골격 + A 중앙 QR -->
+  <div class="tab">
+    <button class="ti on" data-v="home" onclick="go('home',this)"><i>🏠</i>홈</button>
+    <button class="ti" data-v="bene" onclick="go('bene',this)"><i>🎁</i>혜택</button>
+    <button class="ti" style="visibility:hidden">.</button>
+    <button class="ti" data-v="card" onclick="go('card',this)"><i>🪪</i>주민증</button>
+    <button class="ti" data-v="menu" onclick="go('menu',this)"><i>☰</i>전체메뉴</button>
+    <button class="qr-fab" onclick="openQr()">▦</button>
+  </div>
+
+  <!-- QR 전체화면 (A) → 스캔 시 스탬프 적립 (C) -->
+  <div class="ov" id="ovQr">
+    <button class="cls" onclick="closeQr()">✕</button>
+    <div class="ttl">나의 통합 관광주민증</div>
+    <img class="qim" src="../assets/img/qr-code.svg" alt="QR코드">
+    <div class="nm">김관광님</div>
+    <div class="gd">QR코드를 가맹점에 제시하세요</div>
+    <div class="tm" id="qrTimer">00:60 후 자동 갱신 ↻</div>
+    <button class="sim" onclick="scanDone()">📷 가맹점 스캔 시뮬레이션</button>
+    <div class="brt">화면 밝기가 자동으로 최대로 조정되었습니다</div>
+  </div>
+
+  <!-- 스캔 완료 + 적립 -->
+  <div class="ov center" id="ovDone">
+    <div class="big2">✅</div>
+    <div class="dt1">할인 적용 완료</div>
+    <div class="dt2" id="doneTxt">-</div>
+    <div class="dt3" id="doneSub">-</div>
+    <button class="btn2" onclick="document.getElementById('ovDone').classList.remove('on')">확인</button>
+  </div>
+
+  <!-- 발급 플로우 (B: 30초 퍼널) -->
+  <div class="iss" id="ovIssue">
+    <div class="hd"><button onclick="document.getElementById('ovIssue').classList.remove('on')">✕</button><span id="issTtl">주민증 발급 (1/2)</span></div>
+    <div class="bd on" id="is1">
+      <div class="q">본인 확인이<br>필요해요</div>
+      <div class="qs">통신사 인증(PASS) 한 번이면 끝나요</div>
+      <button class="opt hero" onclick="issStep(2)">📱 휴대폰으로 인증하기</button>
+      <button class="opt" onclick="issStep(2)">🔐 간편인증 (카카오·네이버)</button>
+      <label style="font-size:.78rem;color:#667;margin-top:1rem;display:flex;gap:.45rem;align-items:center"><input type="checkbox" checked> 약관 전체 동의</label>
+    </div>
+    <div class="bd" id="is2">
+      <div style="margin:auto;text-align:center">
+        <div class="big2" style="font-size:3.4rem">🎉</div>
+        <div class="q" style="margin-top:.8rem">평창군 관광주민이<br>되셨어요!</div>
+        <div style="display:inline-block;background:#fff7ed;color:#ea580c;font-size:.82rem;font-weight:800;border-radius:8px;padding:.45rem .75rem;margin-top:.85rem">웰컴 쿠폰 3장 도착</div>
+      </div>
+      <button class="cta" style="margin:1.2rem 0 0;width:100%" onclick="issFinish()">바로 QR 보여주기</button>
+    </div>
+  </div>
+
+  <!-- 쿠폰 바코드 (D) -->
+  <div class="bcov" id="bcOv">
+    <button class="cls" onclick="document.getElementById('bcOv').classList.remove('on')">✕</button>
+    <img class="cimg" id="bcImg" src="../assets/img/scene/resort.svg" alt="">
+    <h3 id="bcTitle">-</h3>
+    <div class="pct2" id="bcPct">-</div>
+    <div class="bars"></div>
+    <div class="num">8 809462 03214</div>
+    <div class="gd3">이 화면을 가게 직원에게 보여주세요<br>화면이 자동으로 밝아집니다</div>
+  </div>
+
+  <div class="toast" id="toastEl"></div>
+</div>
+<script>
+/* ── 상태 (C 라이트: 스탬프만) ── */
+const DEF={use:12,stamps:[
+ {e:'🎿',n:'알펜시아',got:true},{e:'🐑',n:'양떼목장',got:true},{e:'🎣',n:'송어축제',got:true},
+ {e:'🍜',n:'한우마을',got:true},{e:'☕',n:'감자밭카페',got:false},{e:'🏔️',n:'발왕산',got:false},
+ {e:'🛶',n:'동강래프팅',got:false},{e:'🌸',n:'육백마지기',got:false},{e:'🎁',n:'?',got:false}]};
+let S=JSON.parse(localStorage.getItem('dtidE')||'null')||JSON.parse(JSON.stringify(DEF));
+function save(){localStorage.setItem('dtidE',JSON.stringify(S));}
+function render(){
+  const got=S.stamps.filter(s=>s.got).length;
+  document.getElementById('stampGrid').innerHTML=S.stamps.map(s=>`<div class="stamp ${s.got?'got':'no'}"><span class="e">${s.e}</span>${s.n}</div>`).join('');
+  document.getElementById('stampCnt').textContent=got+'/9';
+  document.getElementById('homeStampCnt').textContent=got+'/9';
+  document.getElementById('homeStBar').style.width=Math.round(got/9*100)+'%';
+  document.getElementById('homeStCap').textContent=got>=9?'완주! 반값여행 우선 배정 대상입니다 🎉':(9-got)+'개만 더 모으면 반값여행 우선 배정!';
+  document.getElementById('useCnt').textContent='이용 '+S.use+'회';
+}
+/* ── 내비 ── */
+function go(v,btn){
+  document.querySelectorAll('.view').forEach(e=>e.classList.remove('on'));
+  document.getElementById('v-'+v).classList.add('on');
+  document.querySelectorAll('.tab .ti').forEach(e=>e.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  if(v==='explore'||v==='region')tabBtn('home').classList.add('on');
+}
+function tabBtn(v){return document.querySelector('[data-v='+v+']');}
+/* ── 글자 크기 (D) ── */
+const F=['보통','크게','아주 크게'];let fi=+(localStorage.getItem('dtidE_f')||0);
+function applyFont(){document.documentElement.className=fi===1?'f2':fi===2?'f3':'';const el=document.getElementById('fontState');if(el)el.textContent=F[fi];}
+function fontUp(){fi=(fi+1)%3;localStorage.setItem('dtidE_f',fi);applyFont();toast('글자 크기: '+F[fi]);}
+applyFont();
+/* ── QR (A) + 적립 (C) ── */
+let tmr=null;
+function openQr(){
+  document.getElementById('ovQr').classList.add('on');
+  let s=60;const el=document.getElementById('qrTimer');
+  clearInterval(tmr);
+  tmr=setInterval(()=>{s--;if(s<=0){s=60;toast('QR이 갱신되었습니다');}el.textContent='00:'+String(s).padStart(2,'0')+' 후 자동 갱신 ↻';},1000);
+}
+function closeQr(){document.getElementById('ovQr').classList.remove('on');clearInterval(tmr);}
+function scanDone(){
+  closeQr();
+  S.use++;
+  const st=S.stamps.find(x=>!x.got);
+  let msg='알펜시아 리조트 50% 할인 (-64,000원)';
+  let sub='이용내역에 자동 적립되었습니다 ('+S.use+'회차)';
+  if(st){st.got=true;sub='🏅 '+st.n+' 스탬프 획득! '+(9-S.stamps.filter(x=>x.got).length)+'개 남음';}
+  save();render();
+  document.getElementById('doneTxt').textContent=msg;
+  document.getElementById('doneSub').textContent=sub;
+  document.getElementById('ovDone').classList.add('on');
+}
+/* ── 카드 전환 ── */
+let cardIdx=0;
+const CARDS=[['평창군 디지털 관광주민증','NO. DT-2026-001234 · 발급 2025.03.26 · 탭하면 QR','정선군','🏔️'],['정선군 디지털 관광주민증','NO. DT-2026-001235 · 발급 2025.11.02 · 탭하면 QR','평창군','⛰️']];
+function swapCard(){
+  cardIdx=1-cardIdx;
+  document.getElementById('cardRg').textContent=CARDS[cardIdx][0];
+  document.getElementById('cardNo').textContent=CARDS[cardIdx][1];
+  document.querySelector('.idcard .emb').textContent=CARDS[cardIdx][3];
+  document.querySelector('.swbtn').textContent='🔄 다른 지역 주민증 보기 ('+CARDS[cardIdx][2]+')';
+}
+/* ── 발급 (B) ── */
+function openIssue(){document.getElementById('ovIssue').classList.add('on');issStep(1);}
+function issStep(n){[1,2].forEach(i=>document.getElementById('is'+i).classList.toggle('on',i===n));document.getElementById('issTtl').textContent=n===1?'주민증 발급 (1/2)':'발급 완료 (2/2)';}
+function issFinish(){document.getElementById('ovIssue').classList.remove('on');go('card',tabBtn('card'));toast('웰컴 쿠폰 3장이 지급되었습니다');}
+/* ── 바코드 (D) ── */
+const BC=[['resort.svg','알펜시아 리조트 숙박권','50% 할인 · 평창군 · ~2026.08.31'],['sheep.svg','대관령 양떼목장 입장권','30% 할인 · 평창군 · ~2026.09.30'],['railbike.svg','정선 레일바이크','40% 할인 · 정선군 · ~2026.07.31']];
+function openBc(i){
+  document.getElementById('bcImg').src='../assets/img/scene/'+BC[i][0];
+  document.getElementById('bcTitle').textContent=BC[i][1];
+  document.getElementById('bcPct').textContent=BC[i][2];
+  document.getElementById('bcOv').classList.add('on');
+}
+let tt=null;
+function toast(m){
+  const t=document.getElementById('toastEl');
+  t.textContent=m+' (데모)';t.classList.add('on');
+  clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),1600);
+}
+render();
+</script>
+</body>
+</html>
