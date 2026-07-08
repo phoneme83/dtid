@@ -470,3 +470,7 @@ body.theme-d.dtd-big{zoom:1.15}
 .theme-d .ap-date-hint{min-height:24px;font-size:14.5px;font-weight:700;line-height:1.6;color:#6b7280;margin-top:8px}
 .theme-d .ap-date-hint.ok{color:#0f766e}
 .theme-d .ap-date-hint.warn{color:#b91c1c}
+
+/* ── 관리자 화면 링크 ── */
+.theme-d .ap-adm-link{display:block;text-align:center;margin-top:16px;font-size:13.5px;font-weight:700;color:#6b7280;text-decoration:underline;min-height:44px;line-height:44px}
+.theme-d .ap-adm-link:hover{color:#0f766e}

@@ -6,7 +6,7 @@
 <title>디지털관광주민증 - 반값여행 통합신청 · 시안 D</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/common.css?v=20260707f">
-<link rel="stylesheet" href="theme.css?v=d4">
+<link rel="stylesheet" href="theme.css?v=d5">
 </head>
 <body class="theme-d">
 
@@ -62,6 +62,7 @@
     </div>
     <button class="ap-big hero" onclick="apStart()">🧳 반값여행 신청 시작하기</button>
     <button class="ap-big" id="apMyBtn" onclick="apGo(6)">📄 나의 신청 내역 보기</button>
+    <a class="ap-adm-link" href="t50-admin.html">🖥 지자체 관리시스템(관리자 화면) 프로토타입 열기 ›</a>
   </section>
 
   <!-- [1] 본인인증 -->
@@ -148,6 +149,7 @@
     <h2 class="ap-q">나의 신청 내역</h2>
     <div id="apList"></div>
     <button class="ap-big" onclick="apGo(0)">‹ 신청 안내로</button>
+    <a class="ap-adm-link" href="t50-admin.html">🖥 심사는 지자체 관리시스템(관리자 화면)에서 진행됩니다 — 열기 ›</a>
   </section>
 
 </div>
@@ -238,6 +240,7 @@ const AP_ST_LABEL={
   rejected:{t:'반려',lane:'지자체',ic:'⛔'},
   notified:{t:'결과 통보 완료',lane:'공사',ic:'📨'},
   refund_req:{t:'환급 신청 접수',lane:'공사',ic:'🧾'},
+  refund_fix:{t:'증빙 보완 요청',lane:'지자체',ic:'✏️'},
   refund_ok:{t:'환급 승인',lane:'지자체',ic:'💰'}
 };
 const AP_FLOW=['received','review','approved','notified','refund_req','refund_ok'];
@@ -375,6 +378,7 @@ function apSubmit(){
   list.unshift({no:no,region:apSel,sido:r?r.sido:'',start:d1,end:d2,period:pd,
     people:document.getElementById('apPeople').value,
     plan:document.getElementById('apPlan').value.trim(),
+    applicant:user?user.name:'',
     status:'received',ts:new Date().toISOString().slice(0,10)});
   apSave(list);
   document.getElementById('apDoneNo').textContent='접수번호 '+no;
@@ -397,18 +401,26 @@ function apRenderList(){
       return '<span class="ap-tl'+(on?' on':'')+(lb===AP_ST_LABEL.rejected?' bad':'')+'">'+lb.ic+' '+lb.t+'<small>'+lb.lane+'</small></span>';
     }).join('<span class="ap-tl-ar">›</span>');
     let act='';
-    if(a.status==='received')act='<button class="ap-sm" onclick="apAdvance('+i+',\'review\')">▶ 지자체 검토 시작 (시뮬레이션)</button>';
-    else if(a.status==='review')act='<button class="ap-sm" onclick="apAdvance('+i+',\'approved\')">▶ 승인 (시뮬레이션)</button>'+
-      '<button class="ap-sm bad" onclick="apAdvance('+i+',\'rejected\')">반려 (시뮬레이션)</button>';
-    else if(a.status==='approved')act='<button class="ap-sm" onclick="apAdvance('+i+',\'notified\')">▶ 결과 통보 받기 (시뮬레이션)</button>';
-    else if(a.status==='notified')act='<div class="ap-note">💳 승인 금액 상품권 구입·충전은 <b>지역화폐 앱</b>에서 진행됩니다. 여행 후 증빙을 작성해 환급을 신청하세요.</div>'+
+    if(a.status==='received'||a.status==='review')
+      act='<div class="ap-note">🏛 <b>지자체(관리시스템)</b>에서 신청자격·계획을 심사하고 있습니다. 결과가 나오면 이곳에 표시됩니다.</div>';
+    else if(a.status==='approved')
+      act='<div class="ap-note">✅ 지자체 승인이 완료되었습니다'+(a.amount?' (지원금 '+a.amount.toLocaleString('ko-KR')+'원)':'')+'. 곧 결과 통보가 도착합니다.</div>';
+    else if(a.status==='notified')
+      act='<div class="ap-note">📨 승인 결과가 통보되었습니다'+(a.amount?' — 지원금 <b>'+a.amount.toLocaleString('ko-KR')+'원</b>':'')+'. 상품권 구입·충전은 <b>지역화폐 앱</b>에서 진행되며, 여행 후 증빙을 작성해 환급을 신청하세요.</div>'+
       '<button class="ap-sm" onclick="apAdvance('+i+',\'refund_req\')">🧾 증빙 작성 · 환급 신청</button>';
-    else if(a.status==='refund_req')act='<button class="ap-sm" onclick="apAdvance('+i+',\'refund_ok\')">▶ 지자체 증빙 검토 · 승인 (시뮬레이션)</button>';
-    else if(a.status==='refund_ok')act='<div class="ap-note">✅ 환급이 승인되었습니다. 환급 금액은 <b>지역화폐 앱</b>에 충전됩니다.</div>';
-    else if(a.status==='rejected')act='<div class="ap-note bad">신청이 반려되었습니다. (모의 사유: 신청자격 미충족) 다른 지역으로 다시 신청할 수 있습니다.</div>';
-    const refund=(a.status==='refund_req'||a.status==='refund_ok')?
+    else if(a.status==='refund_req')
+      act='<div class="ap-note">🧾 환급 신청이 접수되어 <b>지자체(관리시스템)</b>가 증빙을 검토 중입니다.</div>';
+    else if(a.status==='refund_fix')
+      act='<div class="ap-note bad">✏️ 지자체가 증빙 보완을 요청했습니다'+(a.fixReason?' — 사유: '+a.fixReason:'')+'</div>'+
+      '<button class="ap-sm" onclick="apAdvance('+i+',\'refund_req\')">증빙 보완 · 환급 재신청</button>';
+    else if(a.status==='refund_ok')
+      act='<div class="ap-note">✅ 환급이 승인되었습니다'+(a.refundAmount?' — <b>'+a.refundAmount.toLocaleString('ko-KR')+'원</b>':'')+'. 환급 금액은 <b>지역화폐 앱</b>에 충전됩니다.</div>';
+    else if(a.status==='rejected')
+      act='<div class="ap-note bad">⛔ 신청이 반려되었습니다'+(a.rejectReason?' — 사유: '+a.rejectReason:'')+'. 다른 지역으로 다시 신청할 수 있습니다.</div>';
+    const refund=(a.status==='refund_req'||a.status==='refund_fix'||a.status==='refund_ok')?
       '<div class="ap-tl-row">'+
       '<span class="ap-tl on">'+AP_ST_LABEL.refund_req.ic+' '+AP_ST_LABEL.refund_req.t+'<small>공사</small></span><span class="ap-tl-ar">›</span>'+
+      (a.status==='refund_fix'?'<span class="ap-tl bad on">'+AP_ST_LABEL.refund_fix.ic+' '+AP_ST_LABEL.refund_fix.t+'<small>지자체</small></span><span class="ap-tl-ar">›</span>':'')+
       '<span class="ap-tl'+(a.status==='refund_ok'?' on':'')+'">'+AP_ST_LABEL.refund_ok.ic+' '+AP_ST_LABEL.refund_ok.t+'<small>지자체</small></span></div>':'';
     return '<div class="ap-card"><div class="ap-card-h"><b>'+a.region+'</b> <span>'+a.sido+'</span><em>'+a.no+'</em></div>'+
       '<div class="ap-card-d">'+a.start+' ~ '+a.end+' · '+a.people+'명 · 신청일 '+a.ts+
@@ -435,8 +447,15 @@ function apBadge(){
 if(user){
   setActiveBottomNav('');
   apBadge();
+  /* 관리자 화면(다른 탭)에서 심사 처리하면 내역을 자동 갱신 */
+  window.addEventListener('storage',function(e){
+    if(e.key===AP_KEY){
+      apBadge();
+      if(document.getElementById('apV6').classList.contains('on'))apRenderList();
+    }
+  });
 }
 </script>
-<script src="theme.js?v=d4"></script>
+<script src="theme.js?v=d5"></script>
 </body>
 </html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>반값여행 지자체 관리시스템 · 시안 D</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f5f9;color:#0f172a;-webkit-font-smoothing:antialiased}
+.adm-top{background:#1e293b;color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.adm-top .lg{background:#0f766e;border-radius:8px;font-size:12px;font-weight:800;padding:4px 9px}
+.adm-top h1{font-size:17px;font-weight:800}
+.adm-top .who{margin-left:auto;font-size:12.5px;color:#cbd5e1}
+.adm-top a{color:#94a3b8;font-size:12.5px;text-decoration:underline}
+.adm-note{background:#fef9c3;color:#713f12;font-size:12.5px;padding:8px 18px;line-height:1.6}
+.wrap{max-width:920px;margin:0 auto;padding:18px 16px 60px}
+.bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.bar select{min-height:44px;border:2px solid #cbd5e1;border-radius:10px;font-size:14.5px;font-weight:700;padding:6px 12px;font-family:inherit;background:#fff;color:#0f172a}
+.bar .rf{margin-left:auto;display:flex;gap:8px}
+.bar button{min-height:44px;border-radius:10px;border:2px solid #cbd5e1;background:#fff;font-size:13.5px;font-weight:700;padding:0 14px;font-family:inherit;cursor:pointer;color:#334155}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.st{background:#fff;border-radius:14px;padding:14px 16px;border:1px solid #e2e8f0}
+.st .n{font-size:26px;font-weight:800;color:#0f766e}
+.st .l{font-size:12.5px;font-weight:700;color:#64748b;margin-top:2px}
+.card{background:#fff;border-radius:16px;border:1px solid #e2e8f0;padding:16px 18px;margin-bottom:12px}
+.card .hd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.card .hd b{font-size:17px}
+.card .hd .no{font-size:12.5px;font-weight:700;color:#0f766e}
+.card .hd .bdg{margin-left:auto;font-size:12px;font-weight:800;border-radius:8px;padding:4px 10px}
+.b-received{background:#e0f2fe;color:#075985}.b-review{background:#fef3c7;color:#92400e}
+.b-approved{background:#dcfce7;color:#166534}.b-rejected{background:#fee2e2;color:#991b1b}
+.b-notified{background:#d9f0ec;color:#115e59}.b-refund_req{background:#ede9fe;color:#5b21b6}
+.b-refund_fix{background:#ffedd5;color:#9a3412}.b-refund_ok{background:#0f766e;color:#fff}
+.card .dt{font-size:13.5px;color:#334155;margin-top:8px;line-height:1.7}
+.card .dt small{color:#94a3b8}
+.chk{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chk span{font-size:12px;font-weight:700;border-radius:8px;padding:5px 10px;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.chk span.bad{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+.plan{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;font-size:13px;color:#475569;margin-top:10px;line-height:1.6}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.acts button{min-height:46px;border-radius:10px;font-size:14px;font-weight:800;padding:0 16px;font-family:inherit;cursor:pointer;border:2px solid #0f766e;background:#0f766e;color:#fff}
+.acts button.ln{background:#fff;color:#0f766e}
+.acts button.bad{border-color:#b91c1c;background:#fff;color:#b91c1c}
+.acts .wait{font-size:13px;color:#64748b;font-weight:700;align-self:center}
+.rsn{width:100%;margin-top:10px;border:2px solid #cbd5e1;border-radius:10px;font-size:14px;padding:10px 12px;font-family:inherit;min-height:64px;display:none}
+.rsn.on{display:block}
+.log{margin-top:10px;font-size:12px;color:#94a3b8;line-height:1.7;border-top:1px dashed #e2e8f0;padding-top:8px}
+.empty{text-align:center;color:#64748b;font-size:15px;padding:60px 0;line-height:1.8}
+.empty a{color:#0f766e;font-weight:800}
+.toastA{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,.9);color:#fff;font-size:13.5px;font-weight:700;border-radius:24px;padding:11px 20px;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap;z-index:99}
+.toastA.on{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="adm-top">
+  <span class="lg">관리</span>
+  <h1>대한민국 반값여행 · 지자체 관리시스템</h1>
+  <span class="who">담당자: 지자체 심사자(모의)</span>
+  <a href="t50-apply.html">← 대민시스템(신청자 화면)</a>
+</div>
+<div class="adm-note">⚠ 프로토타입: 공사(대민시스템)에서 접수된 통합신청 건을 지자체가 심사하는 화면입니다. 처리 결과(승인/반려·결과통보·환급심사)는 신청자 화면의 "나의 신청 내역"에 즉시 반영됩니다.</div>
+
+<div class="wrap">
+  <div class="bar">
+    <select id="admRegion" onchange="admRender()"><option value="">전체 지자체</option></select>
+    <select id="admStatus" onchange="admRender()">
+      <option value="">전체 상태</option>
+      <option value="received">접수 대기</option>
+      <option value="review">검토중</option>
+      <option value="approved">승인(통보 대기)</option>
+      <option value="refund_req">환급 심사 대기</option>
+    </select>
+    <div class="rf">
+      <button onclick="admRender()">↻ 새로고침</button>
+      <button onclick="admReset()">데모 데이터 초기화</button>
+    </div>
+  </div>
+  <div class="stats" id="admStats"></div>
+  <div id="admList"></div>
+</div>
+
+<div class="toastA" id="admToast"></div>
+
+<script src="../site-assets/data.js?v=20260707f"></script>
+<script>
+/* 대민시스템(t50-apply.html)과 같은 저장소를 공유한다 */
+const AP_KEY='dtidD_t50Applies';
+const ADM_ST={
+  received:'접수 대기',review:'검토중',approved:'승인 (통보 대기)',rejected:'반려',
+  notified:'결과 통보 완료',refund_req:'환급 심사 대기',refund_fix:'증빙 보완 요청',refund_ok:'환급 완료'
+};
+const ADM_ADDR='강원특별자치도 춘천시 (신청자 주민등록상 주소지)';
+let admToastTimer=null;
+
+function admLoad(){try{return JSON.parse(localStorage.getItem(AP_KEY)||'[]');}catch(e){return[];}}
+function admSave(l){localStorage.setItem(AP_KEY,JSON.stringify(l));}
+function admToast(m){
+  const t=document.getElementById('admToast');
+  t.textContent=m;t.classList.add('on');
+  clearTimeout(admToastTimer);
+  admToastTimer=setTimeout(()=>t.classList.remove('on'),2200);
+}
+function admFmt(d){return d?d.replace(/-/g,'.'):'';}
+function admAmt(a){return (a.people==='6'?6:Number(a.people))*50000;}
+function admWon(n){return n.toLocaleString('ko-KR')+'원';}
+
+function admRegionOpts(){
+  const sel=document.getElementById('admRegion');
+  const regions=[...new Set(admLoad().map(a=>a.region))];
+  const cur=sel.value;
+  sel.innerHTML='<option value="">전체 지자체</option>'+regions.map(r=>'<option value="'+r+'"'+(r===cur?' selected':'')+'>'+r+'</option>').join('');
+}
+
+function admStats(list){
+  const c=k=>list.filter(a=>a.status===k).length;
+  document.getElementById('admStats').innerHTML=
+    '<div class="st"><div class="n">'+c('received')+'</div><div class="l">접수 대기</div></div>'+
+    '<div class="st"><div class="n">'+c('review')+'</div><div class="l">검토중</div></div>'+
+    '<div class="st"><div class="n">'+(c('approved')+c('notified'))+'</div><div class="l">승인</div></div>'+
+    '<div class="st"><div class="n">'+c('rejected')+'</div><div class="l">반려</div></div>'+
+    '<div class="st"><div class="n">'+(c('refund_req')+c('refund_fix'))+'</div><div class="l">환급 심사</div></div>'+
+    '<div class="st"><div class="n">'+c('refund_ok')+'</div><div class="l">환급 완료</div></div>';
+}
+
+function admRender(){
+  admRegionOpts();
+  const all=admLoad();
+  admStats(all);
+  const rg=document.getElementById('admRegion').value;
+  const st=document.getElementById('admStatus').value;
+  const list=all.map((a,i)=>({a:a,i:i})).filter(x=>(!rg||x.a.region===rg)&&(!st||x.a.status===st));
+  const el=document.getElementById('admList');
+  if(!list.length){
+    el.innerHTML='<div class="empty">표시할 신청 건이 없습니다.<br><a href="t50-apply.html">신청자 화면(대민시스템)</a>에서 먼저 통합신청을 접수해 보세요.</div>';
+    return;
+  }
+  el.innerHTML=list.map(x=>{
+    const a=x.a,i=x.i;
+    const amt=a.amount||admAmt(a);
+    /* 자격 자동 점검: 관외거주(주소지 시·도 ≠ 신청 지역 시·도), 여행기간 적합(접수 시 검증됨) */
+    const chk='<div class="chk"><span>✔ 관외거주 충족 — 주소지 강원 / 신청지 '+a.sido+'</span>'+
+      (a.period?'<span>✔ 여행기간 적합 — 가능기간('+admFmt(a.period.s)+'~'+admFmt(a.period.e)+') 내 일정</span>':'')+'</div>';
+    let acts='',log='';
+    if(a.status==='received')
+      acts='<button onclick="admDo('+i+',\'review\')">검토 시작</button>';
+    else if(a.status==='review')
+      acts='<button onclick="admApprove('+i+')">✅ 승인 — 지원금 '+admWon(amt)+'</button>'+
+        '<button class="bad" onclick="admRsn('+i+',\'rejected\')">⛔ 반려</button>'+
+        '<textarea class="rsn" id="rsn'+i+'" placeholder="반려 사유를 입력하세요 (예: 신청자격 미충족, 여행 계획 불명확)"></textarea>';
+    else if(a.status==='approved')
+      acts='<button onclick="admDo('+i+',\'notified\')">📨 결과 통보 발송 — CI·승인 금액을 대민시스템/지역화폐로 전달</button>';
+    else if(a.status==='notified')
+      acts='<span class="wait">여행 진행 — 신청자의 증빙 작성·환급 신청을 기다리는 중</span>';
+    else if(a.status==='refund_req')
+      acts='<div class="plan">🧾 제출 증빙(모의): 지역화폐 결재내역 '+(a.people||1)+'건 · 사용액 '+admWon(amt*2)+' · CI 대조 일치</div>'+
+        '<button onclick="admRefundOk('+i+')">💰 환급 승인 — '+admWon(amt)+' 충전 지시</button>'+
+        '<button class="bad" onclick="admRsn('+i+',\'refund_fix\')">✏️ 증빙 보완 요청</button>'+
+        '<textarea class="rsn" id="rsn'+i+'" placeholder="보완 요청 사유를 입력하세요 (예: 숙박 결재내역 누락)"></textarea>';
+    else if(a.status==='refund_fix')
+      acts='<span class="wait">신청자 증빙 보완 대기중</span>';
+    else if(a.status==='refund_ok')
+      acts='<span class="wait">처리 완료 — 환급 금액이 지역화폐(앱)에 충전되었습니다</span>';
+    else if(a.status==='rejected')
+      acts='<span class="wait">반려 처리 완료</span>';
+    if(a.rejectReason)log+='반려 사유: '+a.rejectReason+'<br>';
+    if(a.fixReason)log+='보완 요청 사유: '+a.fixReason+'<br>';
+    if(a.amount)log+='승인 지원금: '+admWon(a.amount);
+    return '<div class="card">'+
+      '<div class="hd"><b>'+a.region+'</b><span class="no">'+a.no+'</span><span>신청자 '+(a.applicant||'김관광')+'</span>'+
+      '<span class="bdg b-'+a.status+'">'+ADM_ST[a.status]+'</span></div>'+
+      '<div class="dt">여행 '+admFmt(a.start)+' ~ '+admFmt(a.end)+' · '+a.people+'명 · 신청일 '+a.ts+
+      '<br><small>'+ADM_ADDR+'</small></div>'+chk+
+      (a.plan?'<div class="plan">여행 계획: '+a.plan+'</div>':'')+
+      '<div class="acts">'+acts+'</div>'+(log?'<div class="log">'+log+'</div>':'')+
+      '</div>';
+  }).join('');
+}
+
+function admDo(i,st){
+  const l=admLoad();if(!l[i])return;
+  l[i].status=st;admSave(l);admRender();
+  admToast(ADM_ST[st]+' 처리했습니다');
+}
+function admApprove(i){
+  const l=admLoad();if(!l[i])return;
+  l[i].status='approved';l[i].amount=admAmt(l[i]);
+  admSave(l);admRender();
+  admToast('승인 — 지원금 '+admWon(l[i].amount));
+}
+function admRsn(i,st){
+  const ta=document.getElementById('rsn'+i);
+  if(!ta.classList.contains('on')){ta.classList.add('on');ta.focus();return;}
+  const v=ta.value.trim();
+  if(!v){admToast('사유를 입력해 주세요');ta.focus();return;}
+  const l=admLoad();if(!l[i])return;
+  l[i].status=st;
+  if(st==='rejected')l[i].rejectReason=v;else l[i].fixReason=v;
+  admSave(l);admRender();
+  admToast(st==='rejected'?'반려 처리했습니다':'보완 요청을 보냈습니다');
+}
+function admRefundOk(i){
+  const l=admLoad();if(!l[i])return;
+  l[i].status='refund_ok';l[i].refundAmount=l[i].amount||admAmt(l[i]);
+  admSave(l);admRender();
+  admToast('환급 승인 — '+admWon(l[i].refundAmount)+' 충전 지시');
+}
+function admReset(){
+  if(!confirm('신청 데모 데이터를 모두 삭제할까요?'))return;
+  localStorage.removeItem(AP_KEY);admRender();admToast('초기화했습니다');
+}
+
+/* 신청자 화면(다른 탭)에서 접수하면 자동 갱신 */
+window.addEventListener('storage',function(e){if(e.key===AP_KEY)admRender();});
+admRender();
+</script>
+</body>
+</html>
