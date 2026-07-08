@@ -62,6 +62,20 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#334
 .svy .stars button{font-size:28px;background:none;border:none;cursor:pointer;filter:grayscale(1);transition:.15s}
 .svy .stars button.on{filter:none;transform:scale(1.15)}
 .svy .ok{width:100%;min-height:50px;border:none;border-radius:12px;background:#0f766e;color:#fff;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;margin-top:8px}
+/* 포인트 카드 · 전환 모달 */
+.pt-card{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#1e3a5f,#0f2c4a);border-radius:18px;padding:16px 18px;margin-bottom:16px;color:#fff;box-shadow:0 2px 10px rgba(15,23,42,.15)}
+.pt-card .pi{flex:1}
+.pt-card .l{font-size:12.5px;font-weight:800;color:#93c5fd}
+.pt-card .v{font-size:26px;font-weight:800;margin-top:4px}
+.pt-card .v small{font-size:14px;font-weight:700;color:#93c5fd}
+.pt-card .d{font-size:11.5px;color:#94a3b8;margin-top:4px}
+.pt-card .cv-btn{flex-shrink:0;min-height:56px;border:none;border-radius:12px;background:#38bdf8;color:#062c43;font-size:13.5px;font-weight:800;font-family:inherit;cursor:pointer;padding:0 14px;line-height:1.4}
+.vcard .head.cv{background:linear-gradient(135deg,#1d4ed8,#0369a1)}
+.cv-lb{display:block;font-size:13px;font-weight:800;color:#334155;margin:12px 0 6px}
+.cv-in{width:100%;min-height:48px;border:2px solid #cbd5e1;border-radius:10px;font-size:15px;padding:8px 12px;font-family:inherit;background:#fff;color:#0f172a}
+.cv-in:focus{border-color:#0f766e;outline:none}
+.cv-all{flex-shrink:0;min-height:48px;border:2px solid #0f766e;border-radius:10px;background:#fff;color:#0f766e;font-size:13.5px;font-weight:800;font-family:inherit;cursor:pointer;padding:0 14px}
+.cv-x{width:100%;min-height:44px;border:none;background:none;color:#64748b;font-size:13.5px;font-weight:700;font-family:inherit;cursor:pointer;margin-top:6px}
 </style>
 </head>
 <body>
@@ -72,12 +86,35 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#334
     <div class="sub">반값여행 상품권 발행(개인) · 충전 · 사용 · 환급 충전 · 잔액 회수</div>
   </div>
   <div class="body">
+    <div id="pointCard"></div>
     <div class="sec-t">내 반값여행 상품권</div>
     <div id="payList"></div>
+    <div id="cvSec" style="display:none">
+      <div class="sec-t" style="margin-top:18px">포인트 전환 지역화폐</div>
+      <div id="cvList"></div>
+    </div>
   </div>
 </div>
 
 <div class="toastP" id="payToast"></div>
+
+<!-- 포인트 → 지역화폐 전환 모달 -->
+<div class="svy" id="cvModal" role="dialog" aria-modal="true">
+  <div class="bd" style="text-align:left">
+    <h3 style="text-align:center">🪙 포인트 → 지역화폐 전환</h3>
+    <p style="text-align:center">보유 포인트 <b id="cvBal" style="color:#0f766e">0</b> P · 1P = 1원 (1:1 입금)</p>
+    <label class="cv-lb" for="cvRegion">전환할 지역</label>
+    <select class="cv-in" id="cvRegion"></select>
+    <label class="cv-lb" for="cvAmt">전환할 포인트</label>
+    <div style="display:flex;gap:8px">
+      <input class="cv-in" id="cvAmt" type="number" inputmode="numeric" min="1" placeholder="예) 1000" oninput="cvHint()" style="flex:1">
+      <button class="cv-all" onclick="cvAll()">전액</button>
+    </div>
+    <div id="cvHint" style="font-size:12.5px;font-weight:700;min-height:20px;margin-top:6px"></div>
+    <button class="ok" onclick="cvDo()">지역화폐로 입금하기</button>
+    <button class="cv-x" onclick="cvClose()">취소</button>
+  </div>
+</div>
 
 <!-- 잔액 회수 후 설문조사 (프로세스 마지막 단계) -->
 <div class="svy" id="svyModal" role="dialog" aria-modal="true">
@@ -94,9 +131,12 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#334
   </div>
 </div>
 
+<script src="../site-assets/data.js?v=20260707f"></script>
 <script>
 /* 대민시스템·관리시스템과 같은 저장소를 공유한다 */
 const AP_KEY='dtidD_t50Applies';
+const PT_KEY='dtidD_pointBal';      /* 사용자별 잔여 포인트 {uid: n} — 최초값은 ACCOUNTS의 exp */
+const CV_KEY='dtidD_pointWallets';  /* 포인트 전환 지역화폐 {지역명: {bal, tx[]}} */
 const MERCHANTS=[
   {ic:'🏨',nm:'바다뷰 펜션',amt:45000},
   {ic:'🍽',nm:'현지 맛집',amt:28000},
@@ -221,9 +261,112 @@ function svyDone(){
   pToast('설문 제출 완료 — 참여해 주셔서 감사합니다');
 }
 
+/* ── 관광주민증 포인트 → 지역화폐 전환 (1:1) ── */
+function ptUser(){
+  const uid=localStorage.getItem('dgtour_user_id');
+  if(!uid||typeof ACCOUNTS==='undefined')return null;
+  return ACCOUNTS.find(u=>u.id===uid)||null;
+}
+function ptBal(){
+  const u=ptUser();if(!u)return 0;
+  let m={};try{m=JSON.parse(localStorage.getItem(PT_KEY)||'{}');}catch(e){}
+  return (typeof m[u.id]==='number')?m[u.id]:u.exp;
+}
+function ptSet(n){
+  const u=ptUser();if(!u)return;
+  let m={};try{m=JSON.parse(localStorage.getItem(PT_KEY)||'{}');}catch(e){}
+  m[u.id]=n;localStorage.setItem(PT_KEY,JSON.stringify(m));
+}
+function cvLoad(){try{return JSON.parse(localStorage.getItem(CV_KEY)||'{}');}catch(e){return{};}}
+function cvSave(w){localStorage.setItem(CV_KEY,JSON.stringify(w));}
+
+function renderPoints(){
+  const el=document.getElementById('pointCard');
+  const u=ptUser();
+  if(!u){el.innerHTML='';return;}
+  el.innerHTML='<div class="pt-card"><div class="pi"><div class="l">🪪 내 관광주민증 포인트</div>'+
+    '<div class="v">'+ptBal().toLocaleString('ko-KR')+' <small>P</small></div>'+
+    '<div class="d">'+u.name+'님 · 관광주민증 활동으로 적립 · 지역화폐 1:1 전환</div></div>'+
+    '<button class="cv-btn" onclick="cvOpen()">지역화폐로<br>전환하기</button></div>';
+}
+
+function renderCv(){
+  const w=cvLoad();
+  const names=Object.keys(w).filter(k=>w[k].bal>0||w[k].tx.length);
+  document.getElementById('cvSec').style.display=names.length?'block':'none';
+  document.getElementById('cvList').innerHTML=names.map(nm=>{
+    const c=w[nm];
+    const tx=c.tx.length?'<div class="tx"><div class="t">이용 내역</div>'+
+      c.tx.slice(0,5).map(t=>'<div class="row"><span class="lb">'+t.label+'</span><small>'+t.ts+'</small>'+
+      '<span class="amt '+(t.amt>=0?'plus':'minus')+'">'+(t.amt>=0?'+':'')+pWon(t.amt)+'</span></div>').join('')+'</div>':'';
+    return '<div class="vcard"><div class="head cv"><div class="rg">'+nm+' 지역화폐</div><span class="st">포인트 전환</span>'+
+      '<div class="bal">'+pWon(c.bal)+'<small> 잔액</small></div>'+
+      '<div class="meta">관광주민증 포인트 1:1 전환 지역화폐</div></div>'+
+      '<div class="bd"><div class="use-t">가맹점에서 사용하기</div><div class="use-row">'+
+      MERCHANTS.map((m,mi)=>'<button '+(c.bal<m.amt?'disabled':'')+' onclick="cvUse(\''+nm+'\','+mi+')">'+m.ic+' '+m.nm+'<b>'+pWon(m.amt)+'</b></button>').join('')+
+      '</div>'+tx+'</div></div>';
+  }).join('');
+}
+
+function cvOpen(){
+  const bal=ptBal();
+  if(bal<=0){pToast('전환할 포인트가 없습니다');return;}
+  const sel=document.getElementById('cvRegion');
+  /* 전환 대상 지역: 반값여행 참여 지역 + 이미 전환 지갑이 있는 지역 */
+  const regs=[...new Set([].concat(
+    (typeof TOUR50_REGIONS!=='undefined'?TOUR50_REGIONS.map(r=>r.name):[]),
+    Object.keys(cvLoad())))];
+  sel.innerHTML='<option value="">지역을 선택하세요</option>'+regs.map(r=>'<option value="'+r+'">'+r+'</option>').join('');
+  document.getElementById('cvBal').textContent=bal.toLocaleString('ko-KR');
+  const inp=document.getElementById('cvAmt');
+  inp.value='';inp.max=bal;
+  document.getElementById('cvHint').textContent='';
+  document.getElementById('cvModal').classList.add('on');
+}
+function cvHint(){
+  const bal=ptBal();
+  const n=Math.floor(Number(document.getElementById('cvAmt').value)||0);
+  const h=document.getElementById('cvHint');
+  if(n<=0){h.textContent='';return;}
+  if(n>bal){h.textContent='⚠ 보유 포인트('+bal.toLocaleString('ko-KR')+'P)를 초과했습니다';h.style.color='#b91c1c';}
+  else{h.textContent='→ '+n.toLocaleString('ko-KR')+'원이 지역화폐로 입금됩니다 (1:1)';h.style.color='#0f766e';}
+}
+function cvAll(){document.getElementById('cvAmt').value=ptBal();cvHint();}
+function cvClose(){document.getElementById('cvModal').classList.remove('on');}
+function cvDo(){
+  const region=document.getElementById('cvRegion').value;
+  const n=Math.floor(Number(document.getElementById('cvAmt').value)||0);
+  const bal=ptBal();
+  if(!region){pToast('전환할 지역을 선택해 주세요');return;}
+  if(n<=0){pToast('전환할 포인트를 입력해 주세요');return;}
+  if(n>bal){pToast('보유 포인트를 초과했습니다');return;}
+  ptSet(bal-n);
+  const w=cvLoad();
+  if(!w[region])w[region]={bal:0,tx:[]};
+  w[region].bal+=n;
+  w[region].tx.unshift({label:'관광주민증 포인트 전환 입금 ('+n.toLocaleString('ko-KR')+'P)',amt:n,ts:new Date().toISOString().slice(5,10).replace('-','.')});
+  cvSave(w);
+  cvClose();renderPoints();renderCv();
+  pToast(region+' 지역화폐로 '+pWon(n)+' 입금되었습니다');
+}
+function cvUse(nm,mi){
+  const w=cvLoad();const c=w[nm];if(!c)return;
+  const m=MERCHANTS[mi];
+  if(c.bal<m.amt){pToast('잔액이 부족합니다');return;}
+  c.bal-=m.amt;
+  c.tx.unshift({label:m.ic+' '+m.nm+' 결제',amt:-m.amt,ts:new Date().toISOString().slice(5,10).replace('-','.')});
+  cvSave(w);renderCv();
+  pToast(m.nm+' '+pWon(m.amt)+' 결제 완료');
+}
+
 /* 다른 탭(신청/관리 화면) 처리 시 자동 갱신 */
-window.addEventListener('storage',function(e){if(e.key===AP_KEY)payRender();});
+window.addEventListener('storage',function(e){
+  if(e.key===AP_KEY)payRender();
+  if(e.key===PT_KEY||e.key===CV_KEY){renderPoints();renderCv();}
+});
 payRender();
+renderPoints();
+renderCv();
 </script>
 </body>
 </html>
