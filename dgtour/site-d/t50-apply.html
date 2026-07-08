@@ -640,21 +640,29 @@ function apEvSample(i){
   toast('데모 영수증 다운로드 — 카드 1234-56○○-○○○○-3456 형태(가려진 자리는 아무 숫자), 승인번호 '+appr+', 금액 '+src.amt.toLocaleString('ko-KR')+'원으로 입력하세요');
 }
 
+/* OCR 숫자 정규화: 천단위 구분자를 쉼표로 읽든 마침표로 읽든 붙여준다 (122,900 / 122.900 → 122900) */
+function apOcrNorm(s){
+  let t=s;
+  for(let k=0;k<3;k++)t=t.replace(/(\d)\s*[.,]\s*(\d{3})(?!\d)/g,'$1$2');
+  return t.replace(/[,\s]/g,'');
+}
+
 /* OCR 원문에서 카드번호·승인번호·금액 필드를 라벨 기준으로 추출.
    카드번호는 *·X·● 마스킹을 와일드카드로 취급한다 */
 function apOcrExtract(raw){
   const res={card:null,appr:null,amts:[]};
   const CARD_LB=/(card|카드)/i, APPR_LB=/(approv|appr|승인)/i, AMT_LB=/(amount|amt|금액|합계|total)/i;
   raw.split(/\n+/).forEach(function(ln){
-    const ns=ln.replace(/[\s,]/g,'');
+    const ns=apOcrNorm(ln);
     if(!res.card&&CARD_LB.test(ln)){
-      /* 라벨 뒤 구간에서 숫자로 시작하는 토큰을 취하고, OCR이 마스킹(*·X 등)을
-         어떤 문자로 읽었든 숫자가 아닌 글자는 전부 와일드카드(*)로 간주한다 */
+      /* 라벨 뒤 구간에서 숫자로 시작하는 토큰을 취하고, OCR이 마스킹(*·X 등)을 어떤 문자로
+         읽었든 숫자가 아닌 글자는 전부 와일드카드(*)로 간주. 마스킹이 뭉개져 짧아진 경우
+         (예: ******→*%*)도 앞·뒤 노출 숫자로 대조할 수 있게 10자리부터 허용한다 */
       const seg=ln.split(/[:：]/).pop().replace(/\s+/g,'');
       const st=seg.search(/[0-9]/);
       if(st>=0){
         let t=seg.slice(st).replace(/[-—._/]/g,'').replace(/[^0-9]/g,'*').slice(0,19).replace(/\*+$/,'');
-        if(t.replace(/\*/g,'').length>=4&&t.length>=14)res.card=t;
+        if(t.replace(/\*/g,'').length>=4&&t.length>=10&&/\d{4}$/.test(t))res.card=t;
       }
     }
     if(!res.appr&&APPR_LB.test(ln)){
@@ -666,6 +674,11 @@ function apOcrExtract(raw){
       if(m)m.forEach(function(v){res.amts.push(v);});
     }
   });
+  /* 국내 카드 전표의 승인번호는 [00000000]처럼 대괄호로만 표기되는 경우가 많다 */
+  if(!res.appr){
+    const b=raw.match(/[\[〔［]\s*(\d{7,9})\s*[\]〕］]/);
+    if(b)res.appr=b[1];
+  }
   /* 라벨을 못 읽은 경우의 보조 추출 — 공백 단위 토큰으로만 판단 (숫자 뭉개짐 방지) */
   const toks=raw.split(/\s+/);
   if(!res.card){
@@ -678,7 +691,7 @@ function apOcrExtract(raw){
   if(!res.appr){
     toks.some(function(tk){
       const t=tk.replace(/[^0-9]/g,'');
-      if(t.length===8&&t===tk.replace(/[^0-9]/g,'')&&/^\d{8}$/.test(tk)){res.appr=t;return true;}
+      if(t.length===8&&tk.length<=12){res.appr=t;return true;}   /* 대괄호 등 장식 허용 */
       return false;
     });
   }
@@ -738,17 +751,17 @@ function apOcrRead(i,input){
     const m=document.getElementById('apEvAmt'+i);if(m)m.value=keep.amt;
     toast(msg);
   }
-  /* 25초 안에 판독이 끝나지 않으면(엔진 로드 실패·오프라인 등) 모의 판독으로 폴백 */
-  const timeout=new Promise(function(_,rej){setTimeout(function(){rej(new Error('ocr timeout'));},25000);});
+  /* 60초 안에 판독이 끝나지 않으면(엔진 로드 실패·오프라인 등) 모의 판독으로 폴백 */
+  const timeout=new Promise(function(_,rej){setTimeout(function(){rej(new Error('ocr timeout'));},60000);});
   Promise.race([apLoadTess().then(function(){
-    return Tesseract.recognize(file,'eng',{logger:function(m){
+    /* 한글 영수증 라벨([금액]·카드·승인 등)을 읽기 위해 kor+eng 사용 */
+    return Tesseract.recognize(file,'kor+eng',{logger:function(m){
       if(wait&&m.status==='recognizing text')wait.textContent='🔍 영수증 판독 중… '+Math.round(m.progress*100)+'%';
     }});
   }),timeout]).then(function(r){
     const raw=r.data.text||'';
-    const norm=raw.replace(/[,\s]/g,'');
     const ex=apOcrExtract(raw);
-    done({mode:'real',text:norm,ex:ex,file:file.name},'영수증 판독이 완료되었습니다 (실제 OCR)');
+    done({mode:'real',text:apOcrNorm(raw),ex:ex,file:file.name},'영수증 판독이 완료되었습니다 (실제 OCR)');
   }).catch(function(){
     /* 엔진 로드/판독 실패 시 모의 판독으로 폴백 — 데모가 멈추지 않도록 (카드번호도 데모 영수증 기준으로 대조) */
     const a=apLoad()[i];if(!a)return;
