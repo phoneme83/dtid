@@ -63,6 +63,7 @@
     <button class="ap-big hero" onclick="apStart()">🧳 반값여행 신청 시작하기</button>
     <button class="ap-big" id="apMyBtn" onclick="apGo(6)">📄 나의 신청 내역 보기</button>
     <a class="ap-adm-link" href="t50-admin.html">🖥 지자체 관리시스템(관리자 화면) 프로토타입 열기 ›</a>
+    <a class="ap-adm-link" href="t50-pay.html">🪙 지역화폐(앱) 프로토타입 열기 ›</a>
   </section>
 
   <!-- [1] 본인인증 -->
@@ -407,6 +408,7 @@ function apRenderList(){
       act='<div class="ap-note">✅ 지자체 승인이 완료되었습니다'+(a.amount?' (지원금 '+a.amount.toLocaleString('ko-KR')+'원)':'')+'. 곧 결과 통보가 도착합니다.</div>';
     else if(a.status==='notified')
       act='<div class="ap-note">📨 승인 결과가 통보되었습니다'+(a.amount?' — 지원금 <b>'+a.amount.toLocaleString('ko-KR')+'원</b>':'')+'. 상품권 구입·충전은 <b>지역화폐 앱</b>에서 진행되며, 여행 후 증빙을 작성해 환급을 신청하세요.</div>'+
+      '<button class="ap-sm" onclick="location.href=\'t50-pay.html\'">🪙 지역화폐 앱 — 상품권 구입·충전</button>'+
       '<button class="ap-sm" onclick="apAdvance('+i+',\'refund_req\')">🧾 증빙 작성 · 환급 신청</button>';
     else if(a.status==='refund_req')
       act='<div class="ap-note">🧾 환급 신청이 접수되어 <b>지자체(관리시스템)</b>가 증빙을 검토 중입니다.</div>';
@@ -414,7 +416,8 @@ function apRenderList(){
       act='<div class="ap-note bad">✏️ 지자체가 증빙 보완을 요청했습니다'+(a.fixReason?' — 사유: '+a.fixReason:'')+'</div>'+
       '<button class="ap-sm" onclick="apAdvance('+i+',\'refund_req\')">증빙 보완 · 환급 재신청</button>';
     else if(a.status==='refund_ok')
-      act='<div class="ap-note">✅ 환급이 승인되었습니다'+(a.refundAmount?' — <b>'+a.refundAmount.toLocaleString('ko-KR')+'원</b>':'')+'. 환급 금액은 <b>지역화폐 앱</b>에 충전됩니다.</div>';
+      act='<div class="ap-note">✅ 환급이 승인되었습니다'+(a.refundAmount?' — <b>'+a.refundAmount.toLocaleString('ko-KR')+'원</b>':'')+'. 환급 금액은 <b>지역화폐 앱</b>에 충전됩니다.</div>'+
+      '<button class="ap-sm" onclick="location.href=\'t50-pay.html\'">🪙 지역화폐 앱 — 환급 충전받기</button>';
     else if(a.status==='rejected')
       act='<div class="ap-note bad">⛔ 신청이 반려되었습니다'+(a.rejectReason?' — 사유: '+a.rejectReason:'')+'. 다른 지역으로 다시 신청할 수 있습니다.</div>';
     const refund=(a.status==='refund_req'||a.status==='refund_fix'||a.status==='refund_ok')?

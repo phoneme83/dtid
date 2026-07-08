@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>관광 지역화폐 앱 · 시안 D</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#334155;-webkit-font-smoothing:antialiased}
+.app{max-width:430px;margin:0 auto;min-height:100vh;min-height:100dvh;background:#f8fafc;display:flex;flex-direction:column}
+.demo{background:#7c2d12;color:#fff;font-size:11.5px;font-weight:700;text-align:center;padding:6px 10px;line-height:1.5}
+.demo a{color:#fed7aa}
+.top{background:linear-gradient(135deg,#0369a1,#0f766e);color:#fff;padding:18px 18px 22px}
+.top .hd{display:flex;align-items:center;gap:8px}
+.top .hd .lg{font-size:22px}
+.top .hd h1{font-size:17px;font-weight:800;flex:1}
+.top .hd a{color:#bae6fd;font-size:12px;text-decoration:underline}
+.top .sub{font-size:12.5px;color:#bae6fd;margin-top:4px}
+.body{flex:1;padding:16px 16px 40px}
+.sec-t{font-size:14px;font-weight:800;color:#475569;margin:6px 0 10px}
+.vcard{border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 2px 10px rgba(15,23,42,.08);margin-bottom:16px}
+.vcard .head{background:linear-gradient(135deg,#0f766e,#115e59);color:#fff;padding:16px 18px;position:relative}
+.vcard .head .rg{font-size:15px;font-weight:800}
+.vcard .head .st{position:absolute;top:14px;right:16px;font-size:11px;font-weight:800;background:rgba(255,255,255,.25);border-radius:8px;padding:3px 9px}
+.vcard .head .bal{font-size:28px;font-weight:800;margin-top:10px}
+.vcard .head .bal small{font-size:13px;font-weight:700;opacity:.85}
+.vcard .head .meta{font-size:11.5px;opacity:.85;margin-top:6px}
+.vcard .bd{padding:14px 16px 16px}
+.note{background:#f1f5f9;border-radius:10px;padding:10px 12px;font-size:12.5px;color:#475569;line-height:1.6;margin-bottom:10px}
+.note b{color:#0f766e}
+.note.warn{background:#fff7ed;color:#9a3412}
+.buy{width:100%;min-height:54px;border:none;border-radius:12px;background:#0f766e;color:#fff;font-size:15.5px;font-weight:800;font-family:inherit;cursor:pointer;line-height:1.4;padding:8px}
+.buy small{display:block;font-size:11.5px;font-weight:700;opacity:.85}
+.use-t{font-size:12.5px;font-weight:800;color:#475569;margin:12px 0 8px}
+.use-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.use-row button{min-height:64px;border:2px solid #e2e8f0;border-radius:12px;background:#fff;font-family:inherit;cursor:pointer;font-size:12px;font-weight:700;color:#334155;line-height:1.5}
+.use-row button b{display:block;font-size:13px;color:#0f766e}
+.use-row button:disabled{opacity:.4;cursor:not-allowed}
+.tx{margin-top:12px;border-top:1px dashed #e2e8f0;padding-top:10px}
+.tx .t{font-size:12px;font-weight:800;color:#64748b;margin-bottom:6px}
+.tx .row{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#334155;padding:5px 0}
+.tx .row .lb{flex:1}
+.tx .row .amt{font-weight:800}
+.tx .row .amt.plus{color:#0f766e}
+.tx .row .amt.minus{color:#b91c1c}
+.tx .row small{color:#94a3b8}
+.recover{width:100%;min-height:46px;border:2px solid #b91c1c;border-radius:12px;background:#fff;color:#b91c1c;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;margin-top:10px}
+.done-b{width:100%;min-height:46px;border:2px solid #0f766e;border-radius:12px;background:#fff;color:#0f766e;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;margin-top:10px}
+.empty{text-align:center;color:#64748b;font-size:14px;line-height:1.9;padding:60px 14px}
+.empty a{color:#0f766e;font-weight:800}
+.toastP{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,.92);color:#fff;font-size:13px;font-weight:700;border-radius:24px;padding:11px 20px;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap;z-index:99}
+.toastP.on{opacity:1}
+/* 설문 모달 */
+.svy{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.svy.on{display:flex}
+.svy .bd{background:#fff;border-radius:20px;padding:26px 22px;max-width:360px;width:100%;text-align:center}
+.svy .ic{font-size:40px}
+.svy h3{font-size:17px;font-weight:800;margin:10px 0 6px;color:#0f172a}
+.svy p{font-size:13.5px;color:#475569;line-height:1.7}
+.svy .stars{display:flex;justify-content:center;gap:6px;margin:14px 0}
+.svy .stars button{font-size:28px;background:none;border:none;cursor:pointer;filter:grayscale(1);transition:.15s}
+.svy .stars button.on{filter:none;transform:scale(1.15)}
+.svy .ok{width:100%;min-height:50px;border:none;border-radius:12px;background:#0f766e;color:#fff;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="demo">지역화폐(앱) 구간 프로토타입 · <a href="t50-apply.html">대민시스템(신청)</a> · <a href="t50-admin.html">지자체(관리)</a></div>
+  <div class="top">
+    <div class="hd"><span class="lg">🪙</span><h1>관광 지역화폐</h1><a href="t50-apply.html">신청 화면으로</a></div>
+    <div class="sub">반값여행 상품권 발행(개인) · 충전 · 사용 · 환급 충전 · 잔액 회수</div>
+  </div>
+  <div class="body">
+    <div class="sec-t">내 반값여행 상품권</div>
+    <div id="payList"></div>
+  </div>
+</div>
+
+<div class="toastP" id="payToast"></div>
+
+<!-- 잔액 회수 후 설문조사 (프로세스 마지막 단계) -->
+<div class="svy" id="svyModal" role="dialog" aria-modal="true">
+  <div class="bd">
+    <div class="ic">📋</div>
+    <h3>반값여행 만족도 설문</h3>
+    <p>여행 지원 기간이 종료되어 잔여 상품권이 회수되었습니다.<br>이번 반값여행은 어떠셨나요?</p>
+    <div class="stars" id="svyStars">
+      <button onclick="svyPick(1)">⭐</button><button onclick="svyPick(2)">⭐</button>
+      <button onclick="svyPick(3)">⭐</button><button onclick="svyPick(4)">⭐</button>
+      <button onclick="svyPick(5)">⭐</button>
+    </div>
+    <button class="ok" onclick="svyDone()">설문 제출</button>
+  </div>
+</div>
+
+<script>
+/* 대민시스템·관리시스템과 같은 저장소를 공유한다 */
+const AP_KEY='dtidD_t50Applies';
+const MERCHANTS=[
+  {ic:'🏨',nm:'바다뷰 펜션',amt:45000},
+  {ic:'🍽',nm:'현지 맛집',amt:28000},
+  {ic:'☕',nm:'로컬 카페',amt:7500}
+];
+let payToastTimer=null;
+let svyIdx=-1,svyScore=0;
+
+function pLoad(){try{return JSON.parse(localStorage.getItem(AP_KEY)||'[]');}catch(e){return[];}}
+function pSave(l){localStorage.setItem(AP_KEY,JSON.stringify(l));}
+function pWon(n){return n.toLocaleString('ko-KR')+'원';}
+function pFmt(d){return d?d.replace(/-/g,'.'):'';}
+function pToast(m){
+  const t=document.getElementById('payToast');
+  t.textContent=m;t.classList.add('on');
+  clearTimeout(payToastTimer);
+  payToastTimer=setTimeout(()=>t.classList.remove('on'),2200);
+}
+function pWallet(a){
+  if(!a.wallet)a.wallet={bal:0,purchased:false,refundCharged:false,recovered:false,tx:[]};
+  return a.wallet;
+}
+function pTx(w,label,amt){
+  w.tx.unshift({label:label,amt:amt,ts:new Date().toISOString().slice(5,10).replace('-','.')});
+}
+
+function payRender(){
+  const all=pLoad();
+  /* 통보 이후 단계의 신청 건만 지역화폐 앱에 나타난다 */
+  const list=all.map((a,i)=>({a:a,i:i})).filter(x=>['notified','refund_req','refund_fix','refund_ok'].indexOf(x.a.status)>=0);
+  const el=document.getElementById('payList');
+  if(!list.length){
+    el.innerHTML='<div class="empty">발행된 반값여행 상품권이 없습니다.<br><br>'+
+      '① <a href="t50-apply.html">신청자 화면</a>에서 통합신청 접수<br>'+
+      '② <a href="t50-admin.html">지자체 관리 화면</a>에서 승인·결과 통보<br>'+
+      '③ 이곳에서 상품권이 발행(개인)됩니다</div>';
+    return;
+  }
+  el.innerHTML=list.map(x=>{
+    const a=x.a,i=x.i,w=pWallet(a),amt=a.amount||0;
+    const stLb=w.recovered?'회수 완료':(w.purchased?'사용중':'발행(개인) 완료');
+    let bd='';
+    if(!w.purchased&&!w.recovered){
+      bd='<div class="note">🎫 지자체 승인에 따라 <b>CI·승인 금액('+pWon(amt)+')</b> 기준 개인 상품권이 발행되었습니다. 자부담 '+pWon(amt)+'을 더해 <b>'+pWon(amt*2)+'</b>어치를 반값에 구입하세요.</div>'+
+        '<button class="buy" onclick="payBuy('+i+')">상품권 반값 구입 · 충전하기<small>자부담 '+pWon(amt)+' 결제 → '+pWon(amt*2)+' 충전 (지원금 '+pWon(amt)+')</small></button>';
+    }else if(!w.recovered){
+      const dis=w.bal<=0;
+      bd='<div class="use-t">가맹점에서 사용하기 (결재내역에 기록됩니다)</div><div class="use-row">'+
+        MERCHANTS.map((m,mi)=>'<button '+(w.bal<m.amt?'disabled':'')+' onclick="payUse('+i+','+mi+')">'+m.ic+' '+m.nm+'<b>'+pWon(m.amt)+'</b></button>').join('')+'</div>';
+      if(a.status==='refund_ok'&&!w.refundCharged)
+        bd+='<button class="buy" style="margin-top:10px" onclick="payRefund('+i+')">💰 환급 금액 충전받기<small>지자체 환급 승인 '+pWon(a.refundAmount||amt)+' → 잔액에 충전</small></button>';
+      if(a.status==='refund_req'||a.status==='refund_fix')
+        bd+='<div class="note" style="margin-top:10px">🧾 환급 심사가 진행 중입니다. 승인되면 이곳에서 충전받을 수 있습니다.</div>';
+      bd+='<button class="recover" onclick="payRecover('+i+')">지원 기간 종료 · 잔액 회수 (시뮬레이션)</button>';
+    }else{
+      bd='<div class="note warn">지원 기간이 종료되어 잔여 상품권이 회수되었습니다. 이용해 주셔서 감사합니다.</div>'+
+        (w.surveyed?'<div class="note">📋 설문조사 참여 완료 (만족도 '+'⭐'.repeat(w.surveyScore||0)+')</div>'
+                   :'<button class="done-b" onclick="svyOpen('+i+')">📋 만족도 설문조사 참여</button>');
+    }
+    const tx=w.tx.length?'<div class="tx"><div class="t">결재내역</div>'+
+      w.tx.slice(0,6).map(t=>'<div class="row"><span class="lb">'+t.label+'</span><small>'+t.ts+'</small>'+
+      '<span class="amt '+(t.amt>=0?'plus':'minus')+'">'+(t.amt>=0?'+':'')+pWon(t.amt)+'</span></div>').join('')+'</div>':'';
+    return '<div class="vcard"><div class="head">'+
+      '<div class="rg">'+a.region+' 반값여행 상품권</div><span class="st">'+stLb+'</span>'+
+      '<div class="bal">'+pWon(w.bal)+'<small> 잔액</small></div>'+
+      '<div class="meta">'+(a.applicant||'김관광')+' · '+a.no+' · 여행 '+pFmt(a.start)+'~'+pFmt(a.end)+'</div></div>'+
+      '<div class="bd">'+bd+tx+'</div></div>';
+  }).join('');
+}
+
+function payBuy(i){
+  const l=pLoad();const a=l[i];if(!a)return;
+  const w=pWallet(a),amt=a.amount||0;
+  w.purchased=true;w.bal+=amt*2;
+  pTx(w,'상품권 구입·충전 (자부담 '+pWon(amt)+' + 지원 '+pWon(amt)+')',amt*2);
+  pSave(l);payRender();
+  pToast(pWon(amt*2)+' 충전되었습니다');
+}
+function payUse(i,mi){
+  const l=pLoad();const a=l[i];if(!a)return;
+  const w=pWallet(a),m=MERCHANTS[mi];
+  if(w.bal<m.amt){pToast('잔액이 부족합니다');return;}
+  w.bal-=m.amt;
+  pTx(w,m.ic+' '+m.nm+' 결제',-m.amt);
+  pSave(l);payRender();
+  pToast(m.nm+' '+pWon(m.amt)+' 결제 완료');
+}
+function payRefund(i){
+  const l=pLoad();const a=l[i];if(!a)return;
+  const w=pWallet(a),amt=a.refundAmount||a.amount||0;
+  w.refundCharged=true;w.bal+=amt;
+  pTx(w,'환급 금액 충전 (지자체 환급 승인)',amt);
+  pSave(l);payRender();
+  pToast('환급 '+pWon(amt)+' 충전되었습니다');
+}
+function payRecover(i){
+  const l=pLoad();const a=l[i];if(!a)return;
+  const w=pWallet(a);
+  if(!confirm('지원 기간 종료를 시뮬레이션하고 잔액 '+pWon(w.bal)+'을 회수할까요?'))return;
+  if(w.bal>0)pTx(w,'지원 기간 종료 · 잔액 회수',-w.bal);
+  w.bal=0;w.recovered=true;
+  pSave(l);payRender();
+  svyOpen(i);
+}
+
+/* 설문조사 (프로세스 마지막: 잔액 회수 → 설문조사) */
+function svyOpen(i){
+  svyIdx=i;svyScore=0;
+  document.querySelectorAll('#svyStars button').forEach(b=>b.classList.remove('on'));
+  document.getElementById('svyModal').classList.add('on');
+}
+function svyPick(n){
+  svyScore=n;
+  document.querySelectorAll('#svyStars button').forEach((b,bi)=>b.classList.toggle('on',bi<n));
+}
+function svyDone(){
+  if(!svyScore){pToast('별점을 선택해 주세요');return;}
+  const l=pLoad();const a=l[svyIdx];
+  if(a){const w=pWallet(a);w.surveyed=true;w.surveyScore=svyScore;pSave(l);}
+  document.getElementById('svyModal').classList.remove('on');
+  payRender();
+  pToast('설문 제출 완료 — 참여해 주셔서 감사합니다');
+}
+
+/* 다른 탭(신청/관리 화면) 처리 시 자동 갱신 */
+window.addEventListener('storage',function(e){if(e.key===AP_KEY)payRender();});
+payRender();
+</script>
+</body>
+</html>
