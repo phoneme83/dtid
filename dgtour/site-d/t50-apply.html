@@ -495,6 +495,12 @@ function apSubmit(){
   apBadge();
 }
 
+/* 청년 가산 내역 문구 (승인 시점에 이미 20% 가산된 금액) */
+function apBonusTxt(a){
+  if(!a.bonus||!a.baseAmount)return '';
+  return ' (기본 '+a.baseAmount.toLocaleString('ko-KR')+'원 + 🎉 청년 20% '+a.bonus.toLocaleString('ko-KR')+'원)';
+}
+
 /* ── 나의 신청 내역 ── */
 function apRenderList(){
   const list=apLoad();
@@ -511,9 +517,9 @@ function apRenderList(){
     if(a.status==='received'||a.status==='review')
       act='<div class="ap-note">🏛 <b>지자체(관리시스템)</b>에서 신청자격·계획을 심사하고 있습니다. 결과가 나오면 이곳에 표시됩니다.</div>';
     else if(a.status==='approved')
-      act='<div class="ap-note">✅ 지자체 승인이 완료되었습니다'+(a.amount?' (지원금 '+a.amount.toLocaleString('ko-KR')+'원)':'')+'. 곧 결과 통보가 도착합니다.</div>';
+      act='<div class="ap-note">✅ 지자체 승인이 완료되었습니다'+(a.amount?' (지원금 '+a.amount.toLocaleString('ko-KR')+'원'+apBonusTxt(a)+')':'')+'. 곧 결과 통보가 도착합니다.</div>';
     else if(a.status==='notified')
-      act='<div class="ap-note">📨 승인 결과가 통보되었습니다'+(a.amount?' — 지원금 <b>'+a.amount.toLocaleString('ko-KR')+'원</b>':'')+'. 상품권 구입·충전은 <b>지역화폐 앱</b>에서 진행되며, 여행 후 증빙을 등록해 환급을 신청하세요.</div>'+
+      act='<div class="ap-note">📨 승인 결과가 통보되었습니다'+(a.amount?' — 지원금 <b>'+a.amount.toLocaleString('ko-KR')+'원</b>'+apBonusTxt(a):'')+'. 상품권 구입·충전은 <b>지역화폐 앱</b>에서 진행되며, 여행 후 증빙을 등록해 환급을 신청하세요.</div>'+
       '<button class="ap-sm" onclick="location.href=\'t50-pay.html\'">🪙 지역화폐 앱 — 상품권 구입·충전</button>'+
       '<button class="ap-sm" onclick="apEvToggle('+i+')">🧾 증빙자료 등록 · 환급 신청</button>'+apEvForm(a,i);
     else if(a.status==='refund_req')
@@ -523,10 +529,7 @@ function apRenderList(){
       '<button class="ap-sm" onclick="apEvToggle('+i+')">증빙자료 재등록 · 환급 재신청</button>'+apEvForm(a,i);
     else if(a.status==='refund_ok'){
       let rfTxt='';
-      if(a.refundAmount){
-        rfTxt=' — <b>'+a.refundAmount.toLocaleString('ko-KR')+'원</b>';
-        if(a.youth&&a.amount)rfTxt+=' (기본 '+a.amount.toLocaleString('ko-KR')+'원 + 🎉 청년 추가 20% '+(a.refundAmount-a.amount).toLocaleString('ko-KR')+'원)';
-      }
+      if(a.refundAmount)rfTxt=' — <b>'+a.refundAmount.toLocaleString('ko-KR')+'원</b>'+apBonusTxt(a);
       act='<div class="ap-note">✅ 환급이 승인되었습니다'+rfTxt+'. 환급 금액은 <b>지역화폐 앱</b>에 충전됩니다.</div>'+
       '<button class="ap-sm" onclick="location.href=\'t50-pay.html\'">🪙 지역화폐 앱 — 환급 충전받기</button>';
     }

@@ -149,10 +149,12 @@ function admRender(){
     let acts='',log='';
     if(a.status==='received')
       acts='<button onclick="admDo('+i+',\'review\')">검토 시작</button>';
-    else if(a.status==='review')
-      acts='<button onclick="admApprove('+i+')">✅ 승인 — 지원금 '+admWon(amt)+'</button>'+
+    else if(a.status==='review'){
+      const base=admAmt(a),bonus=a.youth?Math.round(base*0.2):0;
+      acts='<button onclick="admApprove('+i+')">✅ 승인 — 지원금 '+admWon(base+bonus)+(bonus?' (기본 '+admWon(base)+' + 청년 20% '+admWon(bonus)+')':'')+'</button>'+
         '<button class="bad" onclick="admRsn('+i+',\'rejected\')">⛔ 반려</button>'+
         '<textarea class="rsn" id="rsn'+i+'" placeholder="반려 사유를 입력하세요 (예: 신청자격 미충족, 여행 계획 불명확)"></textarea>';
+    }
     else if(a.status==='approved')
       acts='<button onclick="admDo('+i+',\'notified\')">📨 결과 통보 발송 — CI·승인 금액을 대민시스템/지역화폐로 전달</button>';
     else if(a.status==='notified')
@@ -161,7 +163,7 @@ function admRender(){
       acts=(a.evidence
         ?'<div class="plan">🧾 제출 증빙자료 — 카드번호 '+a.evidence.card+' · 승인번호 '+a.evidence.appr+' · 결재금액 '+admWon(a.evidence.amt)+' · 첨부 '+a.evidence.file+'<br><b style="color:#0f766e">✓ 영수증 OCR 판독 결과와 대조 일치 (공사 대민시스템 검증 완료)</b></div>'
         :'<div class="plan">🧾 제출 증빙(모의): 지역화폐 결재내역 '+(a.people||1)+'건 · 사용액 '+admWon(amt*2)+' · CI 대조 일치</div>')+
-        '<button onclick="admRefundOk('+i+')">💰 환급 승인 — '+admWon(Math.round(amt*(a.youth?1.2:1)))+' 충전 지시'+(a.youth?' (기본 '+admWon(amt)+' + 청년 20% '+admWon(Math.round(amt*0.2))+')':'')+'</button>'+
+        '<button onclick="admRefundOk('+i+')">💰 환급 승인 — '+admWon(amt)+' 충전 지시'+(a.bonus?' (청년 20% 포함)':'')+'</button>'+
         '<button class="bad" onclick="admRsn('+i+',\'refund_fix\')">✏️ 증빙 보완 요청</button>'+
         '<textarea class="rsn" id="rsn'+i+'" placeholder="보완 요청 사유를 입력하세요 (예: 숙박 결재내역 누락)"></textarea>';
     else if(a.status==='refund_fix')
@@ -191,9 +193,12 @@ function admDo(i,st){
 }
 function admApprove(i){
   const l=admLoad();if(!l[i])return;
-  l[i].status='approved';l[i].amount=admAmt(l[i]);
+  /* 청년(만 19~34세)은 승인 시점부터 지원금에 20% 가산 */
+  const base=admAmt(l[i]);
+  const bonus=l[i].youth?Math.round(base*0.2):0;
+  l[i].status='approved';l[i].baseAmount=base;l[i].bonus=bonus;l[i].amount=base+bonus;
   admSave(l);admRender();
-  admToast('승인 — 지원금 '+admWon(l[i].amount));
+  admToast('승인 — 지원금 '+admWon(base+bonus)+(bonus?' (청년 20% 포함)':''));
 }
 function admRsn(i,st){
   const ta=document.getElementById('rsn'+i);
@@ -208,11 +213,10 @@ function admRsn(i,st){
 }
 function admRefundOk(i){
   const l=admLoad();if(!l[i])return;
-  const base=l[i].amount||admAmt(l[i]);
-  /* 청년(만 19~34세)은 20% 추가 환급 */
-  l[i].status='refund_ok';l[i].refundAmount=Math.round(base*(l[i].youth?1.2:1));
+  /* 환급액 = 승인 지원금 (청년 20%는 승인 시 이미 가산되어 있음 — 이중 가산 금지) */
+  l[i].status='refund_ok';l[i].refundAmount=l[i].amount||admAmt(l[i]);
   admSave(l);admRender();
-  admToast('환급 승인 — '+admWon(l[i].refundAmount)+' 충전 지시'+(l[i].youth?' (청년 20% 추가 포함)':''));
+  admToast('환급 승인 — '+admWon(l[i].refundAmount)+' 충전 지시'+(l[i].bonus?' (청년 20% 포함)':''));
 }
 function admReset(){
   if(!confirm('신청 데모 데이터를 모두 삭제할까요?'))return;
