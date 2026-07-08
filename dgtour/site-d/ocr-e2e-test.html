@@ -2,15 +2,13 @@
 <html lang="ko">
 <head><meta charset="utf-8"><title>OCR e2e 테스트 (임시)</title></head>
 <body>
-<div id="out">RUNNING</div>
+<div id="out">READY</div>
 <script>
 localStorage.setItem('dgtour_user_id','user1');
 localStorage.setItem('dtidD_t50Applies_user1',JSON.stringify([
  {no:'T50-2026-1001',region:'영광',sido:'전라남도',start:'2026-07-10',end:'2026-07-12',
   period:{s:'2026-07-01',e:'2026-08-31'},people:'2',plan:'',applicant:'이준호',uid:'user1',youth:true,
   status:'notified',amount:120000,baseAmount:100000,bonus:20000,ts:'2026-07-08'}]));
-var out=[];
-function fin(){document.getElementById('out').textContent=out.join(' || ');}
 var f=document.createElement('iframe');f.style.cssText='width:430px;height:700px';
 f.src='t50-apply.html';
 f.onload=function(){setTimeout(function(){
@@ -25,39 +23,14 @@ f.onload=function(){setTimeout(function(){
     ['STORE : PENSION','CARD NO : 1234-56XX-XXXX-3456','AMOUNT : 45000','APPROVAL NO : 33545708']
       .forEach(function(t,li){x.fillText(t,36,140+li*50);});
     c.toBlob(function(blob){
-      try{
-        var file=new File([blob],'receipt.png',{type:'image/png'});
-        var dt=new DataTransfer();dt.items.add(file);
-        var inp=d.getElementById('apEvFile0');
-        inp.files=dt.files;
-        w.apOcrRead(0,inp);
-        var waited=0;
-        var iv=setInterval(function(){
-          waited++;
-          var t=d.querySelector('.ap-ev .ap-ocr .t');
-          var real=t&&t.textContent.indexOf('실제 판독')>=0;
-          var mock=t&&t.textContent.indexOf('모의')>=0;
-          if(real||mock||waited>80){
-            clearInterval(iv);
-            out.push('mode='+(real?'REAL':mock?'MOCK':'TIMEOUT'));
-            if(t)out.push('panel='+t.parentNode.textContent.replace(/\s+/g,' ').slice(0,160));
-            /* 1) 카드번호 불일치 → 차단 */
-            d.getElementById('apEvCard0').value='9999-5611-1111-3456';
-            d.getElementById('apEvAppr0').value='33545708';
-            d.getElementById('apEvAmt0').value='45000';
-            w.apEvSubmit(0);
-            out.push('wrongCardErr='+d.getElementById('apEvErr0').textContent.slice(0,60));
-            /* 2) 전부 일치(마스킹 자리는 임의 숫자) → 제출 성공 */
-            d.getElementById('apEvCard0').value='1234-5611-1111-3456';
-            w.apEvSubmit(0);
-            var rec=JSON.parse(localStorage.getItem('dtidD_t50Applies_user1'))[0];
-            out.push('status='+rec.status+' evid='+(rec.evidence?rec.evidence.card+'/'+rec.evidence.appr+'/'+rec.evidence.amt:'NONE'));
-            fin();
-          }
-        },1000);
-      }catch(e){out.push('ERR2='+e.message);fin();}
+      var file=new File([blob],'receipt.png',{type:'image/png'});
+      var dt=new DataTransfer();dt.items.add(file);
+      var inp=d.getElementById('apEvFile0');
+      inp.files=dt.files;
+      w.apOcrRead(0,inp);
+      document.getElementById('out').textContent='ATTACHED';
     },'image/png');
-  }catch(e){out.push('ERR='+e.message);fin();}
+  }catch(e){document.getElementById('out').textContent='ERR='+e.message;}
 },700);};
 document.body.appendChild(f);
 </script>

@@ -573,6 +573,7 @@ function apEvForm(a,i){
   }else if(o){
     ocr='<div class="ap-ocr"><div class="t">📄 영수증 판독 결과 (모의 — OCR 엔진 로드 실패) — <b>'+o.file+'</b></div>'+
       '<div class="row"><span>가맹점</span><b>'+o.merchant+'</b></div>'+
+      '<div class="row"><span>카드번호</span><b>'+(o.card||'미검출')+'</b></div>'+
       '<div class="row"><span>결재금액</span><b>'+o.amt.toLocaleString('ko-KR')+'원</b></div>'+
       '<div class="row"><span>승인번호</span><b>'+o.appr+'</b></div>'+
       '<small>입력하신 승인번호·결재금액이 판독 결과와 일치해야 제출됩니다.</small></div>';
@@ -749,10 +750,10 @@ function apOcrRead(i,input){
     const ex=apOcrExtract(raw);
     done({mode:'real',text:norm,ex:ex,file:file.name},'영수증 판독이 완료되었습니다 (실제 OCR)');
   }).catch(function(){
-    /* 엔진 로드/판독 실패 시 모의 판독으로 폴백 — 데모가 멈추지 않도록 */
+    /* 엔진 로드/판독 실패 시 모의 판독으로 폴백 — 데모가 멈추지 않도록 (카드번호도 데모 영수증 기준으로 대조) */
     const a=apLoad()[i];if(!a)return;
     const src=apOcrSource(a);
-    done({mode:'mock',merchant:src.merchant,amt:src.amt,appr:apApprNo(src.amt),file:file.name},'OCR 엔진을 불러오지 못해 모의 판독으로 대체했습니다');
+    done({mode:'mock',merchant:src.merchant,amt:src.amt,appr:apApprNo(src.amt),card:'123456******3456',file:file.name},'OCR 엔진을 불러오지 못해 모의 판독으로 대체했습니다');
   });
 }
 function apEvSubmit(i){
@@ -784,8 +785,8 @@ function apEvSubmit(i){
       err.innerHTML='❌ <b>정보가 잘못 입력되었습니다.</b> 영수증(OCR) 판독 결과와 다음 항목이 일치하지 않습니다: <b>'+fails.join(', ')+'</b>. 영수증의 표기와 동일하게 입력해 주세요.';
       return;
     }
-  }else if(appr!==o.appr||amt!==o.amt){
-    err.innerHTML='❌ <b>정보가 잘못 입력되었습니다.</b> 영수증 판독 결과와 승인번호 또는 결재금액이 일치하지 않습니다. 다시 확인해 주세요.';
+  }else if(appr!==o.appr||amt!==o.amt||(o.card&&!apCardMatch(card,o.card))){
+    err.innerHTML='❌ <b>정보가 잘못 입력되었습니다.</b> 영수증 판독 결과와 카드번호·승인번호·결재금액 중 일치하지 않는 항목이 있습니다. 다시 확인해 주세요.';
     return;
   }
   const list=apLoad();if(!list[i])return;
