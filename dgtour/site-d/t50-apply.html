@@ -6,7 +6,7 @@
 <title>디지털관광주민증 - 반값여행 통합신청 · 시안 D</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/common.css?v=20260707f">
-<link rel="stylesheet" href="theme.css?v=d6">
+<link rel="stylesheet" href="theme.css?v=d7">
 </head>
 <body class="theme-d">
 
@@ -160,6 +160,7 @@
     <div class="ap-modal-ic">✓</div>
     <div class="ap-modal-msg" id="apModalMsg">입력 후 주소지 확인이 완료되었습니다.</div>
     <div class="ap-modal-addr" id="apModalAddr"></div>
+    <div class="ap-youth" id="apModalYouth" style="display:none">🎉 청년(만 19~34세) 확인 — 환급 시 <b>20% 추가 환급</b> 혜택이 적용됩니다!</div>
     <button class="ap-big hero" onclick="apAddrSave()">확인 (주소지 저장)</button>
   </div>
 </div>
@@ -246,6 +247,25 @@ const AP_ST_LABEL={
 const AP_FLOW=['received','review','approved','notified','refund_req','refund_ok'];
 let apSel=null;          // 선택한 지역명
 let apAddrOk=false;      // 주소지 확인 여부
+let apYouth=false;       // 청년(만 19~34세) 여부 — 환급 시 20% 추가
+
+/* 주민등록번호로 만 나이 계산 (뒷자리 첫 숫자로 세기 판별). 형식 오류면 null */
+function apAgeFromRrn(r1,r2){
+  const yy=Number(r1.slice(0,2)),mm=Number(r1.slice(2,4)),dd=Number(r1.slice(4,6));
+  const g=Number(r2.charAt(0));
+  if(mm<1||mm>12||dd<1||dd>31)return null;
+  let century;
+  if(g===1||g===2||g===5||g===6)century=1900;
+  else if(g===3||g===4||g===7||g===8)century=2000;
+  else if(g===9||g===0)century=1800;
+  else return null;
+  const birth=new Date(century+yy,mm-1,dd);
+  if(isNaN(birth.getTime()))return null;
+  const today=new Date();
+  let age=today.getFullYear()-birth.getFullYear();
+  if(today.getMonth()<birth.getMonth()||(today.getMonth()===birth.getMonth()&&today.getDate()<birth.getDate()))age--;
+  return age;
+}
 let apEvOpen={};         // 증빙 등록 폼이 열려 있는 신청 건 index
 let apOcr={};            // 신청 건별 영수증 OCR 판독 결과 {merchant,amt,appr,file}
 
@@ -296,6 +316,16 @@ function apAddrCheck(){
   const r2=document.getElementById('apRrn2').value.replace(/[^0-9]/g,'');
   if(r1.length!==6){toast('주민등록번호 앞 6자리를 입력해 주세요');return;}
   if(r2.length!==7){toast('주민등록번호 뒤 7자리를 입력해 주세요');return;}
+  const age=apAgeFromRrn(r1,r2);
+  if(age===null){toast('주민등록번호 형식이 올바르지 않습니다');return;}
+  /* 미성년자 신청 불가 */
+  if(age<19){
+    alert('만 19세 미만 미성년자는 반값여행을 신청할 수 없습니다.\n(입력하신 주민등록번호 기준 만 '+age+'세)');
+    return;
+  }
+  /* 청년(만 19~34세) 20% 추가 환급 대상 */
+  apYouth=(age>=19&&age<35);
+  document.getElementById('apModalYouth').style.display=apYouth?'block':'none';
   document.getElementById('apModalAddr').textContent=AP_ADDR.full;
   document.getElementById('apModal').classList.add('on');
 }
@@ -391,7 +421,7 @@ function apSubmit(){
   list.unshift({no:no,region:apSel,sido:r?r.sido:'',start:d1,end:d2,period:pd,
     people:document.getElementById('apPeople').value,
     plan:document.getElementById('apPlan').value.trim(),
-    applicant:user?user.name:'',
+    applicant:user?user.name:'',youth:apYouth,
     status:'received',ts:new Date().toISOString().slice(0,10)});
   apSave(list);
   document.getElementById('apDoneNo').textContent='접수번호 '+no;
@@ -427,9 +457,15 @@ function apRenderList(){
     else if(a.status==='refund_fix')
       act='<div class="ap-note bad">✏️ 지자체가 증빙 보완을 요청했습니다'+(a.fixReason?' — 사유: '+a.fixReason:'')+'</div>'+
       '<button class="ap-sm" onclick="apEvToggle('+i+')">증빙자료 재등록 · 환급 재신청</button>'+apEvForm(a,i);
-    else if(a.status==='refund_ok')
-      act='<div class="ap-note">✅ 환급이 승인되었습니다'+(a.refundAmount?' — <b>'+a.refundAmount.toLocaleString('ko-KR')+'원</b>':'')+'. 환급 금액은 <b>지역화폐 앱</b>에 충전됩니다.</div>'+
+    else if(a.status==='refund_ok'){
+      let rfTxt='';
+      if(a.refundAmount){
+        rfTxt=' — <b>'+a.refundAmount.toLocaleString('ko-KR')+'원</b>';
+        if(a.youth&&a.amount)rfTxt+=' (기본 '+a.amount.toLocaleString('ko-KR')+'원 + 🎉 청년 추가 20% '+(a.refundAmount-a.amount).toLocaleString('ko-KR')+'원)';
+      }
+      act='<div class="ap-note">✅ 환급이 승인되었습니다'+rfTxt+'. 환급 금액은 <b>지역화폐 앱</b>에 충전됩니다.</div>'+
       '<button class="ap-sm" onclick="location.href=\'t50-pay.html\'">🪙 지역화폐 앱 — 환급 충전받기</button>';
+    }
     else if(a.status==='rejected')
       act='<div class="ap-note bad">⛔ 신청이 반려되었습니다'+(a.rejectReason?' — 사유: '+a.rejectReason:'')+'. 다른 지역으로 다시 신청할 수 있습니다.</div>';
     const refund=(a.status==='refund_req'||a.status==='refund_fix'||a.status==='refund_ok')?
@@ -437,7 +473,8 @@ function apRenderList(){
       '<span class="ap-tl on">'+AP_ST_LABEL.refund_req.ic+' '+AP_ST_LABEL.refund_req.t+'<small>공사</small></span><span class="ap-tl-ar">›</span>'+
       (a.status==='refund_fix'?'<span class="ap-tl bad on">'+AP_ST_LABEL.refund_fix.ic+' '+AP_ST_LABEL.refund_fix.t+'<small>지자체</small></span><span class="ap-tl-ar">›</span>':'')+
       '<span class="ap-tl'+(a.status==='refund_ok'?' on':'')+'">'+AP_ST_LABEL.refund_ok.ic+' '+AP_ST_LABEL.refund_ok.t+'<small>지자체</small></span></div>':'';
-    return '<div class="ap-card"><div class="ap-card-h"><b>'+a.region+'</b> <span>'+a.sido+'</span><em>'+a.no+'</em></div>'+
+    return '<div class="ap-card"><div class="ap-card-h"><b>'+a.region+'</b> <span>'+a.sido+'</span>'+
+      (a.youth?'<span class="ap-chip-youth">🎉 청년 +20% 환급</span>':'')+'<em>'+a.no+'</em></div>'+
       '<div class="ap-card-d">'+a.start+' ~ '+a.end+' · '+a.people+'명 · 신청일 '+a.ts+
       (a.period?'<br><small>지역 여행 가능기간: '+apFmt(a.period.s)+' ~ '+apFmt(a.period.e)+'</small>':'')+'</div>'+
       '<div class="ap-tl-row">'+steps+'</div>'+refund+act+'</div>';
@@ -551,6 +588,6 @@ if(user){
   });
 }
 </script>
-<script src="theme.js?v=d6"></script>
+<script src="theme.js?v=d7"></script>
 </body>
 </html>

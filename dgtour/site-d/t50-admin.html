@@ -142,7 +142,8 @@ function admRender(){
     const amt=a.amount||admAmt(a);
     /* 자격 자동 점검: 관외거주(주소지 시·도 ≠ 신청 지역 시·도), 여행기간 적합(접수 시 검증됨) */
     const chk='<div class="chk"><span>✔ 관외거주 충족 — 주소지 강원 / 신청지 '+a.sido+'</span>'+
-      (a.period?'<span>✔ 여행기간 적합 — 가능기간('+admFmt(a.period.s)+'~'+admFmt(a.period.e)+') 내 일정</span>':'')+'</div>';
+      (a.period?'<span>✔ 여행기간 적합 — 가능기간('+admFmt(a.period.s)+'~'+admFmt(a.period.e)+') 내 일정</span>':'')+
+      (a.youth?'<span>🎉 청년(만 19~34세) — 환급 20% 추가 대상</span>':'')+'</div>';
     let acts='',log='';
     if(a.status==='received')
       acts='<button onclick="admDo('+i+',\'review\')">검토 시작</button>';
@@ -158,7 +159,7 @@ function admRender(){
       acts=(a.evidence
         ?'<div class="plan">🧾 제출 증빙자료 — 카드번호 '+a.evidence.card+' · 승인번호 '+a.evidence.appr+' · 결재금액 '+admWon(a.evidence.amt)+' · 첨부 '+a.evidence.file+'<br><b style="color:#0f766e">✓ 영수증 OCR 판독 결과와 대조 일치 (공사 대민시스템 검증 완료)</b></div>'
         :'<div class="plan">🧾 제출 증빙(모의): 지역화폐 결재내역 '+(a.people||1)+'건 · 사용액 '+admWon(amt*2)+' · CI 대조 일치</div>')+
-        '<button onclick="admRefundOk('+i+')">💰 환급 승인 — '+admWon(amt)+' 충전 지시</button>'+
+        '<button onclick="admRefundOk('+i+')">💰 환급 승인 — '+admWon(Math.round(amt*(a.youth?1.2:1)))+' 충전 지시'+(a.youth?' (기본 '+admWon(amt)+' + 청년 20% '+admWon(Math.round(amt*0.2))+')':'')+'</button>'+
         '<button class="bad" onclick="admRsn('+i+',\'refund_fix\')">✏️ 증빙 보완 요청</button>'+
         '<textarea class="rsn" id="rsn'+i+'" placeholder="보완 요청 사유를 입력하세요 (예: 숙박 결재내역 누락)"></textarea>';
     else if(a.status==='refund_fix')
@@ -205,9 +206,11 @@ function admRsn(i,st){
 }
 function admRefundOk(i){
   const l=admLoad();if(!l[i])return;
-  l[i].status='refund_ok';l[i].refundAmount=l[i].amount||admAmt(l[i]);
+  const base=l[i].amount||admAmt(l[i]);
+  /* 청년(만 19~34세)은 20% 추가 환급 */
+  l[i].status='refund_ok';l[i].refundAmount=Math.round(base*(l[i].youth?1.2:1));
   admSave(l);admRender();
-  admToast('환급 승인 — '+admWon(l[i].refundAmount)+' 충전 지시');
+  admToast('환급 승인 — '+admWon(l[i].refundAmount)+' 충전 지시'+(l[i].youth?' (청년 20% 추가 포함)':''));
 }
 function admReset(){
   if(!confirm('신청 데모 데이터를 모두 삭제할까요?'))return;
