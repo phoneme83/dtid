@@ -564,9 +564,12 @@ function apEvForm(a,i){
   const o=apOcr[i];
   let ocr;
   if(o&&o.mode==='real'){
+    const ex=o.ex||{};
     ocr='<div class="ap-ocr"><div class="t">📄 영수증 OCR 판독 완료 (실제 판독) — <b>'+o.file+'</b></div>'+
-      '<div class="row"><span>영수증에서 인식된 숫자</span><b>'+(o.groups.length?o.groups.join(', '):'없음')+'</b></div>'+
-      '<small>입력하신 승인번호와 결재금액이 영수증에서 실제로 발견되어야 제출됩니다.</small></div>';
+      '<div class="row"><span>판독된 카드번호</span><b>'+(ex.card||'미검출')+'</b></div>'+
+      '<div class="row"><span>판독된 승인번호</span><b>'+(ex.appr||'미검출')+'</b></div>'+
+      '<div class="row"><span>판독된 금액</span><b>'+(ex.amts&&ex.amts.length?ex.amts.map(function(v){return Number(v).toLocaleString('ko-KR');}).join(', ')+'원':'미검출')+'</b></div>'+
+      '<small>입력하신 카드번호·승인번호·결재금액이 영수증 판독 결과와 대조됩니다. 카드번호의 *(마스킹) 자리는 비교에서 제외됩니다.</small></div>';
   }else if(o){
     ocr='<div class="ap-ocr"><div class="t">📄 영수증 판독 결과 (모의 — OCR 엔진 로드 실패) — <b>'+o.file+'</b></div>'+
       '<div class="row"><span>가맹점</span><b>'+o.merchant+'</b></div>'+
@@ -622,9 +625,9 @@ function apEvSample(i){
     'STORE : '+src.merchant.replace(/[^0-9A-Za-z가-힣 ]/g,'').trim(),
     'DATE : '+a.ts+' 14:22',
     '--------------------------------',
+    'CARD NO : 1234-56XX-XXXX-3456',
     'AMOUNT : '+src.amt,
     'APPROVAL NO : '+appr,
-    'CARD : CREDIT (00)',
     '--------------------------------',
     'BANGAP TRAVEL DEMO RECEIPT'
   ];
@@ -633,7 +636,65 @@ function apEvSample(i){
   el.href=c.toDataURL('image/png');
   el.download='demo-receipt-'+appr+'.png';
   document.body.appendChild(el);el.click();el.remove();
-  toast('데모 영수증(승인번호 '+appr+' · 금액 '+src.amt.toLocaleString('ko-KR')+'원)을 내려받았습니다');
+  toast('데모 영수증 다운로드 — 카드 1234-56○○-○○○○-3456 형태(가려진 자리는 아무 숫자), 승인번호 '+appr+', 금액 '+src.amt.toLocaleString('ko-KR')+'원으로 입력하세요');
+}
+
+/* OCR 원문에서 카드번호·승인번호·금액 필드를 라벨 기준으로 추출.
+   카드번호는 *·X·● 마스킹을 와일드카드로 취급한다 */
+function apOcrExtract(raw){
+  const res={card:null,appr:null,amts:[]};
+  const CARD_LB=/(card|카드)/i, APPR_LB=/(approv|appr|승인)/i, AMT_LB=/(amount|amt|금액|합계|total)/i;
+  raw.split(/\n+/).forEach(function(ln){
+    const ns=ln.replace(/[\s,]/g,'');
+    if(!res.card&&CARD_LB.test(ln)){
+      const m=ns.match(/[0-9*xX●•#][0-9*xX●•#\-]{11,22}/);
+      if(m)res.card=m[0].replace(/-/g,'').replace(/[xX●•#]/g,'*');
+    }
+    if(!res.appr&&APPR_LB.test(ln)){
+      const m=ns.match(/\d{6,9}/);
+      if(m)res.appr=m[0];
+    }
+    if(AMT_LB.test(ln)){
+      const m=ns.match(/\d{3,9}/g);
+      if(m)m.forEach(function(v){res.amts.push(v);});
+    }
+  });
+  /* 라벨을 못 읽은 경우의 보조 추출 — 공백 단위 토큰으로만 판단 (숫자 뭉개짐 방지) */
+  const toks=raw.split(/\s+/);
+  if(!res.card){
+    toks.some(function(tk){
+      const t=tk.replace(/[^0-9*xX●•#\-]/g,'').replace(/-/g,'').replace(/[xX●•#]/g,'*');
+      if(/\*/.test(t)&&t.length>=15&&t.length<=19){res.card=t;return true;}
+      return false;
+    });
+  }
+  if(!res.appr){
+    toks.some(function(tk){
+      const t=tk.replace(/[^0-9]/g,'');
+      if(t.length===8&&t===tk.replace(/[^0-9]/g,'')&&/^\d{8}$/.test(tk)){res.appr=t;return true;}
+      return false;
+    });
+  }
+  return res;
+}
+
+/* 마스킹된 카드번호와 입력 카드번호 대조: 보이는 숫자는 같은 자리에서 일치해야 함 */
+function apCardMatch(entered,ocrCard){
+  const tok=(ocrCard||'').replace(/[^0-9*]/g,'');
+  const vis=tok.replace(/\*/g,'');
+  if(vis.length<4)return false;                      /* 노출 숫자가 너무 적으면 판정 불가 */
+  if(tok.length===entered.length){
+    for(let j=0;j<tok.length;j++){
+      if(tok.charAt(j)!=='*'&&tok.charAt(j)!==entered.charAt(j))return false;
+    }
+    return true;
+  }
+  /* 길이가 어긋나면(OCR 글자 누락) 앞·뒤 연속 노출 숫자로 비교 */
+  const fr=tok.match(/^[0-9]+/),bk=tok.match(/[0-9]+$/);
+  let ok=false;
+  if(fr){if(entered.indexOf(fr[0])!==0)return false;ok=true;}
+  if(bk){if(entered.slice(-bk[0].length)!==bk[0])return false;ok=true;}
+  return ok;
 }
 
 /* Tesseract.js(실제 OCR 엔진) 지연 로드 */
@@ -677,9 +738,10 @@ function apOcrRead(i,input){
       if(wait&&m.status==='recognizing text')wait.textContent='🔍 영수증 판독 중… '+Math.round(m.progress*100)+'%';
     }});
   }),timeout]).then(function(r){
-    const norm=(r.data.text||'').replace(/[,\s]/g,'');
-    const groups=[...new Set(norm.match(/\d{4,9}/g)||[])];
-    done({mode:'real',text:norm,groups:groups,file:file.name},'영수증 판독이 완료되었습니다 (실제 OCR)');
+    const raw=r.data.text||'';
+    const norm=raw.replace(/[,\s]/g,'');
+    const ex=apOcrExtract(raw);
+    done({mode:'real',text:norm,ex:ex,file:file.name},'영수증 판독이 완료되었습니다 (실제 OCR)');
   }).catch(function(){
     /* 엔진 로드/판독 실패 시 모의 판독으로 폴백 — 데모가 멈추지 않도록 */
     const a=apLoad()[i];if(!a)return;
@@ -699,14 +761,21 @@ function apEvSubmit(i){
   /* OCR 판독 결과(apOcr)는 파일이 첨부되어야만 생성된다 */
   const o=apOcr[i];
   if(!o){err.textContent='영수증 등 증빙파일을 첨부해 주세요. 첨부하면 자동으로 판독됩니다.';return;}
-  /* OCR 대조: 입력한 승인번호·결재금액이 영수증에서 확인되지 않으면 제출 차단 */
+  /* OCR 대조: 영수증에서 추출한 카드번호·승인번호·금액 필드와 입력값을 각각 비교 */
   if(o.mode==='real'){
-    const hasAppr=o.text.indexOf(appr)>=0;
-    const hasAmt=o.text.indexOf(String(amt))>=0;
-    if(!hasAppr||!hasAmt){
-      err.innerHTML='❌ <b>정보가 잘못 입력되었습니다.</b> 첨부한 영수증(OCR 판독)에서 '+
-        (!hasAppr&&!hasAmt?'승인번호와 결재금액을':!hasAppr?'승인번호를':'결재금액을')+
-        ' 찾지 못했습니다. 영수증의 숫자와 동일하게 입력해 주세요.';
+    const ex=o.ex||{};
+    const fails=[];
+    /* 승인번호: 라벨 추출값 우선, 없으면 원문 포함 여부 */
+    if(ex.appr){if(ex.appr!==appr)fails.push('승인번호(영수증: '+ex.appr+')');}
+    else if(o.text.indexOf(appr)<0)fails.push('승인번호(영수증에서 미검출)');
+    /* 금액: 라벨 추출값 우선, 없으면 원문 포함 여부 */
+    const amtStr=String(amt);
+    if(ex.amts&&ex.amts.length){if(ex.amts.indexOf(amtStr)<0)fails.push('결재금액(영수증: '+ex.amts.map(function(v){return Number(v).toLocaleString('ko-KR');}).join('/')+'원)');}
+    else if(o.text.indexOf(amtStr)<0)fails.push('결재금액(영수증에서 미검출)');
+    /* 카드번호: 영수증에서 검출된 경우에만 대조 — 마스킹(*) 자리는 제외, 보이는 숫자는 자리까지 일치해야 함 */
+    if(ex.card&&!apCardMatch(card,ex.card))fails.push('카드번호(영수증: '+ex.card+')');
+    if(fails.length){
+      err.innerHTML='❌ <b>정보가 잘못 입력되었습니다.</b> 영수증(OCR) 판독 결과와 다음 항목이 일치하지 않습니다: <b>'+fails.join(', ')+'</b>. 영수증의 표기와 동일하게 입력해 주세요.';
       return;
     }
   }else if(appr!==o.appr||amt!==o.amt){
