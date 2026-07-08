@@ -215,7 +215,17 @@ try{var _pb=JSON.parse(localStorage.getItem("dtidD_pointBal2")||"{}");ACCOUNTS.f
 const user=requireUser();
 
 /* ── 상태 (모든 top-level 선언은 init 코드보다 위에 둔다) ── */
-const AP_KEY='dtidD_t50Applies';
+/* 신청 데이터는 로그인 계정별로 분리 저장 — 계정을 바꿔도 각자의 신청 내역이 유지된다 */
+const AP_KEY='dtidD_t50Applies_'+(user?user.id:'guest');
+/* 예전 공용 키에 남아 있던 신청 건은 현재 계정으로 1회 이관 */
+try{
+  const legacy=localStorage.getItem('dtidD_t50Applies');
+  if(legacy&&user){
+    const cur=JSON.parse(localStorage.getItem(AP_KEY)||'[]');
+    localStorage.setItem(AP_KEY,JSON.stringify(JSON.parse(legacy).concat(cur)));
+    localStorage.removeItem('dtidD_t50Applies');
+  }
+}catch(e){}
 /* 주소지: 시·군·구 단위까지만 저장. 시뮬레이션은 반값여행 참여 지자체 중 1곳을 랜덤 배정 */
 const AP_SI={'밀양':'밀양시','제천':'제천시'};   /* 시(市)인 지자체, 나머지는 군 */
 let apAddr=null;   /* {sido, sigungu, full} */
@@ -485,7 +495,7 @@ function apSubmit(){
   list.unshift({no:no,region:apSel,sido:r?r.sido:'',start:d1,end:d2,period:pd,
     people:document.getElementById('apPeople').value,
     plan:document.getElementById('apPlan').value.trim(),
-    applicant:user?user.name:'',youth:apYouth,addr:apAddr?apAddr.full:'',
+    applicant:user?user.name:'',uid:user?user.id:'',youth:apYouth,addr:apAddr?apAddr.full:'',
     status:'received',ts:new Date().toISOString().slice(0,10)});
   apSave(list);
   document.getElementById('apDoneNo').textContent='접수번호 '+no;
@@ -552,15 +562,24 @@ function apRenderList(){
 function apEvForm(a,i){
   if(!apEvOpen[i])return '';
   const o=apOcr[i];
-  const ocr=o?
-    '<div class="ap-ocr"><div class="t">📄 영수증 OCR 판독 결과 — <b>'+o.file+'</b></div>'+
-    '<div class="row"><span>가맹점</span><b>'+o.merchant+'</b></div>'+
-    '<div class="row"><span>결재금액</span><b>'+o.amt.toLocaleString('ko-KR')+'원</b></div>'+
-    '<div class="row"><span>승인번호</span><b>'+o.appr+'</b></div>'+
-    '<small>입력하신 승인번호·결재금액이 판독 결과와 일치해야 제출됩니다.</small></div>'
-    :'<div class="ap-ocr wait" id="apOcrWait'+i+'" style="display:none">🔍 영수증 판독 중…</div>';
+  let ocr;
+  if(o&&o.mode==='real'){
+    ocr='<div class="ap-ocr"><div class="t">📄 영수증 OCR 판독 완료 (실제 판독) — <b>'+o.file+'</b></div>'+
+      '<div class="row"><span>영수증에서 인식된 숫자</span><b>'+(o.groups.length?o.groups.join(', '):'없음')+'</b></div>'+
+      '<small>입력하신 승인번호와 결재금액이 영수증에서 실제로 발견되어야 제출됩니다.</small></div>';
+  }else if(o){
+    ocr='<div class="ap-ocr"><div class="t">📄 영수증 판독 결과 (모의 — OCR 엔진 로드 실패) — <b>'+o.file+'</b></div>'+
+      '<div class="row"><span>가맹점</span><b>'+o.merchant+'</b></div>'+
+      '<div class="row"><span>결재금액</span><b>'+o.amt.toLocaleString('ko-KR')+'원</b></div>'+
+      '<div class="row"><span>승인번호</span><b>'+o.appr+'</b></div>'+
+      '<small>입력하신 승인번호·결재금액이 판독 결과와 일치해야 제출됩니다.</small></div>';
+  }else{
+    ocr='<div class="ap-ocr wait" id="apOcrWait'+i+'" style="display:none">🔍 영수증 판독 중…</div>';
+  }
   return '<div class="ap-ev">'+
     '<div class="t">증빙자료 등록</div>'+
+    '<div class="ap-note">테스트용 영수증이 필요하면 아래 버튼으로 승인번호·금액이 인쇄된 데모 영수증 이미지를 받은 뒤 첨부하세요.</div>'+
+    '<button type="button" class="ap-sm" onclick="apEvSample('+i+')">📄 데모 영수증 이미지 받기</button>'+
     '<label class="ap-lb">카드번호</label>'+
     '<input class="ap-in" id="apEvCard'+i+'" type="text" inputmode="numeric" maxlength="19" placeholder="0000-0000-0000-0000">'+
     '<label class="ap-lb">승인번호</label>'+
@@ -589,25 +608,84 @@ function apEvToggle(i,close){
   if(!apEvOpen[i])delete apOcr[i];
   apRenderList();
 }
+/* 데모 영수증 이미지 생성·다운로드 — 지역화폐 결제내역(없으면 기본값) 기준 승인번호·금액 인쇄 */
+function apEvSample(i){
+  const a=apLoad()[i];if(!a)return;
+  const src=apOcrSource(a),appr=apApprNo(src.amt);
+  const c=document.createElement('canvas');c.width=480;c.height=520;
+  const x=c.getContext('2d');
+  x.fillStyle='#ffffff';x.fillRect(0,0,480,520);
+  x.fillStyle='#111111';x.textAlign='center';
+  x.font='bold 34px Arial';x.fillText('RECEIPT',240,64);
+  x.font='22px Arial';x.textAlign='left';
+  const lines=[
+    'STORE : '+src.merchant.replace(/[^0-9A-Za-z가-힣 ]/g,'').trim(),
+    'DATE : '+a.ts+' 14:22',
+    '--------------------------------',
+    'AMOUNT : '+src.amt,
+    'APPROVAL NO : '+appr,
+    'CARD : CREDIT (00)',
+    '--------------------------------',
+    'BANGAP TRAVEL DEMO RECEIPT'
+  ];
+  lines.forEach(function(t,li){x.fillText(t,36,130+li*46);});
+  const el=document.createElement('a');
+  el.href=c.toDataURL('image/png');
+  el.download='demo-receipt-'+appr+'.png';
+  document.body.appendChild(el);el.click();el.remove();
+  toast('데모 영수증(승인번호 '+appr+' · 금액 '+src.amt.toLocaleString('ko-KR')+'원)을 내려받았습니다');
+}
+
+/* Tesseract.js(실제 OCR 엔진) 지연 로드 */
+let apTessReady=null;
+function apLoadTess(){
+  if(window.Tesseract)return Promise.resolve();
+  if(apTessReady)return apTessReady;
+  apTessReady=new Promise(function(res,rej){
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    s.onload=function(){res();};
+    s.onerror=function(){apTessReady=null;rej(new Error('tesseract load fail'));};
+    document.head.appendChild(s);
+  });
+  return apTessReady;
+}
+
 function apOcrRead(i,input){
   if(!input.files||!input.files.length)return;
-  const fname=input.files[0].name;
+  const file=input.files[0];
   const wait=document.getElementById('apOcrWait'+i);
-  if(wait)wait.style.display='block';
+  if(wait){wait.style.display='block';wait.textContent='🔍 영수증 판독 중… (실제 OCR — 처음에는 엔진 내려받느라 수 초 걸립니다)';}
   /* 카드번호·승인번호·금액 입력값 유지를 위해 판독 완료 시점에만 재렌더링 */
-  const card=document.getElementById('apEvCard'+i).value;
-  const appr=document.getElementById('apEvAppr'+i).value;
-  const amt=document.getElementById('apEvAmt'+i).value;
-  setTimeout(function(){
+  const keep={
+    card:document.getElementById('apEvCard'+i).value,
+    appr:document.getElementById('apEvAppr'+i).value,
+    amt:document.getElementById('apEvAmt'+i).value
+  };
+  function done(o,msg){
+    apOcr[i]=o;
+    apRenderList();
+    const c=document.getElementById('apEvCard'+i);if(c)c.value=keep.card;
+    const p=document.getElementById('apEvAppr'+i);if(p)p.value=keep.appr;
+    const m=document.getElementById('apEvAmt'+i);if(m)m.value=keep.amt;
+    toast(msg);
+  }
+  /* 25초 안에 판독이 끝나지 않으면(엔진 로드 실패·오프라인 등) 모의 판독으로 폴백 */
+  const timeout=new Promise(function(_,rej){setTimeout(function(){rej(new Error('ocr timeout'));},25000);});
+  Promise.race([apLoadTess().then(function(){
+    return Tesseract.recognize(file,'eng',{logger:function(m){
+      if(wait&&m.status==='recognizing text')wait.textContent='🔍 영수증 판독 중… '+Math.round(m.progress*100)+'%';
+    }});
+  }),timeout]).then(function(r){
+    const norm=(r.data.text||'').replace(/[,\s]/g,'');
+    const groups=[...new Set(norm.match(/\d{4,9}/g)||[])];
+    done({mode:'real',text:norm,groups:groups,file:file.name},'영수증 판독이 완료되었습니다 (실제 OCR)');
+  }).catch(function(){
+    /* 엔진 로드/판독 실패 시 모의 판독으로 폴백 — 데모가 멈추지 않도록 */
     const a=apLoad()[i];if(!a)return;
     const src=apOcrSource(a);
-    apOcr[i]={merchant:src.merchant,amt:src.amt,appr:apApprNo(src.amt),file:fname};
-    apRenderList();
-    const c=document.getElementById('apEvCard'+i);if(c)c.value=card;
-    const p=document.getElementById('apEvAppr'+i);if(p)p.value=appr;
-    const m=document.getElementById('apEvAmt'+i);if(m)m.value=amt;
-    toast('영수증 판독이 완료되었습니다');
-  },900);
+    done({mode:'mock',merchant:src.merchant,amt:src.amt,appr:apApprNo(src.amt),file:file.name},'OCR 엔진을 불러오지 못해 모의 판독으로 대체했습니다');
+  });
 }
 function apEvSubmit(i){
   const err=document.getElementById('apEvErr'+i);
@@ -621,9 +699,18 @@ function apEvSubmit(i){
   /* OCR 판독 결과(apOcr)는 파일이 첨부되어야만 생성된다 */
   const o=apOcr[i];
   if(!o){err.textContent='영수증 등 증빙파일을 첨부해 주세요. 첨부하면 자동으로 판독됩니다.';return;}
-  /* OCR 대조: 승인번호·결재금액이 판독 결과와 다르면 제출 차단 */
-  if(appr!==o.appr||amt!==o.amt){
-    err.innerHTML='❌ <b>정보가 잘못 입력되었습니다.</b> 영수증(OCR) 판독 결과와 승인번호 또는 결재금액이 일치하지 않습니다. 다시 확인해 주세요.';
+  /* OCR 대조: 입력한 승인번호·결재금액이 영수증에서 확인되지 않으면 제출 차단 */
+  if(o.mode==='real'){
+    const hasAppr=o.text.indexOf(appr)>=0;
+    const hasAmt=o.text.indexOf(String(amt))>=0;
+    if(!hasAppr||!hasAmt){
+      err.innerHTML='❌ <b>정보가 잘못 입력되었습니다.</b> 첨부한 영수증(OCR 판독)에서 '+
+        (!hasAppr&&!hasAmt?'승인번호와 결재금액을':!hasAppr?'승인번호를':'결재금액을')+
+        ' 찾지 못했습니다. 영수증의 숫자와 동일하게 입력해 주세요.';
+      return;
+    }
+  }else if(appr!==o.appr||amt!==o.amt){
+    err.innerHTML='❌ <b>정보가 잘못 입력되었습니다.</b> 영수증 판독 결과와 승인번호 또는 결재금액이 일치하지 않습니다. 다시 확인해 주세요.';
     return;
   }
   const list=apLoad();if(!list[i])return;

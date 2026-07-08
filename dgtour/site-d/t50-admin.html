@@ -88,8 +88,9 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
 <script>/* site-d 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidD_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});}catch(e){}</script>
 <script>
-/* 대민시스템(t50-apply.html)과 같은 저장소를 공유한다 */
-const AP_KEY='dtidD_t50Applies';
+/* 대민시스템(t50-apply.html)과 같은 저장소를 공유한다.
+   신청 데이터는 계정별 키(dtidD_t50Applies_<uid>)로 분리 저장되며, 관리시스템은 전 계정을 집계한다 */
+const AP_PREFIX='dtidD_t50Applies_';
 const ADM_ST={
   received:'접수 대기',review:'검토중',approved:'승인 (통보 대기)',rejected:'반려',
   notified:'결과 통보 완료',refund_req:'환급 심사 대기',refund_fix:'증빙 보완 요청',refund_ok:'환급 완료'
@@ -97,8 +98,25 @@ const ADM_ST={
 const ADM_ADDR='강원특별자치도 춘천시 (신청자 주민등록상 주소지)';
 let admToastTimer=null;
 
-function admLoad(){try{return JSON.parse(localStorage.getItem(AP_KEY)||'[]');}catch(e){return[];}}
-function admSave(l){localStorage.setItem(AP_KEY,JSON.stringify(l));}
+function admKeys(){
+  const ks=[];
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&(k.indexOf(AP_PREFIX)===0||k==='dtidD_t50Applies'))ks.push(k);
+  }
+  return ks;
+}
+function admLoadKey(k){try{return JSON.parse(localStorage.getItem(k)||'[]');}catch(e){return[];}}
+function admSaveKey(k,l){localStorage.setItem(k,JSON.stringify(l));}
+/* 전 계정 신청 건 집계: [{k:저장키, i:키 내 index, a:신청}] */
+function admLoadAll(){
+  const out=[];
+  admKeys().forEach(function(k){
+    admLoadKey(k).forEach(function(a,i){out.push({k:k,i:i,a:a});});
+  });
+  return out;
+}
+function admUid(k){return k===('dtidD_t50Applies')?'(공용)':k.slice(AP_PREFIX.length);}
 function admToast(m){
   const t=document.getElementById('admToast');
   t.textContent=m;t.classList.add('on');
@@ -109,9 +127,9 @@ function admFmt(d){return d?d.replace(/-/g,'.'):'';}
 function admAmt(a){return (a.people==='6'?6:Number(a.people))*50000;}
 function admWon(n){return n.toLocaleString('ko-KR')+'원';}
 
-function admRegionOpts(){
+function admRegionOpts(all){
   const sel=document.getElementById('admRegion');
-  const regions=[...new Set(admLoad().map(a=>a.region))];
+  const regions=[...new Set(all.map(x=>x.a.region))];
   const cur=sel.value;
   sel.innerHTML='<option value="">전체 지자체</option>'+regions.map(r=>'<option value="'+r+'"'+(r===cur?' selected':'')+'>'+r+'</option>').join('');
 }
@@ -128,19 +146,21 @@ function admStats(list){
 }
 
 function admRender(){
-  admRegionOpts();
-  const all=admLoad();
-  admStats(all);
+  const all=admLoadAll();
+  admRegionOpts(all);
+  admStats(all.map(x=>x.a));
   const rg=document.getElementById('admRegion').value;
   const st=document.getElementById('admStatus').value;
-  const list=all.map((a,i)=>({a:a,i:i})).filter(x=>(!rg||x.a.region===rg)&&(!st||x.a.status===st));
+  const list=all.filter(x=>(!rg||x.a.region===rg)&&(!st||x.a.status===st));
   const el=document.getElementById('admList');
   if(!list.length){
     el.innerHTML='<div class="empty">표시할 신청 건이 없습니다.<br><a href="t50-apply.html">신청자 화면(대민시스템)</a>에서 먼저 통합신청을 접수해 보세요.</div>';
     return;
   }
   el.innerHTML=list.map(x=>{
-    const a=x.a,i=x.i;
+    const a=x.a,i=x.i,k=x.k;
+    const K="'"+k+"',"+i;                     /* onclick 인자: 저장키+인덱스 */
+    const rid='rsn_'+admUid(k)+'_'+i;
     const amt=a.amount||admAmt(a);
     /* 자격 자동 점검: 관외거주(주소지 시·도 ≠ 신청 지역 시·도), 여행기간 적합(접수 시 검증됨) */
     const chk='<div class="chk"><span>✔ 관외거주 충족 — 주소지 '+(a.addr?a.addr.split(' ')[0]:'강원')+' / 신청지 '+a.sido+'</span>'+
@@ -148,24 +168,24 @@ function admRender(){
       (a.youth?'<span>🎉 청년(만 19~34세) — 환급 20% 추가 대상</span>':'')+'</div>';
     let acts='',log='';
     if(a.status==='received')
-      acts='<button onclick="admDo('+i+',\'review\')">검토 시작</button>';
+      acts='<button onclick="admDo('+K+',\'review\')">검토 시작</button>';
     else if(a.status==='review'){
       const base=admAmt(a),bonus=a.youth?Math.round(base*0.2):0;
-      acts='<button onclick="admApprove('+i+')">✅ 승인 — 지원금 '+admWon(base+bonus)+(bonus?' (기본 '+admWon(base)+' + 청년 20% '+admWon(bonus)+')':'')+'</button>'+
-        '<button class="bad" onclick="admRsn('+i+',\'rejected\')">⛔ 반려</button>'+
-        '<textarea class="rsn" id="rsn'+i+'" placeholder="반려 사유를 입력하세요 (예: 신청자격 미충족, 여행 계획 불명확)"></textarea>';
+      acts='<button onclick="admApprove('+K+')">✅ 승인 — 지원금 '+admWon(base+bonus)+(bonus?' (기본 '+admWon(base)+' + 청년 20% '+admWon(bonus)+')':'')+'</button>'+
+        '<button class="bad" onclick="admRsn('+K+',\'rejected\',\''+rid+'\')">⛔ 반려</button>'+
+        '<textarea class="rsn" id="'+rid+'" placeholder="반려 사유를 입력하세요 (예: 신청자격 미충족, 여행 계획 불명확)"></textarea>';
     }
     else if(a.status==='approved')
-      acts='<button onclick="admDo('+i+',\'notified\')">📨 결과 통보 발송 — CI·승인 금액을 대민시스템/지역화폐로 전달</button>';
+      acts='<button onclick="admDo('+K+',\'notified\')">📨 결과 통보 발송 — CI·승인 금액을 대민시스템/지역화폐로 전달</button>';
     else if(a.status==='notified')
       acts='<span class="wait">여행 진행 — 신청자의 증빙 작성·환급 신청을 기다리는 중</span>';
     else if(a.status==='refund_req')
       acts=(a.evidence
         ?'<div class="plan">🧾 제출 증빙자료 — 카드번호 '+a.evidence.card+' · 승인번호 '+a.evidence.appr+' · 결재금액 '+admWon(a.evidence.amt)+' · 첨부 '+a.evidence.file+'<br><b style="color:#0f766e">✓ 영수증 OCR 판독 결과와 대조 일치 (공사 대민시스템 검증 완료)</b></div>'
         :'<div class="plan">🧾 제출 증빙(모의): 지역화폐 결재내역 '+(a.people||1)+'건 · 사용액 '+admWon(amt*2)+' · CI 대조 일치</div>')+
-        '<button onclick="admRefundOk('+i+')">💰 환급 승인 — '+admWon(amt)+' 충전 지시'+(a.bonus?' (청년 20% 포함)':'')+'</button>'+
-        '<button class="bad" onclick="admRsn('+i+',\'refund_fix\')">✏️ 증빙 보완 요청</button>'+
-        '<textarea class="rsn" id="rsn'+i+'" placeholder="보완 요청 사유를 입력하세요 (예: 숙박 결재내역 누락)"></textarea>';
+        '<button onclick="admRefundOk('+K+')">💰 환급 승인 — '+admWon(amt)+' 충전 지시'+(a.bonus?' (청년 20% 포함)':'')+'</button>'+
+        '<button class="bad" onclick="admRsn('+K+',\'refund_fix\',\''+rid+'\')">✏️ 증빙 보완 요청</button>'+
+        '<textarea class="rsn" id="'+rid+'" placeholder="보완 요청 사유를 입력하세요 (예: 숙박 결재내역 누락)"></textarea>';
     else if(a.status==='refund_fix')
       acts='<span class="wait">신청자 증빙 보완 대기중</span>';
     else if(a.status==='refund_ok')
@@ -176,7 +196,7 @@ function admRender(){
     if(a.fixReason)log+='보완 요청 사유: '+a.fixReason+'<br>';
     if(a.amount)log+='승인 지원금: '+admWon(a.amount);
     return '<div class="card">'+
-      '<div class="hd"><b>'+a.region+'</b><span class="no">'+a.no+'</span><span>신청자 '+(a.applicant||'김관광')+'</span>'+
+      '<div class="hd"><b>'+a.region+'</b><span class="no">'+a.no+'</span><span>신청자 '+(a.applicant||'김관광')+' <small style="color:#94a3b8">(계정 '+(a.uid||admUid(k))+')</small></span>'+
       '<span class="bdg b-'+a.status+'">'+ADM_ST[a.status]+'</span></div>'+
       '<div class="dt">여행 '+admFmt(a.start)+' ~ '+admFmt(a.end)+' · '+a.people+'명 · 신청일 '+a.ts+
       '<br><small>'+(a.addr?a.addr+' (주민등록상 주소지 · 시·군·구 단위)':ADM_ADDR)+'</small></div>'+chk+
@@ -186,45 +206,46 @@ function admRender(){
   }).join('');
 }
 
-function admDo(i,st){
-  const l=admLoad();if(!l[i])return;
-  l[i].status=st;admSave(l);admRender();
+function admDo(k,i,st){
+  const l=admLoadKey(k);if(!l[i])return;
+  l[i].status=st;admSaveKey(k,l);admRender();
   admToast(ADM_ST[st]+' 처리했습니다');
 }
-function admApprove(i){
-  const l=admLoad();if(!l[i])return;
+function admApprove(k,i){
+  const l=admLoadKey(k);if(!l[i])return;
   /* 청년(만 19~34세)은 승인 시점부터 지원금에 20% 가산 */
   const base=admAmt(l[i]);
   const bonus=l[i].youth?Math.round(base*0.2):0;
   l[i].status='approved';l[i].baseAmount=base;l[i].bonus=bonus;l[i].amount=base+bonus;
-  admSave(l);admRender();
+  admSaveKey(k,l);admRender();
   admToast('승인 — 지원금 '+admWon(base+bonus)+(bonus?' (청년 20% 포함)':''));
 }
-function admRsn(i,st){
-  const ta=document.getElementById('rsn'+i);
+function admRsn(k,i,st,rid){
+  const ta=document.getElementById(rid);
   if(!ta.classList.contains('on')){ta.classList.add('on');ta.focus();return;}
   const v=ta.value.trim();
   if(!v){admToast('사유를 입력해 주세요');ta.focus();return;}
-  const l=admLoad();if(!l[i])return;
+  const l=admLoadKey(k);if(!l[i])return;
   l[i].status=st;
   if(st==='rejected')l[i].rejectReason=v;else l[i].fixReason=v;
-  admSave(l);admRender();
+  admSaveKey(k,l);admRender();
   admToast(st==='rejected'?'반려 처리했습니다':'보완 요청을 보냈습니다');
 }
-function admRefundOk(i){
-  const l=admLoad();if(!l[i])return;
+function admRefundOk(k,i){
+  const l=admLoadKey(k);if(!l[i])return;
   /* 환급액 = 승인 지원금 (청년 20%는 승인 시 이미 가산되어 있음 — 이중 가산 금지) */
   l[i].status='refund_ok';l[i].refundAmount=l[i].amount||admAmt(l[i]);
-  admSave(l);admRender();
+  admSaveKey(k,l);admRender();
   admToast('환급 승인 — '+admWon(l[i].refundAmount)+' 충전 지시'+(l[i].bonus?' (청년 20% 포함)':''));
 }
 function admReset(){
-  if(!confirm('신청 데모 데이터를 모두 삭제할까요?'))return;
-  localStorage.removeItem(AP_KEY);admRender();admToast('초기화했습니다');
+  if(!confirm('전 계정의 신청 데모 데이터를 모두 삭제할까요?'))return;
+  admKeys().forEach(function(k){localStorage.removeItem(k);});
+  admRender();admToast('초기화했습니다');
 }
 
 /* 신청자 화면(다른 탭)에서 접수하면 자동 갱신 */
-window.addEventListener('storage',function(e){if(e.key===AP_KEY)admRender();});
+window.addEventListener('storage',function(e){if(e.key&&(e.key.indexOf(AP_PREFIX)===0||e.key==='dtidD_t50Applies'))admRender();});
 admRender();
 </script>
 </body>

@@ -135,12 +135,27 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#334
 <script>/* site-d 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidD_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});}catch(e){}</script>
 <script>
-/* 대민시스템·관리시스템과 같은 저장소를 공유한다 */
-const AP_KEY='dtidD_t50Applies';
+/* 대민시스템·관리시스템과 같은 저장소를 공유한다 — 계정별 분리 저장 */
+const P_UID=localStorage.getItem('dgtour_user_id')||'guest';
+const AP_KEY='dtidD_t50Applies_'+P_UID;
 const PT_KEY='dtidD_pointBal2';     /* 사용자별 잔여 포인트 {uid: n} */
 const PT_INIT=1000000;              /* 테스트용 초기 지급 포인트 (100만P) */
 const CV_MAX=100000;                /* 1회 전환 한도 (10만P) */
-const CV_KEY='dtidD_pointWallets';  /* 포인트 전환 지역화폐 {지역명: {bal, tx[]}} */
+const CV_KEY='dtidD_pointWallets_'+P_UID;  /* 포인트 전환 지역화폐 {지역명: {bal, tx[]}} */
+/* 예전 공용 키에 남은 데이터는 현재 계정으로 1회 이관 */
+try{
+  const lg1=localStorage.getItem('dtidD_t50Applies');
+  if(lg1&&P_UID!=='guest'){
+    const cur=JSON.parse(localStorage.getItem(AP_KEY)||'[]');
+    localStorage.setItem(AP_KEY,JSON.stringify(JSON.parse(lg1).concat(cur)));
+    localStorage.removeItem('dtidD_t50Applies');
+  }
+  const lg2=localStorage.getItem('dtidD_pointWallets');
+  if(lg2&&P_UID!=='guest'&&!localStorage.getItem(CV_KEY)){
+    localStorage.setItem(CV_KEY,lg2);
+    localStorage.removeItem('dtidD_pointWallets');
+  }
+}catch(e){}
 const MERCHANTS=[
   {ic:'🏨',nm:'바다뷰 펜션',amt:45000},
   {ic:'🍽',nm:'현지 맛집',amt:28000},
