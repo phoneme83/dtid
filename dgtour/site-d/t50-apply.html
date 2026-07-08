@@ -6,7 +6,7 @@
 <title>디지털관광주민증 - 반값여행 통합신청 · 시안 D</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/common.css?v=20260707f">
-<link rel="stylesheet" href="theme.css?v=d3">
+<link rel="stylesheet" href="theme.css?v=d4">
 </head>
 <body class="theme-d">
 
@@ -102,12 +102,14 @@
   <!-- [4] 여행 계획 -->
   <section class="ap-view" id="apV4">
     <h2 class="ap-q"><span id="apPlanRegion"></span> 여행 계획을 알려주세요</h2>
+    <div class="ap-period" id="apPeriodBox"></div>
     <label class="ap-lb" for="apDate1">여행 기간</label>
     <div class="ap-dates">
-      <input class="ap-in" id="apDate1" type="date" aria-label="여행 시작일">
+      <input class="ap-in" id="apDate1" type="date" aria-label="여행 시작일" onchange="apDateHint()">
       <span>~</span>
-      <input class="ap-in" id="apDate2" type="date" aria-label="여행 종료일">
+      <input class="ap-in" id="apDate2" type="date" aria-label="여행 종료일" onchange="apDateHint()">
     </div>
+    <div class="ap-date-hint" id="apDateHint" aria-live="polite"></div>
     <label class="ap-lb" for="apPeople">인원</label>
     <select class="ap-in" id="apPeople">
       <option value="1">1명</option><option value="2" selected>2명</option>
@@ -214,6 +216,21 @@ const user=requireUser();
 /* ── 상태 (모든 top-level 선언은 init 코드보다 위에 둔다) ── */
 const AP_KEY='dtidD_t50Applies';
 const AP_ADDR={sido:'강원특별자치도',full:'강원특별자치도 춘천시 중앙로 1 (모의 주소지)'};
+/* 지자체별 반값여행 가능기간 — 여행 시작일·종료일이 모두 이 기간 안에 있어야 신청 가능 (모의 데이터) */
+const AP_PERIODS={
+  '영광':{s:'2026-07-01',e:'2026-08-31'},'해남':{s:'2026-07-15',e:'2026-09-30'},
+  '완도':{s:'2026-07-07',e:'2026-08-24'},'강진':{s:'2026-08-01',e:'2026-10-31'},
+  '고창':{s:'2026-09-01',e:'2026-10-31'},'거창':{s:'2026-08-16',e:'2026-11-15'},
+  '하동':{s:'2026-06-01',e:'2026-06-30'},'횡성':{s:'2026-06-01',e:'2026-07-15'},
+  '고흥':{s:'2026-05-15',e:'2026-06-30'},'영암':{s:'2026-06-10',e:'2026-07-20'},
+  '남해':{s:'2026-05-01',e:'2026-06-15'},'밀양':{s:'2026-06-01',e:'2026-06-30'},
+  '제천':{s:'2026-05-20',e:'2026-06-30'},'합천':{s:'2026-06-15',e:'2026-07-31'},
+  '영월':{s:'2026-06-01',e:'2026-07-31'},'평창':{s:'2026-07-01',e:'2026-09-15'}
+};
+function apPeriod(name){return AP_PERIODS[name]||null;}
+function apFmt(d){return d.replace(/-/g,'.');}
+function apFmtShort(d){return d.slice(5).replace('-','.');}
+function apDays(p){return Math.round((new Date(p.e)-new Date(p.s))/86400000)+1;}
 const AP_ST_LABEL={
   received:{t:'접수 완료',lane:'공사',ic:'📥'},
   review:{t:'지자체 검토중',lane:'지자체',ic:'🔍'},
@@ -285,13 +302,15 @@ function apRenderRegions(){
     const dis=near||closed;
     const why=near?'인근 지역 신청 불가':(r.status==='prep'?'모집 준비중':'모집 마감');
     const round=(r.rounds&&r.rounds.length)?r.rounds[r.rounds.length-1]:null;
+    const p=apPeriod(r.name);
     return '<button type="button" class="ap-rg'+(dis?' dis':'')+(apSel===r.name?' sel':'')+'" '+
       (dis?'disabled aria-disabled="true"':'onclick="apPick(\''+r.name+'\')"')+'>'+
       '<img src="'+r.image+'" alt="" loading="lazy">'+
       '<span class="nm">'+r.name+(r.star?' ★':'')+'</span>'+
       '<span class="sd">'+r.sido+'</span>'+
+      (p?'<span class="tp">🗓 여행기간 '+apFmtShort(p.s)+' ~ '+apFmtShort(p.e)+'</span>':'')+
       (dis?'<span class="why">'+why+'</span>'
-          :'<span class="rd">'+(round?round.n+' '+round.period:'모집중')+'</span>')+
+          :'<span class="rd">'+(round?round.n+' 신청 '+round.period:'모집중')+'</span>')+
       '</button>';
   }).join('');
   document.getElementById('apRegionNext').disabled=!apSel;
@@ -303,6 +322,40 @@ function apPick(name){
   const r=TOUR50_REGIONS.find(x=>x.name===name);
   document.getElementById('apPlanRegion').textContent=r?(r.name+'('+r.sido+')'):name;
   document.getElementById('apRegionNext').disabled=false;
+  /* 선택 지역의 여행 가능기간을 계획 화면에 반영 (date input 범위 제한 + 안내 배너) */
+  const p=apPeriod(name);
+  const d1=document.getElementById('apDate1'),d2=document.getElementById('apDate2');
+  d1.value='';d2.value='';
+  if(p){
+    d1.min=p.s;d1.max=p.e;d2.min=p.s;d2.max=p.e;
+    document.getElementById('apPeriodBox').innerHTML=
+      '🗓 <b>'+name+'</b> 반값여행 가능기간<div class="rng">'+apFmt(p.s)+' ~ '+apFmt(p.e)+' <small>('+apDays(p)+'일간)</small></div>'+
+      '<small>여행 시작일과 종료일이 모두 이 기간 안에 있어야 신청할 수 있습니다. 지원 기간은 지자체마다 다릅니다.</small>';
+  }else{
+    d1.removeAttribute('min');d1.removeAttribute('max');d2.removeAttribute('min');d2.removeAttribute('max');
+    document.getElementById('apPeriodBox').innerHTML='';
+  }
+  apDateHint();
+}
+
+/* 날짜 선택 시 여행 가능기간 충족 여부를 즉시 보여준다 */
+function apDateHint(){
+  const el=document.getElementById('apDateHint');
+  const p=apSel?apPeriod(apSel):null;
+  const d1=document.getElementById('apDate1').value,d2=document.getElementById('apDate2').value;
+  el.className='ap-date-hint';
+  if(!p||(!d1&&!d2)){el.textContent='';return;}
+  if(d1&&d2&&d2<d1){el.textContent='⚠️ 종료일이 시작일보다 빠릅니다.';el.classList.add('warn');return;}
+  const out=(d1&&(d1<p.s||d1>p.e))||(d2&&(d2<p.s||d2>p.e));
+  if(out){
+    el.innerHTML='⚠️ 여행 가능기간(<b>'+apFmt(p.s)+' ~ '+apFmt(p.e)+'</b>)을 벗어난 날짜가 있습니다.';
+    el.classList.add('warn');
+  }else if(d1&&d2){
+    el.innerHTML='✅ 여행 가능기간 내의 일정입니다. ('+d1.replace(/-/g,'.')+' ~ '+d2.replace(/-/g,'.')+')';
+    el.classList.add('ok');
+  }else{
+    el.textContent='여행 시작일과 종료일을 모두 선택해 주세요.';
+  }
 }
 
 function apSubmit(){
@@ -311,10 +364,15 @@ function apSubmit(){
   const d1=document.getElementById('apDate1').value,d2=document.getElementById('apDate2').value;
   if(!d1||!d2){toast('여행 기간을 입력해 주세요');return;}
   if(d2<d1){toast('종료일이 시작일보다 빠릅니다');return;}
+  const pd=apPeriod(apSel);
+  if(pd&&(d1<pd.s||d1>pd.e||d2<pd.s||d2>pd.e)){
+    toast('여행 가능기간('+apFmt(pd.s)+' ~ '+apFmt(pd.e)+') 안에서 선택해 주세요');
+    apDateHint();return;
+  }
   const list=apLoad();
   const no='T50-2026-'+String(1001+list.length);
   const r=TOUR50_REGIONS.find(x=>x.name===apSel);
-  list.unshift({no:no,region:apSel,sido:r?r.sido:'',start:d1,end:d2,
+  list.unshift({no:no,region:apSel,sido:r?r.sido:'',start:d1,end:d2,period:pd,
     people:document.getElementById('apPeople').value,
     plan:document.getElementById('apPlan').value.trim(),
     status:'received',ts:new Date().toISOString().slice(0,10)});
@@ -353,7 +411,8 @@ function apRenderList(){
       '<span class="ap-tl on">'+AP_ST_LABEL.refund_req.ic+' '+AP_ST_LABEL.refund_req.t+'<small>공사</small></span><span class="ap-tl-ar">›</span>'+
       '<span class="ap-tl'+(a.status==='refund_ok'?' on':'')+'">'+AP_ST_LABEL.refund_ok.ic+' '+AP_ST_LABEL.refund_ok.t+'<small>지자체</small></span></div>':'';
     return '<div class="ap-card"><div class="ap-card-h"><b>'+a.region+'</b> <span>'+a.sido+'</span><em>'+a.no+'</em></div>'+
-      '<div class="ap-card-d">'+a.start+' ~ '+a.end+' · '+a.people+'명 · 신청일 '+a.ts+'</div>'+
+      '<div class="ap-card-d">'+a.start+' ~ '+a.end+' · '+a.people+'명 · 신청일 '+a.ts+
+      (a.period?'<br><small>지역 여행 가능기간: '+apFmt(a.period.s)+' ~ '+apFmt(a.period.e)+'</small>':'')+'</div>'+
       '<div class="ap-tl-row">'+steps+'</div>'+refund+act+'</div>';
   }).join('');
 }
@@ -378,6 +437,6 @@ if(user){
   apBadge();
 }
 </script>
-<script src="theme.js?v=d3"></script>
+<script src="theme.js?v=d4"></script>
 </body>
 </html>

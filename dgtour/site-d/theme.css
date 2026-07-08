@@ -459,3 +459,14 @@ body.theme-d.dtd-big{zoom:1.15}
   .theme-d .ap-rgrid{grid-template-columns:repeat(4,1fr)}
   .theme-d .ap-big{max-width:480px;margin-left:auto;margin-right:auto}
 }
+
+/* ── 지자체별 여행 가능기간 표시 ── */
+.theme-d .ap-rg .tp{display:block;font-size:12.5px;font-weight:700;color:#374151;background:#f0f4f3;border-radius:8px;padding:4px 8px;margin:6px 12px 0}
+.theme-d .ap-rg.dis .tp{color:#9ca3af}
+.theme-d .ap-period{background:#e7f4f1;border:2px solid #0f766e;border-radius:14px;padding:14px 16px;font-size:15px;color:#111827;line-height:1.6;margin-bottom:4px}
+.theme-d .ap-period .rng{font-size:19px;font-weight:800;color:#0f766e;margin:4px 0}
+.theme-d .ap-period .rng small{font-size:14px;font-weight:700;color:#115e59}
+.theme-d .ap-period small{color:#374151}
+.theme-d .ap-date-hint{min-height:24px;font-size:14.5px;font-weight:700;line-height:1.6;color:#6b7280;margin-top:8px}
+.theme-d .ap-date-hint.ok{color:#0f766e}
+.theme-d .ap-date-hint.warn{color:#b91c1c}
