@@ -76,13 +76,23 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#334
 .cv-in:focus{border-color:#0f766e;outline:none}
 .cv-all{flex-shrink:0;min-height:48px;border:2px solid #0f766e;border-radius:10px;background:#fff;color:#0f766e;font-size:13.5px;font-weight:800;font-family:inherit;cursor:pointer;padding:0 14px}
 .cv-x{width:100%;min-height:44px;border:none;background:none;color:#64748b;font-size:13.5px;font-weight:700;font-family:inherit;cursor:pointer;margin-top:6px}
+/* TOUR ONEPASS 로그인 (관광주민증과 동일 계정) */
+.pay-who{font-size:12px;color:#bae6fd}
+.pay-who button{background:none;border:1px solid #7dd3fc;border-radius:8px;color:#e0f2fe;font-size:11px;font-weight:700;padding:3px 8px;margin-left:6px;font-family:inherit;cursor:pointer}
+.pay-login{background:#fff;border-radius:18px;box-shadow:0 2px 10px rgba(15,23,42,.08);padding:26px 22px;text-align:center}
+.pay-login .lg2{font-size:22px;font-weight:800;color:#0f172a;letter-spacing:1px}
+.pay-login .lg2 span{color:#0f766e}
+.pay-login p{font-size:13px;color:#475569;line-height:1.7;margin:10px 0 16px}
+.pay-login .row{display:flex;justify-content:center;gap:10px}
+.pay-login .row button{width:52px;height:52px;border-radius:50%;border:none;font-size:20px;font-weight:800;cursor:pointer;font-family:inherit}
+.pay-login small{display:block;margin-top:14px;color:#94a3b8;font-size:11.5px}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="demo">지역화폐(앱) 구간 프로토타입 · <a href="t50-apply.html">대민시스템(신청)</a> · <a href="t50-admin.html">지자체(관리)</a></div>
   <div class="top">
-    <div class="hd"><span class="lg">🪙</span><h1>관광 지역화폐</h1><a href="t50-apply.html">신청 화면으로</a></div>
+    <div class="hd"><span class="lg">🪙</span><h1>관광 지역화폐</h1><span class="pay-who" id="payWho"></span><a href="t50-apply.html">신청 화면으로</a></div>
     <div class="sub">반값여행 상품권 발행(개인) · 충전 · 사용 · 환급 충전 · 잔액 회수</div>
   </div>
   <div class="body">
@@ -182,7 +192,29 @@ function pTx(w,label,amt){
   w.tx.unshift({label:label,amt:amt,ts:new Date().toISOString().slice(5,10).replace('-','.')});
 }
 
+/* TOUR ONEPASS 통합 로그인 — 관광주민증(index.html)과 동일한 계정·저장키(dgtour_user_id)를 사용 */
+function payLogin(uid){localStorage.setItem('dgtour_user_id',uid);location.reload();}
+function payLogout(){localStorage.removeItem('dgtour_user_id');location.reload();}
+function payWho(){
+  const el=document.getElementById('payWho');
+  const u=ptUser();
+  el.innerHTML=u?(u.emojiAv+' '+u.name+'님<button onclick="payLogout()">로그아웃</button>'):'';
+}
+function payLoginView(){
+  document.getElementById('payList').innerHTML='';
+  document.getElementById('cvSec').style.display='none';
+  document.getElementById('pointCard').innerHTML=
+    '<div class="pay-login"><div class="lg2">TOUR <span>ONEPASS</span></div>'+
+    '<p>투어원패스 통합 로그인 — 디지털 관광주민증과 <b>동일한 계정</b>으로 지역화폐 앱을 이용합니다.<br>SNS 인증으로 간편하게 로그인하세요.</p>'+
+    '<div class="row">'+(typeof SNS_LOGIN!=='undefined'?SNS_LOGIN.map(function(s){
+      return '<button style="background:'+s.bg+';color:'+s.fg+(s.border?';border:1px solid '+s.border:'')+'" onclick="payLogin(\''+s.userId+'\')" aria-label="'+s.aria+'">'+s.icon+'</button>';
+    }).join(''):'')+'</div>'+
+    '<small>* 투어원패스 관련 문의 : pass@knto.or.kr / 070-8667-4511</small></div>';
+}
+
 function payRender(){
+  payWho();
+  if(P_UID==='guest'){payLoginView();return;}
   const all=pLoad();
   /* 통보 이후 단계의 신청 건만 지역화폐 앱에 나타난다 */
   const list=all.map((a,i)=>({a:a,i:i})).filter(x=>['notified','refund_req','refund_fix','refund_ok'].indexOf(x.a.status)>=0);
@@ -198,18 +230,23 @@ function payRender(){
     const a=x.a,i=x.i,w=pWallet(a),amt=a.amount||0;
     const stLb=w.recovered?'회수 완료':(w.purchased?'사용중':'발행(개인) 완료');
     let bd='';
-    if(!w.purchased&&!w.recovered){
-      bd='<div class="note">🎫 지자체 승인에 따라 <b>CI·승인 금액('+pWon(amt)+')</b> 기준 개인 상품권이 발행되었습니다. 자부담 '+pWon(amt)+'을 더해 <b>'+pWon(amt*2)+'</b>어치를 반값에 구입하세요.</div>'+
-        '<button class="buy" onclick="payBuy('+i+')">상품권 반값 구입 · 충전하기<small>자부담 '+pWon(amt)+' 결제 → '+pWon(amt*2)+' 충전 (지원금 '+pWon(amt)+')</small></button>';
-    }else if(!w.recovered){
-      const dis=w.bal<=0;
-      bd='<div class="use-t">가맹점에서 사용하기 (결재내역에 기록됩니다)</div><div class="use-row">'+
-        MERCHANTS.map((m,mi)=>'<button '+(w.bal<m.amt?'disabled':'')+' onclick="payUse('+i+','+mi+')">'+m.ic+' '+m.nm+'<b>'+pWon(m.amt)+'</b></button>').join('')+'</div>';
+    if(!w.recovered){
+      if(!w.purchased){
+        bd='<div class="note">🎫 지자체 승인에 따라 <b>CI·승인 금액('+pWon(amt)+')</b> 기준 개인 상품권이 발행되었습니다. 자부담 '+pWon(amt)+'을 더해 <b>'+pWon(amt*2)+'</b>어치를 반값에 구입하세요.</div>'+
+          '<button class="buy" onclick="payBuy('+i+')">상품권 반값 구입 · 충전하기<small>자부담 '+pWon(amt)+' 결제 → '+pWon(amt*2)+' 충전 (지원금 '+pWon(amt)+')</small></button>';
+      }else{
+        bd='<div class="use-t">가맹점에서 사용하기 (결재내역에 기록됩니다)</div><div class="use-row">'+
+          MERCHANTS.map((m,mi)=>'<button '+(w.bal<m.amt?'disabled':'')+' onclick="payUse('+i+','+mi+')">'+m.ic+' '+m.nm+'<b>'+pWon(m.amt)+'</b></button>').join('')+'</div>';
+      }
+      /* 환급 충전은 상품권 구입 여부와 무관하게 환급 승인 즉시 표시 */
       if(a.status==='refund_ok'&&!w.refundCharged)
         bd+='<button class="buy" style="margin-top:10px" onclick="payRefund('+i+')">💰 환급 금액 충전받기<small>지자체 환급 승인 '+pWon(a.refundAmount||amt)+(a.bonus?' (🎉 청년 20% 포함)':'')+' → 잔액에 충전</small></button>';
+      if(a.status==='refund_ok'&&w.refundCharged)
+        bd+='<div class="note" style="margin-top:10px">✅ 환급 금액 '+pWon(a.refundAmount||amt)+' 충전 완료 — 아래 결재내역에서 확인할 수 있습니다.</div>';
       if(a.status==='refund_req'||a.status==='refund_fix')
         bd+='<div class="note" style="margin-top:10px">🧾 환급 심사가 진행 중입니다. 승인되면 이곳에서 충전받을 수 있습니다.</div>';
-      bd+='<button class="recover" onclick="payRecover('+i+')">지원 기간 종료 · 잔액 회수 (시뮬레이션)</button>';
+      if(w.purchased||w.refundCharged)
+        bd+='<button class="recover" onclick="payRecover('+i+')">지원 기간 종료 · 잔액 회수 (시뮬레이션)</button>';
     }else{
       bd='<div class="note warn">지원 기간이 종료되어 잔여 상품권이 회수되었습니다. 이용해 주셔서 감사합니다.</div>'+
         (w.surveyed?'<div class="note">📋 설문조사 참여 완료 (만족도 '+'⭐'.repeat(w.surveyScore||0)+')</div>'
@@ -302,12 +339,7 @@ function cvSave(w){localStorage.setItem(CV_KEY,JSON.stringify(w));}
 function renderPoints(){
   const el=document.getElementById('pointCard');
   const u=ptUser();
-  if(!u){
-    el.innerHTML='<div class="pt-card"><div class="pi"><div class="l">🪪 내 관광주민증 포인트(경험치)</div>'+
-      '<div class="d" style="margin-top:8px">로그인하면 관광주민증 경험치를 지역화폐로 1:1 전환할 수 있습니다.</div></div>'+
-      '<button class="cv-btn" onclick="location.href=\'index.html\'">로그인<br>하러 가기</button></div>';
-    return;
-  }
+  if(!u)return;   /* 비로그인은 payRender가 ONEPASS 로그인 화면을 표시 */
   el.innerHTML='<div class="pt-card"><div class="pi"><div class="l">🪪 내 관광주민증 포인트</div>'+
     '<div class="v">'+ptBal().toLocaleString('ko-KR')+' <small>P</small></div>'+
     '<div class="d">'+u.name+'님 · 관광주민증 활동으로 적립 · 지역화폐 1:1 전환</div></div>'+

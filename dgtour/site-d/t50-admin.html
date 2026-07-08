@@ -50,6 +50,24 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
 .empty a{color:#0f766e;font-weight:800}
 .toastA{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,.9);color:#fff;font-size:13.5px;font-weight:700;border-radius:24px;padding:11px 20px;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap;z-index:99}
 .toastA.on{opacity:1}
+/* 대시보드 타일 필터 + 상세조회 */
+.st{cursor:pointer;transition:.12s}
+.st:hover{border-color:#0f766e}
+.st.on{background:#e7f4f1;border-color:#0f766e;box-shadow:0 0 0 1px #0f766e inset}
+.st .l{user-select:none}
+.card .hd .dtl{margin-left:auto;min-height:36px;border:1.5px solid #cbd5e1;border-radius:8px;background:#fff;color:#334155;font-size:12px;font-weight:800;padding:0 12px;font-family:inherit;cursor:pointer}
+.card .hd .dtl:hover{border-color:#0f766e;color:#0f766e}
+.card .hd .bdg{margin-left:8px}
+.adm-dtl{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:120;display:none;align-items:center;justify-content:center;padding:20px}
+.adm-dtl.on{display:flex}
+.adm-dtl .body{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:82vh;overflow-y:auto;padding:20px 22px}
+.adm-dtl .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.adm-dtl .hd b{font-size:16px}
+.adm-dtl .hd button{border:none;background:none;font-size:20px;color:#94a3b8;cursor:pointer}
+.adm-dtl .dsec{font-size:12.5px;font-weight:800;color:#0f766e;margin:14px 0 4px;border-bottom:1px solid #e2e8f0;padding-bottom:4px}
+.adm-dtl .drow{display:flex;justify-content:space-between;gap:14px;font-size:13.5px;padding:5px 0;border-bottom:1px dashed #f1f5f9}
+.adm-dtl .drow span{color:#64748b;flex-shrink:0}
+.adm-dtl .drow b{text-align:right;color:#0f172a;font-weight:700;word-break:break-all}
 </style>
 </head>
 <body>
@@ -70,8 +88,10 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
       <option value="">전체 상태</option>
       <option value="received">접수 대기</option>
       <option value="review">검토중</option>
-      <option value="approved">승인(통보 대기)</option>
-      <option value="refund_req">환급 심사 대기</option>
+      <option value="appr2">승인 (통보 포함)</option>
+      <option value="rejected">반려</option>
+      <option value="refund2">환급 심사</option>
+      <option value="refund_ok">환급 완료</option>
     </select>
     <div class="rf">
       <button onclick="admRender()">↻ 새로고침</button>
@@ -83,6 +103,14 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
 </div>
 
 <div class="toastA" id="admToast"></div>
+
+<!-- 신청 건 상세조회 -->
+<div class="adm-dtl" id="admDtl" role="dialog" aria-modal="true">
+  <div class="body">
+    <div class="hd"><b id="admDtlTitle">상세조회</b><button onclick="admDtlClose()" aria-label="닫기">✕</button></div>
+    <div id="admDtlBody"></div>
+  </div>
+</div>
 
 <script src="../site-assets/data.js?v=20260707f"></script>
 <script>/* site-d 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
@@ -134,15 +162,29 @@ function admRegionOpts(all){
   sel.innerHTML='<option value="">전체 지자체</option>'+regions.map(r=>'<option value="'+r+'"'+(r===cur?' selected':'')+'>'+r+'</option>').join('');
 }
 
+/* 상태 필터: 대시보드 숫자 타일 클릭 ↔ 셀렉트 동기화. appr2/refund2는 복합 상태 */
+const ADM_ST_GROUP={appr2:['approved','notified'],refund2:['refund_req','refund_fix']};
+function admStatuses(key){return key?(ADM_ST_GROUP[key]||[key]):null;}
+function admTile(key){
+  const s=document.getElementById('admStatus');
+  s.value=(s.value===key?'':key);   /* 같은 타일 재클릭 시 필터 해제 */
+  admRender();
+}
 function admStats(list){
+  const cur=document.getElementById('admStatus').value;
   const c=k=>list.filter(a=>a.status===k).length;
+  function tile(key,n,label){
+    return '<div class="st'+(cur===key?' on':'')+'" role="button" tabindex="0" onclick="admTile(\''+key+'\')" '+
+      'onkeydown="if(event.key===\'Enter\')admTile(\''+key+'\')" title="클릭하면 해당 단계 목록만 표시">'+
+      '<div class="n">'+n+'</div><div class="l">'+label+' ›</div></div>';
+  }
   document.getElementById('admStats').innerHTML=
-    '<div class="st"><div class="n">'+c('received')+'</div><div class="l">접수 대기</div></div>'+
-    '<div class="st"><div class="n">'+c('review')+'</div><div class="l">검토중</div></div>'+
-    '<div class="st"><div class="n">'+(c('approved')+c('notified'))+'</div><div class="l">승인</div></div>'+
-    '<div class="st"><div class="n">'+c('rejected')+'</div><div class="l">반려</div></div>'+
-    '<div class="st"><div class="n">'+(c('refund_req')+c('refund_fix'))+'</div><div class="l">환급 심사</div></div>'+
-    '<div class="st"><div class="n">'+c('refund_ok')+'</div><div class="l">환급 완료</div></div>';
+    tile('received',c('received'),'접수 대기')+
+    tile('review',c('review'),'검토중')+
+    tile('appr2',c('approved')+c('notified'),'승인')+
+    tile('rejected',c('rejected'),'반려')+
+    tile('refund2',c('refund_req')+c('refund_fix'),'환급 심사')+
+    tile('refund_ok',c('refund_ok'),'환급 완료');
 }
 
 function admRender(){
@@ -150,8 +192,8 @@ function admRender(){
   admRegionOpts(all);
   admStats(all.map(x=>x.a));
   const rg=document.getElementById('admRegion').value;
-  const st=document.getElementById('admStatus').value;
-  const list=all.filter(x=>(!rg||x.a.region===rg)&&(!st||x.a.status===st));
+  const stArr=admStatuses(document.getElementById('admStatus').value);
+  const list=all.filter(x=>(!rg||x.a.region===rg)&&(!stArr||stArr.indexOf(x.a.status)>=0));
   const el=document.getElementById('admList');
   if(!list.length){
     el.innerHTML='<div class="empty">표시할 신청 건이 없습니다.<br><a href="t50-apply.html">신청자 화면(대민시스템)</a>에서 먼저 통합신청을 접수해 보세요.</div>';
@@ -197,6 +239,7 @@ function admRender(){
     if(a.amount)log+='승인 지원금: '+admWon(a.amount);
     return '<div class="card">'+
       '<div class="hd"><b>'+a.region+'</b><span class="no">'+a.no+'</span><span>신청자 '+(a.applicant||'김관광')+' <small style="color:#94a3b8">(계정 '+(a.uid||admUid(k))+')</small></span>'+
+      '<button class="dtl" onclick="admDetail('+K+')">상세조회</button>'+
       '<span class="bdg b-'+a.status+'">'+ADM_ST[a.status]+'</span></div>'+
       '<div class="dt">여행 '+admFmt(a.start)+' ~ '+admFmt(a.end)+' · '+a.people+'명 · 신청일 '+a.ts+
       '<br><small>'+(a.addr?a.addr+' (주민등록상 주소지 · 시·군·구 단위)':ADM_ADDR)+'</small></div>'+chk+
@@ -238,6 +281,42 @@ function admRefundOk(k,i){
   admSaveKey(k,l);admRender();
   admToast('환급 승인 — '+admWon(l[i].refundAmount)+' 충전 지시'+(l[i].bonus?' (청년 20% 포함)':''));
 }
+/* 신청 건 상세조회 모달 */
+function admDetail(k,i){
+  const a=admLoadKey(k)[i];if(!a)return;
+  const won=v=>(typeof v==='number'?v.toLocaleString('ko-KR')+'원':'-');
+  function row(l,v){return '<div class="drow"><span>'+l+'</span><b>'+(v||'-')+'</b></div>';}
+  let h='<div class="dsec">신청 정보</div>'+
+    row('접수번호',a.no)+row('상태','<span class="bdg b-'+a.status+'">'+ADM_ST[a.status]+'</span>')+
+    row('신청자',(a.applicant||'-')+' (계정 '+(a.uid||admUid(k))+')')+
+    row('신청 지역',a.region+' ('+a.sido+')')+
+    row('여행 기간',admFmt(a.start)+' ~ '+admFmt(a.end)+' · '+a.people+'명')+
+    (a.period?row('지역 여행 가능기간',admFmt(a.period.s)+' ~ '+admFmt(a.period.e)):'')+
+    row('신청일',a.ts)+
+    row('주민등록상 주소지',(a.addr||'-')+' (시·군·구 단위)')+
+    (a.plan?row('여행 계획',a.plan):'')+
+    '<div class="dsec">자격 점검</div>'+
+    row('관외거주','충족 — 주소지 '+(a.addr?a.addr.split(' ')[0]:'-')+' / 신청지 '+a.sido)+
+    row('청년(만 19~34세)',a.youth?'해당 — 지원금 20% 가산 대상':'해당 없음')+
+    '<div class="dsec">지원금</div>'+
+    row('기본 지원금',won(a.baseAmount||(a.amount&&!a.bonus?a.amount:undefined)))+
+    row('청년 가산(20%)',a.bonus?won(a.bonus):'-')+
+    row('승인 지원금',won(a.amount))+
+    row('환급 금액',won(a.refundAmount));
+  if(a.evidence){
+    h+='<div class="dsec">제출 증빙자료</div>'+
+      row('카드번호',a.evidence.card)+row('승인번호',a.evidence.appr)+
+      row('결재금액',won(a.evidence.amt))+row('첨부파일',a.evidence.file)+
+      row('OCR 대조','✓ 영수증 판독 결과와 일치 (공사 대민시스템 검증)');
+  }
+  if(a.rejectReason)h+='<div class="dsec">반려</div>'+row('반려 사유',a.rejectReason);
+  if(a.fixReason)h+='<div class="dsec">증빙 보완</div>'+row('보완 요청 사유',a.fixReason);
+  document.getElementById('admDtlBody').innerHTML=h;
+  document.getElementById('admDtlTitle').textContent=a.region+' · '+a.no;
+  document.getElementById('admDtl').classList.add('on');
+}
+function admDtlClose(){document.getElementById('admDtl').classList.remove('on');}
+
 function admReset(){
   if(!confirm('전 계정의 신청 데모 데이터를 모두 삭제할까요?'))return;
   admKeys().forEach(function(k){localStorage.removeItem(k);});
