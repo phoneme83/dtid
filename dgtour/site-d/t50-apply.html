@@ -654,20 +654,29 @@ function apOcrExtract(raw){
   const CARD_LB=/(card|카드)/i, APPR_LB=/(approv|appr|승인)/i, AMT_LB=/(amount|amt|금액|합계|total)/i;
   raw.split(/\n+/).forEach(function(ln){
     const ns=apOcrNorm(ln);
+    const lts=ln.trim().split(/\s+/);
+    /* 카드번호: 숫자로 시작하고 마스킹이 섞인(또는 15자리 이상인) 토큰.
+       "카드/승인번호  123456**  00000000"처럼 한 줄에 승인번호가 함께 있어도
+       순수 숫자 토큰(승인번호)과 구분된다. 마스킹(*·X·%… )은 어떤 문자로
+       읽혔든 와일드카드로 간주, ******가 짧게 뭉개진 경우도 허용 */
     if(!res.card&&CARD_LB.test(ln)){
-      /* 라벨 뒤 구간에서 숫자로 시작하는 토큰을 취하고, OCR이 마스킹(*·X 등)을 어떤 문자로
-         읽었든 숫자가 아닌 글자는 전부 와일드카드(*)로 간주. 마스킹이 뭉개져 짧아진 경우
-         (예: ******→*%*)도 앞·뒤 노출 숫자로 대조할 수 있게 10자리부터 허용한다 */
-      const seg=ln.split(/[:：]/).pop().replace(/\s+/g,'');
-      const st=seg.search(/[0-9]/);
-      if(st>=0){
-        let t=seg.slice(st).replace(/[-—._/]/g,'').replace(/[^0-9]/g,'*').slice(0,19).replace(/\*+$/,'');
-        if(t.replace(/\*/g,'').length>=4&&t.length>=10&&/\d{4}$/.test(t))res.card=t;
+      for(let ti=0;ti<lts.length;ti++){
+        const t=lts[ti].replace(/[-—._/]/g,'');
+        if(!/^[0-9]/.test(t))continue;
+        const w=t.replace(/[^0-9]/g,'*').slice(0,19);
+        const vis=w.replace(/\*/g,'').length;
+        if((w.indexOf('*')>=0||w.length>=15)&&vis>=4&&w.length>=8){res.card=w;break;}
       }
     }
-    if(!res.appr&&APPR_LB.test(ln)){
-      const m=ns.match(/\d{6,9}/);
-      if(m)res.appr=m[0];
+    /* 승인번호: 순수 숫자 토큰(괄호 등 장식 허용) 중 6~9자리, 8자리 우선 */
+    if(APPR_LB.test(ln)){
+      lts.forEach(function(tk){
+        const digits=tk.replace(/[^0-9]/g,'');
+        const deco=tk.replace(/[\[\]〔〕［］():：]/g,'');
+        if(digits===deco&&digits.length>=6&&digits.length<=9){
+          if(!res.appr||Math.abs(digits.length-8)<Math.abs(res.appr.length-8))res.appr=digits;
+        }
+      });
     }
     if(AMT_LB.test(ln)){
       const m=ns.match(/\d{3,9}/g);
