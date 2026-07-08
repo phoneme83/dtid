@@ -85,6 +85,8 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
 <div class="toastA" id="admToast"></div>
 
 <script src="../site-assets/data.js?v=20260707f"></script>
+<script>/* site-d 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
+try{var _pb=JSON.parse(localStorage.getItem("dtidD_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});}catch(e){}</script>
 <script>
 /* 대민시스템(t50-apply.html)과 같은 저장소를 공유한다 */
 const AP_KEY='dtidD_t50Applies';
