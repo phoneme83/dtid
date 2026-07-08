@@ -334,6 +334,7 @@ function apAddrCheck(){
   }
   /* 청년(만 19~34세) 20% 추가 환급 대상 */
   apYouth=(age>=19&&age<35);
+  if(apYouth)alert('🎉 청년 신청으로 확인되었습니다. (만 '+age+'세)\n청년(만 19~34세)은 환급 시 20% 추가 환급 혜택이 적용됩니다.');
   document.getElementById('apModalYouth').style.display=apYouth?'block':'none';
   apAddr=apPickAddr();
   document.getElementById('apModalAddr').innerHTML=apAddr.full+'<br><small>* 개인정보 최소화를 위해 시·군·구 단위까지만 저장됩니다</small>';
