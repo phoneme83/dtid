@@ -474,3 +474,25 @@ body.theme-d.dtd-big{zoom:1.15}
 /* ── 관리자 화면 링크 ── */
 .theme-d .ap-adm-link{display:block;text-align:center;margin-top:16px;font-size:13.5px;font-weight:700;color:#6b7280;text-decoration:underline;min-height:44px;line-height:44px}
 .theme-d .ap-adm-link:hover{color:#0f766e}
+
+/* ── 증빙자료 등록 · OCR 대조 ── */
+.theme-d .ap-ev{border:2px solid #0f766e;border-radius:14px;padding:14px 16px;margin-top:10px;background:#fff}
+.theme-d .ap-ev .t{font-size:15.5px;font-weight:800;color:#0f766e;margin-bottom:2px}
+.theme-d .ap-ev .ap-lb{margin-top:12px}
+.theme-d .ap-file{padding:12px 14px;font-size:14px}
+.theme-d .ap-file::file-selector-button{border:2px solid #0f766e;border-radius:8px;background:#e7f4f1;color:#0f766e;font-weight:800;font-size:13px;padding:8px 12px;margin-right:10px;font-family:inherit;cursor:pointer}
+.theme-d .ap-ocr{background:#f0f4f3;border-radius:12px;padding:12px 14px;margin-top:12px;font-size:14px;color:#111827}
+.theme-d .ap-ocr.wait{font-weight:800;color:#0f766e}
+.theme-d .ap-ocr .t{font-size:13.5px;font-weight:800;color:#0f766e;margin-bottom:6px}
+.theme-d .ap-ocr .row{display:flex;justify-content:space-between;gap:10px;padding:3px 0}
+.theme-d .ap-ocr .row span{color:#6b7280}
+.theme-d .ap-ocr small{display:block;margin-top:6px;color:#374151}
+.theme-d .ap-err{min-height:22px;font-size:14px;font-weight:700;color:#b91c1c;line-height:1.6;margin-top:10px}
+.theme-d .ap-sm.hero{background:#0f766e;color:#fff}
+
+/* ── 경험치 페이지: 지역화폐 전환 배너 ── */
+.theme-d .exp-cv{display:flex;align-items:center;gap:12px;max-width:var(--content-max);margin:14px auto;padding:16px 18px;background:linear-gradient(135deg,#1e3a5f,#0f2c4a);border-radius:16px;color:#fff}
+.theme-d .exp-cv .tx{flex:1;font-size:14.5px;line-height:1.6}
+.theme-d .exp-cv .tx .v{font-size:19px;font-weight:800;color:#7dd3fc;margin-left:6px}
+.theme-d .exp-cv .tx small{display:block;font-size:12px;color:#94a3b8;margin-top:3px}
+.theme-d .exp-cv button{flex-shrink:0;min-height:56px;border:none;border-radius:12px;background:#38bdf8;color:#062c43;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;padding:0 16px;line-height:1.4}

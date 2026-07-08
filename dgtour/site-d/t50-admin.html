@@ -155,7 +155,9 @@ function admRender(){
     else if(a.status==='notified')
       acts='<span class="wait">여행 진행 — 신청자의 증빙 작성·환급 신청을 기다리는 중</span>';
     else if(a.status==='refund_req')
-      acts='<div class="plan">🧾 제출 증빙(모의): 지역화폐 결재내역 '+(a.people||1)+'건 · 사용액 '+admWon(amt*2)+' · CI 대조 일치</div>'+
+      acts=(a.evidence
+        ?'<div class="plan">🧾 제출 증빙자료 — 카드번호 '+a.evidence.card+' · 승인번호 '+a.evidence.appr+' · 결재금액 '+admWon(a.evidence.amt)+' · 첨부 '+a.evidence.file+'<br><b style="color:#0f766e">✓ 영수증 OCR 판독 결과와 대조 일치 (공사 대민시스템 검증 완료)</b></div>'
+        :'<div class="plan">🧾 제출 증빙(모의): 지역화폐 결재내역 '+(a.people||1)+'건 · 사용액 '+admWon(amt*2)+' · CI 대조 일치</div>')+
         '<button onclick="admRefundOk('+i+')">💰 환급 승인 — '+admWon(amt)+' 충전 지시</button>'+
         '<button class="bad" onclick="admRsn('+i+',\'refund_fix\')">✏️ 증빙 보완 요청</button>'+
         '<textarea class="rsn" id="rsn'+i+'" placeholder="보완 요청 사유를 입력하세요 (예: 숙박 결재내역 누락)"></textarea>';

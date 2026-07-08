@@ -6,7 +6,7 @@
 <title>디지털관광주민증 - 경험치 보유현황 · 시안 D</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/common.css?v=20260707f">
-<link rel="stylesheet" href="theme.css?v=d5">
+<link rel="stylesheet" href="theme.css?v=d6">
 </head>
 <body class="theme-d">
 
@@ -40,6 +40,13 @@
         <div><div class="exp-label">경험치</div><div><span class="exp-value" id="curExp">-</span> <span class="exp-unit">EXP</span></div></div>
       </div>
     </div>
+  </div>
+
+  <!-- 경험치(포인트) → 지역화폐 전환 -->
+  <div class="exp-cv">
+    <div class="tx">🪙 <b>지역화폐 전환 가능 포인트</b> <span class="v" id="cvAvail">-</span>
+    <small>경험치 1P = 지역화폐 1원 · 지역 선택 후 1:1 즉시 입금</small></div>
+    <button onclick="location.href='t50-pay.html#convert'">지역화폐로<br>전환하기</button>
   </div>
 
   <div class="sec-header">
@@ -128,6 +135,12 @@ if(user){
   document.getElementById('curGrade').textContent=cur.icon+' '+cur.name;
   document.getElementById('curExp').textContent=user.exp.toLocaleString();
 
+  /* 지역화폐 전환 가능 포인트 = 잔여 경험치 (전환분 차감, t50-pay.html과 동일 저장소) */
+  let cvBalMap={};
+  try{cvBalMap=JSON.parse(localStorage.getItem('dtidD_pointBal')||'{}');}catch(e){}
+  const cvAvail=(typeof cvBalMap[user.id]==='number')?cvBalMap[user.id]:user.exp;
+  document.getElementById('cvAvail').textContent=cvAvail.toLocaleString()+' P';
+
   document.getElementById('expRulesEarn').textContent=EXP_RULES.earn;
   document.getElementById('expRulesNotes').innerHTML=EXP_RULES.notes.map(n=>`<li>${n}</li>`).join('');
   document.getElementById('expHistList').innerHTML=EXP_HISTORY.map(h=>`
@@ -206,6 +219,6 @@ if(user){
   });});
 }
 </script>
-<script src="theme.js?v=d5"></script>
+<script src="theme.js?v=d6"></script>
 </body>
 </html>

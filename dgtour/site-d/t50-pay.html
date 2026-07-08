@@ -283,7 +283,12 @@ function cvSave(w){localStorage.setItem(CV_KEY,JSON.stringify(w));}
 function renderPoints(){
   const el=document.getElementById('pointCard');
   const u=ptUser();
-  if(!u){el.innerHTML='';return;}
+  if(!u){
+    el.innerHTML='<div class="pt-card"><div class="pi"><div class="l">🪪 내 관광주민증 포인트(경험치)</div>'+
+      '<div class="d" style="margin-top:8px">로그인하면 관광주민증 경험치를 지역화폐로 1:1 전환할 수 있습니다.</div></div>'+
+      '<button class="cv-btn" onclick="location.href=\'index.html\'">로그인<br>하러 가기</button></div>';
+    return;
+  }
   el.innerHTML='<div class="pt-card"><div class="pi"><div class="l">🪪 내 관광주민증 포인트</div>'+
     '<div class="v">'+ptBal().toLocaleString('ko-KR')+' <small>P</small></div>'+
     '<div class="d">'+u.name+'님 · 관광주민증 활동으로 적립 · 지역화폐 1:1 전환</div></div>'+
@@ -367,6 +372,8 @@ window.addEventListener('storage',function(e){
 payRender();
 renderPoints();
 renderCv();
+/* exp.html 등에서 #convert 딥링크로 진입하면 전환 모달을 바로 연다 */
+if(location.hash==='#convert'&&ptUser())cvOpen();
 </script>
 </body>
 </html>

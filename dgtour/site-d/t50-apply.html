@@ -6,7 +6,7 @@
 <title>디지털관광주민증 - 반값여행 통합신청 · 시안 D</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/common.css?v=20260707f">
-<link rel="stylesheet" href="theme.css?v=d5">
+<link rel="stylesheet" href="theme.css?v=d6">
 </head>
 <body class="theme-d">
 
@@ -150,7 +150,6 @@
     <h2 class="ap-q">나의 신청 내역</h2>
     <div id="apList"></div>
     <button class="ap-big" onclick="apGo(0)">‹ 신청 안내로</button>
-    <a class="ap-adm-link" href="t50-admin.html">🖥 심사는 지자체 관리시스템(관리자 화면)에서 진행됩니다 — 열기 ›</a>
   </section>
 
 </div>
@@ -247,6 +246,19 @@ const AP_ST_LABEL={
 const AP_FLOW=['received','review','approved','notified','refund_req','refund_ok'];
 let apSel=null;          // 선택한 지역명
 let apAddrOk=false;      // 주소지 확인 여부
+let apEvOpen={};         // 증빙 등록 폼이 열려 있는 신청 건 index
+let apOcr={};            // 신청 건별 영수증 OCR 판독 결과 {merchant,amt,appr,file}
+
+/* 모의 OCR: 지역화폐 앱에서 실제 결제한 내역이 있으면 그 영수증을, 없으면 기본 모의 영수증을 판독한다 */
+function apOcrSource(a){
+  const tx=(a.wallet&&a.wallet.tx)?a.wallet.tx.filter(t=>t.amt<0&&t.label.indexOf('회수')<0):[];
+  if(tx.length){
+    const t=tx[tx.length-1];
+    return {merchant:t.label.replace(' 결제',''),amt:Math.abs(t.amt)};
+  }
+  return {merchant:'🏨 바다뷰 펜션',amt:45000};
+}
+function apApprNo(amt){return String((amt*73+20260708)%90000000+10000000);}
 
 function apLoad(){try{return JSON.parse(localStorage.getItem(AP_KEY)||'[]');}catch(e){return[];}}
 function apSave(list){localStorage.setItem(AP_KEY,JSON.stringify(list));}
@@ -407,14 +419,14 @@ function apRenderList(){
     else if(a.status==='approved')
       act='<div class="ap-note">✅ 지자체 승인이 완료되었습니다'+(a.amount?' (지원금 '+a.amount.toLocaleString('ko-KR')+'원)':'')+'. 곧 결과 통보가 도착합니다.</div>';
     else if(a.status==='notified')
-      act='<div class="ap-note">📨 승인 결과가 통보되었습니다'+(a.amount?' — 지원금 <b>'+a.amount.toLocaleString('ko-KR')+'원</b>':'')+'. 상품권 구입·충전은 <b>지역화폐 앱</b>에서 진행되며, 여행 후 증빙을 작성해 환급을 신청하세요.</div>'+
+      act='<div class="ap-note">📨 승인 결과가 통보되었습니다'+(a.amount?' — 지원금 <b>'+a.amount.toLocaleString('ko-KR')+'원</b>':'')+'. 상품권 구입·충전은 <b>지역화폐 앱</b>에서 진행되며, 여행 후 증빙을 등록해 환급을 신청하세요.</div>'+
       '<button class="ap-sm" onclick="location.href=\'t50-pay.html\'">🪙 지역화폐 앱 — 상품권 구입·충전</button>'+
-      '<button class="ap-sm" onclick="apAdvance('+i+',\'refund_req\')">🧾 증빙 작성 · 환급 신청</button>';
+      '<button class="ap-sm" onclick="apEvToggle('+i+')">🧾 증빙자료 등록 · 환급 신청</button>'+apEvForm(a,i);
     else if(a.status==='refund_req')
-      act='<div class="ap-note">🧾 환급 신청이 접수되어 <b>지자체(관리시스템)</b>가 증빙을 검토 중입니다.</div>';
+      act='<div class="ap-note">🧾 환급 신청이 접수되어 <b>지자체(관리시스템)</b>가 증빙을 검토 중입니다.</div>'+apEvDone(a);
     else if(a.status==='refund_fix')
       act='<div class="ap-note bad">✏️ 지자체가 증빙 보완을 요청했습니다'+(a.fixReason?' — 사유: '+a.fixReason:'')+'</div>'+
-      '<button class="ap-sm" onclick="apAdvance('+i+',\'refund_req\')">증빙 보완 · 환급 재신청</button>';
+      '<button class="ap-sm" onclick="apEvToggle('+i+')">증빙자료 재등록 · 환급 재신청</button>'+apEvForm(a,i);
     else if(a.status==='refund_ok')
       act='<div class="ap-note">✅ 환급이 승인되었습니다'+(a.refundAmount?' — <b>'+a.refundAmount.toLocaleString('ko-KR')+'원</b>':'')+'. 환급 금액은 <b>지역화폐 앱</b>에 충전됩니다.</div>'+
       '<button class="ap-sm" onclick="location.href=\'t50-pay.html\'">🪙 지역화폐 앱 — 환급 충전받기</button>';
@@ -432,13 +444,92 @@ function apRenderList(){
   }).join('');
 }
 
-function apAdvance(i,st){
-  const list=apLoad();
-  if(!list[i])return;
-  list[i].status=st;
-  apSave(list);
+/* ── 증빙자료 등록 · 환급 신청 (OCR 대조) ── */
+function apEvForm(a,i){
+  if(!apEvOpen[i])return '';
+  const o=apOcr[i];
+  const ocr=o?
+    '<div class="ap-ocr"><div class="t">📄 영수증 OCR 판독 결과 — <b>'+o.file+'</b></div>'+
+    '<div class="row"><span>가맹점</span><b>'+o.merchant+'</b></div>'+
+    '<div class="row"><span>결재금액</span><b>'+o.amt.toLocaleString('ko-KR')+'원</b></div>'+
+    '<div class="row"><span>승인번호</span><b>'+o.appr+'</b></div>'+
+    '<small>입력하신 승인번호·결재금액이 판독 결과와 일치해야 제출됩니다.</small></div>'
+    :'<div class="ap-ocr wait" id="apOcrWait'+i+'" style="display:none">🔍 영수증 판독 중…</div>';
+  return '<div class="ap-ev">'+
+    '<div class="t">증빙자료 등록</div>'+
+    '<label class="ap-lb">카드번호</label>'+
+    '<input class="ap-in" id="apEvCard'+i+'" type="text" inputmode="numeric" maxlength="19" placeholder="0000-0000-0000-0000">'+
+    '<label class="ap-lb">승인번호</label>'+
+    '<input class="ap-in" id="apEvAppr'+i+'" type="text" inputmode="numeric" maxlength="8" placeholder="영수증의 승인번호 8자리">'+
+    '<label class="ap-lb">결재금액</label>'+
+    '<input class="ap-in" id="apEvAmt'+i+'" type="number" inputmode="numeric" placeholder="영수증의 결재금액 (원)">'+
+    '<label class="ap-lb">영수증 등 증빙파일 첨부</label>'+
+    '<input class="ap-in ap-file" id="apEvFile'+i+'" type="file" accept="image/*,.pdf" onchange="apOcrRead('+i+',this)">'+
+    ocr+
+    '<div class="ap-err" id="apEvErr'+i+'" aria-live="polite"></div>'+
+    '<button class="ap-sm hero" onclick="apEvSubmit('+i+')">환급 신청 제출</button>'+
+    '<button class="ap-sm" onclick="apEvToggle('+i+',true)">닫기</button></div>';
+}
+function apEvDone(a){
+  if(!a.evidence)return '';
+  const e=a.evidence;
+  return '<div class="ap-ocr"><div class="t">제출한 증빙자료</div>'+
+    '<div class="row"><span>카드번호</span><b>'+e.card+'</b></div>'+
+    '<div class="row"><span>승인번호</span><b>'+e.appr+'</b></div>'+
+    '<div class="row"><span>결재금액</span><b>'+e.amt.toLocaleString('ko-KR')+'원</b></div>'+
+    '<div class="row"><span>첨부파일</span><b>'+e.file+'</b></div>'+
+    '<small>✓ 영수증 OCR 판독 결과와 대조 완료</small></div>';
+}
+function apEvToggle(i,close){
+  apEvOpen[i]=close?false:!apEvOpen[i];
+  if(!apEvOpen[i])delete apOcr[i];
   apRenderList();
-  toast(AP_ST_LABEL[st].t+' 처리되었습니다');
+}
+function apOcrRead(i,input){
+  if(!input.files||!input.files.length)return;
+  const fname=input.files[0].name;
+  const wait=document.getElementById('apOcrWait'+i);
+  if(wait)wait.style.display='block';
+  /* 카드번호·승인번호·금액 입력값 유지를 위해 판독 완료 시점에만 재렌더링 */
+  const card=document.getElementById('apEvCard'+i).value;
+  const appr=document.getElementById('apEvAppr'+i).value;
+  const amt=document.getElementById('apEvAmt'+i).value;
+  setTimeout(function(){
+    const a=apLoad()[i];if(!a)return;
+    const src=apOcrSource(a);
+    apOcr[i]={merchant:src.merchant,amt:src.amt,appr:apApprNo(src.amt),file:fname};
+    apRenderList();
+    const c=document.getElementById('apEvCard'+i);if(c)c.value=card;
+    const p=document.getElementById('apEvAppr'+i);if(p)p.value=appr;
+    const m=document.getElementById('apEvAmt'+i);if(m)m.value=amt;
+    toast('영수증 판독이 완료되었습니다');
+  },900);
+}
+function apEvSubmit(i){
+  const err=document.getElementById('apEvErr'+i);
+  err.textContent='';
+  const card=document.getElementById('apEvCard'+i).value.replace(/[^0-9]/g,'');
+  const appr=document.getElementById('apEvAppr'+i).value.trim();
+  const amt=Math.floor(Number(document.getElementById('apEvAmt'+i).value)||0);
+  if(card.length<15){err.textContent='카드번호를 확인해 주세요 (15~16자리 숫자)';return;}
+  if(!appr){err.textContent='승인번호를 입력해 주세요';return;}
+  if(amt<=0){err.textContent='결재금액을 입력해 주세요';return;}
+  /* OCR 판독 결과(apOcr)는 파일이 첨부되어야만 생성된다 */
+  const o=apOcr[i];
+  if(!o){err.textContent='영수증 등 증빙파일을 첨부해 주세요. 첨부하면 자동으로 판독됩니다.';return;}
+  /* OCR 대조: 승인번호·결재금액이 판독 결과와 다르면 제출 차단 */
+  if(appr!==o.appr||amt!==o.amt){
+    err.innerHTML='❌ <b>정보가 잘못 입력되었습니다.</b> 영수증(OCR) 판독 결과와 승인번호 또는 결재금액이 일치하지 않습니다. 다시 확인해 주세요.';
+    return;
+  }
+  const list=apLoad();if(!list[i])return;
+  list[i].status='refund_req';
+  list[i].evidence={card:card.slice(0,4)+'-****-****-'+card.slice(-4),appr:appr,amt:amt,file:o.file};
+  delete list[i].fixReason;
+  apSave(list);
+  apEvOpen[i]=false;delete apOcr[i];
+  apRenderList();
+  toast('증빙 대조 완료 — 환급 신청이 제출되었습니다');
 }
 
 function apBadge(){
@@ -450,6 +541,7 @@ function apBadge(){
 if(user){
   setActiveBottomNav('');
   apBadge();
+  if(location.hash==='#my')apGo(6);   /* 내역 바로가기 딥링크 */
   /* 관리자 화면(다른 탭)에서 심사 처리하면 내역을 자동 갱신 */
   window.addEventListener('storage',function(e){
     if(e.key===AP_KEY){
@@ -459,6 +551,6 @@ if(user){
   });
 }
 </script>
-<script src="theme.js?v=d5"></script>
+<script src="theme.js?v=d6"></script>
 </body>
 </html>
