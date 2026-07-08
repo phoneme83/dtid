@@ -224,7 +224,13 @@ const AP_KEY='dtidD_t50Applies';
 const AP_SI={'밀양':'밀양시','제천':'제천시'};   /* 시(市)인 지자체, 나머지는 군 */
 let apAddr=null;   /* {sido, sigungu, full} */
 function apPickAddr(){
-  const r=TOUR50_REGIONS[Math.floor(Math.random()*TOUR50_REGIONS.length)];
+  /* 해당 시·도로 배정하면 모집중 지역이 전부 인근 처리되어 신청 가능 지역이 0이 되는
+     지자체는 후보에서 제외 (예: 모집중 4곳이 모두 전라남도일 때 전남 주소지) */
+  const cands=TOUR50_REGIONS.filter(function(c){
+    return TOUR50_REGIONS.some(function(o){return o.status==='open'&&o.sido!==c.sido;});
+  });
+  const pool=cands.length?cands:TOUR50_REGIONS;
+  const r=pool[Math.floor(Math.random()*pool.length)];
   const sigungu=AP_SI[r.name]||(r.name+'군');
   return {sido:r.sido,sigungu:sigungu,full:r.sido+' '+sigungu};
 }
