@@ -270,11 +270,17 @@ function apAgeFromRrn(r1,r2){
   else if(g===3||g===4||g===7||g===8)century=2000;
   else if(g===9||g===0)century=1800;
   else return null;
-  const birth=new Date(century+yy,mm-1,dd);
-  if(isNaN(birth.getTime()))return null;
-  const today=new Date();
-  let age=today.getFullYear()-birth.getFullYear();
-  if(today.getMonth()<birth.getMonth()||(today.getMonth()===birth.getMonth()&&today.getDate()<birth.getDate()))age--;
+  function calcAge(c){
+    const birth=new Date(c+yy,mm-1,dd);
+    if(isNaN(birth.getTime()))return null;
+    const today=new Date();
+    let a=today.getFullYear()-birth.getFullYear();
+    if(today.getMonth()<birth.getMonth()||(today.getMonth()===birth.getMonth()&&today.getDate()<birth.getDate()))a--;
+    return a;
+  }
+  let age=calcAge(century);
+  /* 프로토타입 편의 보정: 2000년대생을 뒷자리 1·2로 입력하는 흔한 실수(→만 100세 이상)는 2000년대로 재해석 */
+  if(age!==null&&century===1900&&age>=100)age=calcAge(2000);
   return age;
 }
 let apEvOpen={};         // 증빙 등록 폼이 열려 있는 신청 건 index
@@ -339,7 +345,7 @@ function apAddrCheck(){
   if(apYouth)alert('🎉 청년 신청으로 확인되었습니다. (만 '+age+'세)\n청년(만 19~34세)은 환급 시 20% 추가 환급 혜택이 적용됩니다.');
   document.getElementById('apModalYouth').style.display=apYouth?'block':'none';
   apAddr=apPickAddr();
-  document.getElementById('apModalAddr').innerHTML=apAddr.full+'<br><small>* 개인정보 최소화를 위해 시·군·구 단위까지만 저장됩니다</small>';
+  document.getElementById('apModalAddr').innerHTML=apAddr.full+' · <b>만 '+age+'세 확인</b><br><small>* 개인정보 최소화를 위해 시·군·구 단위까지만 저장됩니다</small>';
   document.getElementById('apModal').classList.add('on');
 }
 
