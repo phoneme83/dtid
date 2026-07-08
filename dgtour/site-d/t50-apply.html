@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>디지털관광주민증 - 반값여행 통합신청 · 시안 D</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/common.css?v=20260707f">
+<link rel="stylesheet" href="theme.css?v=d3">
+</head>
+<body class="theme-d">
+
+<nav class="gnb">
+  <div class="gnb-left" onclick="location.href='main.html'">
+    <div class="logo-wrap"><svg width="20" height="13" viewBox="0 0 20 13" fill="none"><circle cx="5" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><circle cx="15" cy="6.5" r="4" stroke="#fff" stroke-width="1.5"/><path d="M1 6.5V4.5M19 6.5V4.5M9 6.5H11" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+    <span class="gnb-title">디지털 관광주민증</span>
+  </div>
+  <nav class="gnb-nav">
+    <a href="main.html">메인</a>
+    <a href="service-intro.html">서비스 소개</a>
+    <a href="event.html">이벤트</a>
+    <a href="my.html">나의 관광주민증</a>
+  </nav>
+  <button class="gnb-menu" onclick="openDrawer()" aria-label="메뉴"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="subnav">
+  <span class="subnav-a" onclick="location.href='main.html'">메인</span>
+  <span class="subnav-a" onclick="location.href='tour50.html'">반값여행</span>
+  <span class="subnav-a active">반값 신청</span>
+  <span class="subnav-a" onclick="location.href='my.html'">나의 관광주민증</span>
+</div>
+
+<div class="ap-wrap">
+
+  <!-- 진행 단계 표시 -->
+  <div class="ap-steps" id="apSteps" aria-hidden="true">
+    <span class="ap-step" data-st="1">본인인증</span>
+    <span class="ap-step" data-st="2">주소지 확인</span>
+    <span class="ap-step" data-st="3">지역 선택</span>
+    <span class="ap-step" data-st="4">여행 계획</span>
+    <span class="ap-step" data-st="5">접수 완료</span>
+  </div>
+
+  <!-- [0] 안내 -->
+  <section class="ap-view on" id="apV0">
+    <div class="ap-hero">
+      <span class="ap-badge">통합신청</span>
+      <h2>대한민국 반값여행<br>이제 <b>한 곳에서</b> 신청하세요</h2>
+      <p>지금까지는 지자체별 홈페이지에서 <b>각각</b> 신청해야 했습니다.<br>
+      이제 이 화면에서 전국 참여 지역을 <b>한 번에 통합신청</b>할 수 있습니다.</p>
+    </div>
+    <div class="ap-flow">
+      <div class="ap-flow-t">신청 절차 (4단계)</div>
+      <ol>
+        <li><b>① 본인인증</b> — 이름·휴대폰으로 본인 확인</li>
+        <li><b>② 주소지 확인</b> — 주민등록번호로 주소지 확인·저장</li>
+        <li><b>③ 지역 선택</b> — 전국 참여 지역 중 선택 <small>(거주지 인근 지역은 신청 불가)</small></li>
+        <li><b>④ 여행 계획 입력 후 접수</b> — 신청자격·계획은 지자체로 전달</li>
+      </ol>
+      <div class="ap-flow-n">접수 후에는 <b>지자체(관리시스템)</b>가 승인/반려를 심사하고, 결과를 통보해 드립니다. 상품권 구입·충전·사용은 <b>지역화폐(앱)</b>에서 진행됩니다. <small>* 본 화면은 공사(대민시스템) 구간 프로토타입입니다.</small></div>
+    </div>
+    <button class="ap-big hero" onclick="apStart()">🧳 반값여행 신청 시작하기</button>
+    <button class="ap-big" id="apMyBtn" onclick="apGo(6)">📄 나의 신청 내역 보기</button>
+  </section>
+
+  <!-- [1] 본인인증 -->
+  <section class="ap-view" id="apV1">
+    <h2 class="ap-q">본인인증을 진행해 주세요</h2>
+    <label class="ap-lb" for="apName">이름</label>
+    <input class="ap-in" id="apName" type="text" autocomplete="name">
+    <label class="ap-lb" for="apPhone">휴대폰 번호</label>
+    <input class="ap-in" id="apPhone" type="tel" inputmode="numeric" placeholder="010-0000-0000">
+    <button class="ap-big hero" onclick="apAuth()">본인인증 하기</button>
+    <button class="ap-back" onclick="apGo(0)">‹ 이전으로</button>
+  </section>
+
+  <!-- [2] 주소지 확인 -->
+  <section class="ap-view" id="apV2">
+    <h2 class="ap-q">주소지 확인을 위해<br>주민등록번호를 입력해 주세요</h2>
+    <label class="ap-lb" for="apRrn1">주민등록번호</label>
+    <div class="ap-rrn">
+      <input class="ap-in" id="apRrn1" type="text" inputmode="numeric" maxlength="6" placeholder="앞 6자리" aria-label="주민등록번호 앞 6자리">
+      <span>-</span>
+      <input class="ap-in" id="apRrn2" type="password" inputmode="numeric" maxlength="7" placeholder="뒤 7자리" aria-label="주민등록번호 뒤 7자리">
+    </div>
+    <div class="ap-note">🔒 주민등록번호는 주소지 확인에만 사용되며 <b>저장되지 않습니다</b>.</div>
+    <button class="ap-big hero" onclick="apAddrCheck()">주소지 확인</button>
+    <button class="ap-back" onclick="apGo(1)">‹ 이전으로</button>
+  </section>
+
+  <!-- [3] 지역 선택 -->
+  <section class="ap-view" id="apV3">
+    <h2 class="ap-q">어느 지역으로 떠나시나요?</h2>
+    <div class="ap-addr" id="apAddrLine"></div>
+    <div class="ap-note">거주지 인근(동일 시·도) 지역과 모집이 끝난 지역은 신청할 수 없습니다.</div>
+    <div class="ap-rgrid" id="apRegionGrid"></div>
+    <button class="ap-big hero" id="apRegionNext" onclick="apGo(4)" disabled>다음 ›</button>
+    <button class="ap-back" onclick="apGo(2)">‹ 이전으로</button>
+  </section>
+
+  <!-- [4] 여행 계획 -->
+  <section class="ap-view" id="apV4">
+    <h2 class="ap-q"><span id="apPlanRegion"></span> 여행 계획을 알려주세요</h2>
+    <label class="ap-lb" for="apDate1">여행 기간</label>
+    <div class="ap-dates">
+      <input class="ap-in" id="apDate1" type="date" aria-label="여행 시작일">
+      <span>~</span>
+      <input class="ap-in" id="apDate2" type="date" aria-label="여행 종료일">
+    </div>
+    <label class="ap-lb" for="apPeople">인원</label>
+    <select class="ap-in" id="apPeople">
+      <option value="1">1명</option><option value="2" selected>2명</option>
+      <option value="3">3명</option><option value="4">4명</option>
+      <option value="5">5명</option><option value="6">6명 이상</option>
+    </select>
+    <label class="ap-lb" for="apPlan">간단한 여행 계획 <small>(선택)</small></label>
+    <textarea class="ap-in" id="apPlan" rows="3" placeholder="예) 1일차 숙소 체크인 후 시장 구경, 2일차 해변 산책"></textarea>
+    <div class="ap-note">입력하신 신청자격·여행 계획은 해당 <b>지자체(관리시스템)</b>로 전달되어 승인/반려 심사에 사용됩니다.</div>
+    <button class="ap-big hero" onclick="apSubmit()">신청 접수하기</button>
+    <button class="ap-back" onclick="apGo(3)">‹ 이전으로</button>
+  </section>
+
+  <!-- [5] 접수 완료 -->
+  <section class="ap-view" id="apV5">
+    <div class="ap-done">
+      <div class="ap-done-ic">✓</div>
+      <h2>신청이 접수되었습니다</h2>
+      <div class="ap-done-no" id="apDoneNo"></div>
+      <p id="apDoneSum"></p>
+    </div>
+    <div class="ap-flow">
+      <div class="ap-flow-t">앞으로의 절차</div>
+      <ol>
+        <li><b>지자체 심사</b> — 신청자격·계획 검토 후 승인/반려 <small>(지자체 관리시스템)</small></li>
+        <li><b>결과 통보</b> — 심사 결과를 알림으로 안내해 드립니다 <small>(공사 대민시스템)</small></li>
+        <li><b>상품권 구입·충전</b> — 승인 금액만큼 할인 구입 <small>(지역화폐 앱)</small></li>
+      </ol>
+    </div>
+    <button class="ap-big hero" onclick="apGo(6)">나의 신청 내역 보기</button>
+    <button class="ap-big" onclick="location.href='main.html'">메인으로</button>
+  </section>
+
+  <!-- [6] 나의 신청 내역 -->
+  <section class="ap-view" id="apV6">
+    <h2 class="ap-q">나의 신청 내역</h2>
+    <div id="apList"></div>
+    <button class="ap-big" onclick="apGo(0)">‹ 신청 안내로</button>
+  </section>
+
+</div>
+
+<!-- 주소지 확인 완료 팝업 -->
+<div class="ap-modal" id="apModal" role="alertdialog" aria-modal="true" aria-labelledby="apModalMsg">
+  <div class="ap-modal-body">
+    <div class="ap-modal-ic">✓</div>
+    <div class="ap-modal-msg" id="apModalMsg">입력 후 주소지 확인이 완료되었습니다.</div>
+    <div class="ap-modal-addr" id="apModalAddr"></div>
+    <button class="ap-big hero" onclick="apAddrSave()">확인 (주소지 저장)</button>
+  </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bnav-a" data-nav="main" onclick="location.href='main.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+    메인
+  </button>
+  <button class="bnav-a" onclick="toast('검색 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+    검색
+  </button>
+  <button class="bnav-a" data-nav="event" onclick="location.href='event.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
+    이벤트
+  </button>
+  <button class="bnav-a" onclick="toast('디민증 발급 페이지')">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
+    디민증발급
+  </button>
+  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
+    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+    마이
+  </button>
+</nav>
+
+<div class="drawer-overlay" id="dOverlay" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head"><span>메뉴</span><button class="drawer-close" onclick="closeDrawer()">✕</button></div>
+  <nav class="drawer-nav">
+    <div onclick="location.href='main.html'">🏠 메인홈</div>
+    <div onclick="location.href='service-intro.html'">📋 서비스 소개</div>
+    <div onclick="location.href='event.html'">🎁 이벤트</div>
+    <div onclick="location.href='my.html'">🪪 나의 관광주민증</div>
+    <div onclick="location.href='mypage-history.html'">🕘 나의 활동이력</div>
+    <div onclick="location.href='mypage-coupon.html'">🎟️ 혜택쿠폰</div>
+    <div onclick="location.href='exp.html'">📈 경험치 보유현황</div>
+    <div onclick="location.href='mypage-favorite.html'">🔖 나의 즐겨찾기</div>
+    <div onclick="location.href='mypage-report.html'">📊 활동리포트</div>
+    <div onclick="location.href='mypage-cardbox.html'">🗂️ 관광주민증 보관함</div>
+  </nav>
+  <div class="drawer-foot">
+    <button class="btn-dk" onclick="logoutUser()">로그아웃</button>
+    <button class="btn-lt" onclick="closeDrawer()">닫기</button>
+  </div>
+</aside>
+
+<div class="toast" id="toastEl"></div>
+
+<script src="../site-assets/data.js?v=20260707f"></script>
+<script src="../assets/common.js?v=20260707f"></script>
+<script>
+const user=requireUser();
+
+/* ── 상태 (모든 top-level 선언은 init 코드보다 위에 둔다) ── */
+const AP_KEY='dtidD_t50Applies';
+const AP_ADDR={sido:'강원특별자치도',full:'강원특별자치도 춘천시 중앙로 1 (모의 주소지)'};
+const AP_ST_LABEL={
+  received:{t:'접수 완료',lane:'공사',ic:'📥'},
+  review:{t:'지자체 검토중',lane:'지자체',ic:'🔍'},
+  approved:{t:'승인',lane:'지자체',ic:'✅'},
+  rejected:{t:'반려',lane:'지자체',ic:'⛔'},
+  notified:{t:'결과 통보 완료',lane:'공사',ic:'📨'},
+  refund_req:{t:'환급 신청 접수',lane:'공사',ic:'🧾'},
+  refund_ok:{t:'환급 승인',lane:'지자체',ic:'💰'}
+};
+const AP_FLOW=['received','review','approved','notified','refund_req','refund_ok'];
+let apSel=null;          // 선택한 지역명
+let apAddrOk=false;      // 주소지 확인 여부
+
+function apLoad(){try{return JSON.parse(localStorage.getItem(AP_KEY)||'[]');}catch(e){return[];}}
+function apSave(list){localStorage.setItem(AP_KEY,JSON.stringify(list));}
+
+function apGo(n){
+  document.querySelectorAll('.ap-view').forEach((v,i)=>v.classList.toggle('on',i===n));
+  const steps=document.getElementById('apSteps');
+  steps.style.display=(n>=1&&n<=5)?'flex':'none';
+  steps.querySelectorAll('.ap-step').forEach(s=>{
+    s.classList.toggle('on',Number(s.dataset.st)<=n);
+  });
+  if(n===3)apRenderRegions();
+  if(n===6)apRenderList();
+  window.scrollTo(0,0);
+}
+
+function apStart(){
+  document.getElementById('apName').value=user?user.name:'';
+  document.getElementById('apPhone').value='010-1234-5678';
+  apGo(1);
+}
+
+function apAuth(){
+  const nm=document.getElementById('apName').value.trim();
+  const ph=document.getElementById('apPhone').value.replace(/[^0-9]/g,'');
+  if(!nm){toast('이름을 입력해 주세요');return;}
+  if(ph.length<10){toast('휴대폰 번호를 확인해 주세요');return;}
+  toast('본인인증이 완료되었습니다');
+  apGo(2);
+}
+
+/* 주소지 확인: 주민등록번호 입력 → 팝업. 번호 자체는 어디에도 저장하지 않는다 */
+function apAddrCheck(){
+  const r1=document.getElementById('apRrn1').value.replace(/[^0-9]/g,'');
+  const r2=document.getElementById('apRrn2').value.replace(/[^0-9]/g,'');
+  if(r1.length!==6){toast('주민등록번호 앞 6자리를 입력해 주세요');return;}
+  if(r2.length!==7){toast('주민등록번호 뒤 7자리를 입력해 주세요');return;}
+  document.getElementById('apModalAddr').textContent=AP_ADDR.full;
+  document.getElementById('apModal').classList.add('on');
+}
+
+function apAddrSave(){
+  apAddrOk=true;
+  document.getElementById('apModal').classList.remove('on');
+  document.getElementById('apRrn1').value='';
+  document.getElementById('apRrn2').value='';
+  document.getElementById('apAddrLine').innerHTML='📍 확인된 주소지: <b>'+AP_ADDR.full+'</b>';
+  toast('주소지가 저장되었습니다');
+  apGo(3);
+}
+
+function apRenderRegions(){
+  const grid=document.getElementById('apRegionGrid');
+  grid.innerHTML=TOUR50_REGIONS.map(r=>{
+    const near=r.sido.indexOf(AP_ADDR.sido.slice(0,2))===0;   // 거주지 동일 시·도 = 인근 지역 신청 X
+    const closed=r.status!=='open';
+    const dis=near||closed;
+    const why=near?'인근 지역 신청 불가':(r.status==='prep'?'모집 준비중':'모집 마감');
+    const round=(r.rounds&&r.rounds.length)?r.rounds[r.rounds.length-1]:null;
+    return '<button type="button" class="ap-rg'+(dis?' dis':'')+(apSel===r.name?' sel':'')+'" '+
+      (dis?'disabled aria-disabled="true"':'onclick="apPick(\''+r.name+'\')"')+'>'+
+      '<img src="'+r.image+'" alt="" loading="lazy">'+
+      '<span class="nm">'+r.name+(r.star?' ★':'')+'</span>'+
+      '<span class="sd">'+r.sido+'</span>'+
+      (dis?'<span class="why">'+why+'</span>'
+          :'<span class="rd">'+(round?round.n+' '+round.period:'모집중')+'</span>')+
+      '</button>';
+  }).join('');
+  document.getElementById('apRegionNext').disabled=!apSel;
+}
+
+function apPick(name){
+  apSel=name;
+  apRenderRegions();
+  const r=TOUR50_REGIONS.find(x=>x.name===name);
+  document.getElementById('apPlanRegion').textContent=r?(r.name+'('+r.sido+')'):name;
+  document.getElementById('apRegionNext').disabled=false;
+}
+
+function apSubmit(){
+  if(!apAddrOk){toast('주소지 확인을 먼저 진행해 주세요');apGo(2);return;}
+  if(!apSel){toast('지역을 선택해 주세요');apGo(3);return;}
+  const d1=document.getElementById('apDate1').value,d2=document.getElementById('apDate2').value;
+  if(!d1||!d2){toast('여행 기간을 입력해 주세요');return;}
+  if(d2<d1){toast('종료일이 시작일보다 빠릅니다');return;}
+  const list=apLoad();
+  const no='T50-2026-'+String(1001+list.length);
+  const r=TOUR50_REGIONS.find(x=>x.name===apSel);
+  list.unshift({no:no,region:apSel,sido:r?r.sido:'',start:d1,end:d2,
+    people:document.getElementById('apPeople').value,
+    plan:document.getElementById('apPlan').value.trim(),
+    status:'received',ts:new Date().toISOString().slice(0,10)});
+  apSave(list);
+  document.getElementById('apDoneNo').textContent='접수번호 '+no;
+  document.getElementById('apDoneSum').innerHTML='<b>'+apSel+'</b> · '+d1+' ~ '+d2+' · '+document.getElementById('apPeople').value+'명';
+  apSel=null;
+  apGo(5);
+  apBadge();
+}
+
+/* ── 나의 신청 내역 ── */
+function apRenderList(){
+  const list=apLoad();
+  const el=document.getElementById('apList');
+  if(!list.length){el.innerHTML='<div class="ap-empty">아직 신청 내역이 없습니다.</div>';return;}
+  el.innerHTML=list.map((a,i)=>{
+    const idx=AP_FLOW.indexOf(a.status);
+    const steps=AP_FLOW.slice(0,4).map(k=>{
+      const on=a.status==='rejected'?(k==='received'||k==='review'):(AP_FLOW.indexOf(k)<=idx);
+      const lb=(a.status==='rejected'&&k==='approved')?AP_ST_LABEL.rejected:AP_ST_LABEL[k];
+      return '<span class="ap-tl'+(on?' on':'')+(lb===AP_ST_LABEL.rejected?' bad':'')+'">'+lb.ic+' '+lb.t+'<small>'+lb.lane+'</small></span>';
+    }).join('<span class="ap-tl-ar">›</span>');
+    let act='';
+    if(a.status==='received')act='<button class="ap-sm" onclick="apAdvance('+i+',\'review\')">▶ 지자체 검토 시작 (시뮬레이션)</button>';
+    else if(a.status==='review')act='<button class="ap-sm" onclick="apAdvance('+i+',\'approved\')">▶ 승인 (시뮬레이션)</button>'+
+      '<button class="ap-sm bad" onclick="apAdvance('+i+',\'rejected\')">반려 (시뮬레이션)</button>';
+    else if(a.status==='approved')act='<button class="ap-sm" onclick="apAdvance('+i+',\'notified\')">▶ 결과 통보 받기 (시뮬레이션)</button>';
+    else if(a.status==='notified')act='<div class="ap-note">💳 승인 금액 상품권 구입·충전은 <b>지역화폐 앱</b>에서 진행됩니다. 여행 후 증빙을 작성해 환급을 신청하세요.</div>'+
+      '<button class="ap-sm" onclick="apAdvance('+i+',\'refund_req\')">🧾 증빙 작성 · 환급 신청</button>';
+    else if(a.status==='refund_req')act='<button class="ap-sm" onclick="apAdvance('+i+',\'refund_ok\')">▶ 지자체 증빙 검토 · 승인 (시뮬레이션)</button>';
+    else if(a.status==='refund_ok')act='<div class="ap-note">✅ 환급이 승인되었습니다. 환급 금액은 <b>지역화폐 앱</b>에 충전됩니다.</div>';
+    else if(a.status==='rejected')act='<div class="ap-note bad">신청이 반려되었습니다. (모의 사유: 신청자격 미충족) 다른 지역으로 다시 신청할 수 있습니다.</div>';
+    const refund=(a.status==='refund_req'||a.status==='refund_ok')?
+      '<div class="ap-tl-row">'+
+      '<span class="ap-tl on">'+AP_ST_LABEL.refund_req.ic+' '+AP_ST_LABEL.refund_req.t+'<small>공사</small></span><span class="ap-tl-ar">›</span>'+
+      '<span class="ap-tl'+(a.status==='refund_ok'?' on':'')+'">'+AP_ST_LABEL.refund_ok.ic+' '+AP_ST_LABEL.refund_ok.t+'<small>지자체</small></span></div>':'';
+    return '<div class="ap-card"><div class="ap-card-h"><b>'+a.region+'</b> <span>'+a.sido+'</span><em>'+a.no+'</em></div>'+
+      '<div class="ap-card-d">'+a.start+' ~ '+a.end+' · '+a.people+'명 · 신청일 '+a.ts+'</div>'+
+      '<div class="ap-tl-row">'+steps+'</div>'+refund+act+'</div>';
+  }).join('');
+}
+
+function apAdvance(i,st){
+  const list=apLoad();
+  if(!list[i])return;
+  list[i].status=st;
+  apSave(list);
+  apRenderList();
+  toast(AP_ST_LABEL[st].t+' 처리되었습니다');
+}
+
+function apBadge(){
+  const n=apLoad().length;
+  document.getElementById('apMyBtn').textContent='📄 나의 신청 내역 보기'+(n?' ('+n+'건)':'');
+}
+
+/* ── init (선언부 아래) ── */
+if(user){
+  setActiveBottomNav('');
+  apBadge();
+}
+</script>
+<script src="theme.js?v=d3"></script>
+</body>
+</html>

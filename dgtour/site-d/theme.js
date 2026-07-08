@@ -15,6 +15,22 @@
   bar.innerHTML='<span>시안 D · 공공 미니멀 적용판</span><a href="../sites.html">다른 시안 보기</a>';
   document.body.insertBefore(bar,document.body.firstChild);
 
+  /* (1-1) 반값여행 통합신청 메뉴 주입: GNB(데스크톱) + 드로어(모바일) */
+  var gnbNav=document.querySelector('.gnb-nav');
+  if(gnbNav&&!gnbNav.querySelector('a[href="t50-apply.html"]')){
+    var apA=document.createElement('a');
+    apA.href='t50-apply.html';apA.textContent='반값 신청';
+    gnbNav.insertBefore(apA,gnbNav.children[3]||null);
+  }
+  var dNav=document.querySelector('.drawer-nav');
+  if(dNav&&!dNav.querySelector('[data-ap]')){
+    var apD=document.createElement('div');
+    apD.setAttribute('data-ap','1');
+    apD.textContent='🧳 반값여행 통합신청';
+    apD.onclick=function(){location.href='t50-apply.html';};
+    dNav.insertBefore(apD,dNav.children[3]||null);
+  }
+
   /* (2) 하단 고정 스트립: 전화 탈출구 + 글자 크게 */
   var foot=document.createElement('div');
   foot.className='dtd-foot';
