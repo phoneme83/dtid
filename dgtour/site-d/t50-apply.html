@@ -6,7 +6,7 @@
 <title>디지털관광주민증 - 반값여행 통합신청 · 시안 D</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/common.css?v=20260707f">
-<link rel="stylesheet" href="theme.css?v=d7">
+<link rel="stylesheet" href="theme.css?v=d8">
 </head>
 <body class="theme-d">
 
@@ -105,12 +105,8 @@
   <section class="ap-view" id="apV4">
     <h2 class="ap-q"><span id="apPlanRegion"></span> 여행 계획을 알려주세요</h2>
     <div class="ap-period" id="apPeriodBox"></div>
-    <label class="ap-lb" for="apDate1">여행 기간</label>
-    <div class="ap-dates">
-      <input class="ap-in" id="apDate1" type="date" aria-label="여행 시작일" onchange="apDateHint()">
-      <span>~</span>
-      <input class="ap-in" id="apDate2" type="date" aria-label="여행 종료일" onchange="apDateHint()">
-    </div>
+    <label class="ap-lb">여행 기간 <small>(여행 가능기간의 날짜만 선택할 수 있습니다)</small></label>
+    <div class="ap-cal" id="apCal"></div>
     <div class="ap-date-hint" id="apDateHint" aria-live="polite"></div>
     <label class="ap-lb" for="apPeople">인원</label>
     <select class="ap-in" id="apPeople">
@@ -392,47 +388,85 @@ function apPick(name){
   const r=TOUR50_REGIONS.find(x=>x.name===name);
   document.getElementById('apPlanRegion').textContent=r?(r.name+'('+r.sido+')'):name;
   document.getElementById('apRegionNext').disabled=false;
-  /* 선택 지역의 여행 가능기간을 계획 화면에 반영 (date input 범위 제한 + 안내 배너) */
+  /* 선택 지역의 여행 가능기간을 계획 화면에 반영 (가능기간 전용 캘린더 + 안내 배너) */
   const p=apPeriod(name);
-  const d1=document.getElementById('apDate1'),d2=document.getElementById('apDate2');
-  d1.value='';d2.value='';
   if(p){
-    d1.min=p.s;d1.max=p.e;d2.min=p.s;d2.max=p.e;
     document.getElementById('apPeriodBox').innerHTML=
       '🗓 <b>'+name+'</b> 반값여행 가능기간<div class="rng">'+apFmt(p.s)+' ~ '+apFmt(p.e)+' <small>('+apDays(p)+'일간)</small></div>'+
-      '<small>여행 시작일과 종료일이 모두 이 기간 안에 있어야 신청할 수 있습니다. 지원 기간은 지자체마다 다릅니다.</small>';
+      '<small>아래 캘린더에는 이 기간의 날짜만 선택할 수 있습니다. 지원 기간은 지자체마다 다릅니다.</small>';
   }else{
-    d1.removeAttribute('min');d1.removeAttribute('max');d2.removeAttribute('min');d2.removeAttribute('max');
     document.getElementById('apPeriodBox').innerHTML='';
   }
+  apCalInit();
+}
+
+/* ── 여행 가능기간 전용 캘린더 (기간 밖 날짜는 선택 불가) ── */
+let apD1=null,apD2=null,apCalCur=null;   /* 선택한 시작/종료일, 표시 중인 달 'YYYY-MM' */
+
+function apCalInit(){
+  const p=apSel?apPeriod(apSel):null;
+  apD1=null;apD2=null;
+  apCalCur=p?p.s.slice(0,7):null;
+  apCalRender();
+  apDateHint();
+}
+function apCalMove(dir){
+  const p=apSel?apPeriod(apSel):null;
+  if(!p||!apCalCur)return;
+  const parts=apCalCur.split('-');
+  const d=new Date(Number(parts[0]),Number(parts[1])-1+dir,1);
+  const nm=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  if(nm<p.s.slice(0,7)||nm>p.e.slice(0,7))return;
+  apCalCur=nm;apCalRender();
+}
+function apCalRender(){
+  const el=document.getElementById('apCal');
+  const p=apSel?apPeriod(apSel):null;
+  if(!p||!apCalCur){el.innerHTML='';return;}
+  const y=Number(apCalCur.slice(0,4)),m=Number(apCalCur.slice(5,7));
+  const startDow=new Date(y,m-1,1).getDay();
+  const days=new Date(y,m,0).getDate();
+  const prevOk=apCalCur>p.s.slice(0,7),nextOk=apCalCur<p.e.slice(0,7);
+  let html='<div class="hd"><button type="button" aria-label="이전 달" '+(prevOk?'onclick="apCalMove(-1)"':'disabled')+'>‹</button><b>'+y+'년 '+m+'월</b><button type="button" aria-label="다음 달" '+(nextOk?'onclick="apCalMove(1)"':'disabled')+'>›</button></div>';
+  html+='<div class="grid">'+['일','월','화','수','목','금','토'].map(w=>'<span class="dow">'+w+'</span>').join('');
+  for(let i=0;i<startDow;i++)html+='<span></span>';
+  for(let d=1;d<=days;d++){
+    const ds=apCalCur+'-'+String(d).padStart(2,'0');
+    const ok=ds>=p.s&&ds<=p.e;
+    if(ok){
+      const sel=(ds===apD1||ds===apD2);
+      const inR=apD1&&apD2&&ds>apD1&&ds<apD2;
+      html+='<button type="button" class="day'+(sel?' sel':'')+(inR?' inr':'')+'" onclick="apCalPick(\''+ds+'\')">'+d+'</button>';
+    }else{
+      html+='<span class="day off" aria-disabled="true">'+d+'</span>';
+    }
+  }
+  el.innerHTML=html+'</div>';
+}
+function apCalPick(ds){
+  if(!apD1||(apD1&&apD2)){apD1=ds;apD2=null;}       /* 새 선택 시작 */
+  else if(ds<apD1){apD1=ds;}                         /* 시작일보다 이전 → 시작일 교체 */
+  else{apD2=ds;}                                     /* 종료일 확정 */
+  apCalRender();
   apDateHint();
 }
 
-/* 날짜 선택 시 여행 가능기간 충족 여부를 즉시 보여준다 */
+/* 선택 상태 안내 */
 function apDateHint(){
   const el=document.getElementById('apDateHint');
-  const p=apSel?apPeriod(apSel):null;
-  const d1=document.getElementById('apDate1').value,d2=document.getElementById('apDate2').value;
   el.className='ap-date-hint';
-  if(!p||(!d1&&!d2)){el.textContent='';return;}
-  if(d1&&d2&&d2<d1){el.textContent='⚠️ 종료일이 시작일보다 빠릅니다.';el.classList.add('warn');return;}
-  const out=(d1&&(d1<p.s||d1>p.e))||(d2&&(d2<p.s||d2>p.e));
-  if(out){
-    el.innerHTML='⚠️ 여행 가능기간(<b>'+apFmt(p.s)+' ~ '+apFmt(p.e)+'</b>)을 벗어난 날짜가 있습니다.';
-    el.classList.add('warn');
-  }else if(d1&&d2){
-    el.innerHTML='✅ 여행 가능기간 내의 일정입니다. ('+d1.replace(/-/g,'.')+' ~ '+d2.replace(/-/g,'.')+')';
-    el.classList.add('ok');
-  }else{
-    el.textContent='여행 시작일과 종료일을 모두 선택해 주세요.';
-  }
+  if(!apSel||!apPeriod(apSel)){el.textContent='';return;}
+  if(!apD1){el.textContent='캘린더에서 여행 시작일을 선택해 주세요.';return;}
+  if(!apD2){el.textContent='시작일 '+apD1.replace(/-/g,'.')+' 선택됨 — 종료일을 선택해 주세요. (당일 여행이면 같은 날짜를 한 번 더)';return;}
+  el.innerHTML='✅ 여행 가능기간 내의 일정입니다. ('+apD1.replace(/-/g,'.')+' ~ '+apD2.replace(/-/g,'.')+')';
+  el.classList.add('ok');
 }
 
 function apSubmit(){
   if(!apAddrOk){toast('주소지 확인을 먼저 진행해 주세요');apGo(2);return;}
   if(!apSel){toast('지역을 선택해 주세요');apGo(3);return;}
-  const d1=document.getElementById('apDate1').value,d2=document.getElementById('apDate2').value;
-  if(!d1||!d2){toast('여행 기간을 입력해 주세요');return;}
+  const d1=apD1,d2=apD2;
+  if(!d1||!d2){toast('캘린더에서 여행 기간을 선택해 주세요');return;}
   if(d2<d1){toast('종료일이 시작일보다 빠릅니다');return;}
   const pd=apPeriod(apSel);
   if(pd&&(d1<pd.s||d1>pd.e||d2<pd.s||d2>pd.e)){
@@ -612,6 +646,6 @@ if(user){
   });
 }
 </script>
-<script src="theme.js?v=d7"></script>
+<script src="theme.js?v=d8"></script>
 </body>
 </html>
