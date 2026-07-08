@@ -141,7 +141,7 @@ function admRender(){
     const a=x.a,i=x.i;
     const amt=a.amount||admAmt(a);
     /* 자격 자동 점검: 관외거주(주소지 시·도 ≠ 신청 지역 시·도), 여행기간 적합(접수 시 검증됨) */
-    const chk='<div class="chk"><span>✔ 관외거주 충족 — 주소지 강원 / 신청지 '+a.sido+'</span>'+
+    const chk='<div class="chk"><span>✔ 관외거주 충족 — 주소지 '+(a.addr?a.addr.split(' ')[0]:'강원')+' / 신청지 '+a.sido+'</span>'+
       (a.period?'<span>✔ 여행기간 적합 — 가능기간('+admFmt(a.period.s)+'~'+admFmt(a.period.e)+') 내 일정</span>':'')+
       (a.youth?'<span>🎉 청년(만 19~34세) — 환급 20% 추가 대상</span>':'')+'</div>';
     let acts='',log='';
@@ -175,7 +175,7 @@ function admRender(){
       '<div class="hd"><b>'+a.region+'</b><span class="no">'+a.no+'</span><span>신청자 '+(a.applicant||'김관광')+'</span>'+
       '<span class="bdg b-'+a.status+'">'+ADM_ST[a.status]+'</span></div>'+
       '<div class="dt">여행 '+admFmt(a.start)+' ~ '+admFmt(a.end)+' · '+a.people+'명 · 신청일 '+a.ts+
-      '<br><small>'+ADM_ADDR+'</small></div>'+chk+
+      '<br><small>'+(a.addr?a.addr+' (주민등록상 주소지 · 시·군·구 단위)':ADM_ADDR)+'</small></div>'+chk+
       (a.plan?'<div class="plan">여행 계획: '+a.plan+'</div>':'')+
       '<div class="acts">'+acts+'</div>'+(log?'<div class="log">'+log+'</div>':'')+
       '</div>';

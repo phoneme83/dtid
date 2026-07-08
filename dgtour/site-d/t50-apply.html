@@ -218,7 +218,14 @@ const user=requireUser();
 
 /* ── 상태 (모든 top-level 선언은 init 코드보다 위에 둔다) ── */
 const AP_KEY='dtidD_t50Applies';
-const AP_ADDR={sido:'강원특별자치도',full:'강원특별자치도 춘천시 중앙로 1 (모의 주소지)'};
+/* 주소지: 시·군·구 단위까지만 저장. 시뮬레이션은 반값여행 참여 지자체 중 1곳을 랜덤 배정 */
+const AP_SI={'밀양':'밀양시','제천':'제천시'};   /* 시(市)인 지자체, 나머지는 군 */
+let apAddr=null;   /* {sido, sigungu, full} */
+function apPickAddr(){
+  const r=TOUR50_REGIONS[Math.floor(Math.random()*TOUR50_REGIONS.length)];
+  const sigungu=AP_SI[r.name]||(r.name+'군');
+  return {sido:r.sido,sigungu:sigungu,full:r.sido+' '+sigungu};
+}
 /* 지자체별 반값여행 가능기간 — 여행 시작일·종료일이 모두 이 기간 안에 있어야 신청 가능 (모의 데이터) */
 const AP_PERIODS={
   '영광':{s:'2026-07-01',e:'2026-08-31'},'해남':{s:'2026-07-15',e:'2026-09-30'},
@@ -326,7 +333,8 @@ function apAddrCheck(){
   /* 청년(만 19~34세) 20% 추가 환급 대상 */
   apYouth=(age>=19&&age<35);
   document.getElementById('apModalYouth').style.display=apYouth?'block':'none';
-  document.getElementById('apModalAddr').textContent=AP_ADDR.full;
+  apAddr=apPickAddr();
+  document.getElementById('apModalAddr').innerHTML=apAddr.full+'<br><small>* 개인정보 최소화를 위해 시·군·구 단위까지만 저장됩니다</small>';
   document.getElementById('apModal').classList.add('on');
 }
 
@@ -335,7 +343,7 @@ function apAddrSave(){
   document.getElementById('apModal').classList.remove('on');
   document.getElementById('apRrn1').value='';
   document.getElementById('apRrn2').value='';
-  document.getElementById('apAddrLine').innerHTML='📍 확인된 주소지: <b>'+AP_ADDR.full+'</b>';
+  document.getElementById('apAddrLine').innerHTML='📍 확인된 주소지: <b>'+apAddr.full+'</b> <small>(시·군·구 단위까지만 저장)</small>';
   toast('주소지가 저장되었습니다');
   apGo(3);
 }
@@ -343,14 +351,15 @@ function apAddrSave(){
 function apRenderRegions(){
   const grid=document.getElementById('apRegionGrid');
   grid.innerHTML=TOUR50_REGIONS.map(r=>{
-    const near=r.sido.indexOf(AP_ADDR.sido.slice(0,2))===0;   // 거주지 동일 시·도 = 인근 지역 신청 X
+    const same=!!apAddr&&(AP_SI[r.name]||(r.name+'군'))===apAddr.sigungu;   // 주소지와 동일 지자체 = 신청 불가
+    const near=!same&&!!apAddr&&r.sido===apAddr.sido;                       // 거주지 동일 시·도 = 인근 지역 신청 X
     const closed=r.status!=='open';
-    const dis=near||closed;
-    const why=near?'인근 지역 신청 불가':(r.status==='prep'?'모집 준비중':'모집 마감');
+    const dis=same||near||closed;
+    const why=same?'거주 지자체 — 신청 불가':near?'인근 지역 신청 불가':(r.status==='prep'?'모집 준비중':'모집 마감');
     const round=(r.rounds&&r.rounds.length)?r.rounds[r.rounds.length-1]:null;
     const p=apPeriod(r.name);
     return '<button type="button" class="ap-rg'+(dis?' dis':'')+(apSel===r.name?' sel':'')+'" '+
-      (dis?'disabled aria-disabled="true"':'onclick="apPick(\''+r.name+'\')"')+'>'+
+      (same?'onclick="apSameRegion()" aria-disabled="true"':dis?'disabled aria-disabled="true"':'onclick="apPick(\''+r.name+'\')"')+'>'+
       '<img src="'+r.image+'" alt="" loading="lazy">'+
       '<span class="nm">'+r.name+(r.star?' ★':'')+'</span>'+
       '<span class="sd">'+r.sido+'</span>'+
@@ -362,7 +371,13 @@ function apRenderRegions(){
   document.getElementById('apRegionNext').disabled=!apSel;
 }
 
+/* 주소지와 동일한 지자체 선택 시도 시 안내 */
+function apSameRegion(){
+  alert('주소지와 신청 지역이 동일하여 신청할 수 없습니다.\n(주민등록상 주소지: '+(apAddr?apAddr.full:'')+')');
+}
+
 function apPick(name){
+  if(apAddr&&(AP_SI[name]||(name+'군'))===apAddr.sigungu){apSameRegion();return;}
   apSel=name;
   apRenderRegions();
   const r=TOUR50_REGIONS.find(x=>x.name===name);
@@ -421,7 +436,7 @@ function apSubmit(){
   list.unshift({no:no,region:apSel,sido:r?r.sido:'',start:d1,end:d2,period:pd,
     people:document.getElementById('apPeople').value,
     plan:document.getElementById('apPlan').value.trim(),
-    applicant:user?user.name:'',youth:apYouth,
+    applicant:user?user.name:'',youth:apYouth,addr:apAddr?apAddr.full:'',
     status:'received',ts:new Date().toISOString().slice(0,10)});
   apSave(list);
   document.getElementById('apDoneNo').textContent='접수번호 '+no;

@@ -102,13 +102,13 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#334
 <div class="svy" id="cvModal" role="dialog" aria-modal="true">
   <div class="bd" style="text-align:left">
     <h3 style="text-align:center">🪙 포인트 → 지역화폐 전환</h3>
-    <p style="text-align:center">보유 포인트 <b id="cvBal" style="color:#0f766e">0</b> P · 1P = 1원 (1:1 입금)</p>
+    <p style="text-align:center">보유 포인트 <b id="cvBal" style="color:#0f766e">0</b> P · 1P = 1원 (1:1 입금)<br><small>한 번에 최대 100,000P까지 전환 가능</small></p>
     <label class="cv-lb" for="cvRegion">전환할 지역</label>
     <select class="cv-in" id="cvRegion"></select>
     <label class="cv-lb" for="cvAmt">전환할 포인트</label>
     <div style="display:flex;gap:8px">
       <input class="cv-in" id="cvAmt" type="number" inputmode="numeric" min="1" placeholder="예) 1000" oninput="cvHint()" style="flex:1">
-      <button class="cv-all" onclick="cvAll()">전액</button>
+      <button class="cv-all" onclick="cvAll()">최대</button>
     </div>
     <div id="cvHint" style="font-size:12.5px;font-weight:700;min-height:20px;margin-top:6px"></div>
     <button class="ok" onclick="cvDo()">지역화폐로 입금하기</button>
@@ -135,7 +135,9 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#334
 <script>
 /* 대민시스템·관리시스템과 같은 저장소를 공유한다 */
 const AP_KEY='dtidD_t50Applies';
-const PT_KEY='dtidD_pointBal';      /* 사용자별 잔여 포인트 {uid: n} — 최초값은 ACCOUNTS의 exp */
+const PT_KEY='dtidD_pointBal2';     /* 사용자별 잔여 포인트 {uid: n} */
+const PT_INIT=1000000;              /* 테스트용 초기 지급 포인트 (100만P) */
+const CV_MAX=100000;                /* 1회 전환 한도 (10만P) */
 const CV_KEY='dtidD_pointWallets';  /* 포인트 전환 지역화폐 {지역명: {bal, tx[]}} */
 const MERCHANTS=[
   {ic:'🏨',nm:'바다뷰 펜션',amt:45000},
@@ -270,7 +272,7 @@ function ptUser(){
 function ptBal(){
   const u=ptUser();if(!u)return 0;
   let m={};try{m=JSON.parse(localStorage.getItem(PT_KEY)||'{}');}catch(e){}
-  return (typeof m[u.id]==='number')?m[u.id]:u.exp;
+  return (typeof m[u.id]==='number')?m[u.id]:PT_INIT;
 }
 function ptSet(n){
   const u=ptUser();if(!u)return;
@@ -324,7 +326,7 @@ function cvOpen(){
   sel.innerHTML='<option value="">지역을 선택하세요</option>'+regs.map(r=>'<option value="'+r+'">'+r+'</option>').join('');
   document.getElementById('cvBal').textContent=bal.toLocaleString('ko-KR');
   const inp=document.getElementById('cvAmt');
-  inp.value='';inp.max=bal;
+  inp.value='';inp.max=Math.min(bal,CV_MAX);
   document.getElementById('cvHint').textContent='';
   document.getElementById('cvModal').classList.add('on');
 }
@@ -334,9 +336,10 @@ function cvHint(){
   const h=document.getElementById('cvHint');
   if(n<=0){h.textContent='';return;}
   if(n>bal){h.textContent='⚠ 보유 포인트('+bal.toLocaleString('ko-KR')+'P)를 초과했습니다';h.style.color='#b91c1c';}
+  else if(n>CV_MAX){h.textContent='⚠ 한 번에 최대 '+CV_MAX.toLocaleString('ko-KR')+'P까지 전환할 수 있습니다';h.style.color='#b91c1c';}
   else{h.textContent='→ '+n.toLocaleString('ko-KR')+'원이 지역화폐로 입금됩니다 (1:1)';h.style.color='#0f766e';}
 }
-function cvAll(){document.getElementById('cvAmt').value=ptBal();cvHint();}
+function cvAll(){document.getElementById('cvAmt').value=Math.min(ptBal(),CV_MAX);cvHint();}
 function cvClose(){document.getElementById('cvModal').classList.remove('on');}
 function cvDo(){
   const region=document.getElementById('cvRegion').value;
@@ -345,6 +348,7 @@ function cvDo(){
   if(!region){pToast('전환할 지역을 선택해 주세요');return;}
   if(n<=0){pToast('전환할 포인트를 입력해 주세요');return;}
   if(n>bal){pToast('보유 포인트를 초과했습니다');return;}
+  if(n>CV_MAX){pToast('한 번에 최대 '+CV_MAX.toLocaleString('ko-KR')+'P까지 전환할 수 있습니다');return;}
   ptSet(bal-n);
   const w=cvLoad();
   if(!w[region])w[region]={bal:0,tx:[]};
