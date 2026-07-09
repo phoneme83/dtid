@@ -294,7 +294,7 @@ function apAgeFromRrn(r1,r2){
   return age;
 }
 let apEvOpen={};         // 증빙 등록 폼이 열려 있는 신청 건 index
-let apOcr={};            // 신청 건별 영수증 OCR 판독 결과 {merchant,amt,appr,file}
+let apOcr={};            // 신청 건별 영수증 OCR 판독 결과 {merchant,amt,appr,date,file}
 
 /* 모의 OCR: 지역화폐 앱에서 실제 결제한 내역이 있으면 그 영수증을, 없으면 기본 모의 영수증을 판독한다 */
 function apOcrSource(a){
@@ -306,6 +306,8 @@ function apOcrSource(a){
   return {merchant:'🏨 바다뷰 펜션',amt:45000};
 }
 function apApprNo(amt){return String((amt*73+20260708)%90000000+10000000);}
+/* 결제일이 신청 건의 여행기간(start~end) 안인지 — 'YYYY-MM-DD' 문자열 비교 */
+function apInPeriod(a,d){return !!d&&d>=a.start&&d<=a.end;}
 
 function apLoad(){try{return JSON.parse(localStorage.getItem(AP_KEY)||'[]');}catch(e){return[];}}
 function apSave(list){localStorage.setItem(AP_KEY,JSON.stringify(list));}
@@ -569,14 +571,16 @@ function apEvForm(a,i){
       '<div class="row"><span>판독된 카드번호</span><b>'+(ex.card||'미검출')+'</b></div>'+
       '<div class="row"><span>판독된 승인번호</span><b>'+(ex.appr||'미검출')+'</b></div>'+
       '<div class="row"><span>판독된 금액</span><b>'+(ex.amts&&ex.amts.length?ex.amts.map(function(v){return Number(v).toLocaleString('ko-KR');}).join(', ')+'원':'미검출')+'</b></div>'+
-      '<small>입력하신 카드번호·승인번호·결재금액이 영수증 판독 결과와 대조됩니다. 카드번호의 *(마스킹) 자리는 비교에서 제외됩니다.</small></div>';
+      '<div class="row"><span>판독된 결제일</span><b>'+(ex.date?ex.date+(apInPeriod(a,ex.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖'):'미검출')+'</b></div>'+
+      '<small>입력하신 카드번호·승인번호·결재금액·결제일이 영수증 판독 결과와 대조되며, 결제일은 여행기간('+a.start+' ~ '+a.end+') 안이어야 합니다. 카드번호의 *(마스킹) 자리는 비교에서 제외됩니다.</small></div>';
   }else if(o){
     ocr='<div class="ap-ocr"><div class="t">📄 영수증 판독 결과 (모의 — OCR 엔진 로드 실패) — <b>'+o.file+'</b></div>'+
       '<div class="row"><span>가맹점</span><b>'+o.merchant+'</b></div>'+
       '<div class="row"><span>카드번호</span><b>'+(o.card||'미검출')+'</b></div>'+
       '<div class="row"><span>결재금액</span><b>'+o.amt.toLocaleString('ko-KR')+'원</b></div>'+
       '<div class="row"><span>승인번호</span><b>'+o.appr+'</b></div>'+
-      '<small>입력하신 승인번호·결재금액이 판독 결과와 일치해야 제출됩니다.</small></div>';
+      '<div class="row"><span>결제일</span><b>'+(o.date?o.date+(apInPeriod(a,o.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖'):'미검출')+'</b></div>'+
+      '<small>입력하신 승인번호·결재금액·결제일이 판독 결과와 일치해야 제출됩니다.</small></div>';
   }else{
     ocr='<div class="ap-ocr wait" id="apOcrWait'+i+'" style="display:none">🔍 영수증 판독 중…</div>';
   }
@@ -590,6 +594,8 @@ function apEvForm(a,i){
     '<input class="ap-in" id="apEvAppr'+i+'" type="text" inputmode="numeric" maxlength="8" placeholder="영수증의 승인번호 8자리">'+
     '<label class="ap-lb">결재금액</label>'+
     '<input class="ap-in" id="apEvAmt'+i+'" type="number" inputmode="numeric" placeholder="영수증의 결재금액 (원)">'+
+    '<label class="ap-lb">결제일 <small>(영수증의 승인·결제 날짜 — 여행기간 '+a.start+' ~ '+a.end+' 내여야 합니다)</small></label>'+
+    '<input class="ap-in" id="apEvDate'+i+'" type="date">'+
     '<label class="ap-lb">영수증 등 증빙파일 첨부</label>'+
     '<input class="ap-in ap-file" id="apEvFile'+i+'" type="file" accept="image/*,.pdf" onchange="apOcrRead('+i+',this)">'+
     ocr+
@@ -604,8 +610,9 @@ function apEvDone(a){
     '<div class="row"><span>카드번호</span><b>'+e.card+'</b></div>'+
     '<div class="row"><span>승인번호</span><b>'+e.appr+'</b></div>'+
     '<div class="row"><span>결재금액</span><b>'+e.amt.toLocaleString('ko-KR')+'원</b></div>'+
+    (e.date?'<div class="row"><span>결제일</span><b>'+e.date+' ✅ 여행기간 내</b></div>':'')+
     '<div class="row"><span>첨부파일</span><b>'+e.file+'</b></div>'+
-    '<small>✓ 영수증 OCR 판독 결과와 대조 완료</small></div>';
+    '<small>✓ 영수증 OCR 판독 결과와 대조 완료 (결제일-여행기간 검증 포함)</small></div>';
 }
 function apEvToggle(i,close){
   apEvOpen[i]=close?false:!apEvOpen[i];
@@ -624,7 +631,7 @@ function apEvSample(i){
   x.font='22px Arial';x.textAlign='left';
   const lines=[
     'STORE : '+src.merchant.replace(/[^0-9A-Za-z가-힣 ]/g,'').trim(),
-    'DATE : '+a.ts+' 14:22',
+    'DATE : '+a.start+' 14:22',   /* 결제일-여행기간 검증을 통과하도록 여행 시작일로 인쇄 */
     '--------------------------------',
     'CARD NO : 1234-56XX-XXXX-3456',
     'AMOUNT : '+src.amt,
@@ -637,7 +644,7 @@ function apEvSample(i){
   el.href=c.toDataURL('image/png');
   el.download='demo-receipt-'+appr+'.png';
   document.body.appendChild(el);el.click();el.remove();
-  toast('데모 영수증 다운로드 — 카드 1234-56○○-○○○○-3456 형태(가려진 자리는 아무 숫자), 승인번호 '+appr+', 금액 '+src.amt.toLocaleString('ko-KR')+'원으로 입력하세요');
+  toast('데모 영수증 다운로드 — 카드 1234-56○○-○○○○-3456 형태(가려진 자리는 아무 숫자), 승인번호 '+appr+', 금액 '+src.amt.toLocaleString('ko-KR')+'원, 결제일 '+a.start+'로 입력하세요');
 }
 
 /* OCR 숫자 정규화: 천단위 구분자를 쉼표로 읽든 마침표로 읽든 붙여준다 (122,900 / 122.900 → 122900) */
@@ -647,10 +654,41 @@ function apOcrNorm(s){
   return t.replace(/[,\s]/g,'');
 }
 
+/* OCR 원문에서 결제일(승인일)을 추출 — 'YYYY-MM-DD' 반환, 못 찾으면 null.
+   거래일시·DATE 등 라벨이 있는 줄을 우선하고, 2자리 연도(26/07/09)는
+   시간(14:22)이나 날짜 라벨이 함께 있는 줄에서만 인정한다 (승인번호 오인 방지) */
+function apOcrDate(raw){
+  const DATE_LB=/(거래일시|승인일|거래일|일시|date)/i;
+  const pad=function(n){return ('0'+n).slice(-2);};
+  const mk=function(y,m,d){
+    m=Number(m);d=Number(d);
+    if(m<1||m>12||d<1||d>31)return null;
+    return y+'-'+pad(m)+'-'+pad(d);
+  };
+  let found=null;
+  raw.split(/\n+/).some(function(ln){
+    const lb=DATE_LB.test(ln);
+    let v=null;
+    /* 4자리 연도: 2026-07-09 / 2026.07.09 / 2026년 7월 9일 — 구분자 필수 */
+    let m=ln.match(/(20\d{2})\s*[.\-\/년]\s*(\d{1,2})\s*[.\-\/월]\s*(\d{1,2})/);
+    if(m)v=mk(m[1],m[2],m[3]);
+    /* 2자리 연도: 라벨 또는 시간 표기가 있는 줄에서만 */
+    if(!v&&(lb||/\d{1,2}:\d{2}/.test(ln))){
+      m=ln.match(/\b(\d{2})[.\-\/](\d{1,2})[.\-\/](\d{1,2})\b/);
+      if(m)v=mk('20'+m[1],m[2],m[3]);
+    }
+    if(!v)return false;
+    if(lb){found=v;return true;}   /* 라벨 있는 줄이 최우선 — 즉시 확정 */
+    if(!found)found=v;             /* 무라벨은 첫 매치만 유지 */
+    return false;
+  });
+  return found;
+}
+
 /* OCR 원문에서 카드번호·승인번호·금액 필드를 라벨 기준으로 추출.
    카드번호는 *·X·● 마스킹을 와일드카드로 취급한다 */
 function apOcrExtract(raw){
-  const res={card:null,appr:null,amts:[]};
+  const res={card:null,appr:null,amts:[],date:apOcrDate(raw)};
   const CARD_LB=/(card|카드)/i, APPR_LB=/(approv|appr|승인)/i, AMT_LB=/(amount|amt|금액|합계|total)/i;
   raw.split(/\n+/).forEach(function(ln){
     const ns=apOcrNorm(ln);
@@ -750,7 +788,8 @@ function apOcrRead(i,input){
   const keep={
     card:document.getElementById('apEvCard'+i).value,
     appr:document.getElementById('apEvAppr'+i).value,
-    amt:document.getElementById('apEvAmt'+i).value
+    amt:document.getElementById('apEvAmt'+i).value,
+    date:document.getElementById('apEvDate'+i).value
   };
   function done(o,msg){
     apOcr[i]=o;
@@ -758,6 +797,7 @@ function apOcrRead(i,input){
     const c=document.getElementById('apEvCard'+i);if(c)c.value=keep.card;
     const p=document.getElementById('apEvAppr'+i);if(p)p.value=keep.appr;
     const m=document.getElementById('apEvAmt'+i);if(m)m.value=keep.amt;
+    const d=document.getElementById('apEvDate'+i);if(d)d.value=keep.date;
     toast(msg);
   }
   /* 60초 안에 판독이 끝나지 않으면(엔진 로드 실패·오프라인 등) 모의 판독으로 폴백 */
@@ -775,7 +815,7 @@ function apOcrRead(i,input){
     /* 엔진 로드/판독 실패 시 모의 판독으로 폴백 — 데모가 멈추지 않도록 (카드번호도 데모 영수증 기준으로 대조) */
     const a=apLoad()[i];if(!a)return;
     const src=apOcrSource(a);
-    done({mode:'mock',merchant:src.merchant,amt:src.amt,appr:apApprNo(src.amt),card:'123456******3456',file:file.name},'OCR 엔진을 불러오지 못해 모의 판독으로 대체했습니다');
+    done({mode:'mock',merchant:src.merchant,amt:src.amt,appr:apApprNo(src.amt),card:'123456******3456',date:a.start,file:file.name},'OCR 엔진을 불러오지 못해 모의 판독으로 대체했습니다');
   });
 }
 function apEvSubmit(i){
@@ -784,13 +824,16 @@ function apEvSubmit(i){
   const card=document.getElementById('apEvCard'+i).value.replace(/[^0-9]/g,'');
   const appr=document.getElementById('apEvAppr'+i).value.trim();
   const amt=Math.floor(Number(document.getElementById('apEvAmt'+i).value)||0);
+  const payDate=document.getElementById('apEvDate'+i).value;
   if(card.length<15){err.textContent='카드번호를 확인해 주세요 (15~16자리 숫자)';return;}
   if(!appr){err.textContent='승인번호를 입력해 주세요';return;}
   if(amt<=0){err.textContent='결재금액을 입력해 주세요';return;}
+  if(!payDate){err.textContent='결제일(영수증의 승인·결제 날짜)을 입력해 주세요';return;}
   /* OCR 판독 결과(apOcr)는 파일이 첨부되어야만 생성된다 */
   const o=apOcr[i];
   if(!o){err.textContent='영수증 등 증빙파일을 첨부해 주세요. 첨부하면 자동으로 판독됩니다.';return;}
-  /* OCR 대조: 영수증에서 추출한 카드번호·승인번호·금액 필드와 입력값을 각각 비교 */
+  const a0=apLoad()[i];if(!a0)return;
+  /* OCR 대조: 영수증에서 추출한 카드번호·승인번호·금액·결제일 필드와 입력값을 각각 비교 */
   if(o.mode==='real'){
     const ex=o.ex||{};
     const fails=[];
@@ -803,17 +846,31 @@ function apEvSubmit(i){
     else if(o.text.indexOf(amtStr)<0)fails.push('결재금액(영수증에서 미검출)');
     /* 카드번호: 영수증에서 검출된 경우에만 대조 — 마스킹(*) 자리는 제외, 보이는 숫자는 자리까지 일치해야 함 */
     if(ex.card&&!apCardMatch(card,ex.card))fails.push('카드번호(영수증: '+ex.card+')');
+    /* 결제일: 영수증에서 검출된 경우 입력값과 일치해야 함 */
+    if(ex.date&&ex.date!==payDate)fails.push('결제일(영수증: '+ex.date+')');
     if(fails.length){
       err.innerHTML='❌ <b>정보가 잘못 입력되었습니다.</b> 영수증(OCR) 판독 결과와 다음 항목이 일치하지 않습니다: <b>'+fails.join(', ')+'</b>. 영수증의 표기와 동일하게 입력해 주세요.';
       return;
     }
-  }else if(appr!==o.appr||amt!==o.amt||(o.card&&!apCardMatch(card,o.card))){
-    err.innerHTML='❌ <b>정보가 잘못 입력되었습니다.</b> 영수증 판독 결과와 카드번호·승인번호·결재금액 중 일치하지 않는 항목이 있습니다. 다시 확인해 주세요.';
-    return;
+    /* 결제일-여행기간 대조: 영수증 판독일(검출 시) 기준, 미검출 시 입력값 기준 */
+    const effDate=ex.date||payDate;
+    if(!apInPeriod(a0,effDate)){
+      err.innerHTML='❌ <b>결제일이 여행기간 밖입니다.</b> 영수증의 결제일은 <b>'+effDate+'</b>이나, 이 신청 건의 여행기간은 <b>'+a0.start+' ~ '+a0.end+'</b>입니다. 여행기간 중에 결제한 영수증만 환급 대상입니다.';
+      return;
+    }
+  }else{
+    if(appr!==o.appr||amt!==o.amt||(o.card&&!apCardMatch(card,o.card))||(o.date&&o.date!==payDate)){
+      err.innerHTML='❌ <b>정보가 잘못 입력되었습니다.</b> 영수증 판독 결과와 카드번호·승인번호·결재금액·결제일 중 일치하지 않는 항목이 있습니다. 다시 확인해 주세요.';
+      return;
+    }
+    if(!apInPeriod(a0,payDate)){
+      err.innerHTML='❌ <b>결제일이 여행기간 밖입니다.</b> 결제일은 <b>'+payDate+'</b>이나, 이 신청 건의 여행기간은 <b>'+a0.start+' ~ '+a0.end+'</b>입니다. 여행기간 중에 결제한 영수증만 환급 대상입니다.';
+      return;
+    }
   }
   const list=apLoad();if(!list[i])return;
   list[i].status='refund_req';
-  list[i].evidence={card:card.slice(0,4)+'-****-****-'+card.slice(-4),appr:appr,amt:amt,file:o.file};
+  list[i].evidence={card:card.slice(0,4)+'-****-****-'+card.slice(-4),appr:appr,amt:amt,date:(o.mode==='real'&&o.ex&&o.ex.date)?o.ex.date:payDate,file:o.file};
   delete list[i].fixReason;
   apSave(list);
   apEvOpen[i]=false;delete apOcr[i];

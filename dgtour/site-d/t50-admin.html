@@ -223,7 +223,7 @@ function admRender(){
       acts='<span class="wait">여행 진행 — 신청자의 증빙 작성·환급 신청을 기다리는 중</span>';
     else if(a.status==='refund_req')
       acts=(a.evidence
-        ?'<div class="plan">🧾 제출 증빙자료 — 카드번호 '+a.evidence.card+' · 승인번호 '+a.evidence.appr+' · 결재금액 '+admWon(a.evidence.amt)+' · 첨부 '+a.evidence.file+'<br><b style="color:#0f766e">✓ 영수증 OCR 판독 결과와 대조 일치 (공사 대민시스템 검증 완료)</b></div>'
+        ?'<div class="plan">🧾 제출 증빙자료 — 카드번호 '+a.evidence.card+' · 승인번호 '+a.evidence.appr+' · 결재금액 '+admWon(a.evidence.amt)+(a.evidence.date?' · 결제일 '+a.evidence.date:'')+' · 첨부 '+a.evidence.file+'<br><b style="color:#0f766e">✓ 영수증 OCR 판독 결과와 대조 일치'+(a.evidence.date?' · 결제일 여행기간('+a.start+'~'+a.end+') 내 확인':'')+' (공사 대민시스템 검증 완료)</b></div>'
         :'<div class="plan">🧾 제출 증빙(모의): 지역화폐 결재내역 '+(a.people||1)+'건 · 사용액 '+admWon(amt*2)+' · CI 대조 일치</div>')+
         '<button onclick="admRefundOk('+K+')">💰 환급 승인 — '+admWon(amt)+' 충전 지시'+(a.bonus?' (청년 20% 포함)':'')+'</button>'+
         '<button class="bad" onclick="admRsn('+K+',\'refund_fix\',\''+rid+'\')">✏️ 증빙 보완 요청</button>'+
@@ -306,7 +306,9 @@ function admDetail(k,i){
   if(a.evidence){
     h+='<div class="dsec">제출 증빙자료</div>'+
       row('카드번호',a.evidence.card)+row('승인번호',a.evidence.appr)+
-      row('결재금액',won(a.evidence.amt))+row('첨부파일',a.evidence.file)+
+      row('결재금액',won(a.evidence.amt))+
+      (a.evidence.date?row('결제일',a.evidence.date+' (여행기간 '+a.start+'~'+a.end+' 내 ✓)'):'')+
+      row('첨부파일',a.evidence.file)+
       row('OCR 대조','✓ 영수증 판독 결과와 일치 (공사 대민시스템 검증)');
   }
   if(a.rejectReason)h+='<div class="dsec">반려</div>'+row('반려 사유',a.rejectReason);
