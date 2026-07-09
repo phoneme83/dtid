@@ -764,6 +764,27 @@ function apCardMatch(entered,ocrCard){
   return ok;
 }
 
+/* 2차 판독용 이미지 전처리 — 폭 1800px + 흑백·대비 강화.
+   구겨지거나 저대비인 영수증은 원본 그대로면 날짜 숫자가 뭉개지는데(예: 2026-04-15 → 2006-00-15),
+   이 전처리를 거치면 판독률이 크게 오른다 (실영수증 카드영수증1.jpg로 확인) */
+function apOcrPrep(file){
+  return new Promise(function(res,rej){
+    var img=new Image();
+    var url=URL.createObjectURL(file);
+    img.onload=function(){
+      var w=1800,h=Math.round(img.height*w/img.width);
+      var c=document.createElement('canvas');c.width=w;c.height=h;
+      var x=c.getContext('2d');
+      x.filter='grayscale(1) contrast(1.6)';
+      x.drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url);
+      res(c.toDataURL('image/jpeg',0.9));
+    };
+    img.onerror=function(){URL.revokeObjectURL(url);rej(new Error('img load'));};
+    img.src=url;
+  });
+}
+
 /* Tesseract.js(실제 OCR 엔진) 지연 로드 */
 let apTessReady=null;
 function apLoadTess(){
@@ -800,17 +821,31 @@ function apOcrRead(i,input){
     const d=document.getElementById('apEvDate'+i);if(d)d.value=keep.date;
     toast(msg);
   }
-  /* 60초 안에 판독이 끝나지 않으면(엔진 로드 실패·오프라인 등) 모의 판독으로 폴백 */
-  const timeout=new Promise(function(_,rej){setTimeout(function(){rej(new Error('ocr timeout'));},60000);});
-  Promise.race([apLoadTess().then(function(){
+  /* 90초 안에 판독이 끝나지 않으면(엔진 로드 실패·오프라인 등) 모의 판독으로 폴백 */
+  const timeout=new Promise(function(_,rej){setTimeout(function(){rej(new Error('ocr timeout'));},90000);});
+  function rec(src){
     /* 한글 영수증 라벨([금액]·카드·승인 등)을 읽기 위해 kor+eng 사용 */
-    return Tesseract.recognize(file,'kor+eng',{logger:function(m){
+    return Tesseract.recognize(src,'kor+eng',{logger:function(m){
       if(wait&&m.status==='recognizing text')wait.textContent='🔍 영수증 판독 중… '+Math.round(m.progress*100)+'%';
     }});
-  }),timeout]).then(function(r){
+  }
+  Promise.race([apLoadTess().then(function(){
+    return rec(file);
+  }).then(function(r){
     const raw=r.data.text||'';
     const ex=apOcrExtract(raw);
-    done({mode:'real',text:apOcrNorm(raw),ex:ex,file:file.name},'영수증 판독이 완료되었습니다 (실제 OCR)');
+    if(ex.date&&ex.appr&&ex.card&&ex.amts.length)return {raw:raw,ex:ex};
+    /* 누락 필드가 있으면 전처리 이미지로 2차 판독 후 빈 필드만 병합 */
+    if(wait)wait.textContent='🔍 영수증 정밀 판독 중… (대비 강화 2차 판독)';
+    return apOcrPrep(file).then(rec).then(function(r2){
+      const raw2=r2.data.text||'';
+      const ex2=apOcrExtract(raw2);
+      ['date','appr','card'].forEach(function(k){if(!ex[k]&&ex2[k])ex[k]=ex2[k];});
+      ex2.amts.forEach(function(v){if(ex.amts.indexOf(v)<0)ex.amts.push(v);});
+      return {raw:raw+'\n'+raw2,ex:ex};
+    }).catch(function(){return {raw:raw,ex:ex};});   /* PDF 등 이미지 로드 불가 시 1차 결과 유지 */
+  }),timeout]).then(function(res){
+    done({mode:'real',text:apOcrNorm(res.raw),ex:res.ex,file:file.name},'영수증 판독이 완료되었습니다 (실제 OCR)');
   }).catch(function(){
     /* 엔진 로드/판독 실패 시 모의 판독으로 폴백 — 데모가 멈추지 않도록 (카드번호도 데모 영수증 기준으로 대조) */
     const a=apLoad()[i];if(!a)return;
