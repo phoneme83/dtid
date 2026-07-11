@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
 <title>디지털관광주민증 - 메인</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/common.css?v=20260707f">
@@ -24,10 +24,10 @@
 </nav>
 
 <div class="subnav">
-  <span class="subnav-a active">메인</span>
-  <span class="subnav-a" onclick="location.href='service-intro.html'">서비스 소개</span>
-  <span class="subnav-a" onclick="location.href='event.html'">이벤트</span>
-  <span class="subnav-a" onclick="location.href='my.html'">나의 관광주민증</span>
+  <span class="subnav-a active" aria-current="page">메인</span>
+  <a class="subnav-a" href="service-intro.html">서비스 소개</a>
+  <a class="subnav-a" href="event.html">이벤트</a>
+  <a class="subnav-a" href="my.html">나의 관광주민증</a>
 </div>
 
 <div class="banner-hp" onclick="location.href='tour50.html'">
@@ -103,7 +103,7 @@
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
     메인
   </button>
-  <button class="bnav-a" onclick="toast('검색 페이지')">
+  <button class="bnav-a" onclick="toast('검색 페이지')" disabled aria-label="준비 중">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
     검색
   </button>
@@ -111,7 +111,7 @@
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
     이벤트
   </button>
-  <button class="bnav-a" onclick="toast('디민증 발급 페이지')">
+  <button class="bnav-a" onclick="toast('디민증 발급 페이지')" disabled aria-label="준비 중">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
     디민증발급
   </button>
@@ -194,9 +194,22 @@ function todayStr(){const d=new Date();return `${d.getFullYear()}-${d.getMonth()
 function openPopEventIfNeeded(){
   if(localStorage.getItem('popEventDismissed')===todayStr())return;
   popEventRender();
-  document.getElementById('popEventOverlay').classList.add('open');
+  const overlay=document.getElementById('popEventOverlay');
+  overlay.classList.add('open');
   document.body.style.overflow='hidden';
+  setTimeout(()=>{
+    const focusable=overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if(focusable.length) focusable[0].focus();
+  }, 100);
 }
+document.getElementById('popEventOverlay').addEventListener('keydown', function(e){
+  if(!this.classList.contains('open')) return;
+  if(e.key !== 'Tab') return;
+  const focusable=Array.from(this.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])'));
+  const first=focusable[0], last=focusable[focusable.length-1];
+  if(e.shiftKey){ if(document.activeElement===first){ e.preventDefault(); last.focus(); } }
+  else { if(document.activeElement===last){ e.preventDefault(); first.focus(); } }
+});
 function popEventRender(){
   document.getElementById('popEventTrack').style.transform=`translateX(-${popEventIdx*100}%)`;
   document.getElementById('popEventDots').innerHTML=Array.from({length:POP_EVENT_COUNT},(_,i)=>

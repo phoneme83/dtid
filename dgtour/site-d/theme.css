@@ -99,7 +99,7 @@ body.theme-d.dtd-big{zoom:1.15}
 
 /* ── 하단 내비 ── */
 .theme-d .bottom-nav{height:66px;border-top:2px solid #d8e0de}
-.theme-d .bnav-a{font-size:11.5px;font-weight:600;color:#4b5563;gap:3px}
+.theme-d .bnav-a{font-size:12px;font-weight:600;color:#4b5563;gap:3px}
 .theme-d .bnav-a.active{color:#0f766e;font-weight:800}
 
 /* ── 서랍(전체메뉴) ── */
@@ -239,7 +239,7 @@ body.theme-d.dtd-big{zoom:1.15}
 .theme-d .evt-tab-btn.active{border-color:#0f766e;color:#115e59;background:#e7f4f1}
 .theme-d .evt-week-nav,.theme-d .evt-month-nav{width:38px;height:38px;color:#374151}
 .theme-d .evt-day{min-height:56px}
-.theme-d .evt-day .dow{font-size:11.5px;color:#4b5563}
+.theme-d .evt-day .dow{font-size:12px;color:#4b5563}
 .theme-d .evt-day .dnum{font-size:14.5px}
 .theme-d .evt-day.today{background:#0f766e}
 .theme-d .evt-chip{font-size:13.5px;padding:11px 18px;min-height:44px;color:#374151}
@@ -314,7 +314,7 @@ body.theme-d.dtd-big{zoom:1.15}
 .theme-d .rgn-festival{background:#f0faf7;border:1.5px solid #c9ebe2}
 .theme-d .rgn-festival div{font-size:14px}
 .theme-d .rgn-phone{font-size:14px;color:#374151}
-.theme-d .rgn-mock-note{font-size:11.5px;color:#57534e}
+.theme-d .rgn-mock-note{font-size:12px;color:#57534e}
 .theme-d .rgn-section-head h3{font-size:18px}
 .theme-d .rgn-cat-tab{font-size:14.5px;padding:12px 20px;min-height:48px;border:2px solid #cfd8d6;color:#374151}
 .theme-d .rgn-cat-tab.active{background:#0f766e;border-color:#0f766e;color:#fff}
@@ -438,7 +438,7 @@ body.theme-d.dtd-big{zoom:1.15}
 .theme-d .ap-card-d{font-size:14px;color:#374151;margin:6px 0 10px}
 .theme-d .ap-tl-row{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-bottom:8px}
 .theme-d .ap-tl{font-size:12.5px;font-weight:700;color:#6b7280;background:#f0f4f3;border-radius:10px;padding:5px 9px;display:flex;flex-direction:column;line-height:1.3}
-.theme-d .ap-tl small{font-weight:600;font-size:10.5px;color:#9ca3af}
+.theme-d .ap-tl small{font-weight:600;font-size:12px;color:#9ca3af}
 .theme-d .ap-tl.on{background:#0f766e;color:#fff}
 .theme-d .ap-tl.on small{color:#bfe6df}
 .theme-d .ap-tl.bad.on{background:#b91c1c}
@@ -499,7 +499,7 @@ body.theme-d.dtd-big{zoom:1.15}
 
 /* ── 청년 추가 환급 표시 ── */
 .theme-d .ap-youth{background:#fef9c3;border:2px solid #eab308;border-radius:12px;padding:12px 14px;font-size:14.5px;font-weight:700;color:#713f12;line-height:1.6;margin:12px 0 4px}
-.theme-d .ap-chip-youth{font-size:11.5px;font-weight:800;background:#fef9c3;color:#a16207;border:1px solid #eab308;border-radius:8px;padding:3px 8px}
+.theme-d .ap-chip-youth{font-size:12px;font-weight:800;background:#fef9c3;color:#a16207;border:1px solid #eab308;border-radius:8px;padding:3px 8px}
 
 /* ── 여행 가능기간 전용 캘린더 ── */
 .theme-d .ap-cal{border:2px solid #d8e0de;border-radius:14px;padding:12px 12px 14px;background:#fff}
