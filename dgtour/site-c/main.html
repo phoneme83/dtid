@@ -6,7 +6,7 @@
 <title>디지털관광주민증 - 메인 · 시안 C</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/common.css?v=20260707f">
-<link rel="stylesheet" href="theme.css?v=1">
+<link rel="stylesheet" href="theme.css?v=2">
 </head>
 <body class="theme-c">
 
@@ -38,6 +38,11 @@
   <div class="banner-coupon"><div class="pct">50%</div><div class="label">COUPON</div></div>
   <div class="banner-text"><strong>🧳 대한민국 반값여행</strong><span>지역사랑 휴가지원 ›</span></div>
   <span class="banner-arrow">›</span>
+</div>
+
+<div class="ap-cta" onclick="location.href='t50-apply.html'" role="link" tabindex="0" onkeydown="if(event.key==='Enter')location.href='t50-apply.html'">
+  <span class="tx">지자체별 홈페이지를 일일이 찾아갈 필요 없이<br><b>여기서 한 번에 통합신청</b>할 수 있습니다.</span>
+  <span class="go">🧳 반값여행 신청하기 ›</span>
 </div>
 
 <div class="map-section">
@@ -167,6 +172,8 @@
 </div>
 
 <script src="../site-assets/data.js?v=20260707f"></script>
+<script>/* site-c 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
+try{var _pb=JSON.parse(localStorage.getItem("dtidC_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김관광";}catch(e){}</script>
 <script src="../assets/common.js?v=20260707f"></script>
 <script>
 const user=requireUser();
@@ -277,6 +284,6 @@ function renderMainEvents(){
     </a>`).join('');
 }
 </script>
-<script src="theme.js?v=1"></script>
+<script src="theme.js?v=2"></script>
 </body>
 </html>

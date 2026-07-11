@@ -110,3 +110,21 @@
   document.body.appendChild(tab);
   document.body.classList.add('ta-has-tab');
 })();
+
+/* ── 반값여행 통합신청 메뉴 주입: GNB(데스크톱) + 드로어(모바일) ── */
+(function(){
+  var gnbNav=document.querySelector('.gnb-nav');
+  if(gnbNav&&!gnbNav.querySelector('a[href="t50-apply.html"]')){
+    var apA=document.createElement('a');
+    apA.href='t50-apply.html';apA.textContent='반값 신청';
+    gnbNav.insertBefore(apA,gnbNav.children[3]||null);
+  }
+  var dNav=document.querySelector('.drawer-nav');
+  if(dNav&&!dNav.querySelector('[data-ap]')){
+    var apD=document.createElement('div');
+    apD.setAttribute('data-ap','1');
+    apD.textContent='🧳 반값여행 통합신청';
+    apD.onclick=function(){location.href='t50-apply.html';};
+    dNav.insertBefore(apD,dNav.children[3]||null);
+  }
+})();

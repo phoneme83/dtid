@@ -293,3 +293,142 @@ body.theme-e{background:#f3ede6;color:#111}
   .theme-e .e-home .e-big,.theme-e .e-home .e-stcard{max-width:640px}
   .theme-e .e-ov,.theme-e .e-iss{max-width:480px;left:50%;right:auto;width:100%;transform:translateX(-50%);box-shadow:0 0 60px rgba(0,0,0,.25)}
 }
+
+/* ── 반값여행 통합신청 (t50-apply.html) ── */
+.theme-e .ap-wrap{max-width:var(--content-max);margin:0 auto;padding:18px 16px 40px;background:#fff;min-height:60vh}
+.theme-e .ap-steps{display:none;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.theme-e .ap-step{font-size:13px;font-weight:700;color:#6b7280;background:#f4f0ec;border-radius:20px;padding:6px 12px}
+.theme-e .ap-step.on{background:#ea580c;color:#fff}
+.theme-e .ap-view{display:none}
+.theme-e .ap-view.on{display:block}
+.theme-e .ap-hero{background:#fff7ed;border-radius:16px;padding:22px 20px;margin-bottom:14px}
+.theme-e .ap-badge{display:inline-block;background:#ea580c;color:#fff;font-size:13px;font-weight:800;border-radius:8px;padding:4px 10px;margin-bottom:10px}
+.theme-e .ap-hero h2{font-size:24px;line-height:1.4;color:#111827;margin-bottom:10px}
+.theme-e .ap-hero h2 b{color:#ea580c}
+.theme-e .ap-hero p{font-size:15.5px;line-height:1.7;color:#374151}
+.theme-e .ap-flow{border:2px solid #eee6e0;border-radius:16px;padding:18px;margin-bottom:14px}
+.theme-e .ap-flow-t{font-size:16px;font-weight:800;color:#ea580c;margin-bottom:10px}
+.theme-e .ap-flow ol{list-style:none;display:flex;flex-direction:column;gap:10px}
+.theme-e .ap-flow li{font-size:15.5px;line-height:1.6;color:#111827}
+.theme-e .ap-flow li small,.theme-e .ap-flow-n small{color:#6b7280}
+.theme-e .ap-flow-n{margin-top:12px;padding-top:12px;border-top:1px solid #f0e9e2;font-size:14px;line-height:1.7;color:#374151}
+.theme-e .ap-big{display:flex;align-items:center;justify-content:center;width:100%;min-height:58px;border-radius:14px;border:2px solid #ea580c;background:#fff;color:#ea580c;font-size:18px;font-weight:800;font-family:inherit;cursor:pointer;margin-top:10px}
+.theme-e .ap-big.hero{background:#ea580c;color:#fff}
+.theme-e .ap-big:disabled{opacity:.4;cursor:not-allowed}
+.theme-e .ap-back{display:block;margin:14px auto 0;background:none;border:none;font-size:15px;font-weight:700;color:#6b7280;font-family:inherit;cursor:pointer;min-height:48px}
+.theme-e .ap-q{font-size:22px;line-height:1.45;color:#111827;margin:6px 0 16px}
+.theme-e .ap-lb{display:block;font-size:15px;font-weight:700;color:#374151;margin:14px 0 6px}
+.theme-e .ap-in{width:100%;min-height:54px;border:2px solid #eee6e0;border-radius:12px;font-size:17px;padding:10px 14px;font-family:inherit;color:#111827;background:#fff}
+.theme-e .ap-in:focus{border-color:#ea580c;outline:none}
+.theme-e textarea.ap-in{min-height:96px;resize:vertical}
+.theme-e .ap-rrn,.theme-e .ap-dates{display:flex;align-items:center;gap:8px}
+.theme-e .ap-rrn span,.theme-e .ap-dates span{font-size:18px;font-weight:800;color:#6b7280}
+.theme-e .ap-note{background:#f4f0ec;border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.65;color:#374151;margin:12px 0}
+.theme-e .ap-note.bad{background:#fef2f2;color:#991b1b}
+.theme-e .ap-addr{font-size:15px;color:#111827;background:#fff7ed;border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.theme-e .ap-rgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0}
+.theme-e .ap-rg{position:relative;text-align:left;border:2px solid #eee6e0;border-radius:14px;background:#fff;overflow:hidden;font-family:inherit;cursor:pointer;padding:0 0 12px}
+.theme-e .ap-rg img{width:100%;height:86px;object-fit:cover;display:block;margin-bottom:8px}
+.theme-e .ap-rg .nm{display:block;font-size:17px;font-weight:800;color:#111827;padding:0 12px}
+.theme-e .ap-rg .sd{display:block;font-size:13px;color:#6b7280;padding:2px 12px 0}
+.theme-e .ap-rg .rd{display:block;font-size:13px;font-weight:700;color:#ea580c;padding:4px 12px 0}
+.theme-e .ap-rg .why{display:block;font-size:13px;font-weight:800;color:#991b1b;padding:4px 12px 0}
+.theme-e .ap-rg.dis{opacity:.55;cursor:not-allowed}
+.theme-e .ap-rg.dis img{filter:grayscale(1)}
+.theme-e .ap-rg.sel{border-color:#ea580c;box-shadow:0 0 0 2px #ea580c inset}
+.theme-e .ap-rg.sel::after{content:'✓ 선택됨';position:absolute;top:8px;right:8px;background:#ea580c;color:#fff;font-size:12px;font-weight:800;border-radius:8px;padding:3px 8px}
+.theme-e .ap-done{text-align:center;padding:26px 0 10px}
+.theme-e .ap-done-ic{width:72px;height:72px;border-radius:50%;background:#ea580c;color:#fff;font-size:38px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.theme-e .ap-done h2{font-size:23px;color:#111827}
+.theme-e .ap-done-no{font-size:16px;font-weight:800;color:#ea580c;margin:8px 0 4px}
+.theme-e .ap-done p{font-size:15.5px;color:#374151;margin-bottom:16px}
+.theme-e .ap-empty{text-align:center;color:#6b7280;font-size:15.5px;padding:40px 0}
+.theme-e .ap-card{border:2px solid #eee6e0;border-radius:16px;padding:16px;margin-bottom:12px}
+.theme-e .ap-card-h{display:flex;align-items:baseline;gap:8px;font-size:18px;color:#111827}
+.theme-e .ap-card-h span{font-size:13.5px;color:#6b7280}
+.theme-e .ap-card-h em{margin-left:auto;font-style:normal;font-size:13px;font-weight:700;color:#ea580c}
+.theme-e .ap-card-d{font-size:14px;color:#374151;margin:6px 0 10px}
+.theme-e .ap-tl-row{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.theme-e .ap-tl{font-size:12.5px;font-weight:700;color:#6b7280;background:#f4f0ec;border-radius:10px;padding:5px 9px;display:flex;flex-direction:column;line-height:1.3}
+.theme-e .ap-tl small{font-weight:600;font-size:12px;color:#9ca3af}
+.theme-e .ap-tl.on{background:#ea580c;color:#fff}
+.theme-e .ap-tl.on small{color:#fed7aa}
+.theme-e .ap-tl.bad.on{background:#b91c1c}
+.theme-e .ap-tl-ar{color:#9ca3af;font-weight:800}
+.theme-e .ap-sm{min-height:48px;border-radius:12px;border:2px solid #ea580c;background:#fff;color:#ea580c;font-size:14.5px;font-weight:800;font-family:inherit;cursor:pointer;padding:0 14px;margin:4px 6px 0 0}
+.theme-e .ap-sm.bad{border-color:#b91c1c;color:#b91c1c}
+.theme-e .ap-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+.theme-e .ap-modal.on{display:flex}
+.theme-e .ap-modal-body{background:#fff;border-radius:20px;padding:28px 22px;max-width:400px;width:100%;text-align:center}
+.theme-e .ap-modal-ic{width:60px;height:60px;border-radius:50%;background:#ea580c;color:#fff;font-size:30px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.theme-e .ap-modal-msg{font-size:19px;font-weight:800;line-height:1.5;color:#111827}
+.theme-e .ap-modal-addr{font-size:15px;color:#374151;background:#fff7ed;border-radius:12px;padding:12px;margin:14px 0 4px}
+.theme-e .ap-cta{display:flex;align-items:center;gap:12px;max-width:var(--content-max);margin:14px auto;padding:16px 18px;background:#fff7ed;border:2px solid #ea580c;border-radius:16px;cursor:pointer}
+.theme-e .ap-cta .tx{flex:1;font-size:15.5px;line-height:1.55;color:#111827}
+.theme-e .ap-cta .tx b{color:#ea580c}
+.theme-e .ap-cta .go{flex-shrink:0;background:#ea580c;color:#fff;font-size:15px;font-weight:800;border-radius:12px;padding:12px 16px}
+@media (min-width:960px){
+  .theme-e .ap-rgrid{grid-template-columns:repeat(4,1fr)}
+  .theme-e .ap-big{max-width:480px;margin-left:auto;margin-right:auto}
+}
+
+/* ── 지자체별 여행 가능기간 표시 ── */
+.theme-e .ap-rg .tp{display:block;font-size:12.5px;font-weight:700;color:#374151;background:#f4f0ec;border-radius:8px;padding:4px 8px;margin:6px 12px 0}
+.theme-e .ap-rg.dis .tp{color:#9ca3af}
+.theme-e .ap-period{background:#fff7ed;border:2px solid #ea580c;border-radius:14px;padding:14px 16px;font-size:15px;color:#111827;line-height:1.6;margin-bottom:4px}
+.theme-e .ap-period .rng{font-size:19px;font-weight:800;color:#ea580c;margin:4px 0}
+.theme-e .ap-period .rng small{font-size:14px;font-weight:700;color:#c2410c}
+.theme-e .ap-period small{color:#374151}
+.theme-e .ap-date-hint{min-height:24px;font-size:14.5px;font-weight:700;line-height:1.6;color:#6b7280;margin-top:8px}
+.theme-e .ap-date-hint.ok{color:#ea580c}
+.theme-e .ap-date-hint.warn{color:#b91c1c}
+
+/* ── 관리자 화면 링크 ── */
+.theme-e .ap-adm-link{display:block;text-align:center;margin-top:16px;font-size:13.5px;font-weight:700;color:#6b7280;text-decoration:underline;min-height:44px;line-height:44px}
+.theme-e .ap-adm-link:hover{color:#ea580c}
+
+/* ── 증빙자료 등록 · OCR 대조 ── */
+.theme-e .ap-ev{border:2px solid #ea580c;border-radius:14px;padding:14px 16px;margin-top:10px;background:#fff}
+.theme-e .ap-ev .t{font-size:15.5px;font-weight:800;color:#ea580c;margin-bottom:2px}
+.theme-e .ap-ev .ap-lb{margin-top:12px}
+.theme-e .ap-file{padding:12px 14px;font-size:14px}
+.theme-e .ap-file::file-selector-button{border:2px solid #ea580c;border-radius:8px;background:#fff7ed;color:#ea580c;font-weight:800;font-size:13px;padding:8px 12px;margin-right:10px;font-family:inherit;cursor:pointer}
+.theme-e .ap-ocr{background:#f4f0ec;border-radius:12px;padding:12px 14px;margin-top:12px;font-size:14px;color:#111827}
+.theme-e .ap-ocr.wait{font-weight:800;color:#ea580c}
+.theme-e .ap-ocr .t{font-size:13.5px;font-weight:800;color:#ea580c;margin-bottom:6px}
+.theme-e .ap-ocr .row{display:flex;justify-content:space-between;gap:10px;padding:3px 0}
+.theme-e .ap-ocr .row span{color:#6b7280}
+.theme-e .ap-ocr small{display:block;margin-top:6px;color:#374151}
+.theme-e .ap-err{min-height:22px;font-size:14px;font-weight:700;color:#b91c1c;line-height:1.6;margin-top:10px}
+.theme-e .ap-sm.hero{background:#ea580c;color:#fff}
+
+/* ── 경험치 페이지: 지역화폐 전환 배너 ── */
+.theme-e .exp-cv{display:flex;align-items:center;gap:12px;max-width:var(--content-max);margin:14px auto;padding:16px 18px;background:linear-gradient(135deg,#7c2d12,#431407);border-radius:16px;color:#fff}
+.theme-e .exp-cv .tx{flex:1;font-size:14.5px;line-height:1.6}
+.theme-e .exp-cv .tx .v{font-size:19px;font-weight:800;color:#fed7aa;margin-left:6px}
+.theme-e .exp-cv .tx small{display:block;font-size:12px;color:#94a3b8;margin-top:3px}
+.theme-e .exp-cv button{flex-shrink:0;min-height:56px;border:none;border-radius:12px;background:#fb923c;color:#431407;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;padding:0 16px;line-height:1.4}
+
+/* ── 청년 추가 환급 표시 ── */
+.theme-e .ap-youth{background:#fef9c3;border:2px solid #eab308;border-radius:12px;padding:12px 14px;font-size:14.5px;font-weight:700;color:#713f12;line-height:1.6;margin:12px 0 4px}
+.theme-e .ap-chip-youth{font-size:12px;font-weight:800;background:#fef9c3;color:#a16207;border:1px solid #eab308;border-radius:8px;padding:3px 8px}
+
+/* ── 여행 가능기간 전용 캘린더 ── */
+.theme-e .ap-cal{border:2px solid #eee6e0;border-radius:14px;padding:12px 12px 14px;background:#fff}
+.theme-e .ap-cal .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.theme-e .ap-cal .hd b{font-size:17px;color:#111827}
+.theme-e .ap-cal .hd button{width:46px;height:46px;border:2px solid #eee6e0;border-radius:10px;background:#fff;font-size:20px;font-weight:800;color:#ea580c;font-family:inherit;cursor:pointer}
+.theme-e .ap-cal .hd button:disabled{opacity:.3;cursor:not-allowed}
+.theme-e .ap-cal .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+.theme-e .ap-cal .dow{font-size:12.5px;font-weight:800;color:#6b7280;padding:6px 0}
+.theme-e .ap-cal .day{min-height:44px;border:none;border-radius:10px;background:#fff7ed;font-size:15.5px;font-weight:700;color:#c2410c;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.theme-e .ap-cal .day:hover{background:#ffedd5}
+.theme-e .ap-cal span.day.off{background:none;color:#d8cfc6;font-weight:500;cursor:not-allowed}
+.theme-e .ap-cal .day.sel{background:#ea580c;color:#fff;font-weight:800}
+.theme-e .ap-cal .day.inr{background:#fed7aa;color:#7c2d12}
+
+/* ── 시안 E 컨셉 보정: 통합안 — 오렌지 크림 + 큰 과업 버튼 ── */
+.theme-e .ap-hero{background:linear-gradient(160deg,#fff7ed,#ffedd5)}
+.theme-e .ap-big{min-height:60px;font-size:18.5px}
+.theme-e .ap-big.hero{background:linear-gradient(135deg,#ea580c,#c2410c)}
+.theme-e .ap-sm{min-height:50px}

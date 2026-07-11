@@ -6,7 +6,7 @@
 <title>디지털관광주민증 - 경험치 보유현황 · 시안 A</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/common.css?v=20260707f">
-<link rel="stylesheet" href="theme.css?v=1">
+<link rel="stylesheet" href="theme.css?v=2">
 </head>
 <body class="theme-a">
 
@@ -42,6 +42,12 @@
     </div>
   </div>
 
+  <!-- 경험치(포인트) → 지역화폐 전환 -->
+  <div class="exp-cv">
+    <div class="tx">🪙 <b>지역화폐 전환 가능 포인트</b> <span class="v" id="cvAvail">-</span>
+    <small>경험치 1P = 지역화폐 1원 · 1:1 즉시 입금 · 1회 최대 100,000P</small></div>
+    <button onclick="location.href='t50-pay.html#convert'">지역화폐로<br>전환하기</button>
+  </div>
   <div class="sec-header">
     <span class="sec-title2">통합 등급 및 경험치</span>
     <span class="how-link" onclick="toggleExpRules()" aria-haspopup="true">
@@ -116,6 +122,8 @@
 <div class="toast" id="toastEl"></div>
 
 <script src="../site-assets/data.js?v=20260707f"></script>
+<script>/* site-a 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
+try{var _pb=JSON.parse(localStorage.getItem("dtidA_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김관광";}catch(e){}</script>
 <script src="../assets/common.js?v=20260707f"></script>
 <script>
 const user=requireUser();
@@ -128,6 +136,11 @@ if(user){
   document.getElementById('curGrade').textContent=cur.icon+' '+cur.name;
   document.getElementById('curExp').textContent=user.exp.toLocaleString();
 
+  /* 지역화폐 전환 가능 포인트 (전환분 차감, t50-pay.html과 동일 저장소 · 테스트용 초기 100만P) */
+  let cvBalMap={};
+  try{cvBalMap=JSON.parse(localStorage.getItem('dtidA_pointBal2')||'{}');}catch(e){}
+  const cvAvail=(typeof cvBalMap[user.id]==='number')?cvBalMap[user.id]:1000000;
+  document.getElementById('cvAvail').textContent=cvAvail.toLocaleString()+' P';
   document.getElementById('expRulesEarn').textContent=EXP_RULES.earn;
   document.getElementById('expRulesNotes').innerHTML=EXP_RULES.notes.map(n=>`<li>${n}</li>`).join('');
   document.getElementById('expHistList').innerHTML=EXP_HISTORY.map(h=>`
@@ -206,6 +219,6 @@ if(user){
   });});
 }
 </script>
-<script src="theme.js?v=1"></script>
+<script src="theme.js?v=2"></script>
 </body>
 </html>
