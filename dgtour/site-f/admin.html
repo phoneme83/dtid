@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>관리자 대시보드(WEB) — 시안 F(컨설팅 제안)</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="f.css?v=1">
+</head>
+<body class="adm">
+
+<header class="adm-bar">
+  <div class="adm-bar-in">
+    <button class="ab-ico" style="color:#fff" onclick="location.href='main.html'" aria-label="앱으로">☰</button>
+    <div class="tt">관리자 대시보드</div>
+    <a href="main.html" style="font-size:12px;opacity:.85">앱 화면으로 ↗</a>
+    <span style="width:30px;height:30px;border-radius:50%;background:#334155;display:grid;place-items:center">👤</span>
+  </div>
+</header>
+
+<nav class="adm-tabs"><div class="adm-tabs-in" id="admTabs"></div></nav>
+
+<div class="adm-wrap">
+
+  <!-- 대시보드 -->
+  <section data-tab="dash">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+      <div class="sec-t" style="font-size:16px">주요 현황</div>
+      <select id="admScope" onchange="renderAll()" style="border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:#fff;font-size:12.5px">
+        <option value="all">전체</option>
+        <option value="gw">강원특별자치도</option>
+        <option value="jn">전라남도</option>
+        <option value="gb">경상북도</option>
+      </select>
+    </div>
+    <div class="kpi" id="admKpi"></div>
+
+    <div class="pc2">
+      <div>
+        <div class="sec">
+          <div class="sec-h"><div class="sec-t">이용 추이<span class="cap">최근 6개월</span></div></div>
+          <div id="admChart"></div>
+        </div>
+        <div class="sec">
+          <div class="sec-h"><div class="sec-t">부정사용 · 위험 패턴 모니터링</div><span class="badge">FDS</span></div>
+          <div class="tbl-scroll"><table class="adm" id="admRisk"></table></div>
+        </div>
+      </div>
+      <div>
+        <div class="sec">
+          <div class="sec-h"><div class="sec-t">인기 지역 TOP 5</div></div>
+          <div id="admRank"></div>
+        </div>
+        <div class="sec">
+          <div class="sec-h"><div class="sec-t">업종별 이용 분포</div></div>
+          <div id="admCat"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 회원관리 -->
+  <section data-tab="member" hidden>
+    <div class="sec">
+      <div class="sec-h"><div class="sec-t">회원 관리<span class="cap">테스트 계정 기준</span></div>
+        <button class="more" onclick="toast('엑셀 내려받기 (테스트)')">내려받기</button></div>
+      <div class="tbl-scroll"><table class="adm" id="admMember"></table></div>
+    </div>
+    <div class="sec">
+      <div class="sec-h"><div class="sec-t">거주지 재검증 대상<span class="cap">1년 주기 배치</span></div></div>
+      <div class="tbl-scroll"><table class="adm" id="admRecert"></table></div>
+    </div>
+  </section>
+
+  <!-- 혜택업체관리 -->
+  <section data-tab="store" hidden>
+    <div class="sec">
+      <div class="sec-h"><div class="sec-t">혜택업체 관리<span class="cap" id="admStoreCnt"></span></div>
+        <button class="more" onclick="toast('신규 가맹점 등록 (테스트)')">등록</button></div>
+      <div class="tbl-scroll"><table class="adm" id="admStore"></table></div>
+    </div>
+  </section>
+
+  <!-- 통계분석 -->
+  <section data-tab="stat" hidden>
+    <div class="pc2">
+      <div class="sec">
+        <div class="sec-h"><div class="sec-t">지역별 참여 현황</div></div>
+        <div id="admSido"></div>
+      </div>
+      <div class="sec">
+        <div class="sec-h"><div class="sec-t">성과 지표</div></div>
+        <div class="kv"><span class="k">주민증 1건당 평균 혜택금액</span><span class="v">14,720 원</span></div>
+        <div class="kv"><span class="k">재방문율(3개월 내)</span><span class="v">38.4 %</span></div>
+        <div class="kv"><span class="k">미사용 주민증 비율</span><span class="v">21.7 %</span></div>
+        <div class="kv"><span class="k">휴가지원제 교차 참여율</span><span class="v pri">12.9 %</span></div>
+        <div style="font-size:11px;color:var(--sub);margin-top:10px;line-height:1.7">
+          최근 3개월 미사용 주민증 특성 분석으로 이탈 징후 사용자를 추출해 집중 마케팅에 활용합니다(개선과제 1-3).
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 설정 -->
+  <section data-tab="set" hidden>
+    <div class="sec">
+      <div class="sec-h"><div class="sec-t">운영 설정</div></div>
+      <div id="admSet"></div>
+    </div>
+  </section>
+
+  <div class="src">
+    <b>화면 근거</b> — 최종보고 IV.시스템 4.세부개선과제 1-1 <b>「디지털 관광주민증 앱 구성(안)」 ⑤ 관리자 화면(WEB)</b>(p.215)<br>
+    개선 포인트: 실시간 데이터 대시보드 · 회원·혜택업체 통합 관리 · 이용 통계 및 성과 분석 · 부정사용 및 위험 패턴 모니터링<br>
+    통계 항목 구성은 세부개선과제 <b>3-2</b> 「관리자 페이지 개선방안 및 통계기능 강화방안」(p.226~229) 방향을 함께 반영했습니다. 수치는 모의 데이터입니다.
+  </div>
+</div>
+
+<div id="toastEl" role="status" aria-live="polite"></div>
+
+<script src="../site-assets/data.js?v=20260707f"></script>
+<script src="f.js?v=1"></script>
+<script>
+const ADM_TABS=[
+  {key:'dash',  label:'대시보드'},
+  {key:'member',label:'회원관리'},
+  {key:'store', label:'혜택업체관리'},
+  {key:'stat',  label:'통계분석'},
+  {key:'set',   label:'설정'}
+];
+const ADM_SCOPE_RATIO={all:1,gw:0.24,jn:0.31,gb:0.18};
+const ADM_MONTHS=['2월','3월','4월','5월','6월','7월'];
+const ADM_TREND=[418000,536000,492000,618000,742000,856120];
+const ADM_RISK=[
+  {type:'동일 QR 단시간 반복 인증',cnt:37,lvl:'주의',act:'자동 차단 후 소명 요청'},
+  {type:'가입 거주지 ↔ GPS 위치 불일치',cnt:12,lvl:'경고',act:'재인증 알림 발송'},
+  {type:'환급 영수증 중복 제출(OCR)',cnt:8, lvl:'경고',act:'지자체 담당자 심사 이관'},
+  {type:'단일 카드 다계정 결제',cnt:3, lvl:'위험',act:'지급 보류 · 현장 확인'}
+];
+const ADM_SET=[
+  {n:'행정정보 공동이용 API 연계',v:'정상',on:true},
+  {n:'PASS 통신사 인증',v:'정상',on:true},
+  {n:'AI OCR 영수증 1차 판독',v:'사용',on:true},
+  {n:'FDS 시공간 패턴 검증',v:'사용',on:true},
+  {n:'주민증 DB 분리 운영',v:'전환 예정',on:false},
+  {n:'독립 인프라(전용 시스템) 구성',v:'전환 예정',on:false}
+];
+let admTab='dash';
+
+function ratio(){ return ADM_SCOPE_RATIO[document.getElementById('admScope').value]||1; }
+
+function renderTabs(){
+  document.getElementById('admTabs').innerHTML=ADM_TABS.map(t=>
+    '<button class="adm-tab'+(t.key===admTab?' on':'')+'" onclick="pickTab(\''+t.key+'\')">'+t.label+'</button>').join('');
+}
+function pickTab(k){
+  admTab=k; renderTabs();
+  document.querySelectorAll('section[data-tab]').forEach(s=>{ s.hidden=(s.getAttribute('data-tab')!==k); });
+}
+
+function renderKpi(){
+  const r=ratio();
+  const rows=[
+    {lb:'회원 수',         vl:Math.round(672451*r), un:'명', dt:'▲ 12.5%'},
+    {lb:'이번 달 이용건수', vl:Math.round(856120*r), un:'건', dt:'▲ 18.3%'},
+    {lb:'혜택업체 수',      vl:Math.round(18745*r),  un:'개', dt:'▲ 5.2%'},
+    {lb:'이번 달 혜택금액', vl:(12.4*r).toFixed(1),  un:'억원',dt:'▲ 15.7%'}
+  ];
+  document.getElementById('admKpi').innerHTML=rows.map(k=>
+    '<div class="k"><div class="lb">'+k.lb+'</div>'+
+      '<div class="vl">'+(typeof k.vl==='number'?fmt(k.vl):k.vl)+'<small>'+k.un+'</small></div>'+
+      '<div class="dt">'+k.dt+'</div></div>').join('');
+}
+
+function renderChart(){
+  /* 와이어프레임 05 '이용 추이(최근 6개월)' — y축 만 단위 라벨 + 라인차트.
+     좌표계를 실제 픽셀 스케일(600x200)로 잡아 선 굵기·글자 크기가 왜곡되지 않게 한다. */
+  const r=ratio();
+  const vals=ADM_TREND.map(v=>v*r);
+  const max=1000000*r;
+  const L=54, R=588, T=14, B=168;
+  const step=(R-L)/(vals.length-1);
+  const pts=vals.map((v,i)=>({x:L+i*step, y:B-(v/max)*(B-T)}));
+  const path=pts.map((p,i)=>(i?'L':'M')+p.x.toFixed(1)+' '+p.y.toFixed(1)).join(' ');
+  const grid=[0,20,40,60,80,100].map(g=>{
+    const y=B-(g/100)*(B-T);
+    const v=Math.round(max*g/100/10000);
+    return '<line x1="'+L+'" y1="'+y.toFixed(1)+'" x2="'+R+'" y2="'+y.toFixed(1)+'" stroke="#eef2f7" stroke-width="1"/>'+
+      '<text x="'+(L-8)+'" y="'+(y+4).toFixed(1)+'" font-size="11" fill="#98a2b3" text-anchor="end">'+(g?v+'만':'0')+'</text>';
+  }).join('');
+  const labels=pts.map((p,i)=>
+    '<text x="'+p.x.toFixed(1)+'" y="188" font-size="11.5" fill="#667085" text-anchor="middle">'+ADM_MONTHS[i]+'</text>').join('');
+  document.getElementById('admChart').innerHTML=
+    '<svg viewBox="0 0 600 200" style="width:100%;height:auto;display:block" role="img" aria-label="최근 6개월 이용 추이">'+
+      grid+
+      '<path d="'+path+'" fill="none" stroke="#1d4ed8" stroke-width="2.4" stroke-linejoin="round"/>'+
+      pts.map(p=>'<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.4" fill="#1d4ed8"/>').join('')+
+      labels+
+    '</svg>'+
+    '<div style="font-size:11px;color:var(--sub);margin-top:6px">최고치 '+fmt(Math.round(Math.max.apply(null,vals)))+'건 · 기준 '+
+      (document.getElementById('admScope').selectedOptions[0].textContent)+'</div>';
+}
+
+function sidoStats(){
+  const g=getSidoGroups();
+  const rows=Object.keys(g).map(k=>({
+    sido:k, regions:g[k].length,
+    uses:20000+g[k].length*9000+fHash(k)%14000
+  }));
+  rows.sort((a,b)=>b.uses-a.uses);
+  return rows;
+}
+function renderRank(){
+  const rows=sidoStats().slice(0,5);
+  const max=rows[0].uses;
+  document.getElementById('admRank').innerHTML=rows.map((r,i)=>
+    '<div class="rank">'+
+      '<span class="no">'+(i+1)+'</span>'+
+      '<span class="nm">'+fEsc(r.sido)+'</span>'+
+      '<span class="br"><i style="width:'+Math.round(r.uses/max*100)+'%"></i></span>'+
+      '<span class="vl">'+fmt(r.uses)+'</span></div>').join('')+
+    '<div style="font-size:11px;color:var(--sub);margin-top:8px">시·도별 참여 지자체 수 기반 모의 이용건수</div>';
+}
+function renderCat(){
+  const all=fVenues();
+  const counts=F_CATS.map(c=>({label:c.label,color:c.color,n:all.filter(v=>v.cat===c.key).length}));
+  const total=counts.reduce((s,c)=>s+c.n,0)||1;
+  document.getElementById('admCat').innerHTML=counts.map(c=>
+    '<div class="rank">'+
+      '<span class="nm">'+c.label+'</span>'+
+      '<span class="br"><i style="width:'+Math.round(c.n/total*100)+'%;background:'+c.color+'"></i></span>'+
+      '<span class="vl">'+Math.round(c.n/total*100)+'%</span></div>').join('');
+}
+function renderRisk(){
+  document.getElementById('admRisk').innerHTML=
+    '<thead><tr><th>위험 유형</th><th class="r">탐지</th><th>등급</th><th>조치</th></tr></thead><tbody>'+
+    ADM_RISK.map(r=>'<tr><td>'+fEsc(r.type)+'</td><td class="r">'+r.cnt+'건</td>'+
+      '<td><span class="badge '+(r.lvl==='위험'?'o':r.lvl==='경고'?'p':'n')+'">'+r.lvl+'</span></td>'+
+      '<td>'+fEsc(r.act)+'</td></tr>').join('')+'</tbody>';
+}
+function renderMember(){
+  document.getElementById('admMember').innerHTML=
+    '<thead><tr><th>회원명</th><th>등급</th><th class="r">포인트</th><th class="r">발급 주민증</th><th>거주지 인증</th><th>관리</th></tr></thead><tbody>'+
+    ACCOUNTS.map(a=>{
+      const b=F_BASE[a.id]||F_BASE.user1;
+      return '<tr><td>'+fEsc(a.name)+'</td><td><span class="badge">'+b.grade+'</span></td>'+
+        '<td class="r">'+fmt(b.pt)+' P</td><td class="r">'+a.cards.length+'개</td>'+
+        '<td><span class="badge g">완료</span></td>'+
+        '<td><button class="btn gy" style="padding:4px 9px;font-size:11px" onclick="toast(\''+fEsc(a.name)+' 회원 상세 (테스트)\')">상세</button></td></tr>';
+    }).join('')+'</tbody>';
+}
+function renderRecert(){
+  document.getElementById('admRecert').innerHTML=
+    '<thead><tr><th>회원명</th><th>인증수단</th><th>최근 인증일</th><th>재검증 예정</th><th>상태</th></tr></thead><tbody>'+
+    ACCOUNTS.map((a,i)=>{
+      const means=['행정정보 공동이용','PASS 통신사 인증','모바일 신분증','마이데이터'][i%4];
+      return '<tr><td>'+fEsc(a.name)+'</td><td>'+means+'</td><td>2026.0'+(i+2)+'.15</td>'+
+        '<td>2027.0'+(i+2)+'.15</td><td><span class="badge '+(i===2?'o':'n')+'">'+(i===2?'주소 변동 감지':'유지')+'</span></td></tr>';
+    }).join('')+'</tbody>';
+}
+function renderStore(){
+  const all=fVenues();
+  document.getElementById('admStoreCnt').textContent='표시 '+fmt(Math.min(all.length,30))+' / 전체 '+fmt(all.length)+'개';
+  document.getElementById('admStore').innerHTML=
+    '<thead><tr><th>가맹점명</th><th>지역</th><th>업종</th><th>혜택</th><th>상태</th><th>관리</th></tr></thead><tbody>'+
+    all.slice(0,30).map(v=>
+      '<tr><td>'+fEsc(v.name)+'</td><td>'+fEsc(v.region)+'</td>'+
+      '<td><span class="badge">'+v.catLabel+'</span></td><td>'+fEsc(v.discount)+'</td>'+
+      '<td><span class="badge g">운영중</span></td>'+
+      '<td><button class="btn gy" style="padding:4px 9px;font-size:11px" onclick="toast(\'가맹점 정보 수정 (테스트)\')">수정</button></td></tr>').join('')+'</tbody>';
+}
+function renderSido(){
+  const rows=sidoStats();
+  const max=rows[0].regions;
+  document.getElementById('admSido').innerHTML=rows.map(r=>
+    '<div class="rank">'+
+      '<span class="nm">'+fEsc(r.sido)+'</span>'+
+      '<span class="br"><i style="width:'+Math.round(r.regions/max*100)+'%"></i></span>'+
+      '<span class="vl">'+r.regions+'곳</span></div>').join('');
+}
+function renderSet(){
+  document.getElementById('admSet').innerHTML=ADM_SET.map(s=>
+    '<div class="kv"><span class="k">'+fEsc(s.n)+'</span>'+
+      '<span class="v"><span class="badge '+(s.on?'g':'n')+'">'+s.v+'</span></span></div>').join('')+
+    '<div style="font-size:11px;color:var(--sub);margin-top:10px;line-height:1.7">'+
+      '주민증 DB 분리(개선과제 2-2)와 독립 인프라 구성(3-1)은 중장기 전환 과제로 표기했습니다.</div>';
+}
+
+function renderAll(){ renderKpi(); renderChart(); }
+
+renderTabs();
+renderAll();
+renderRank();
+renderCat();
+renderRisk();
+renderMember();
+renderRecert();
+renderStore();
+renderSido();
+renderSet();
+</script>
+</body>
+</html>

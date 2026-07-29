@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>지역사랑 휴가지원제 — 시안 F(컨설팅 제안)</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="f.css?v=1">
+</head>
+<body>
+<div id="shellTop"></div>
+
+<div class="wrap">
+
+  <div class="sec">
+    <div class="sec-h"><div class="sec-t">통합 신청<span class="cap">한 번의 본인인증으로 교차 신청</span></div></div>
+    <div class="steps" id="t50Steps"></div>
+    <div id="t50Body"></div>
+  </div>
+
+  <div class="pc2">
+    <div>
+      <!-- 나의 신청현황 (웹 구성 2안 p.218) -->
+      <div class="sec">
+        <div class="sec-h"><div class="sec-t">나의 신청현황</div><span class="badge g" id="t50Badge">미신청</span></div>
+        <div id="t50Status"></div>
+      </div>
+
+      <!-- 지역사랑 포인트 환급 (p.216) -->
+      <div class="sec">
+        <div class="sec-h"><div class="sec-t">지역사랑 포인트 환급</div></div>
+        <div class="kv"><span class="k">환급 대상 결제금액</span><span class="v" id="t50Pay">0 원</span></div>
+        <div class="kv"><span class="k">환급 예정액(50%)</span><span class="v pri" id="t50Ref">0 원</span></div>
+        <div class="kv"><span class="k">누적 환급액</span><span class="v" id="t50Done">0 원</span></div>
+        <div class="kv"><span class="k">환급 수단</span><span class="v">지역사랑상품권</span></div>
+        <div style="display:flex;gap:8px;margin-top:11px">
+          <button class="btn o" style="flex:1" onclick="t50Spend()">가맹점 결제(모의)</button>
+          <button class="btn" style="flex:1" onclick="t50Refund()">환급 신청</button>
+        </div>
+        <div style="font-size:11px;color:var(--sub);margin-top:9px;line-height:1.7">
+          AI OCR이 영수증의 관광목적 지출 여부를 1차 자동 판독하고, 최종 승인은 지자체 담당자가 수행합니다.
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <!-- 실시간 예산 모니터링 (중장기 전략 II-6) -->
+      <div class="sec">
+        <div class="sec-h"><div class="sec-t">실시간 예산 모니터링<span class="cap">지자체별 소진률</span></div></div>
+        <div id="t50Budget"></div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><div class="sec-t">참여 지자체<span class="cap" id="t50Cnt"></span></div></div>
+        <div id="t50List"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="src">
+    <b>화면 근거</b> — 최종보고 II.지역사랑휴가지원제 6.중장기운영전략(안)(p.185) <b>「KTO 중심 통합 관리체계」</b>
+    — 통합 회원체계 교차신청 · 자격검증 자동화 · 실시간 예산 모니터링 · AI 표준 정산 보조(OCR 검증),<br>
+    IV.시스템 1-1 <b>「통합 앱 구성(안)」</b>(p.216)의 지역사랑 포인트 환급 영역 및 <b>웹 구성 2안</b>(p.218)의 '지역사랑 휴가지원제 메인 상향' 반영.
+  </div>
+</div>
+
+<div id="shellBottom"></div>
+
+<script src="../site-assets/data.js?v=20260707f"></script>
+<script src="f.js?v=1"></script>
+<script>
+const U=fRequireUser();
+const T50_STEPS=['본인인증','지역선택','여행계획','접수','결과'];
+let t50Pick=null;
+let t50Step=0;
+
+function t50State(){ return fLoad(F_T50_KEY,null); }
+function t50Set(s){ fSave(F_T50_KEY,s); }
+
+function renderSteps(){
+  const s=t50State();
+  const cur=s?(s.step||3):t50Step;
+  document.getElementById('t50Steps').innerHTML=T50_STEPS.map((t,i)=>
+    '<div class="st'+(i===cur?' on':(i<cur?' dn':''))+'"><div class="n">'+(i<cur?'✓':(i+1))+'</div>'+t+'</div>').join('');
+}
+
+function renderBody(){
+  const s=t50State();
+  const el=document.getElementById('t50Body');
+  if(s&&s.region){
+    el.innerHTML='<div style="font-size:12.5px;color:var(--ink2);line-height:1.8">'+
+      '<b>'+fEsc(s.region)+'</b> 신청이 접수되었습니다. 지자체 담당자 승인 후 결과가 통보됩니다.<br>'+
+      '거주지 자격은 행정정보 공동이용망으로 비대면 검증되어 증빙자료 제출이 필요하지 않습니다.</div>'+
+      '<div style="display:flex;gap:8px;margin-top:11px">'+
+        (s.statusLabel==='접수완료'?'<button class="btn" style="flex:1" onclick="t50Approve()">지자체 승인 처리(모의)</button>':'')+
+        '<button class="btn gy" style="flex:1" onclick="t50Reset()">신청 취소</button>'+
+      '</div>';
+    return;
+  }
+  const open=TOUR50_REGIONS.filter(r=>r.status!=='closed');
+  el.innerHTML=
+    '<div style="font-size:12.5px;color:var(--ink2);line-height:1.7;margin-bottom:10px">'+
+      '지자체별로 흩어진 신청을 <b>하나의 계정</b>으로 통합했습니다. 여행할 지역을 선택하세요.'+
+      '<br><span style="font-size:11px;color:var(--sub)">※ 거주지와 동일 시·도는 신청할 수 없습니다(자격 자동 검증).</span></div>'+
+    '<div class="pill-wrap" id="t50Pills"></div>'+
+    '<button class="btn blk" style="margin-top:11px" onclick="t50Apply()">선택한 지역으로 통합 신청</button>';
+  document.getElementById('t50Pills').innerHTML=open.map(r=>
+    '<button class="pill'+(t50Pick===r.name?' on':'')+'" onclick="t50Sel(\''+r.name+'\')">'+
+      fEsc(r.name)+' <span style="font-size:10px;opacity:.8">'+TOUR50_STATUS_LABEL[r.status]+'</span></button>').join('');
+}
+function t50Sel(n){ t50Pick=n; renderBody(); }
+function t50Apply(){
+  if(!t50Pick){ toast('신청할 지역을 먼저 선택하세요'); return; }
+  t50Set({region:t50Pick,statusLabel:'접수완료',step:3,grant:200000,used:0,coupon:0,refund:0});
+  toast(t50Pick+' 통합 신청이 접수되었습니다');
+  renderAll();
+}
+function t50Approve(){
+  const s=t50State(); if(!s)return;
+  s.statusLabel='승인완료'; s.step=4;
+  t50Set(s);
+  toast('지자체 승인 완료 · 지원금 200,000원 배정');
+  renderAll();
+}
+function t50Reset(){ t50Set(null); t50Pick=null; toast('신청을 취소했습니다'); renderAll(); }
+
+function renderStatus(){
+  const s=t50State();
+  const el=document.getElementById('t50Status');
+  document.getElementById('t50Badge').textContent=s?(s.statusLabel||'접수완료'):'미신청';
+  if(!s){
+    el.innerHTML='<div style="font-size:12.5px;color:var(--sub);line-height:1.7">아직 신청 내역이 없습니다.<br>위 통합 신청에서 지역을 선택해 주세요.</div>';
+    return;
+  }
+  const rest=Math.max(0,(s.grant||0)-(s.used||0));
+  el.innerHTML=
+    '<div class="kv"><span class="k">신청 지역</span><span class="v">'+fEsc(s.region)+'</span></div>'+
+    '<div class="kv"><span class="k">지원금액</span><span class="v">'+fmt(s.grant)+' 원</span></div>'+
+    '<div class="kv"><span class="k">사용금액</span><span class="v">'+fmt(s.used)+' 원</span></div>'+
+    '<div class="kv"><span class="k">잔여금액</span><span class="v pri">'+fmt(rest)+' 원</span></div>'+
+    '<div class="gbar" style="margin-top:10px"><i style="width:'+Math.round((s.used||0)/(s.grant||1)*100)+'%"></i></div>';
+}
+function renderRefund(){
+  const s=t50State()||{};
+  document.getElementById('t50Pay').textContent=fmt(s.coupon||0)+' 원';
+  document.getElementById('t50Ref').textContent=fmt(Math.round((s.coupon||0)/2))+' 원';
+  document.getElementById('t50Done').textContent=fmt(s.refund||0)+' 원';
+}
+function t50Spend(){
+  const s=t50State();
+  if(!s){ toast('먼저 휴가지원제를 신청하세요'); return; }
+  const amt=[18000,25000,42000,31000][fHash(U.id+(s.used||0))%4];
+  s.used=(s.used||0)+amt; s.coupon=(s.coupon||0)+amt;
+  t50Set(s);
+  toast('가맹점 결제 '+fmt(amt)+'원 (환급 대상 반영)');
+  renderStatus(); renderRefund();
+}
+function t50Refund(){
+  const s=t50State();
+  if(!s||!s.coupon){ toast('환급 대상 결제내역이 없습니다'); return; }
+  const ref=Math.round(s.coupon/2);
+  /* 환급은 지역사랑상품권으로 지급 — 관광주민증 포인트와 별도 계정으로 집계 */
+  s.refund=(s.refund||0)+ref; s.coupon=0;
+  t50Set(s);
+  toast('AI OCR 1차 판독 통과 · '+fmt(ref)+'원 지역사랑상품권 환급 처리');
+  renderStatus(); renderRefund();
+}
+
+function renderBudget(){
+  const rows=TOUR50_REGIONS.slice(0,8).map(r=>{
+    const pct=r.status==='closed'?100:(40+fHash(r.name)%55);
+    return '<div class="rank">'+
+      '<span class="nm">'+fEsc(r.name)+'</span>'+
+      '<span class="br"><i style="width:'+pct+'%;'+(pct>=95?'background:linear-gradient(90deg,#dc2626,#f87171)':'')+'"></i></span>'+
+      '<span class="vl">'+pct+'%</span></div>';
+  });
+  document.getElementById('t50Budget').innerHTML=rows.join('')+
+    '<div style="font-size:11px;color:var(--sub);margin-top:8px;line-height:1.7">지자체별 예산 소진 현황을 KTO가 실시간 통합 집계합니다(모의 수치).</div>';
+}
+function renderList(){
+  document.getElementById('t50Cnt').textContent=TOUR50_REGIONS.length+'개 지역';
+  document.getElementById('t50List').innerHTML=TOUR50_REGIONS.map(r=>{
+    const cls=r.status==='open'?'g':(r.status==='prep'?'':'n');
+    const rd=(r.rounds&&r.rounds[0])?r.rounds[0]:null;
+    return '<div style="display:flex;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)">'+
+      '<span class="badge '+cls+'" style="flex:0 0 auto">'+TOUR50_STATUS_LABEL[r.status]+'</span>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:12.5px;font-weight:700">'+fEsc(r.name)+' <span style="font-size:11px;color:var(--sub);font-weight:500">'+fEsc(r.sido)+'</span></div>'+
+        (rd?'<div style="font-size:11px;color:var(--sub);margin-top:2px">'+fEsc(rd.n)+' '+fEsc(rd.period)+' · '+fEsc(rd.deadline)+'</div>':'')+
+      '</div>'+
+      '<a class="hv" style="color:var(--pri)" href="'+fEsc(r.applyUrl)+'" target="_blank" rel="noopener noreferrer" aria-label="지역 사이트">↗</a>'+
+    '</div>';
+  }).join('');
+}
+
+function renderAll(){
+  renderSteps(); renderBody(); renderStatus(); renderRefund();
+}
+
+if(U){
+  fShell({title:'지역사랑 휴가지원제',active:'t50',back:true});
+  renderAll();
+  renderBudget();
+  renderList();
+}
+</script>
+</body>
+</html>

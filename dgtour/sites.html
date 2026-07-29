@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>디지털 관광주민증 · 시안 적용 홈페이지 5종</title>
+<title>디지털 관광주민증 · 시안 적용 홈페이지 6종</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f4f5f7;color:#1a1a1a;padding:28px 16px 60px}
@@ -26,8 +26,8 @@ a.back{display:inline-block;font-size:12.5px;color:#556;margin-bottom:14px;text-
 <body>
 <div class="wrap">
   <a class="back" href="main.html">← 현재 홈페이지(원본)로</a>
-  <h1>시안 적용 홈페이지 5종</h1>
-  <p class="sub">현재 홈페이지 소스는 그대로 두고, <b>시안 A~E의 디자인을 전체 페이지(메인·지역상세·마이페이지·이벤트 등 14개)에 적용한 별도 홈페이지</b>입니다. 각 사이트는 원본과 동일한 기능·데이터로 동작합니다. 컨셉 설명은 <a href="concepts/index.html">시안 문서</a>에서 볼 수 있습니다.</p>
+  <h1>시안 적용 홈페이지 6종</h1>
+  <p class="sub">현재 홈페이지 소스는 그대로 두고, <b>시안 A~E의 디자인을 전체 페이지(메인·지역상세·마이페이지·이벤트 등 14개)에 적용한 별도 홈페이지</b>입니다. 각 사이트는 원본과 동일한 기능·데이터로 동작합니다. 컨셉 설명은 <a href="concepts/index.html">시안 문서</a>에서 볼 수 있습니다.<br><b>시안 F</b>는 중장기 운영전략 최종보고(컨설팅)의 <b>TO-BE 앱 와이어프레임</b>을 그대로 화면화한 별도 구조의 사이트입니다.</p>
   <div class="grid">
     <a class="site" href="site-a/main.html">
       <div class="top" style="background:linear-gradient(135deg,#ea580c,#9a3412)">💳</div>
@@ -49,8 +49,13 @@ a.back{display:inline-block;font-size:12.5px;color:#556;margin-bottom:14px;text-
       <div class="top" style="background:linear-gradient(135deg,#404040,#1a1a1a)">★</div>
       <div class="bd"><span class="lb" style="background:#1a1a1a">시안 E</span><h3>통합안 (추천)</h3><p>D의 뼈대 + A의 QR 접근 + C 라이트 스탬프 + B의 지역 랜딩·발급 퍼널.</p></div>
     </a>
+    <a class="site" href="site-f/main.html">
+      <div class="top" style="background:linear-gradient(135deg,#3b82f6,#1e3a8a)">▩</div>
+      <div class="bd"><span class="lb" style="background:#1a56db">시안 F</span><h3>컨설팅 제안 (와이어프레임)</h3><p>중장기 전략 최종보고 IV.시스템 1-1 「TO-BE App 와이어프레임」 그대로. 하단 5탭(홈·지도·QR·혜택·마이) + 관리자 웹.</p></div>
+    </a>
   </div>
-  <p class="note">원본 소스(<code>main.html</code> 등 루트 페이지, <code>assets/</code>)는 수정하지 않았습니다. 각 시안 사이트는 <code>site-a/</code>~<code>site-e/</code> 폴더에 독립 사본으로 존재하며, 공용 데이터(<code>data.js</code>)와 이미지·지역 실데이터를 그대로 공유합니다.</p>
+  <p class="note" style="border-left-color:#1a56db">시안 F는 A~E와 달리 <b>페이지 구조(IA)까지 컨설팅 제안안을 따르는 별도 사이트</b>입니다 — <a href="site-f/wireframe.html" style="color:#1a56db;font-weight:800">F안 설명 문서 · 원문 매핑표 보기</a></p>
+  <p class="note">원본 소스(<code>main.html</code> 등 루트 페이지, <code>assets/</code>)는 수정하지 않았습니다. 시안 A~E는 <code>site-a/</code>~<code>site-e/</code> 폴더에 원본 14개 페이지의 독립 사본 + 테마 오버라이드로, 시안 F는 <code>site-f/</code> 폴더에 와이어프레임 기준 신규 페이지로 존재하며, 모두 공용 데이터(<code>data.js</code>)와 이미지·지역 실데이터를 그대로 공유합니다.</p>
 </div>
 </body>
 </html>

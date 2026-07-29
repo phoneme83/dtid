@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>시안 F(컨설팅 제안) 설명 — 중장기 전략 TO-BE 와이어프레임 적용</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="f.css?v=1">
+<style>
+.map-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.map-tbl th,.map-tbl td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.map-tbl th{background:#f8fafc;font-size:11.5px;color:var(--sub);font-weight:800;white-space:nowrap}
+.map-tbl td b{color:var(--pri-d)}
+.wfnum{display:inline-block;min-width:22px;height:22px;line-height:22px;text-align:center;border-radius:6px;background:var(--pri);color:#fff;font-size:11px;font-weight:800;margin-right:5px}
+</style>
+</head>
+<body>
+<div id="shellTop"></div>
+
+<div class="wrap">
+
+  <div class="sec">
+    <div style="font-size:11.5px;font-weight:800;color:var(--pri);letter-spacing:.3px">시안 F · 컨설팅 제안</div>
+    <h1 style="font-size:20px;font-weight:800;letter-spacing:-.8px;margin:6px 0 8px;line-height:1.4">
+      중장기 전략 「시스템 구축 방안」의<br>디지털 관광주민증 앱 와이어프레임 적용안</h1>
+    <p style="font-size:12.5px;color:var(--ink2);line-height:1.85">
+      「디지털 관광주민증 및 지역사랑 휴가지원제 중장기 운영전략 수립」 최종보고(한국기업지식연구원, 260722 v2.9)
+      <b>IV. 시스템 → 4. 세부개선과제 → (1-1) 사용자 편의성 향상을 위한 모바일 앱 UI/UX 개선</b>의
+      <b>「디지털관광주민증 TO-BE App 와이어프레임」(p.215)</b>을 그대로 동작하는 테스트 홈페이지로 구현한 시안입니다.
+      기존 시안 A~E(자체 기획안)와 달리, <b>화면 구조·탭 구성·표기 지표·개선 포인트를 컨설팅 제안 원문에 맞춤</b>니다.
+    </p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+      <a class="btn" href="main.html">F안 사이트 열기</a>
+      <a class="btn o" href="admin.html">관리자 화면 보기</a>
+      <a class="btn gy" href="../sites.html">시안 목록</a>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h"><div class="sec-t">1. 와이어프레임 ↔ 구현 화면 매핑</div></div>
+    <div class="tbl-scroll">
+      <table class="map-tbl">
+        <thead><tr><th>원문 화면</th><th>구현 페이지</th><th>원문 '개선 포인트' 반영 내용</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="wfnum">01</span><b>메인(Home)</b><br><span style="color:var(--sub);font-size:11px">여행 시작과 혜택을 한눈에!</span></td>
+            <td><a href="main.html" style="color:var(--pri);font-weight:700">main.html</a></td>
+            <td>· 앱 실행 즉시 QR 접근 → 상단 <b>QR 바로열기</b> 카드 + 하단 중앙 QR 버튼<br>
+                · 현재 위치 기반 혜택 추천 → <b>내 주변 혜택업체</b> 미니 지도·리스트<br>
+                · 미션·포인트 제공 → <b>여행 미션</b>(3개 업소 방문/축제 참여) 진행바<br>
+                · 보유 혜택 현황 3지표(이용 가능 지역·이번 달 사용·누적 혜택)</td>
+          </tr>
+          <tr>
+            <td><span class="wfnum">02</span><b>QR 주민증</b><br><span style="color:var(--sub);font-size:11px">빠르고 간편한 QR 제시</span></td>
+            <td><a href="qr.html" style="color:var(--pri);font-weight:700">qr.html</a></td>
+            <td>· QR 단독 화면 · 유효기간 상시 · 이름/생년/회원번호<br>
+                · 이번 위치 혜택 건수 + 혜택 보기<br>
+                · 이용 정보(사용 이력·보유 포인트) 노출<br>
+                · <b>QR ↔ 실물 NFC 바코드 전환</b>과 지갑·포인트 환급은 p.216 통합 구성(안) 반영</td>
+          </tr>
+          <tr>
+            <td><span class="wfnum">03</span><b>혜택지도</b><br><span style="color:var(--sub);font-size:11px">GPS 기반 혜택 탐색</span></td>
+            <td><a href="map.html" style="color:var(--pri);font-weight:700">map.html</a></td>
+            <td>· 업종 필터(전체/숙박/음식/카페/체험/관광지) + 검색<br>
+                · 내 위치 원형 표시 + 업종별 색상 핀 + 범례<br>
+                · 가까운 혜택업체 거리·할인 리스트, 즐겨찾기<br>
+                · 스탬프 투어/관광 동선 연계 카드</td>
+          </tr>
+          <tr>
+            <td><span class="wfnum">04</span><b>마이페이지</b><br><span style="color:var(--sub);font-size:11px">나의 여행 기록과 리워드 관리</span></td>
+            <td><a href="my.html" style="color:var(--pri);font-weight:700">my.html</a></td>
+            <td>· 프로필(회원 등급) · 이용 현황 3지표<br>
+                · 리워드 현황(포인트 + 다음 등급까지 잔여 P 진행바)<br>
+                · 관심 지역 관리 → 재방문 유도<br>
+                · 메뉴(개인정보/알림/약관/고객센터) 통합</td>
+          </tr>
+          <tr>
+            <td><span class="wfnum">05</span><b>관리자 화면(WEB)</b><br><span style="color:var(--sub);font-size:11px">데이터 기반 운영·통계 관리</span></td>
+            <td><a href="admin.html" style="color:var(--pri);font-weight:700">admin.html</a></td>
+            <td>· 탭 구성(대시보드/회원관리/혜택업체관리/통계분석/설정)<br>
+                · KPI 4종(회원 수·이용건수·혜택업체 수·혜택금액) + 증감률<br>
+                · 이용 추이(최근 6개월) 라인차트 · 인기 지역 TOP 5<br>
+                · <b>부정사용·위험 패턴 모니터링</b> 표(FDS)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="pc2">
+    <div>
+      <div class="sec">
+        <div class="sec-h"><div class="sec-t">2. 함께 반영한 원문 슬라이드</div></div>
+        <ul class="pts">
+          <li><b>p.214</b> 모바일 앱 UI/UX 개선 4대 방향 — 서비스 통합 게이트웨이(온보딩), Zero-Proof(무증빙) 자동 매칭, 넛지 디자인·사용처 확장, 쉬운 UI·카드뉴스 단계별 안내</li>
+          <li><b>p.215</b> 디지털 관광주민증 앱 구성(안) — <b>본 시안의 기준 화면</b>(5종)</li>
+          <li><b>p.216</b> 통합 앱 구성(안) — 통합 QR/NFC 카드, 내 주민증 지갑, 지역사랑 포인트 환급, 즉시 인증 버튼</li>
+          <li><b>p.217~218</b> 웹(홈페이지) 구성 1·2안 — PC 화면에 <b>2안</b>(바로가기 최소화, "3초 사용" 레이아웃, 여행 중 정보 우선, 주변혜택 첫 화면, 휴가지원제 메인 상향) 적용</li>
+          <li><b>p.219~220</b> 회원가입 채널 일원화 및 거주지 인증 — 로그인 화면의 인증수단 선택, 마이페이지의 최소정보 저장·1년 주기 자동 재검증 표기</li>
+          <li><b>p.221</b> AI 서비스 연계 — 관리자 화면의 FDS 시공간 패턴 검증, OCR 심사 자동화, 이탈 징후 분석 지표</li>
+          <li><b>p.185</b> 휴가지원제 KTO 중심 통합 관리체계 — 통합 신청, 실시간 예산 모니터링, AI OCR 정산 보조</li>
+        </ul>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec">
+        <div class="sec-h"><div class="sec-t">3. 기존 시안(A~E)과의 차이</div></div>
+        <ul class="pts">
+          <li>시안 A~E는 <b>현재 홈페이지 14개 페이지를 그대로 두고 디자인만 교체</b>한 구조입니다.</li>
+          <li>시안 F는 컨설팅 제안의 <b>정보구조(IA) 자체</b>를 따릅니다 — 하단 5탭(홈·지도·QR·혜택·마이) + 관리자 웹으로 페이지를 새로 구성했습니다.</li>
+          <li>"대한민국 구석구석 종속형"이 아닌 <b>독립 전용 앱/웹</b>을 전제로, 상단 GNB와 하단 탭바를 자체 보유합니다.</li>
+          <li>지역 실데이터(52개 지역 방문TIP·축제·사용처, 휴가지원제 16개 지역)는 기존 목업과 <b>동일한 data.js</b>를 공유합니다.</li>
+        </ul>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><div class="sec-t">4. 테스트 사이트 전제 · 한계</div></div>
+        <ul class="pts">
+          <li>실제 인증(행정망/PASS/모바일 신분증)·결제·환급은 수행하지 않습니다. 로그인은 기존 목업과 동일한 SNS 테스트 계정입니다.</li>
+          <li>혜택지도는 외부 지도 API를 호출하지 않는 <b>오프라인 SVG 목업</b>이며, 핀 좌표·거리(km)는 업체명 기반 결정론적 값입니다.</li>
+          <li>관리자 화면의 KPI·추이·순위 수치는 와이어프레임 표기값과 지역 데이터 기반 <b>모의 수치</b>입니다.</li>
+          <li>이용 실적·포인트·미션·즐겨찾기·휴가지원제 신청은 브라우저 <b>localStorage(<code>dtidF_*</code>)</b>에 계정별로 저장됩니다.</li>
+          <li>와이어프레임 5종 외에 <b>혜택안내(<code>benefit.html</code>)</b>·<b>휴가지원제(<code>t50.html</code>)</b>·<b>주민증 발급(<code>issue.html</code>)</b>·<b>로그인(<code>index.html</code>)</b>은 하단 탭·지갑 진입점이 F안 안에서 완결되도록 추가 구성한 화면입니다.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="src">
+    출처 파일 — <b>[한국기업지식연구원_최종보고_수정] 디지털 관광주민증 및 지역사랑 휴가지원제 중장기 운영전략 수립_취합_260722_v2.9_수정요청사항반영.pptx / .pdf</b>
+    (2026년 › 중장기 전략 › 최종보고 자료 검토 › 2.수정안)
+  </div>
+</div>
+
+<div id="shellBottom"></div>
+
+<script src="../site-assets/data.js?v=20260707f"></script>
+<script src="f.js?v=1"></script>
+<script>
+fShell({title:'F안 설명',active:'',back:true,hideBnav:true});
+document.body.classList.add('no-bnav');
+</script>
+</body>
+</html>

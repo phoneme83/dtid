@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>관광주민증 발급 — 시안 F(컨설팅 제안)</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="f.css?v=1">
+</head>
+<body>
+<div id="shellTop"></div>
+
+<div class="wrap">
+
+  <div class="sec">
+    <div class="sec-h"><div class="sec-t">주민증 발급<span class="cap">증빙서류 없이 30초</span></div>
+      <span class="badge g" id="isAuth">거주지 인증 완료</span></div>
+    <div style="font-size:12.5px;color:var(--ink2);line-height:1.8">
+      통합 인증으로 거주지 자격이 이미 확인되었으므로, 원하는 지역을 선택하면 <b>즉시 발급</b>됩니다.<br>
+      <span style="font-size:11px;color:var(--sub)">※ 실제 서비스에서는 거주지와 동일 시·군은 발급 대상에서 제외됩니다(자격 자동 검증).</span>
+    </div>
+  </div>
+
+  <div class="sec tight">
+    <div style="display:flex;align-items:center;gap:7px;background:#f5f7fa;border:1px solid var(--line);border-radius:9px;padding:8px 11px">
+      <span style="color:var(--sub2)">🔍</span>
+      <input id="isQ" placeholder="지역명 검색 (예: 정선, 완도)" oninput="renderList()"
+             style="flex:1;border:0;background:none;outline:none;font-size:13px">
+    </div>
+    <div class="chips" id="isSido" style="margin-top:10px"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h"><div class="sec-t">발급 가능 지역<span class="cap" id="isCnt"></span></div>
+      <a class="more" href="my.html">내 지갑</a></div>
+    <div id="isList"></div>
+  </div>
+
+  <div class="src">
+    <b>보조 화면</b> — 와이어프레임에는 발급 전용 화면이 별도로 제시되지 않았으나, 앱 구성(안) p.216의
+    <b>「내 주민증 지갑 · 추가 발급」</b> 진입점을 F안 내부에서 완결되도록 구성한 화면입니다.
+    발급 결과는 브라우저 <code>localStorage</code>에만 저장됩니다(테스트).
+  </div>
+</div>
+
+<div id="shellBottom"></div>
+
+<script src="../site-assets/data.js?v=20260707f"></script>
+<script src="f.js?v=1"></script>
+<script>
+const U=fRequireUser();
+let isSido='전체';
+
+function sidoOf(n){
+  return (typeof REGION_SIDO!=='undefined'&&REGION_SIDO[n])?REGION_SIDO[n]:'기타';
+}
+function shortSido(s){
+  return (typeof SIDO_SHORT!=='undefined'&&SIDO_SHORT[s])?SIDO_SHORT[s]:s.replace(/(특별자치도|광역시|특별시|도)$/,'');
+}
+function renderSido(){
+  const list=['전체'];
+  REGIONS.forEach(r=>{ const s=shortSido(sidoOf(r.n)); if(list.indexOf(s)<0) list.push(s); });
+  document.getElementById('isSido').innerHTML=list.map(s=>
+    '<button class="chip sm'+(s===isSido?' on':'')+'" onclick="pickSido(\''+s+'\')">'+s+'</button>').join('');
+}
+function pickSido(s){ isSido=s; renderSido(); renderList(); }
+
+function renderList(){
+  const q=(document.getElementById('isQ').value||'').trim();
+  const have=fCards().map(fRegionShort);
+  let list=REGIONS.map(r=>r.n)
+    .filter(n=>isSido==='전체'||shortSido(sidoOf(n))===isSido)
+    .filter(n=>!q||n.indexOf(q)>=0||fRegionLabel(n).indexOf(q)>=0);
+  document.getElementById('isCnt').textContent='총 '+fmt(list.length)+'곳';
+  document.getElementById('isList').innerHTML=list.map(n=>{
+    const owned=have.indexOf(n)>=0;
+    const d=(typeof getRegionDetail==='function')?getRegionDetail(n):null;
+    const cnt=(d&&d.venues)?d.venues.length:0;
+    return '<div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)">'+
+      '<span style="font-size:19px;width:26px;text-align:center">'+(CARD_ICONS[shortSido(sidoOf(n))+' '+fRegionLabel(n)]||'🪪')+'</span>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:13.5px;font-weight:800">'+fEsc(fRegionLabel(n))+
+          ' <span style="font-size:11px;color:var(--sub);font-weight:500">'+fEsc(shortSido(sidoOf(n)))+'</span></div>'+
+        '<div style="font-size:11px;color:var(--sub);margin-top:2px">혜택업체 '+cnt+'곳'+(cnt?' · 상시 이용 가능':'')+'</div>'+
+      '</div>'+
+      (owned
+        ? '<a class="btn gy" style="padding:7px 12px;font-size:12px" href="qr.html?r='+encodeURIComponent(n)+'">보유 · QR</a>'
+        : '<button class="btn" style="padding:7px 12px;font-size:12px" onclick="doIssue(\''+n+'\')">발급받기</button>')+
+    '</div>';
+  }).join('')||'<div style="padding:14px 0;font-size:12.5px;color:var(--sub)">검색 결과가 없습니다.</div>';
+}
+
+function doIssue(n){
+  const card=fIssueCard(n);
+  if(!card){ toast('이미 보유한 지역입니다'); return; }
+  const w=fWatch();
+  if(w.indexOf(n)<0){ w.push(n); fSave(F_WATCH_KEY,w); }
+  toast(fRegionLabel(n)+' 관광주민증을 발급했습니다 (+20P)');
+  fSave(F_PT_KEY,fPoints()+20);
+  renderList();
+}
+
+if(U){
+  fShell({title:'주민증 발급',active:'',back:true});
+  renderSido();
+  renderList();
+}
+</script>
+</body>
+</html>

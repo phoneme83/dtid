@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>관광주민증 QR — 시안 F(컨설팅 제안)</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="f.css?v=1">
+</head>
+<body>
+<div id="shellTop"></div>
+
+<div class="wrap">
+
+  <!-- 내 주민증 지갑 (통합 앱 구성(안) p.216) -->
+  <div class="pill-wrap" id="walletPills"></div>
+
+  <!-- ② QR 주민증 (와이어프레임 02) -->
+  <div class="qcard">
+    <div>
+      <span class="rg" id="qRegion">-</span>
+      <span class="vp" id="qValid">유효</span>
+    </div>
+    <div class="vd">유효기간 : 상시</div>
+
+    <div id="qFace"></div>
+
+    <div class="swp-dots" id="qDots">
+      <button class="d on" onclick="qSlide(0)" aria-label="QR 코드"></button>
+      <button class="d" onclick="qSlide(1)" aria-label="실물 NFC 카드 바코드"></button>
+    </div>
+
+    <div style="margin-top:15px">
+      <div class="un" id="qName">-</div>
+      <div class="ui" id="qMeta">-</div>
+    </div>
+  </div>
+
+  <!-- 즉시 인증 (p.216 FAB 즉시 인증 / 무증빙 자동 매칭 p.214) -->
+  <div class="sec">
+    <button class="btn blk" onclick="fOpenModal('useModal')">⚡ 즉시 인증 · 가맹점 혜택 적용</button>
+    <div style="font-size:11px;color:var(--sub);margin-top:8px;line-height:1.6">
+      기 등록 카드 결제 데이터와 QR을 자동 매칭해 별도 증빙 없이 혜택이 적용됩니다(Zero-Proof).
+    </div>
+  </div>
+
+  <div class="pc2">
+    <div>
+      <!-- 이번 위치 혜택 -->
+      <div class="sec">
+        <div class="row2">
+          <div>
+            <div style="font-size:12.5px;color:var(--sub)">이번 위치 혜택</div>
+            <div style="font-size:22px;font-weight:800;color:var(--pri-d);letter-spacing:-.8px" id="qNearCnt">-</div>
+          </div>
+          <a class="btn" href="map.html">혜택 보기</a>
+        </div>
+      </div>
+
+      <!-- 이용 정보 -->
+      <div class="sec">
+        <div class="sec-t" style="margin-bottom:11px">이용 정보</div>
+        <div class="stat3" id="qUse"></div>
+      </div>
+    </div>
+
+    <div>
+      <!-- 지역사랑 포인트 환급 (p.216) -->
+      <div class="sec">
+        <div class="sec-h"><div class="sec-t">지역사랑 포인트 환급</div><a class="more" href="t50.html">환급 신청</a></div>
+        <div class="kv"><span class="k">환급 대상 결제금액</span><span class="v" id="qCoupon">-</span></div>
+        <div class="kv"><span class="k">환급 예정액(50%)</span><span class="v pri" id="qRefund">-</span></div>
+        <div class="kv"><span class="k">누적 환급액</span><span class="v" id="qRefDone">-</span></div>
+        <div class="kv"><span class="k">환급 수단</span><span class="v">지역사랑상품권</span></div>
+      </div>
+
+      <!-- 실물카드 연동 -->
+      <div class="sec">
+        <div class="sec-h"><div class="sec-t">실물 카드 등록 / 연동</div></div>
+        <div style="font-size:12.5px;color:var(--ink2);line-height:1.7">
+          NFC 실물카드를 등록하면 앱 실행 없이도 가맹점 단말에서 바로 인증됩니다.
+        </div>
+        <div style="margin-top:11px"><button class="btn o" style="width:100%" onclick="toast('실물 NFC 카드 등록 화면 (테스트)')">실물 카드 등록하기</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="src">
+    <b>화면 근거</b> — 최종보고 IV.시스템 4.세부개선과제 1-1 <b>「디지털 관광주민증 앱 구성(안)」 ② QR 주민증</b>(p.215)<br>
+    개선 포인트: QR 단독 화면 제공 · 위젯 연계로 즉시 실행 가능 · 이용 실적 및 포인트 노출 · 현장 사용 시간 최소화<br>
+    상단 QR/NFC 전환과 지갑·포인트 환급 영역은 <b>「통합 디지털 관광주민증 + 지역사랑 휴가지원제 앱 구성(안)」</b>(p.216) 반영.
+  </div>
+</div>
+
+<!-- 가맹점 선택 모달 -->
+<div class="modal" id="useModal">
+  <div class="bg" onclick="fCloseModal('useModal')"></div>
+  <div class="pn">
+    <div class="hd"><div class="t">가맹점 선택 · 즉시 인증</div><button class="x" onclick="fCloseModal('useModal')">✕</button></div>
+    <div class="vlist" id="useList"></div>
+  </div>
+</div>
+
+<div id="shellBottom"></div>
+
+<script src="../site-assets/data.js?v=20260707f"></script>
+<script src="f.js?v=1"></script>
+<script>
+const U=fRequireUser();
+const VENUES=fVenues();
+let curCard=null;
+let curFace=0;
+
+function qMemberNo(){
+  const h=fHash((U?U.id:'x')+'member');
+  return '2026-'+String(h%100000000).padStart(8,'0');
+}
+function qBirth(){
+  const h=fHash((U?U.id:'x')+'birth');
+  return (1965+h%40)+'.'+String(1+h%12).padStart(2,'0')+'.'+String(1+(h>>3)%28).padStart(2,'0');
+}
+function qBarcode(){
+  const h=fHash((U?U.id:'x')+'bar');
+  let bars='';
+  for(let i=0;i<62;i++){ bars+='<i style="width:'+(((h>>(i%12))%3)+1)+'px"></i>'; }
+  return '<div class="barcode">'+bars+'</div>'+
+    '<div style="font-size:12px;letter-spacing:2px;color:var(--ink2);margin-top:6px;font-weight:700">'+
+    String(fHash(U.id+'nfc')%100000000).padStart(8,'0')+'</div>';
+}
+
+function qSlide(i){
+  curFace=i;
+  document.querySelectorAll('#qDots .d').forEach((d,n)=>d.classList.toggle('on',n===i));
+  renderFace();
+}
+function renderFace(){
+  const el=document.getElementById('qFace');
+  if(curFace===0){
+    el.innerHTML='<div class="qbox">'+
+      '<img src="../assets/img/qr-code.svg" alt="관광주민증 방문 인증 QR 코드">'+
+      '<span class="ctr">▩</span></div>'+
+      '<div style="font-size:11px;color:var(--sub)">방문 인증 / 혜택 적용 QR</div>';
+  }else{
+    el.innerHTML='<div style="padding:18px 4px 6px">'+qBarcode()+'</div>'+
+      '<div style="font-size:11px;color:var(--sub);margin-top:8px">실물 NFC 카드 바코드</div>';
+  }
+}
+
+function renderWallet(){
+  const el=document.getElementById('walletPills');
+  el.innerHTML=fCards().map((c,i)=>
+    '<button class="pill'+(i===curCard?' on':'')+'" onclick="pickCard('+i+')">'+
+      (CARD_ICONS[c]||'🪪')+' '+fEsc(fRegionShort(c))+'</button>').join('')+
+    '<a class="pill" href="issue.html">＋ 추가 발급</a>';
+}
+function pickCard(i){
+  curCard=i;
+  renderWallet();
+  const short=fRegionShort(fCards()[i]);
+  document.getElementById('qRegion').textContent=fRegionLabel(short)+' 관광주민증';
+  toast(fRegionLabel(short)+' 주민증으로 전환했습니다');
+}
+
+function renderInfo(){
+  const b=fBase(), u=fUses();
+  document.getElementById('qName').textContent=U.name;
+  document.getElementById('qMeta').innerHTML=qBirth()+'<br><b>회원번호 '+qMemberNo()+'</b>';
+  document.getElementById('qNearCnt').innerHTML=fmt(VENUES.length)+'<small style="font-size:13px">건</small>';
+  document.getElementById('qUse').innerHTML=
+    '<div class="it"><div class="ic">🕘</div><div class="lb">사용 이력</div><div class="vl">'+fmt(u.uses)+'<small>회</small></div></div>'+
+    '<div class="it"><div class="ic">🪙</div><div class="lb">보유 포인트</div><div class="vl">'+fmt(fPoints())+'<small>P</small></div></div>'+
+    '<div class="it"><div class="ic">🎟️</div><div class="lb">이번 달 사용</div><div class="vl">'+fmt(u.month)+'<small>건</small></div></div>';
+  const cp=fLoad(F_T50_KEY,null)||{};
+  document.getElementById('qCoupon').textContent=fmt(cp.coupon||0)+' 원';
+  document.getElementById('qRefund').textContent=fmt(Math.round((cp.coupon||0)/2))+' 원';
+  document.getElementById('qRefDone').textContent=fmt(cp.refund||0)+' 원';
+}
+
+function renderUseList(){
+  document.getElementById('useList').innerHTML=VENUES.slice(0,8).map(v=>
+    '<button class="vrow" style="width:100%;text-align:left" onclick="doUse(\''+fEsc(v.name)+'\')">'+
+      '<span class="th"><img src="'+v.img+'" alt=""></span>'+
+      '<span class="bd"><span class="nm" style="display:block">'+fEsc(v.name)+'</span>'+
+        '<span class="ds" style="display:block"><span class="badge n">'+fEsc(v.region)+'</span>'+v.dist.toFixed(1)+'km · '+fEsc(v.catLabel)+'</span>'+
+        '<span class="dc" style="display:block">'+fEsc(v.discount)+'</span></span>'+
+      '<span class="hv" style="color:var(--pri)">›</span>'+
+    '</button>').join('');
+}
+function doUse(name){
+  fUseBenefit(name);
+  fCloseModal('useModal');
+  renderInfo();
+}
+
+if(U){
+  const q=new URLSearchParams(location.search).get('r');
+  curCard=0;
+  if(q){ const i=fCards().findIndex(c=>fRegionShort(c)===q); if(i>=0) curCard=i; }
+  fShell({title:'관광주민증',active:'qr',back:true});
+  renderWallet();
+  renderFace();
+  const short=fRegionShort(fCards()[curCard]||'강원 정선군');
+  document.getElementById('qRegion').textContent=fRegionLabel(short)+' 관광주민증';
+  renderInfo();
+  renderUseList();
+}
+</script>
+</body>
+</html>

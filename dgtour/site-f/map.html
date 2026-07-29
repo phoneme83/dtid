@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>혜택지도 — 시안 F(컨설팅 제안)</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="f.css?v=1">
+</head>
+<body>
+<div id="shellTop"></div>
+
+<div class="wrap">
+
+  <!-- 검색 + 업종 필터 (와이어프레임 03) -->
+  <div class="sec tight">
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+      <div style="flex:1;display:flex;align-items:center;gap:7px;background:#f5f7fa;border:1px solid var(--line);border-radius:9px;padding:8px 11px">
+        <span style="color:var(--sub2)">🔍</span>
+        <input id="mq" placeholder="가맹점·지역 검색" oninput="renderAll()"
+               style="flex:1;border:0;background:none;outline:none;font-size:13px">
+      </div>
+      <button class="ab-ico" style="background:#f5f7fa;border:1px solid var(--line)" onclick="toast('테마별 필터 (테스트 화면)')" aria-label="필터">⚙</button>
+    </div>
+    <div class="chips" id="mChips"></div>
+  </div>
+
+  <div class="pc2">
+    <div>
+      <!-- 지도 -->
+      <div class="sec tight">
+        <div class="bigmap" id="bigMap">
+          <button class="gps-btn" onclick="gpsRecenter()" aria-label="내 위치">◎</button>
+        </div>
+        <div class="legend" id="mLegend"></div>
+      </div>
+    </div>
+
+    <div>
+      <!-- 가까운 혜택업체 -->
+      <div class="sec">
+        <div class="sec-h">
+          <div class="sec-t">가까운 혜택업체<span class="cap" id="mCnt"></span></div>
+          <button class="more" onclick="toggleSort()" id="mSort">가까운 순</button>
+        </div>
+        <div class="vlist" id="mList"></div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><div class="sec-t">스탬프 투어 · 관광 동선</div><a class="more" href="benefit.html">코스 보기</a></div>
+        <div id="mStamp"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="src">
+    <b>화면 근거</b> — 최종보고 IV.시스템 4.세부개선과제 1-1 <b>「디지털 관광주민증 앱 구성(안)」 ③ 혜택지도</b>(p.215)<br>
+    개선 포인트: GPS 기반 혜택지도 · 주변 업소 자동 추천 · 스탬프 투어/관광 동선 연계 · 업종별·테마별 필터 제공<br>
+    ※ 지도는 외부 지도 API를 호출하지 않는 오프라인 SVG 목업입니다(테스트 사이트 기준). 핀·거리 값은 지역 실데이터에 결정론적으로 매핑됩니다.
+  </div>
+</div>
+
+<div id="shellBottom"></div>
+
+<script src="../site-assets/data.js?v=20260707f"></script>
+<script src="f.js?v=1"></script>
+<script>
+const U=fRequireUser();
+const ALL=fVenues();
+let curCat='all';
+let sortNear=true;
+
+function renderChips(){
+  const chips=[{key:'all',label:'전체'}].concat(F_CATS.map(c=>({key:c.key,label:c.label})));
+  document.getElementById('mChips').innerHTML=chips.map(c=>
+    '<button class="chip'+(c.key===curCat?' on':'')+'" onclick="pickCat(\''+c.key+'\')">'+c.label+'</button>').join('');
+}
+function pickCat(k){ curCat=k; renderChips(); renderAll(); }
+function toggleSort(){
+  sortNear=!sortNear;
+  document.getElementById('mSort').textContent=sortNear?'가까운 순':'할인율 순';
+  renderAll();
+}
+function filtered(){
+  const q=(document.getElementById('mq').value||'').trim();
+  let list=ALL.filter(v=>(curCat==='all'||v.cat===curCat));
+  if(q) list=list.filter(v=>(v.name+v.region+v.desc+v.discount).indexOf(q)>=0);
+  if(!sortNear) list=list.slice().sort((a,b)=>fHash(b.id)%40-fHash(a.id)%40);
+  return list;
+}
+function renderMap(list){
+  const el=document.getElementById('bigMap');
+  el.querySelectorAll('.pin,.mapbg').forEach(n=>n.remove());
+  el.insertAdjacentHTML('afterbegin',fMapSvg(U.id+curCat));
+  el.insertAdjacentHTML('beforeend',fPins(list,12));
+}
+function renderLegend(){
+  document.getElementById('mLegend').innerHTML=F_CATS.map(c=>
+    '<span class="lg"><i class="dt" style="background:'+c.color+'"></i>'+c.label+'</span>').join('');
+}
+function renderList(list){
+  const favs=fFavs();
+  document.getElementById('mCnt').textContent='총 '+fmt(list.length)+'곳';
+  document.getElementById('mList').innerHTML=list.slice(0,14).map(v=>
+    '<div class="vrow">'+
+      '<div class="th"><img src="'+v.img+'" alt=""></div>'+
+      '<div class="bd">'+
+        '<div class="nm">'+fEsc(v.name)+'</div>'+
+        '<div class="ds"><span class="badge n">'+fEsc(v.region)+'</span>'+v.dist.toFixed(1)+'km'+(v.desc?' · '+fEsc(v.desc):'')+'</div>'+
+        '<div class="dc"><span class="badge">'+fEsc(v.catLabel)+'</span>'+fEsc(v.discount)+'</div>'+
+      '</div>'+
+      '<button class="hv'+(favs.indexOf(v.id)>=0?' on':'')+'" onclick="fToggleFav(\''+fEsc(v.id)+'\',this)" aria-label="즐겨찾기">'+
+        (favs.indexOf(v.id)>=0?'♥':'♡')+'</button>'+
+    '</div>').join('')||'<div style="padding:14px 0;font-size:12.5px;color:var(--sub)">조건에 맞는 혜택업체가 없습니다.</div>';
+}
+function renderStamp(){
+  const m=fMission();
+  const cur=Math.min(m.m1||0,3);
+  document.getElementById('mStamp').innerHTML=
+    '<div style="display:flex;align-items:center;justify-content:space-between">'+
+      '<div style="font-size:13px;font-weight:700">내 주변 3개 업소 방문 코스</div>'+
+      '<div style="font-size:12.5px;font-weight:800;color:var(--pri)">'+cur+' / 3</div>'+
+    '</div>'+
+    '<div class="mbar" style="margin-top:9px"><i style="width:'+Math.round(cur/3*100)+'%"></i></div>'+
+    '<div style="font-size:11.5px;color:var(--sub);margin-top:8px;line-height:1.7">'+
+      'QR 인증 시 스탬프가 자동 적립되고, 완주 시 <b>500P</b>가 추가 지급됩니다.</div>';
+}
+function gpsRecenter(){ toast('현재 위치를 다시 불러왔습니다 (GPS 기준)'); renderAll(); }
+function renderAll(){
+  const list=filtered();
+  renderMap(list);
+  renderList(list);
+  renderStamp();
+}
+
+if(U){
+  fShell({title:'혜택지도',active:'map',back:true});
+  renderChips();
+  renderLegend();
+  renderAll();
+}
+</script>
+</body>
+</html>

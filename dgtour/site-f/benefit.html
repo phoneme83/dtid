@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>혜택안내 — 시안 F(컨설팅 제안)</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="f.css?v=1">
+</head>
+<body>
+<div id="shellTop"></div>
+
+<div class="wrap">
+
+  <!-- 지역 선택 -->
+  <div class="sec tight">
+    <div class="sec-t" style="margin-bottom:9px">지역 선택<span class="cap">내 주민증 · 관심지역</span></div>
+    <div class="pill-wrap" id="bRegions" style="margin-bottom:0"></div>
+  </div>
+
+  <!-- 업종 필터 -->
+  <div class="sec tight">
+    <div class="chips" id="bChips"></div>
+  </div>
+
+  <div class="pc2">
+    <div>
+      <!-- 혜택 목록 -->
+      <div class="sec">
+        <div class="sec-h"><div class="sec-t">혜택 목록<span class="cap" id="bCnt"></span></div>
+          <a class="more" href="map.html">지도에서 보기</a></div>
+        <div class="vlist" id="bList"></div>
+      </div>
+
+      <!-- 지역소식 -->
+      <div class="sec" id="news">
+        <div class="sec-h"><div class="sec-t">지역소식<span class="cap">축제 · 행사 · 공지</span></div></div>
+        <div class="chips" id="newsChips" style="margin-bottom:9px"></div>
+        <div id="newsList"></div>
+      </div>
+    </div>
+
+    <div>
+      <!-- 내 쿠폰함 -->
+      <div class="sec">
+        <div class="sec-h"><div class="sec-t">내 쿠폰함</div><span class="more" id="cpCnt"></span></div>
+        <div id="cpList"></div>
+      </div>
+
+      <!-- 사용방법 : 카드뉴스 형태 단계별 안내 (p.214) -->
+      <div class="sec">
+        <div class="sec-h"><div class="sec-t">사용방법<span class="cap">카드뉴스 단계별 안내</span></div></div>
+        <div class="steps" id="howSteps"></div>
+        <div id="howBody" style="font-size:12.5px;color:var(--ink2);line-height:1.8;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:12px"></div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn gy" style="flex:1" onclick="howMove(-1)">이전</button>
+          <button class="btn" style="flex:1" onclick="howMove(1)">다음</button>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div class="sec" id="faq">
+        <div class="sec-h"><div class="sec-t">자주 묻는 질문</div></div>
+        <div id="faqList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="src">
+    <b>화면 근거</b> — 와이어프레임 01의 <b>하단 탭바 '혜택'</b> 탭. 최종보고 IV.시스템 4.세부개선과제 1-1(p.214)의
+    <b>「정부지침 준수(쉬운 UI)」</b> — 카드뉴스 형태의 단계별 안내 제공, 업종별·테마별 필터, 지자체 콘텐츠 직접 연계(웹 구성 1안 p.217 '지역소식') 반영.
+  </div>
+</div>
+
+<div id="shellBottom"></div>
+
+<script src="../site-assets/data.js?v=20260707f"></script>
+<script src="f.js?v=1"></script>
+<script>
+const U=fRequireUser();
+const ALL=fVenues();
+const HOW=[
+  {t:'주민증 발급',   d:'통합 인증(행정망·PASS·모바일 신분증) 한 번으로 거주지를 확인하고, 원하는 지역의 관광주민증을 발급받습니다. 증빙서류 제출은 필요하지 않습니다.'},
+  {t:'혜택 지역 확인', d:'혜택지도에서 현재 위치 주변의 가맹점을 업종별로 확인합니다. 앱을 켜면 GPS 기반으로 가까운 혜택업체가 자동 추천됩니다.'},
+  {t:'QR 즉시 제시',  d:'하단 중앙 QR 버튼을 누르면 별도 이동 없이 방문 인증 QR이 열립니다. 가맹점 리더기에 스캔하거나 직원에게 제시하세요.'},
+  {t:'혜택 자동 적용', d:'기 등록한 카드 결제 데이터와 QR이 자동 매칭되어 별도 증빙 없이 할인이 적용됩니다(Zero-Proof).'},
+  {t:'포인트 적립·환급',d:'사용 실적에 따라 포인트가 적립되고, 지역사랑 휴가지원제 참여 시 지역사랑상품권으로 환급받을 수 있습니다.'},
+  {t:'미션 완주',     d:'3개 업소 방문·지역 축제 참여 등 여행 미션을 완주하면 추가 포인트와 스탬프가 지급됩니다.'}
+];
+let bRegion='all';
+let bCat='all';
+let newsTab='전체';
+let howIdx=0;
+
+function myRegions(){
+  const names=[];
+  fCards().map(fRegionShort).concat(fWatch()).forEach(n=>{ if(n&&names.indexOf(n)<0) names.push(n); });
+  return names;
+}
+function renderRegions(){
+  const names=myRegions();
+  document.getElementById('bRegions').innerHTML=
+    '<button class="pill'+(bRegion==='all'?' on':'')+'" onclick="pickRegion(\'all\')">전체</button>'+
+    names.map(n=>'<button class="pill'+(bRegion===n?' on':'')+'" onclick="pickRegion(\''+n+'\')">'+fEsc(fRegionLabel(n))+'</button>').join('');
+}
+function pickRegion(n){ bRegion=n; renderRegions(); renderList(); renderNews(); }
+function renderChips(){
+  const chips=[{key:'all',label:'전체'}].concat(F_CATS.map(c=>({key:c.key,label:c.label})));
+  document.getElementById('bChips').innerHTML=chips.map(c=>
+    '<button class="chip'+(c.key===bCat?' on':'')+'" onclick="pickCat(\''+c.key+'\')">'+c.label+'</button>').join('');
+}
+function pickCat(k){ bCat=k; renderChips(); renderList(); }
+
+function renderList(){
+  let list=ALL.filter(v=>(bCat==='all'||v.cat===bCat)&&(bRegion==='all'||v.region===bRegion));
+  document.getElementById('bCnt').textContent='총 '+fmt(list.length)+'건';
+  const favs=fFavs();
+  document.getElementById('bList').innerHTML=list.slice(0,20).map(v=>
+    '<div class="vrow">'+
+      '<div class="th"><img src="'+v.img+'" alt=""></div>'+
+      '<div class="bd">'+
+        '<div class="nm">'+fEsc(v.name)+'</div>'+
+        '<div class="ds"><span class="badge n">'+fEsc(v.region)+'</span>'+(v.desc?fEsc(v.desc):v.catLabel)+'</div>'+
+        '<div class="dc"><span class="badge">'+fEsc(v.catLabel)+'</span>'+fEsc(v.discount)+'</div>'+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">'+
+        '<button class="btn" style="padding:6px 10px;font-size:11.5px" onclick="getCoupon(\''+fEsc(v.name)+'\')">쿠폰 받기</button>'+
+        '<button class="hv'+(favs.indexOf(v.id)>=0?' on':'')+'" style="width:26px;height:26px" onclick="fToggleFav(\''+fEsc(v.id)+'\',this)" aria-label="즐겨찾기">'+
+          (favs.indexOf(v.id)>=0?'♥':'♡')+'</button>'+
+      '</div>'+
+    '</div>').join('')||'<div style="padding:14px 0;font-size:12.5px;color:var(--sub)">해당 조건의 혜택이 없습니다.</div>';
+}
+
+function getCoupon(name){
+  const list=fLoad('dtidF_coupons',[]);
+  list.unshift({no:'DGT-2026-'+String(fHash(name+list.length)%9999).padStart(4,'0')+'-'+String(fHash(name)%9999).padStart(4,'0'),
+    store:name,content:'가맹점 할인 쿠폰',period:'2026.07.29 ~ 2026.08.31',used:false});
+  fSave('dtidF_coupons',list);
+  toast(name+' 쿠폰을 발급했습니다');
+  renderCoupons();
+}
+function renderCoupons(){
+  const mine=fLoad('dtidF_coupons',[]);
+  const list=mine.concat(COUPON_ITEMS);
+  document.getElementById('cpCnt').textContent=fmt(list.filter(c=>!c.used).length)+'장 보유';
+  document.getElementById('cpList').innerHTML=list.slice(0,6).map((c,i)=>
+    '<div style="border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin-bottom:8px;'+(c.used?'opacity:.5':'')+'">'+
+      '<div style="display:flex;justify-content:space-between;gap:8px">'+
+        '<div style="font-size:13px;font-weight:800">'+fEsc(c.store)+'</div>'+
+        '<span class="badge'+(c.div==='event'?' p':'')+'">'+(c.div==='event'?'이벤트':'가맹점')+'</span>'+
+      '</div>'+
+      '<div style="font-size:12px;color:var(--pri);font-weight:700;margin-top:3px">'+fEsc(c.content)+'</div>'+
+      '<div style="font-size:11px;color:var(--sub);margin-top:3px">'+fEsc(c.period)+' · '+fEsc(c.no)+'</div>'+
+    '</div>').join('');
+}
+
+function renderNewsChips(){
+  const tabs=['전체','축제','행사','공지'];
+  document.getElementById('newsChips').innerHTML=tabs.map(t=>
+    '<button class="chip sm'+(t===newsTab?' on':'')+'" onclick="pickNews(\''+t+'\')">'+t+'</button>').join('');
+}
+function pickNews(t){ newsTab=t; renderNewsChips(); renderNews(); }
+function newsItems(){
+  const out=[];
+  myRegions().forEach(rn=>{
+    if(bRegion!=='all'&&rn!==bRegion)return;
+    const d=(typeof getRegionDetail==='function')?getRegionDetail(rn):(REGION_DETAIL[rn]||null);
+    if(d&&d.festivals){
+      d.festivals.forEach(f=>out.push({kind:'축제',region:fRegionLabel(rn),title:f.name,date:f.date||f.month||''}));
+    }
+  });
+  MAIN_EVENTS.forEach(e=>out.push({kind:'행사',region:'전국',title:e.title,date:e.date}));
+  out.push({kind:'공지',region:'전국',title:'관광주민증 신규 혜택업체 안내',date:'2026.07.20'});
+  out.push({kind:'공지',region:'전국',title:'행정정보 공동이용 기반 거주지 자동 재검증 시행 안내',date:'2026.07.10'});
+  return out;
+}
+function renderNews(){
+  const list=newsItems().filter(n=>newsTab==='전체'||n.kind===newsTab);
+  document.getElementById('newsList').innerHTML=list.slice(0,10).map(n=>
+    '<div style="display:flex;gap:9px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)">'+
+      '<span class="badge'+(n.kind==='축제'?' o':n.kind==='행사'?' g':' n')+'" style="flex:0 0 auto;margin-top:2px">'+n.kind+'</span>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:12.5px;font-weight:700;line-height:1.5">'+fEsc(n.title)+'</div>'+
+        '<div style="font-size:11px;color:var(--sub);margin-top:2px">'+fEsc(n.region)+(n.date?' · '+fEsc(n.date):'')+'</div>'+
+      '</div>'+
+    '</div>').join('')||'<div style="padding:12px 0;font-size:12.5px;color:var(--sub)">소식이 없습니다.</div>';
+}
+
+function renderHow(){
+  document.getElementById('howSteps').innerHTML=HOW.map((h,i)=>
+    '<div class="st'+(i===howIdx?' on':(i<howIdx?' dn':''))+'"><div class="n">'+(i<howIdx?'✓':(i+1))+'</div>'+fEsc(h.t)+'</div>').join('');
+  document.getElementById('howBody').innerHTML='<b style="color:var(--pri-d)">'+(howIdx+1)+'. '+fEsc(HOW[howIdx].t)+'</b><br>'+fEsc(HOW[howIdx].d);
+}
+function howMove(d){
+  howIdx=Math.max(0,Math.min(HOW.length-1,howIdx+d));
+  renderHow();
+}
+
+function renderFaq(){
+  document.getElementById('faqList').innerHTML=FAQS.map((f,i)=>
+    '<div style="border-bottom:1px solid var(--line)">'+
+      '<button style="width:100%;text-align:left;padding:11px 0;font-size:13px;font-weight:700;display:flex;gap:8px" onclick="toggleFaq('+i+')">'+
+        '<span style="color:var(--pri);font-weight:800">Q</span><span style="flex:1">'+fEsc(f.q)+'</span><span id="fq'+i+'i" style="color:var(--sub2)">＋</span></button>'+
+      '<div id="fq'+i+'" style="display:none;font-size:12.5px;color:var(--ink2);line-height:1.8;padding:0 0 12px 20px">'+f.a+'</div>'+
+    '</div>').join('');
+}
+function toggleFaq(i){
+  const el=document.getElementById('fq'+i), ic=document.getElementById('fq'+i+'i');
+  const open=el.style.display!=='none';
+  el.style.display=open?'none':'block';
+  ic.textContent=open?'＋':'−';
+}
+
+if(U){
+  fShell({title:'혜택안내',active:'benefit'});
+  const hash=(location.hash||'').replace('#','');
+  if(F_CAT_MAP[hash]) bCat=hash;
+  renderRegions();
+  renderChips();
+  renderList();
+  renderCoupons();
+  renderNewsChips();
+  renderNews();
+  renderHow();
+  renderFaq();
+}
+</script>
+</body>
+</html>

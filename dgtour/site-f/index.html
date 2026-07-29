@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>디지털 관광주민증 · 통합 인증 로그인 — 시안 F(컨설팅 제안)</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="f.css?v=1">
+</head>
+<body class="login">
+
+<div class="lg-wrap">
+  <div class="lg-logo">
+    <div class="mk">▩</div>
+    <h1>디지털 관광주민증</h1>
+    <p>독립 전용 앱/웹 · 한 번의 본인인증으로<br>주민증 발급과 지역사랑 휴가지원제까지</p>
+  </div>
+
+  <div class="auth-card">
+    <div class="auth-h">1. 인증수단 선택 <span style="font-size:11px;color:var(--sub);font-weight:600">(User Interface)</span></div>
+    <div class="auth-d">행정정보 공동이용망·PASS·모바일 신분증·마이데이터 중 하나를 선택하면 거주지 자격을 비대면으로 확인합니다.</div>
+    <div class="auth-grid" id="authGrid"></div>
+  </div>
+
+  <div class="auth-card">
+    <div class="auth-h">2. 본인 확인</div>
+    <div class="auth-d">테스트 사이트이므로 실제 인증 없이 아래 SNS 버튼으로 목업 계정에 로그인합니다.<br>선택한 인증수단은 인증 이력에만 기록됩니다.</div>
+    <div class="sns-row" id="snsRow"></div>
+    <div style="margin-top:14px">
+      <button class="btn blk" onclick="fDoAuth()">선택한 수단으로 인증하고 시작하기</button>
+    </div>
+  </div>
+
+  <div class="src">
+    <b>근거</b> — 최종보고 IV.시스템 4.세부개선과제 <b>1-2</b> 「회원가입 채널 일원화 및 통신사 인증을 통한 편의성 강화」(p.219~220)<br>
+    인증수단 선택 → API Gateway 본인확인 → Auth Server·FDS 자격판정 → 최소정보 저장 → 배치 재검증 5단계 프로세스 중 <b>사용자 인터페이스 단계</b>를 화면으로 구현.
+  </div>
+
+  <p class="lg-note">
+    시안 F는 컨설팅(한국기업지식연구원) 최종보고의 TO-BE 와이어프레임을 그대로 화면화한 테스트용 목업입니다.<br>
+    실제 인증·결제·개인정보 처리는 수행하지 않습니다. · <a href="../sites.html" style="color:var(--pri);font-weight:700">시안 목록</a>
+  </p>
+</div>
+
+<div id="toastEl" role="status" aria-live="polite"></div>
+
+<script src="../site-assets/data.js?v=20260707f"></script>
+<script src="f.js?v=1"></script>
+<script>
+const AUTH_MEANS=[
+  {key:'gov',  em:'🏛️',nm:'행정정보 공동이용', sb:'행안부 허브 자격확인'},
+  {key:'pass', em:'📱',nm:'PASS 통신사 인증', sb:'가입 주소정보 연동'},
+  {key:'mid',  em:'🪪',nm:'모바일 신분증',    sb:'CI + 상세 주소지'},
+  {key:'mydata',em:'🔗',nm:'마이데이터',      sb:'거주지 Y/N 수신'}
+];
+let authPick='gov';
+
+function fRenderAuth(){
+  document.getElementById('authGrid').innerHTML=AUTH_MEANS.map(a=>
+    '<button type="button" class="auth-b'+(a.key===authPick?' on':'')+'" data-k="'+a.key+'" onclick="fPickAuth(\''+a.key+'\')">'+
+      '<div class="em">'+a.em+'</div><div class="nm">'+a.nm+'</div><div class="sb">'+a.sb+'</div>'+
+    '</button>').join('');
+}
+function fPickAuth(k){
+  authPick=k; fRenderAuth();
+  const m=AUTH_MEANS.find(a=>a.key===k);
+  toast(m.nm+' 방식으로 거주지 확인을 진행합니다');
+}
+function fRenderSns(){
+  document.getElementById('snsRow').innerHTML=SNS_LOGIN.map(s=>
+    '<button type="button" class="sns" aria-label="'+s.aria+'" title="'+s.label+' 계정으로 로그인" '+
+    'style="background:'+s.bg+';color:'+s.fg+(s.border?';border:1px solid '+s.border:'')+'" '+
+    'onclick="fAuthLogin(\''+s.userId+'\')">'+s.icon+'</button>').join('');
+}
+function fAuthLogin(uid){
+  try{ localStorage.setItem(F_AUTH_KEY,authPick); }catch(e){}
+  localStorage.setItem(F_LOGIN_KEY,uid);
+  const m=AUTH_MEANS.find(a=>a.key===authPick);
+  toast(m.nm+' 인증 완료 · 거주지 확인(Y)');
+  setTimeout(()=>{ location.href='main.html'; },700);
+}
+function fDoAuth(){ fAuthLogin(SNS_LOGIN[0].userId); }
+
+fRenderAuth();
+fRenderSns();
+if(fUser()){ location.replace('main.html'); }
+</script>
+</body>
+</html>
