@@ -101,6 +101,14 @@
     </div>
   </section>
 
+  <!-- 앱 푸시 -->
+  <section data-tab="push" hidden>
+    <div class="sec">
+      <div class="sec-h"><div class="sec-t">앱 푸시 발송</div></div>
+      <div id="admPush"></div>
+    </div>
+  </section>
+
   <!-- 설정 -->
   <section data-tab="set" hidden>
     <div class="sec">
@@ -126,7 +134,13 @@ const ADM_TABS=[
   {key:'member',label:'회원관리'},
   {key:'store', label:'혜택업체관리'},
   {key:'stat',  label:'통계분석'},
+  {key:'push',  label:'앱 푸시'},
   {key:'set',   label:'설정'}
+];
+/* 앱 푸시 발송 — 시안별 앱으로 알림을 보낸다. 상세 발송 화면은 admin-push.html */
+const ADM_PUSH_SITES=[
+  {c:'a',n:'A 월렛퍼스트'},{c:'b',n:'B 여행탐색'},{c:'c',n:'C 미션'},
+  {c:'d',n:'D 공공미니멀'},{c:'e',n:'E 통합안'},{c:'f',n:'F 컨설팅안'}
 ];
 const ADM_SCOPE_RATIO={all:1,gw:0.24,jn:0.31,gb:0.18};
 const ADM_MONTHS=['2월','3월','4월','5월','6월','7월'];
@@ -286,9 +300,58 @@ function renderSet(){
       '주민증 DB 분리(개선과제 2-2)와 독립 인프라 구성(3-1)은 중장기 전환 과제로 표기했습니다.</div>';
 }
 
+function renderPush(){
+  const sites=ADM_PUSH_SITES.map(s=>
+    '<label class="kv" style="cursor:pointer"><span class="k">'+
+      '<input type="checkbox" class="pushTgt" value="'+s.c+'" style="margin-right:8px">시안 '+s.n+'</span>'+
+      '<span class="v" style="font-size:11px;color:var(--sub)">kr.knto.dtid.siteapp.'+s.c+'</span></label>').join('');
+  document.getElementById('admPush').innerHTML=
+    '<div style="font-size:12.5px;color:var(--sub);line-height:1.7;margin-bottom:11px">'+
+      '대상 시안을 고르고 내용을 입력하면 <b>해당 시안 앱에만</b> 알림이 표시됩니다. '+
+      '앱은 접속할 때와 약 15분 주기로 발송 건을 확인합니다.</div>'+
+    '<div style="margin-bottom:11px"><label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer">'+
+      '<input type="checkbox" id="pushAll" onchange="pushToggleAll()">시안 A~F 전체</label></div>'+
+    sites+
+    '<div style="margin-top:13px">'+
+      '<input type="text" id="pushTitle" placeholder="알림 제목" maxlength="40" '+
+        'style="width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit;margin-bottom:7px">'+
+      '<textarea id="pushBody" placeholder="알림 내용 (개인정보·주민증 정보는 넣지 않습니다)" maxlength="200" '+
+        'style="width:100%;min-height:70px;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit;resize:vertical"></textarea>'+
+    '</div>'+
+    '<div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap">'+
+      '<button onclick="pushMake()" style="border:0;border-radius:8px;padding:10px 15px;font-size:13px;font-weight:700;background:#1a56db;color:#fff;cursor:pointer;font-family:inherit">발송 건 만들기</button>'+
+      '<a href="../admin-push.html" style="border:1px solid var(--line);border-radius:8px;padding:10px 15px;font-size:13px;font-weight:700;background:#fff;color:#334;text-decoration:none">상세 발송 화면 ↗</a>'+
+    '</div>'+
+    '<pre id="pushOut" style="display:none;background:#0f172a;color:#d7e3f4;border-radius:9px;padding:12px;font-size:11.5px;line-height:1.6;overflow:auto;max-height:260px;margin-top:11px"></pre>'+
+    '<div style="font-size:11.5px;color:var(--sub);line-height:1.7;margin-top:10px">'+
+      '만들어진 항목을 <code>dgtour/notices.json</code> 의 <code>notices</code> 배열에 넣으면 발송됩니다. '+
+      '즉시 도달이 필요하면 Firebase(FCM) 전환이 필요합니다 — 대상·이력 구조는 그대로 재사용됩니다.</div>';
+}
+function pushToggleAll(){
+  const on=document.getElementById('pushAll').checked;
+  document.querySelectorAll('.pushTgt').forEach(c=>{ c.checked=false; c.disabled=on; });
+}
+function pushMake(){
+  const all=document.getElementById('pushAll').checked;
+  const picked=[...document.querySelectorAll('.pushTgt')].filter(c=>c.checked).map(c=>c.value);
+  if(!all && !picked.length){ toast('대상 시안을 선택하세요.'); return; }
+  const title=document.getElementById('pushTitle').value.trim();
+  const body=document.getElementById('pushBody').value.trim();
+  if(!title||!body){ toast('제목과 내용을 입력하세요.'); return; }
+  if(all && !confirm('시안 A~F 전체 앱으로 발송합니다. 계속하시겠습니까?')) return;
+  const d=new Date(Date.now()-new Date().getTimezoneOffset()*60000);
+  const item={ id:'n'+Date.now().toString(36), sendAt:d.toISOString().slice(0,16).replace('T',' '),
+               target: all?'all':picked, title:title, body:body, link:'' };
+  const out=document.getElementById('pushOut');
+  out.style.display='block';
+  out.textContent=JSON.stringify(item,null,2);
+  toast('발송 건을 만들었습니다. notices.json 에 추가하세요.');
+}
+
 function renderAll(){ renderKpi(); renderChart(); }
 
 renderTabs();
+renderPush();
 renderAll();
 renderRank();
 renderCat();

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- app_name 은 시안별 flavor(resValue)에서 주입된다. -->
+</resources>

@@ -1,3 +1,11 @@
 # 실사이트 참고 캡처/소스 덤프 (레포에는 미포함)
 screenshot/
 original_source/
+
+# 안드로이드 빌드 산출물·로컬 SDK 경로 (배포용 APK는 dgtour/apk/ 에 별도 보관)
+android-siteapp/app/build/
+android-siteapp/.gradle/
+android-siteapp/local.properties
+android-widget/app/build/
+android-widget/.gradle/
+android-widget/local.properties

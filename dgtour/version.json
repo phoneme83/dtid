@@ -1,0 +1,16 @@
+{
+  "_설명": "앱이 접속할 때마다 읽는 갱신 설정 파일. 관리자가 이 값만 바꾸면 앱이 스토어 갱신 없이 반영한다.",
+
+  "webVersion": "2026-07-30.1",
+  "_webVersion": "홈페이지(UI/UX·기능)를 고친 뒤 이 값을 바꾸면, 앱이 캐시를 비우고 최신 화면을 다시 읽는다.",
+
+  "latestVersionCode": 1,
+  "minVersionCode": 1,
+  "_versionCode": "앱 셸(APK) 자체 버전. latest보다 낮으면 선택 안내, min보다 낮으면 필수 갱신(이용 제한).",
+
+  "updateMessage": "새 버전이 있습니다. 지금 갱신하시겠습니까?",
+  "forceMessage": "필수 업데이트가 있습니다. 갱신 후 이용해 주세요.",
+
+  "apkUrlPrefix": "apk/",
+  "_apkUrlPrefix": "갱신 APK 위치. 앱은 여기에 dtid-site<시안코드>.apk 를 붙여 내려받는다."
+}

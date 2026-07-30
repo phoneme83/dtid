@@ -1,0 +1,81 @@
+plugins {
+    id 'com.android.application'
+}
+
+/* 시안 A~F 정의 — 시안별로 별도 APK가 나오며, applicationId가 달라 한 단말에 동시 설치된다. */
+def SITES = [
+        sitea: [code: 'a', label: '시안A 월렛퍼스트',   start: 'site-a/main.html'],
+        siteb: [code: 'b', label: '시안B 여행탐색',     start: 'site-b/main.html'],
+        sitec: [code: 'c', label: '시안C 미션',         start: 'site-c/main.html'],
+        sited: [code: 'd', label: '시안D 공공미니멀',   start: 'site-d/main.html'],
+        sitee: [code: 'e', label: '시안E 통합안',       start: 'site-e/main.html'],
+        sitef: [code: 'f', label: '시안F 컨설팅안',     start: 'site-f/main.html'],
+]
+
+/* 시안 웹페이지가 올라가 있는 기본 서버.
+   -PbaseUrl=http://192.168.0.10:8080/ 로 빌드 시 덮어쓸 수 있고,
+   앱 안에서도 직접 변경 가능(설정 → 서버 주소). */
+def defaultBaseUrl = project.findProperty('baseUrl') ?: 'http://192.168.0.10:8080/'
+
+android {
+    namespace 'kr.knto.dtid.siteapp'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "kr.knto.dtid.siteapp"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+        buildConfigField "String", "DEFAULT_BASE_URL", "\"${defaultBaseUrl}\""
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    flavorDimensions += "site"
+    productFlavors {
+        SITES.each { name, cfg ->
+            "$name" {
+                dimension "site"
+                applicationIdSuffix ".${cfg.code}"
+                versionNameSuffix "-${cfg.code}"
+                resValue "string", "app_name", cfg.label
+                buildConfigField "String", "SITE_CODE", "\"${cfg.code}\""
+                buildConfigField "String", "SITE_LABEL", "\"${cfg.label}\""
+                buildConfigField "String", "START_PATH", "\"${cfg.start}\""
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            /* 디버그 키로 서명해 내부 배포에서 바로 설치 가능하게 한다.
+               스토어 배포 시에는 별도 릴리즈 키로 교체해야 한다. */
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    /* 오프라인 환경에서 lint-gradle 아티팩트를 받을 수 없어 릴리즈 lint는 끈다. */
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    /* 산출 APK 파일명을 시안별로 알아보기 쉽게 바꾼다. */
+    applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach { output ->
+            output.outputFileName = "dtid-${variant.flavorName}-${variant.versionName}.apk"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+}
