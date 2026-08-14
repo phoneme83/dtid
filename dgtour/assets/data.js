@@ -1,5 +1,5 @@
 const ACCOUNTS=[
-  {id:'user1',name:'이준호',emojiAv:'🇰🇷',avBg:'#fff0f2',
+  {id:'user1',name:'김수지',emojiAv:'🇰🇷',avBg:'#fff0f2',
    level:'여행 유망주',levelIcon:'🏮',pillBg:'#eff6ff',pillColor:'#1d4ed8',
    exp:3000,nextExp:4500,barPct:67,barColor:'linear-gradient(90deg,#3b82f6,#7c3aed)',
    cards:['강원 정선군','전남 신안군','충남 보령시']},
@@ -86,10 +86,18 @@ const REGION_SIDO={
   담양:'전라남도',영광:'전라남도',곡성:'전라남도',구례:'전라남도',함평:'전라남도',장흥:'전라남도',
   고흥:'전라남도',신안:'전라남도',해남:'전라남도',완도:'전라남도'
 };
+/* 지역 공식 명칭(시/군/구) — 기본은 '군'이며, 아래 표에 있는 곳만 예외로 처리한다.
+   시(市) 9곳: 삼척·제천·태백·영주·보령·안동·김제·남원·밀양
+   부산 3곳은 광역시 자치구이므로 '동구/서구/영도구'가 정식 표기
+   (종전에는 모든 지역에 '군'을 붙여 '삼척군'처럼 표기되고,
+    '부산동구'는 '동구'+'구'가 되어 '동구구'로 찍히는 오류가 있었다) */
+const REGION_LABEL_EXCEPT={
+  삼척:'삼척시',제천:'제천시',태백:'태백시',영주:'영주시',보령:'보령시',
+  안동:'안동시',김제:'김제시',남원:'남원시',밀양:'밀양시',
+  부산동구:'동구',부산서구:'서구',부산영도:'영도구'
+};
 function regionGunLabel(name){
-  const busan=['부산동구','부산서구','부산영도'];
-  if(busan.includes(name))return name.replace('부산','')+'구';
-  return name+'군';
+  return REGION_LABEL_EXCEPT[name]||(name+'군');
 }
 
 /* 지역 방문 TIP + 사용처 목록 (실데이터 보유: 곡성 / 그 외는 목업 예시 데이터) */

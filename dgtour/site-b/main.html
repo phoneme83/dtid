@@ -43,24 +43,14 @@
 <div class="map-section">
   <div class="map-outer">
     <div class="map-heading">
-      <p>지도에서 <strong>여행지와 할인 혜택</strong>을 발견하고<br>바로 관광주민이 되어보세요!</p>
+      <p>지도에서 <strong>여행지와 할인 혜택</strong>을 발견하고<br>바로 지역 혜택을 확인해보세요!</p>
     </div>
     <div class="map-container">
       <img class="map-img" src="../assets/img/map-regions.jpg" alt="디지털 관광주민증 참여지역 지도">
       <div class="map-badges" id="mapBadges"></div>
       <div class="map-badges" id="tbMapPins" style="pointer-events:none"></div>
+      <div class="tb-map-preview" id="tbMapPreview" style="display:none"></div>
     </div>
-  </div>
-</div>
-
-<!-- ═══ 30초 발급 CTA 퍼널 ═══ -->
-<div class="tb-cta-section">
-  <div class="tb-cta-card">
-    <div class="txt">
-      <strong>30초만에 주민증 발급</strong>
-      <p>지역을 고르고 본인인증 한 번이면, 그 지역이 반값이 됩니다</p>
-    </div>
-    <button type="button" class="tb-cta-btn" onclick="tbOpenPick()">⚡ 지금 발급받기</button>
   </div>
 </div>
 
@@ -151,10 +141,6 @@
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
     이벤트
   </button>
-  <button class="bnav-a" onclick="tbOpenPick()">
-    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
-    디민증발급
-  </button>
   <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
     마이
@@ -184,13 +170,6 @@
 
 <div class="toast" id="toastEl"></div>
 
-<!-- 30초 발급 퍼널 1단계: 지역 선택 -->
-<div class="tb-pick-ov" id="tbPickOv" onclick="if(event.target===this)tbClosePick()">
-  <div class="tb-pick" role="dialog" aria-modal="true" aria-label="발급 지역 선택">
-    <div class="hd"><span>어느 지역의 주민이 되어볼까요?</span><button type="button" onclick="tbClosePick()" aria-label="닫기">✕</button></div>
-    <div class="tb-pick-list" id="tbPickList"></div>
-  </div>
-</div>
 
 <div class="pop-event-overlay" id="popEventOverlay" onclick="if(event.target===this)closePopEvent()">
   <div class="pop-event" role="dialog">
@@ -212,7 +191,7 @@
 
 <script src="../site-assets/data.js?v=20260707f"></script>
 <script>/* site-b 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
-try{var _pb=JSON.parse(localStorage.getItem("dtidB_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김관광";}catch(e){}</script>
+try{var _pb=JSON.parse(localStorage.getItem("dtidB_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script src="../assets/common.js?v=20260707f"></script>
 <script>
 /* 최상위 const/let 은 파싱 시 실행되는 초기화 코드보다 반드시 위에 선언 (TDZ 방지) */
@@ -220,7 +199,7 @@ const user=requireUser();
 const POP_EVENT_COUNT=2;
 let popEventIdx=0;
 
-/* ── 시안 B: 추천 피드/지도 핀/발급 퍼널용 데이터 ──
+/* ── 시안 B: 추천 피드/지도 핀 데이터 ──
    tour50 실사진이 있는 참여지역을 피드 소스로 사용 (사진: ../assets/img/tour50/{지역}.jpg) */
 const TB_FEED_REGIONS=['평창','영월','제천','합천','거창','하동','완도','해남','고창','밀양','영광','고흥'];
 const TB_PIN_REGIONS=['평창','영월','제천','고창','하동','완도'];
@@ -237,11 +216,19 @@ if(user){
 
   const badges=document.getElementById('mapBadges');
   REGIONS.forEach(r=>{
+    const seen=hasVisited('dtidB',user.id,r.n);
     const b=document.createElement('button');
     b.className='r-hit';
+    b.dataset.rgn=r.n;
     b.style.cssText=`left:${r.l}%;top:${r.t}%;width:${r.w}%;height:${r.h}%`;
-    b.setAttribute('aria-label',r.n+' 관광주민증 발급 화면 이동');
+    b.setAttribute('aria-label',r.n+(seen?' (혜택 이용한 지역)':'')+' 지역 혜택 보기');
     b.onclick=()=>location.href='region.html?r='+encodeURIComponent(r.n);
+    /* 이동 전에 그 지역의 대표 가맹점·최대 할인율을 미리 보여준다 */
+    b.addEventListener('mouseenter',()=>showTbMapPreview(r));
+    b.addEventListener('pointerdown',()=>showTbMapPreview(r));
+    b.addEventListener('focus',()=>showTbMapPreview(r));
+    b.addEventListener('mouseleave',hideTbMapPreview);
+    b.addEventListener('blur',hideTbMapPreview);
     badges.appendChild(b);
   });
 
@@ -250,7 +237,6 @@ if(user){
   tbBuildFeed();
   renderTbChips();
   renderTbFeed();
-  renderTbPickList();
 
   renderTop10('주간 TOP10');
   renderFaq();
@@ -287,6 +273,43 @@ function tbSearchGo(){
   const hit=REGIONS.find(r=>r.n===q)||REGIONS.find(r=>r.n.indexOf(q)>=0);
   if(hit)location.href='region.html?r='+encodeURIComponent(hit.n);
   else toast(`'${q}' 지역은 아직 참여 전이에요. 지도에서 참여지역을 확인해보세요`);
+}
+
+/* ═══ 시안 B: 지도 지역 미리보기 팝오버 ═══
+   지역으로 이동하기 전에 대표 가맹점·최대 할인율을 먼저 보여준다.
+   클릭 동작은 그대로 두고(즉시 이동), 미리보기는 hover/포커스/누름에서만 뜬다. */
+function showTbMapPreview(r){
+  const el=document.getElementById('tbMapPreview');
+  if(!el)return;
+  const detail=getRegionDetail(r.n);
+  const top=[...(detail.venues||[])].sort((a,b)=>(b.pop||0)-(a.pop||0))[0];
+  const pct=tbMaxDiscount(r.n);
+  const seen=hasVisited('dtidB',user.id,r.n);
+  el.innerHTML=
+    `<span class="nm">${REGION_SIDO[r.n]?SIDO_SHORT[REGION_SIDO[r.n]]+' ':''}${regionGunLabel(r.n)}`+
+    (seen?'<em>✓ 이용</em>':'')+`</span>`+
+    (top?`<span class="vn">${top.name}</span>`:'')+
+    `<span class="pc">${pct?'최대 '+pct+'% 할인':'혜택 보기'} · 가맹점 ${(detail.venues||[]).length}곳</span>`;
+  el.style.left=r.l+'%';
+  el.style.top=r.t+'%';
+  el.style.display='block';
+}
+function hideTbMapPreview(){
+  const el=document.getElementById('tbMapPreview');
+  if(el)el.style.display='none';
+}
+
+/* ═══ 시안 B: 카테고리 칩 ↔ 지도 연동 ═══
+   아래 추천 피드에 실제로 뜬 지역만 지도에서 강조한다. (지역별 보유 카테고리로 판정하면
+   축제는 52곳 중 50곳이 걸려 강조 효과가 사라짐 — 피드에 보이는 것과 지도를 일치시키는 게 핵심) */
+function highlightMapForCat(cat){
+  const hits=document.querySelectorAll('#mapBadges .r-hit');
+  hits.forEach(b=>b.classList.remove('tb-cat-hit','tb-cat-dim'));
+  if(cat==='전체')return;
+  const inFeed=new Set(tbFeedItems.filter(it=>it.cat===cat).map(it=>it.region));
+  hits.forEach(b=>{
+    b.classList.add(inFeed.has(b.dataset.rgn)?'tb-cat-hit':'tb-cat-dim');
+  });
 }
 
 /* ═══ 시안 B: 지도 위 할인율 핀 ═══ */
@@ -340,7 +363,7 @@ function renderTbChips(){
     b.type='button';
     b.className='tb-chip'+(c===tbFeedCat?' on':'');
     b.textContent=c==='전체'?'전체':`${TB_CAT_ICON[c]||''} ${c}`;
-    b.onclick=()=>{tbFeedCat=c;tbFeedShowAllFlag=false;renderTbChips();renderTbFeed();};
+    b.onclick=()=>{tbFeedCat=c;tbFeedShowAllFlag=false;renderTbChips();renderTbFeed();highlightMapForCat(c);};
     wrap.appendChild(b);
   });
 }
@@ -378,50 +401,6 @@ function renderTbFeed(){
   document.getElementById('tbFeedMore').style.display=(list.length>limit)?'block':'none';
 }
 function tbFeedShowAll(){tbFeedShowAllFlag=true;renderTbFeed();}
-
-/* ═══ 시안 B: 30초 발급 퍼널 (지역 선택 → 본인인증 → 완료 → 지역 상세) ═══ */
-function renderTbPickList(){
-  const wrap=document.getElementById('tbPickList');
-  wrap.innerHTML='';
-  TB_FEED_REGIONS.forEach(n=>{
-    const pct=tbMaxDiscount(n);
-    const detail=getRegionDetail(n);
-    const item=document.createElement('button');
-    item.type='button';
-    item.className='tb-pick-item';
-    const img=document.createElement('img');
-    img.src=`../assets/img/tour50/${n}.jpg`;
-    img.alt=regionGunLabel(n);
-    img.loading='lazy';
-    const txt=document.createElement('div');
-    const nm=document.createElement('div');
-    nm.className='nm';
-    nm.textContent=`${REGION_SIDO[n]||''} ${regionGunLabel(n)}`;
-    const ds=document.createElement('div');
-    ds.className='ds';
-    ds.textContent=`가맹점 ${detail.venues.length}곳 참여`;
-    txt.append(nm,ds);
-    const pctEl=document.createElement('span');
-    pctEl.className='pct';
-    pctEl.textContent=pct?`최대 ${pct}%`:'혜택';
-    item.append(img,txt,pctEl);
-    item.onclick=()=>tbPickGo(n);
-    wrap.appendChild(item);
-  });
-}
-function tbOpenPick(){
-  document.getElementById('tbPickOv').classList.add('on');
-  document.body.style.overflow='hidden';
-}
-function tbClosePick(){
-  document.getElementById('tbPickOv').classList.remove('on');
-  document.body.style.overflow='';
-}
-function tbPickGo(name){
-  tbClosePick();
-  /* theme.js의 공용 발급 퍼널 → 완료 후 기존 지역 상세(발급/쿠폰) 플로우로 연결 */
-  tbOpenIssue(regionGunLabel(name),()=>{location.href='region.html?r='+encodeURIComponent(name);});
-}
 
 /* ── 진입 이벤트 팝업(popEvent 재현) — '오늘은 그만보기'는 당일에 한해 숨김 ── */
 function todayStr(){const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}

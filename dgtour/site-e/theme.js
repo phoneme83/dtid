@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
    시안 E · 통합안 테마 스크립트 — site-e 전 페이지 공통 주입
    D 뼈대(과업형·글자 확대·전화 탈출구) + A QR(중앙 플로팅 1탭·전체화면 제시)
-   + C 라이트(QR 사용 시 스탬프 자동 적립, 랭킹 없음) + B 부분(30초 발급 퍼널)
+   + C 라이트(QR 사용 시 스탬프 자동 적립, 랭킹 없음) + B 부분(지도 중심 탐색)
    ─ 페이지 스크립트와의 전역 const 충돌을 막기 위해 전체를 IIFE로 감쌉니다.
    ═══════════════════════════════════════════════════════════════ */
 (function(){
@@ -161,58 +161,12 @@ window.themeEScanDone=function(){
   ovDone.classList.add('on');
 };
 
-/* ── 4. 30초 발급 퍼널 (B) ── */
-var ovIss=el('div','e-iss',
-  '<div class="hd"><button type="button" onclick="themeEIssClose()" aria-label="닫기">✕</button><span id="eIssTtl">주민증 발급 (1/2)</span></div>'+
-  '<div class="bd on" id="eIs1">'+
-    '<div class="q"><span id="eIssRegion1">우리 지역</span> 주민증 발급,<br>본인 확인이 필요해요</div>'+
-    '<div class="qs">통신사 인증(PASS) 한 번이면 30초 만에 끝나요</div>'+
-    '<button type="button" class="opt hero" onclick="themeEIssNext()">📱 휴대폰으로 인증하기</button>'+
-    '<button type="button" class="opt" onclick="themeEIssNext()">🔐 간편인증 (카카오·네이버)</button>'+
-    '<label class="agr"><input type="checkbox" checked> 약관 전체 동의</label>'+
-  '</div>'+
-  '<div class="bd" id="eIs2">'+
-    '<div class="fin">'+
-      '<div class="big2">🎉</div>'+
-      '<div class="q"><span id="eIssRegion2">우리 지역</span> 관광주민이<br>되셨어요!</div>'+
-      '<div class="wc">웰컴 쿠폰 3장 도착</div>'+
-    '</div>'+
-    '<button type="button" class="e-cta" style="margin-top:20px" onclick="themeEIssFinish()">바로 QR 보여주기</button>'+
-  '</div>');
-document.body.appendChild(ovIss);
-
-function issStep(n){
-  $('#eIs1').classList.toggle('on',n===1);
-  $('#eIs2').classList.toggle('on',n===2);
-  $('#eIssTtl').textContent=(n===1)?'주민증 발급 (1/2)':'발급 완료 (2/2)';
-}
-/* region.html 타이틀("시도 군명 지역방문 TIP!")에서 지역명 추출 */
-function regionNameFromPage(){
-  var em=document.querySelector('#rgnTitle em');
-  if(!em)return '';
-  var parts=em.textContent.trim().split(' ');
-  return parts[parts.length-1]||'';
-}
-window.themeEOpenIssue=function(name){
-  var rn=name||regionNameFromPage()||'우리 지역';
-  $('#eIssRegion1').textContent=rn;
-  $('#eIssRegion2').textContent=rn;
-  issStep(1);
-  ovIss.classList.add('on');
-};
-window.themeEIssNext=function(){issStep(2);};
-window.themeEIssClose=function(){ovIss.classList.remove('on');};
-window.themeEIssFinish=function(){
-  window.themeEIssClose();
-  say('웰컴 쿠폰 3장이 지급되었습니다');
-  window.themeEOpenQr();
-};
-/* 메인 과업 버튼: 지도(발급 진입)로 스크롤 */
-window.themeEGoIssue=function(){
+/* ── 4. 메인 과업 버튼: 지역 목록(지도)으로 스크롤 ── */
+window.themeEGoRegions=function(){
   var m=document.querySelector('.map-section');
   if(m){
     m.scrollIntoView({behavior:'smooth'});
-    say('지도에서 지역을 누르면 30초 발급으로 이동합니다');
+    say('지도에서 지역을 누르면 지역별 혜택을 볼 수 있습니다');
   }else{
     location.href='main.html';
   }
@@ -222,13 +176,6 @@ window.themeEGoIssue=function(){
 /* 메인: 인사말에 사용자 이름 */
 var hello=$('#eHello');
 if(hello&&me)hello.textContent=me.name+'님, 무엇을 도와드릴까요?';
-
-/* region.html: 30초 발급 CTA 라벨에 지역명 반영 */
-var issueCta=$('#eIssueCta');
-if(issueCta){
-  var rn2=regionNameFromPage();
-  if(rn2)issueCta.textContent='⚡ '+rn2+' 주민증 발급받기 (30초)';
-}
 
 /* 기존 QR 플로팅 배너 → 탭하면 전체화면 QR 제시 */
 var qrFloatCard=document.querySelector('#qrFloat .qr-card');
@@ -252,7 +199,6 @@ document.addEventListener('keydown',function(ev){
   if(ev.key!=='Escape')return;
   window.themeECloseQr();
   window.themeECloseDone();
-  window.themeEIssClose();
 });
 
 renderStamps();

@@ -20,7 +20,7 @@ var themeUser=(typeof getUser==='function')?getUser():null;
 var GKEY='siteC_game_'+(themeUser?themeUser.id:'guest');
 
 function defaultGame(){
-  return {stamps:1,pts:300,log:[{t:'첫 발급 보너스',p:'+300P'}]};
+  return {stamps:1,pts:300,log:[{t:'첫 방문 보너스',p:'+300P'}]};
 }
 function loadGame(){
   try{
@@ -202,7 +202,7 @@ function renderHomePanel(){
   if(!panel||!themeUser)return;
   var lv=curLevel(),pct=curPct();
   var cap=(G.stamps>=MAX_STAMP)
-    ?'스탬프판 완주! 반값여행 우선 배정권이 발급되었어요 🏆'
+    ?'스탬프판 완주! 반값여행 우선 배정권이 지급되었어요 🏆'
     :'가맹점 QR '+remainToLvup()+'번만 더 사용하면 레벨업! 🎁 '+fmt(LVUP_BONUS)+'P';
   var mh=MISSIONS.map(function(m,i){
     var done=missionDone(i);

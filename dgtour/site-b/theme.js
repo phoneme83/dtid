@@ -3,14 +3,10 @@
    (data.js / common.js 로드 이후, body 끝에서 실행됩니다)
    1) 상단 데모 바
    2) 우하단 플로팅 "내 QR" 버튼 + QR 제시 오버레이 (로그인 시)
-   3) 30초 주민증 발급 퍼널 오버레이 (tbOpenIssue) — main/region에서 공용
    ═══════════════════════════════════════════════════════════════ */
 
 /* 파싱 시점에 실행되는 코드가 있으므로 최상위 선언은 모두 위쪽에 배치 (TDZ 주의) */
-var TB_ISSUED_KEY='dgtour_b_issued';
 var tbUser=null;
-var tbIssueRegionLabel='';
-var tbIssueOnDone=null;
 
 try{tbUser=(typeof getUser==='function')?getUser():null;}catch(e){tbUser=null;}
 
@@ -69,85 +65,10 @@ function tbCloseQr(){
   document.body.style.overflow='';
 }
 
-/* ── 3) 30초 발급 퍼널 ─────────────────────────────────────────
-   tbOpenIssue('평창군', function(){ ... })  형태로 호출.
-   발급 이력은 localStorage(dgtour_b_issued)에 목업으로 저장됩니다. */
-function tbIssuedList(){
-  try{return JSON.parse(localStorage.getItem(TB_ISSUED_KEY)||'[]');}
-  catch(e){return [];}
-}
-function tbIsIssued(label){return tbIssuedList().indexOf(label)>=0;}
-function tbMarkIssued(label){
-  var list=tbIssuedList();
-  if(list.indexOf(label)<0){
-    list.push(label);
-    localStorage.setItem(TB_ISSUED_KEY,JSON.stringify(list));
-  }
-}
-
-function tbEnsureIssueOv(){
-  if(document.getElementById('tbIssueOv'))return;
-  var ov=document.createElement('div');
-  ov.className='tb-issue-ov';
-  ov.id='tbIssueOv';
-  ov.setAttribute('role','dialog');
-  ov.setAttribute('aria-modal','true');
-  ov.innerHTML=
-    '<div class="tb-issue">'+
-      '<div class="hd"><span id="tbIssueTtl">주민증 발급 (1/2)</span>'+
-      '<button type="button" onclick="tbCloseIssue()" aria-label="발급 창 닫기">✕</button></div>'+
-      '<div id="tbIssueStep1">'+
-        '<div class="q">본인 확인이 필요해요</div>'+
-        '<div class="s">통신사 인증(PASS) 한 번이면 끝나요 · 약 30초</div>'+
-        '<button type="button" class="opt hero" onclick="tbIssueStep(2)">📱 휴대폰으로 인증하기</button>'+
-        '<button type="button" class="opt" onclick="tbIssueStep(2)">🔐 간편인증 (카카오·네이버)</button>'+
-        '<label class="agree"><input type="checkbox" checked> 약관 전체 동의 (필수 3 · 선택 1)</label>'+
-      '</div>'+
-      '<div id="tbIssueStep2" style="display:none">'+
-        '<div class="done-wrap">'+
-          '<div class="big">🎉</div>'+
-          '<div class="t1"><span id="tbIssueRegion"></span> 관광주민이<br>되셨어요!</div>'+
-          '<div class="t2">웰컴 쿠폰 3장 도착</div>'+
-        '</div>'+
-        '<button type="button" class="go" onclick="tbIssueFinish()">혜택 보러가기</button>'+
-      '</div>'+
-    '</div>';
-  ov.addEventListener('click',function(e){if(e.target===ov)tbCloseIssue();});
-  document.body.appendChild(ov);
-}
-
-function tbOpenIssue(regionLabel,onDone){
-  tbEnsureIssueOv();
-  tbIssueRegionLabel=regionLabel||'';
-  tbIssueOnDone=(typeof onDone==='function')?onDone:null;
-  document.getElementById('tbIssueRegion').textContent=tbIssueRegionLabel||'디지털';
-  tbIssueStep(1);
-  document.getElementById('tbIssueOv').classList.add('on');
-  document.body.style.overflow='hidden';
-}
-function tbIssueStep(n){
-  document.getElementById('tbIssueStep1').style.display=(n===1)?'block':'none';
-  document.getElementById('tbIssueStep2').style.display=(n===2)?'block':'none';
-  document.getElementById('tbIssueTtl').textContent=(n===1)?'주민증 발급 (1/2)':'발급 완료 (2/2)';
-  if(n===2)tbMarkIssued(tbIssueRegionLabel);
-}
-function tbCloseIssue(){
-  var ov=document.getElementById('tbIssueOv');
-  if(!ov)return;
-  ov.classList.remove('on');
-  document.body.style.overflow='';
-}
-function tbIssueFinish(){
-  tbCloseIssue();
-  if(typeof toast==='function')toast('웰컴 쿠폰 3장이 지급되었습니다');
-  if(tbIssueOnDone)tbIssueOnDone(tbIssueRegionLabel);
-}
-
 /* ESC로 테마 오버레이 닫기 */
 document.addEventListener('keydown',function(e){
   if(e.key!=='Escape')return;
   tbCloseQr();
-  tbCloseIssue();
 });
 
 /* ── 반값여행 통합신청 메뉴 주입: GNB(데스크톱) + 드로어(모바일) ── */

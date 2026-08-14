@@ -44,9 +44,9 @@
     <span><span class="tt" style="display:block">내 혜택 · 쿠폰 보기</span><span class="ds" style="display:block">받은 쿠폰과 지역 혜택 확인</span></span>
     <span class="ar">›</span>
   </button>
-  <button type="button" class="e-big" onclick="themeEGoIssue()">
+  <button type="button" class="e-big" onclick="themeEGoRegions()">
     <span class="ic">🗺️</span>
-    <span><span class="tt" style="display:block">지역 둘러보고 발급받기</span><span class="ds" style="display:block">30초면 새 지역 주민증 발급</span></span>
+    <span><span class="tt" style="display:block">지역 둘러보기</span><span class="ds" style="display:block">참여지역의 혜택과 여행정보 확인</span></span>
     <span class="ar">›</span>
   </button>
   <div class="e-stcard" onclick="location.href='my.html'">
@@ -71,7 +71,7 @@
   <div class="map-outer">
     <div class="map-heading">
       <p>디지털 관광주민증 참여지역의<br><strong>다양한 여행정보</strong>를 확인해보세요!</p>
-      <p class="e-issue-note">⚡ 지도에서 지역을 누르면 <strong>30초 발급</strong> 화면으로 이동합니다</p>
+      <p class="e-issue-note">✓ 표시는 <strong>혜택을 이용한 지역</strong>이에요 · 지역을 누르면 혜택을 볼 수 있습니다</p>
     </div>
     <div class="map-container">
       <img class="map-img" src="../assets/img/map-regions.jpg" alt="디지털 관광주민증 참여지역 지도">
@@ -142,12 +142,7 @@
   <button class="bnav-a" data-nav="event" onclick="location.href='event.html'">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
     이벤트
-  </button>
-  <button class="bnav-a" onclick="toast('디민증 발급 페이지')" disabled aria-label="준비 중">
-    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
-    디민증발급
-  </button>
-  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
+  </button>  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
     마이
   </button>
@@ -196,7 +191,7 @@
 
 <script src="../site-assets/data.js?v=20260707f"></script>
 <script>/* site-e 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
-try{var _pb=JSON.parse(localStorage.getItem("dtidE_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김관광";}catch(e){}</script>
+try{var _pb=JSON.parse(localStorage.getItem("dtidE_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script src="../assets/common.js?v=20260707f"></script>
 <script>
 const user=requireUser();
@@ -206,12 +201,14 @@ if(user){
   setActiveBottomNav('main');
   document.getElementById('qrName').textContent=user.name+'님의 통합관광주민증';
 
+  /* 지도의 ✓ 배지는 "실제로 혜택을 이용한 지역"(이용내역 기준)에만 표시한다 */
   const badges=document.getElementById('mapBadges');
   REGIONS.forEach(r=>{
+    const seen=hasVisited('dtidE',user.id,r.n);
     const b=document.createElement('button');
-    b.className='r-hit';
+    b.className='r-hit'+(seen?' e-visited':'');
     b.style.cssText=`left:${r.l}%;top:${r.t}%;width:${r.w}%;height:${r.h}%`;
-    b.setAttribute('aria-label',r.n+' 관광주민증 발급 화면 이동');
+    b.setAttribute('aria-label',r.n+(seen?' 혜택 이용한 지역':'')+' 지역 상세 보기');
     b.onclick=()=>location.href='region.html?r='+encodeURIComponent(r.n);
     badges.appendChild(b);
   });

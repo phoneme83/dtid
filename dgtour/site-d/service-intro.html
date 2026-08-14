@@ -46,16 +46,6 @@
   </div>
 
   <div class="svc-section">
-    <h3>디지털 관광주민증 발급방법</h3>
-    <div class="svc-steps">
-      <div class="svc-step"><div class="num">1</div><p>투어원패스 소셜 로그인</p></div>
-      <div class="svc-step"><div class="num">2</div><p>대한민국 구석구석 회원가입</p></div>
-      <div class="svc-step"><div class="num">3</div><p>서비스 이용약관 동의 및 본인인증 완료 후 관광주민증 발급</p></div>
-    </div>
-    <button class="svc-cta" onclick="toast('디민증 발급 페이지')" disabled aria-label="준비 중">디지털 관광주민증 발급 받기 ›</button>
-  </div>
-
-  <div class="svc-section">
     <h3>가맹점 쿠폰 이용방법</h3>
     <h4>쿠폰 이용 방법은 다음 세 가지가 있으며, 편한 방법으로 사용하시면 됩니다.</h4>
 
@@ -64,7 +54,7 @@
       <div class="svc-steps">
         <div class="svc-step"><div class="num">1</div><p>나의 통합 관광주민증을 직원에게 제시</p></div>
         <div class="svc-step"><div class="num">2</div><p>가맹점 직원 확인 (쿠폰 사용 완료)</p></div>
-        <div class="svc-step"><div class="num">3</div><p>관광주민증이 없을 경우 직원의 안내에 따라 단계별 발급 진행</p></div>
+        <div class="svc-step"><div class="num">3</div><p>회원이 아닐 경우 직원의 안내에 따라 단계별 가입 진행</p></div>
       </div>
       <p class="svc-way-desc">* 나의 통합 관광주민증은 회원가입이 되어있을 때 나타나는 화면입니다.</p>
     </div>
@@ -105,7 +95,7 @@
         <a href="https://pf.kakao.com/_eeFYG" target="_blank" rel="noopener noreferrer" class="btn">톡 상담 하기</a>
       </div>
     </div>
-    <p class="svc-note">디지털 관광주민증 서비스의 이용은 무료 이며, 회원이면 누구나 이용할 수 있습니다.<br>디지털 관광주민증을 통해 서비스 지역을 대상으로 관광 주민증 발급 및 할인혜택을 받을 수 있습니다.</p>
+    <p class="svc-note">디지털 관광주민증 서비스의 이용은 무료 이며, 회원이면 누구나 이용할 수 있습니다.<br>디지털 관광주민증을 통해 서비스 지역의 다양한 할인혜택을 받을 수 있습니다.</p>
   </div>
 </div>
 
@@ -132,12 +122,7 @@
   <button class="bnav-a" onclick="location.href='event.html'">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
     이벤트
-  </button>
-  <button class="bnav-a" onclick="toast('디민증 발급 페이지')" disabled aria-label="준비 중">
-    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
-    디민증발급
-  </button>
-  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
+  </button>  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
     마이
   </button>
@@ -168,7 +153,7 @@
 
 <script src="../site-assets/data.js?v=20260707f"></script>
 <script>/* site-d 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
-try{var _pb=JSON.parse(localStorage.getItem("dtidD_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김관광";}catch(e){}</script>
+try{var _pb=JSON.parse(localStorage.getItem("dtidD_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script src="../assets/common.js?v=20260707f"></script>
 <script>
 const user=requireUser();

@@ -1,5 +1,5 @@
 const ACCOUNTS=[
-  {id:'user1',name:'이준호',emojiAv:'🇰🇷',avBg:'#fff0f2',
+  {id:'user1',name:'김수지',emojiAv:'🇰🇷',avBg:'#fff0f2',
    level:'여행 유망주',levelIcon:'🏮',pillBg:'#eff6ff',pillColor:'#1d4ed8',
    exp:3000,nextExp:4500,barPct:67,barColor:'linear-gradient(90deg,#3b82f6,#7c3aed)',
    cards:['강원 정선군','전남 신안군','충남 보령시']},
@@ -86,10 +86,18 @@ const REGION_SIDO={
   담양:'전라남도',영광:'전라남도',곡성:'전라남도',구례:'전라남도',함평:'전라남도',장흥:'전라남도',
   고흥:'전라남도',신안:'전라남도',해남:'전라남도',완도:'전라남도'
 };
+/* 지역 공식 명칭(시/군/구) — 기본은 '군'이며, 아래 표에 있는 곳만 예외로 처리한다.
+   시(市) 9곳: 삼척·제천·태백·영주·보령·안동·김제·남원·밀양
+   부산 3곳은 광역시 자치구이므로 '동구/서구/영도구'가 정식 표기
+   (종전에는 모든 지역에 '군'을 붙여 '삼척군'처럼 표기되고,
+    '부산동구'는 '동구'+'구'가 되어 '동구구'로 찍히는 오류가 있었다) */
+const REGION_LABEL_EXCEPT={
+  삼척:'삼척시',제천:'제천시',태백:'태백시',영주:'영주시',보령:'보령시',
+  안동:'안동시',김제:'김제시',남원:'남원시',밀양:'밀양시',
+  부산동구:'동구',부산서구:'서구',부산영도:'영도구'
+};
 function regionGunLabel(name){
-  const busan=['부산동구','부산서구','부산영도'];
-  if(busan.includes(name))return name.replace('부산','')+'구';
-  return name+'군';
+  return REGION_LABEL_EXCEPT[name]||(name+'군');
 }
 
 /* 지역 방문 TIP + 사용처 목록 (실데이터 보유: 곡성 / 그 외는 목업 예시 데이터) */
@@ -1004,14 +1012,64 @@ function getRegionReviews(name){
   return seedTexts.map((t,i)=>({name:REVIEW_NAMES[(name.length+i)%REVIEW_NAMES.length],text:t,likes:(i*7+name.length)%5}));
 }
 
-/* 활동이력 — 실제 사이트 캡처 데이터 그대로 */
+/* 활동이력(정적 시드) — "발급" 대신 실제 가맹점 이용 건만 남김. 실제 계정별 이용내역은
+   아래 getVisitLog()/addVisit() 기반 localStorage 데이터가 우선이며, 이 배열은 그 데이터가
+   비어 있을 때 보여줄 예시 참고용으로만 남겨둔다. */
 const HISTORY_ITEMS=[
-  {ico:'🎉',title:'지역 관광주민증 발급',date:'2026.06.08',desc:'(광주 완도군) 지역 관광주민증 발급',exp:20},
-  {ico:'🎉',title:'지역 관광주민증 발급',date:'2026.06.08',desc:'(광주 고흥군) 지역 관광주민증 발급',exp:20},
   {ico:'🎟️',title:'지역 가맹점 이용',date:'2025.10.29',desc:"(충북 단양군) '고수동굴'에서 할인 혜택 제공 쿠폰을 사용했습니다.",exp:500},
-  {ico:'🎉',title:'지역 관광주민증 발급',date:'2025.10.01',desc:'(충남 보령시) 지역 관광주민증 발급',exp:20},
   {ico:'🎟️',title:'지역 가맹점 이용',date:'2025.09.27',desc:"(광주 곡성군) '곡성 섬진강 천문대'에서 관람료 500원 할인 쿠폰을 사용했습니다.",exp:500}
 ];
+
+/* 이용내역(방문 지역) 로그 — "발급받은 지역" 대신, 실제로 가맹점 혜택을 사용한 지역만 "방문 지역"으로 기록한다.
+   region.html의 "쿠폰 받기"/mypage-coupon.html의 "사용 처리"에서 addVisit()을 호출해 실제로 쌓인다.
+   사이트마다 독립된 데모 상태를 유지하도록 localStorage 키를 시안 접두사(prefix)로 분리한다
+   (예: 'dtidA_visits_user1'). 최초 접속 시 로그가 비어 있으면 계정의 기존 cards 목록으로
+   시드를 한 번 채워, 첫 화면부터 방문 지역이 비어 보이지 않게 한다. */
+function visitLogKey(prefix,userId){ return prefix+'_visits_'+userId; }
+function seedVisitLog(userId){
+  const acc=ACCOUNTS.find(a=>a.id===userId);
+  const cards=(acc&&acc.cards)||[];
+  return cards.map((label,i)=>{
+    const parts=label.split(' ');
+    const raw=parts[parts.length-1]||label;
+    const short=raw.replace(/(군|시|구)$/,'');
+    const d=new Date(2025,8,20-i*7,12,0,0);
+    const dateStr=d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0');
+    return {region:short,label:label,venue:null,date:dateStr,ts:d.getTime()};
+  });
+}
+function getVisitLog(prefix,userId){
+  const key=visitLogKey(prefix,userId);
+  try{
+    const raw=localStorage.getItem(key);
+    if(raw)return JSON.parse(raw);
+  }catch(e){}
+  const seeded=seedVisitLog(userId);
+  try{localStorage.setItem(key,JSON.stringify(seeded));}catch(e){}
+  return seeded;
+}
+function regionVisitLabel(region){
+  const sido=REGION_SIDO[region];
+  const short=(sido&&SIDO_SHORT[sido])||sido||'';
+  return (short?short+' ':'')+regionGunLabel(region);
+}
+function addVisit(prefix,userId,region,venueName){
+  const log=getVisitLog(prefix,userId);
+  const now=new Date();
+  const dateStr=now.getFullYear()+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+String(now.getDate()).padStart(2,'0');
+  log.unshift({region,label:regionVisitLabel(region),venue:venueName||null,date:dateStr,ts:now.getTime()});
+  try{localStorage.setItem(visitLogKey(prefix,userId),JSON.stringify(log));}catch(e){}
+  return log;
+}
+function getVisitedRegions(prefix,userId){
+  const log=getVisitLog(prefix,userId);
+  const seen=new Set(), out=[];
+  log.forEach(v=>{ if(!seen.has(v.region)){ seen.add(v.region); out.push(v.label||v.region); } });
+  return out;
+}
+function hasVisited(prefix,userId,region){
+  return getVisitLog(prefix,userId).some(v=>v.region===region);
+}
 
 /* 즐겨찾는 혜택 가맹점 카테고리(실제 코드) */
 const FAV_CATS=[
@@ -1148,27 +1206,24 @@ const T50_ADJ={
 };
 
 /* 쿠폰함 목데이터 — 실사이트 가맹점 쿠폰 팝업(evtStorePop) 항목 구성에 맞춤 */
+/* region 필드는 쿠폰 사용 시 어느 지역의 이용내역으로 기록할지 판별하는 데 쓰인다(이벤트 쿠폰은 지역 없음) */
 const COUPON_ITEMS=[
-  {div:'default',no:'DGT-2026-0192-8375',store:'곡성 기차마을 전통시장',content:'가맹점 5,000원 할인 쿠폰',period:'2026.05.01 ~ 2026.08.31',used:false},
-  {div:'default',no:'DGT-2026-0201-1147',store:'평창 대관령 원데이클래스',content:'체험 프로그램 10% 할인 쿠폰',period:'2026.06.01 ~ 2026.09.30',used:false},
-  {div:'event',no:'EVT-2026-0007-5521',store:'디지털 관광주민증 여름 이벤트',content:'가맹점 커피 교환권',period:'2026.07.01 ~ 2026.07.31',used:false}
+  {div:'default',no:'DGT-2026-0192-8375',store:'곡성 기차마을 전통시장',region:'곡성',content:'가맹점 5,000원 할인 쿠폰',period:'2026.05.01 ~ 2026.08.31',used:false},
+  {div:'default',no:'DGT-2026-0201-1147',store:'평창 대관령 원데이클래스',region:'평창',content:'체험 프로그램 10% 할인 쿠폰',period:'2026.06.01 ~ 2026.09.30',used:false},
+  {div:'event',no:'EVT-2026-0007-5521',store:'디지털 관광주민증 여름 이벤트',region:null,content:'가맹점 커피 교환권',period:'2026.07.01 ~ 2026.07.31',used:false}
 ];
 
 /* 경험치 적립 규칙/이력 — 실사이트 expSttus.do 구성(유형/일자/지역/EXP/소멸예정일)에 맞춤.
    소멸예정일은 가맹점 이용(500 EXP) 건에만 표기됨(원본 동일) */
 const EXP_RULES={
-  earn:'서비스 신규 가입 : 200 EXP, 지역 관광주민증 발급 : 20 EXP, 지역 가맹점 이용 : 500 EXP, 여행 노하우 작성 : 100 EXP',
-  notes:['경험치는 유효기간이 만료될 경우 소멸됩니다.','관광주민증 탈퇴 시 해당 경험치는 회수됩니다.']
+  earn:'서비스 신규 가입 : 200 EXP, 지역 가맹점 이용 : 500 EXP, 여행 노하우 작성 : 100 EXP',
+  notes:['경험치는 유효기간이 만료될 경우 소멸됩니다.','서비스 탈퇴 시 해당 경험치는 회수됩니다.']
 };
 const EXP_HISTORY=[
   {type:'지역 가맹점 이용',date:'2026.06.28',region:'광주 곡성군',exp:500,expire:'2026.10.29'},
-  {type:'지역 관광주민증 발급',date:'2026.06.28',region:'광주 곡성군',exp:20,expire:null},
   {type:'여행 노하우 작성',date:'2026.06.15',region:'강원 평창군',exp:100,expire:null},
   {type:'지역 가맹점 이용',date:'2026.05.30',region:'강원 평창군',exp:500,expire:'2026.09.27'},
-  {type:'지역 관광주민증 발급',date:'2026.05.30',region:'강원 평창군',exp:20,expire:null},
   {type:'지역 가맹점 이용',date:'2026.05.05',region:'경북 안동시',exp:500,expire:'2026.09.02'},
-  {type:'지역 관광주민증 발급',date:'2026.05.05',region:'경북 안동시',exp:20,expire:null},
-  {type:'지역 관광주민증 발급',date:'2026.04.12',region:'충북 제천시',exp:20,expire:null},
   {type:'서비스 신규 가입',date:'2026.04.12',region:null,exp:200,expire:null}
 ];
 

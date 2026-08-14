@@ -254,7 +254,7 @@ function renderRisk(){
 }
 function renderMember(){
   document.getElementById('admMember').innerHTML=
-    '<thead><tr><th>회원명</th><th>등급</th><th class="r">포인트</th><th class="r">발급 주민증</th><th>거주지 인증</th><th>관리</th></tr></thead><tbody>'+
+    '<thead><tr><th>회원명</th><th>등급</th><th class="r">포인트</th><th class="r">방문 지역</th><th>거주지 인증</th><th>관리</th></tr></thead><tbody>'+
     ACCOUNTS.map(a=>{
       const b=F_BASE[a.id]||F_BASE.user1;
       return '<tr><td>'+fEsc(a.name)+'</td><td><span class="badge">'+b.grade+'</span></td>'+

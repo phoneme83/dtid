@@ -40,8 +40,8 @@
     <div class="lvl">현재 <span id="cardUserName">-</span>님의 등급은?</div>
     <div class="lvl"><strong id="cardGrade">-</strong></div>
     <div class="meta">
-      발급일 <span id="cardIssueDate">2025.03.26</span><br>
-      발급일로부터 <span id="cardUseCount">0</span>회 이용했어요
+      최근 이용일 <span id="cardLastUse">-</span><br>
+      이 지역에서 <span id="cardUseCount">0</span>회 이용했어요
     </div>
     <div class="card-detail-btns">
       <button class="secondary" onclick="toast('주민증 설정')">주민증 설정</button>
@@ -50,10 +50,7 @@
   </div>
   <div class="rgn-section" style="padding:24px 0 0">
     <div class="rgn-section-head"><h3>이용내역</h3></div>
-    <div class="mypage-empty" style="padding:30px 0">
-      <span class="ico">📭</span>
-      <p>이용내역이 없어요</p>
-    </div>
+    <div id="cardUseList"></div>
   </div>
 </div>
 
@@ -69,12 +66,7 @@
   <button class="bnav-a" onclick="location.href='event.html'">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
     이벤트
-  </button>
-  <button class="bnav-a" onclick="toast('디민증 발급 페이지')" disabled aria-label="준비 중">
-    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
-    디민증발급
-  </button>
-  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
+  </button>  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
     마이
   </button>
@@ -105,7 +97,7 @@
 
 <script src="../site-assets/data.js?v=20260707f"></script>
 <script>/* site-a 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
-try{var _pb=JSON.parse(localStorage.getItem("dtidA_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김관광";}catch(e){}</script>
+try{var _pb=JSON.parse(localStorage.getItem("dtidA_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script src="../assets/common.js?v=20260707f"></script>
 <script>
 const user=requireUser();
@@ -119,6 +111,27 @@ if(user){
   document.getElementById('cardSlogan').textContent=getCardSlogan(region);
   document.getElementById('cardUserName').textContent=user.name;
   document.getElementById('cardGrade').textContent=user.levelIcon+' '+user.level;
+  renderCardUseHistory(region);
+}
+
+/* 이 지역의 실제 이용내역(방문 기록)을 표시한다. 발급 개념 대신 이용 시점이 기준. */
+function renderCardUseHistory(region){
+  const short=String(region||'').replace(/(군|시|구)$/,'');
+  const uses=getVisitLog('dtidA',user.id).filter(v=>v.region===short);
+  document.getElementById('cardUseCount').textContent=uses.length;
+  document.getElementById('cardLastUse').textContent=uses.length?uses[0].date:'이용 내역 없음';
+  const wrap=document.getElementById('cardUseList');
+  if(!uses.length){
+    wrap.innerHTML='<div class="mypage-empty" style="padding:30px 0"><span class="ico">📭</span>'+
+      '<p>이용내역이 없어요<br>가맹점에서 혜택을 사용하면 여기에 기록됩니다</p></div>';
+    return;
+  }
+  wrap.innerHTML=uses.map(v=>
+    '<div class="region-card-item" style="cursor:default">'+
+      '<div class="rci-icon">🎟️</div>'+
+      '<div class="rci-info"><div class="rci-name">'+(v.venue||'지역 혜택 이용')+'</div>'+
+      '<div class="rci-status">'+v.date+'</div></div>'+
+    '</div>').join('');
 }
 </script>
 <script src="theme.js?v=2"></script>

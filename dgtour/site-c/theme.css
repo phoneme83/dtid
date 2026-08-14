@@ -161,6 +161,38 @@ body.theme-c{background:var(--c-bg)}
 /* ── 토스트 ── */
 .theme-c .toast{background:#3b1a72;border-radius:20px;box-shadow:0 4px 14px rgba(59,26,114,.35)}
 
+/* ═══ 퀘스트 맵 (main.html) — 사진 지도 대신 게임형 스테이지 보드 ═══
+   좌표(REGIONS의 l/t %)는 그대로 쓰되 배경은 CSS 그라데이션으로, 각 지역은 눈에 보이는
+   노드(스탬프 획득 / 미방문)로 표현한다. 별도 이미지 에셋 없이 CSS만으로 구성. */
+.theme-c .map-section.c-quest{background:transparent;padding-bottom:26px}
+.theme-c .c-quest .map-heading p{font-size:15px;line-height:1.6;color:#4c1d95}
+.theme-c .c-quest .map-heading strong{color:var(--c-ac2)}
+.theme-c .c-quest-cnt{display:inline-block;margin-top:8px;background:linear-gradient(135deg,var(--c-gold1),var(--c-gold2));
+  color:#4c1d95;font-size:12.5px;font-weight:800;border-radius:999px;padding:5px 13px;box-shadow:0 2px 7px rgba(245,158,11,.35)}
+
+.theme-c .c-quest-bg{background:radial-gradient(circle at 28% 16%,#8b5cf6 0%,#6d28d9 46%,#4c1d95 100%);
+  border-radius:18px;overflow:hidden;box-shadow:0 6px 20px rgba(76,29,149,.32)}
+.theme-c .c-quest-bg::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.05) 0 2px,transparent 2px 15px)}
+
+/* 지역 노드 — 기본 .r-hit(투명 히트영역)을 눈에 보이는 원형 노드로 전환.
+   크기는 고정 px (퍼센트 w/h는 가로·세로 기준축이 달라 원이 타원으로 찌그러진다) */
+.theme-c .c-quest .r-hit{width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:50%;
+  font-size:10px;line-height:1;cursor:pointer;transition:transform .15s}
+@media (min-width:600px){.theme-c .c-quest .r-hit{width:24px;height:24px}}
+.theme-c .c-quest .r-hit:active{transform:translate(-50%,-50%) scale(.9)}
+.theme-c .c-quest .r-hit.c-lock{background:rgba(255,255,255,.32);border:1px solid rgba(255,255,255,.5)}
+.theme-c .c-quest .r-hit.c-lock::after{content:'🔒';font-size:9px;opacity:.85}
+.theme-c .c-quest .r-hit.c-got{background:linear-gradient(135deg,var(--c-gold1),var(--c-gold2));
+  border:1.5px solid #fff;box-shadow:0 0 0 3px rgba(251,191,36,.34)}
+.theme-c .c-quest .r-hit.c-got::after{content:'✓';color:#4c1d95;font-size:10px;font-weight:800}
+.theme-c .c-quest .r-hit:focus-visible{outline:3px solid #fff;outline-offset:2px}
+
+.theme-c .c-quest-legend{display:flex;gap:16px;justify-content:center;margin-top:11px;font-size:12px;color:#6b5b8a;font-weight:700}
+.theme-c .c-quest-legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.theme-c .c-quest-legend i.got{background:linear-gradient(135deg,var(--c-gold1),var(--c-gold2));border:1px solid #fff;box-shadow:0 0 0 2px rgba(251,191,36,.3)}
+.theme-c .c-quest-legend i.lock{background:#cfc4e8;border:1px solid #b9a9dd}
+
 /* ═══ 게이미피케이션 컴포넌트 (theme.js / 페이지에서 사용) ═══ */
 /* 홈 상단: 레벨 헤더 + 진행바 카드 */
 .theme-c .c-home-panel{max-width:var(--content-max);margin:0 auto;background:transparent;padding-bottom:16px}
@@ -316,6 +348,21 @@ body.theme-c{background:var(--c-bg)}
 .theme-c .ap-period .rng{font-size:19px;font-weight:800;color:#7c3aed;margin:4px 0}
 .theme-c .ap-period .rng small{font-size:14px;font-weight:700;color:#6d28d9}
 .theme-c .ap-period small{color:#374151}
+.theme-c .ap-rg .cap{display:block;font-size:12px;font-weight:700;color:#7c3aed;padding:2px 12px 0}
+.theme-c .ap-notice{margin-top:10px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px 12px;font-size:13.5px;color:#9a3412;line-height:1.6}
+
+/* ── 대기열·과부하(선착순 접수) ── */
+.theme-c .ap-queue{text-align:center;padding:20px 0 10px}
+.theme-c .ap-queue .no{font-size:52px;font-weight:800;color:#7c3aed;margin:10px 0}
+.theme-c .ap-queue .no small{display:block;font-size:15px;font-weight:700;color:#374151}
+.theme-c .ap-overload{text-align:center;padding:26px 0 10px}
+.theme-c .ap-overload .ic{font-size:44px}
+.theme-c .ap-myq{border:2px solid #7c3aed;background:#ede9fe;border-radius:14px;padding:14px 16px;margin-bottom:14px;font-size:14px;color:#111827;line-height:1.6}
+
+/* ── 신청서 수정 폼 / 상태변경 알림 로그 ── */
+.theme-c .ap-edit{border:2px solid #7c3aed;border-radius:14px;padding:14px 16px;margin-top:10px;background:#fff}
+.theme-c .ap-edit .t{font-size:15.5px;font-weight:800;color:#7c3aed;margin-bottom:2px}
+.theme-c .ap-hist{margin-top:8px;font-size:12px;color:#9ca3af;line-height:1.8;border-top:1px dashed #e4dcf7;padding-top:8px}
 .theme-c .ap-date-hint{min-height:24px;font-size:14.5px;font-weight:700;line-height:1.6;color:#6b7280;margin-top:8px}
 .theme-c .ap-date-hint.ok{color:#7c3aed}
 .theme-c .ap-date-hint.warn{color:#b91c1c}

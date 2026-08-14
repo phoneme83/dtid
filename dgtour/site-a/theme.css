@@ -70,11 +70,38 @@ body.theme-a{
 .theme-a .notice-bar a{color:var(--wa-text2)}
 .theme-a .notice-bar .plus{color:var(--wa-faint)}
 
-/* ═══ 지도 섹션 ═══ */
-.theme-a .map-section{background:transparent;padding-bottom:40px}
-.theme-a .map-heading p{color:var(--wa-text2)}
-.theme-a .map-heading strong{color:var(--wa-text)}
-.theme-a .map-container{border-radius:16px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.4)}
+/* ═══ 지역 카드 지갑 (기존 지도 섹션 대체) ═══
+   월렛 퍼스트 컨셉에 맞춰, 사진 지도 대신 "지역을 카드로 골라 넣는" 선택 UI로 구성.
+   카드 모양·라운드·색은 위 .wa-card(내 주민증 캐러셀) 규칙과 맞춘다. */
+.theme-a .wa-rgn-section{background:transparent;padding:6px 0 40px}
+.theme-a .wa-rgn-head{max-width:var(--content-max);margin:0 auto;padding:0 16px 10px}
+.theme-a .wa-rgn-head p{color:var(--wa-text2);font-size:14.5px;line-height:1.6}
+.theme-a .wa-rgn-head strong{color:var(--wa-text)}
+.theme-a .wa-rgn-head .cnt{display:block;font-size:12.5px;color:var(--wa-ac-soft);font-weight:700;margin-top:6px}
+
+.theme-a .wa-rgn-tabs{display:flex;gap:7px;overflow-x:auto;padding:2px 16px 12px;scrollbar-width:none;max-width:var(--content-max);margin:0 auto}
+.theme-a .wa-rgn-tabs::-webkit-scrollbar{display:none}
+.theme-a .wa-rgn-chip{flex:0 0 auto;background:var(--wa-surface2);border:1px solid var(--wa-border2);color:var(--wa-text2);
+  border-radius:999px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.theme-a .wa-rgn-chip.on{background:var(--wa-ac);border-color:var(--wa-ac);color:#fff}
+.theme-a .wa-rgn-chip:focus-visible{outline:2px solid var(--wa-ac-soft);outline-offset:2px}
+
+.theme-a .wa-rgn-scroll{display:flex;gap:11px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 16px 6px;scrollbar-width:none;max-width:var(--content-max);margin:0 auto}
+.theme-a .wa-rgn-scroll::-webkit-scrollbar{display:none}
+.theme-a .wa-rgn-card{flex:0 0 46%;scroll-snap-align:start;position:relative;text-align:left;cursor:pointer;font-family:inherit;
+  background:var(--wa-surface);border:1.5px solid var(--wa-border);border-radius:16px;padding:14px 15px;min-height:104px;
+  display:flex;flex-direction:column;justify-content:space-between;color:var(--wa-text)}
+.theme-a .wa-rgn-card:active{transform:scale(.985)}
+.theme-a .wa-rgn-card:focus-visible{outline:2px solid var(--wa-ac-soft);outline-offset:2px}
+.theme-a .wa-rgn-card .ic{font-size:22px;line-height:1}
+.theme-a .wa-rgn-card .sido{display:block;font-size:11.5px;color:var(--wa-mut);font-weight:700;margin-top:8px}
+.theme-a .wa-rgn-card .nm{display:block;font-size:15.5px;font-weight:800;margin-top:1px}
+.theme-a .wa-rgn-card .cnt{display:block;font-size:11.5px;color:var(--wa-faint);margin-top:5px}
+/* 실제로 혜택을 이용한 지역 — 이용내역 기준 */
+.theme-a .wa-rgn-card.seen{border-color:var(--wa-ac);background:linear-gradient(150deg,var(--wa-ac-dim),var(--wa-surface) 62%)}
+.theme-a .wa-rgn-card .seen-bdg{position:absolute;right:11px;top:11px;background:var(--wa-ac);color:#fff;
+  border-radius:7px;font-size:10.5px;font-weight:800;padding:3px 7px}
+.theme-a .wa-rgn-empty{max-width:var(--content-max);margin:0 auto;padding:10px 16px;color:var(--wa-mut);font-size:13px}
 
 /* ═══ TOP10 / 카테고리 탭류(공용 칩) ═══ */
 .theme-a .top10-wrap{background:transparent;border-top:8px solid var(--wa-bg-deep)}
@@ -466,7 +493,9 @@ body.theme-a.ta-has-tab{padding-bottom:88px}
   body.theme-a.ta-has-tab{padding-bottom:0}
   .ta-tab{display:none}
   .theme-a .qr-float{display:block}
-  .theme-a .map-section{padding-bottom:40px}
+  /* 데스크톱: 지역 카드를 가로 스크롤 대신 그리드로 펼쳐 한눈에 보이게 */
+  .theme-a .wa-rgn-scroll{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:visible;padding:4px 16px 6px}
+  .theme-a .wa-rgn-card{flex:none}
   .theme-a .wa-hero{padding-top:14px}
   .theme-a .wa-carousel{padding:4px 16px 8px}
   .theme-a .wa-card{flex:0 0 360px;min-height:190px}
@@ -560,6 +589,21 @@ body.theme-a.ta-has-tab{padding-bottom:88px}
 .theme-a .ap-period .rng{font-size:19px;font-weight:800;color:#ea580c;margin:4px 0}
 .theme-a .ap-period .rng small{font-size:14px;font-weight:700;color:#fdba74}
 .theme-a .ap-period small{color:#c9ced6}
+.theme-a .ap-rg .cap{display:block;font-size:12px;font-weight:700;color:#ea580c;padding:2px 12px 0}
+.theme-a .ap-notice{margin-top:10px;background:#2a1a10;border:1px solid #7c2d12;border-radius:10px;padding:10px 12px;font-size:13.5px;color:#fdba74;line-height:1.6}
+
+/* ── 대기열·과부하(선착순 접수) ── */
+.theme-a .ap-queue{text-align:center;padding:20px 0 10px}
+.theme-a .ap-queue .no{font-size:52px;font-weight:800;color:#ea580c;margin:10px 0}
+.theme-a .ap-queue .no small{display:block;font-size:15px;font-weight:700;color:#c9ced6}
+.theme-a .ap-overload{text-align:center;padding:26px 0 10px}
+.theme-a .ap-overload .ic{font-size:44px}
+.theme-a .ap-myq{border:2px solid #ea580c;background:#2a1a10;border-radius:14px;padding:14px 16px;margin-bottom:14px;font-size:14px;color:#f3f4f6;line-height:1.6}
+
+/* ── 신청서 수정 폼 / 상태변경 알림 로그 ── */
+.theme-a .ap-edit{border:2px solid #ea580c;border-radius:14px;padding:14px 16px;margin-top:10px;background:#1d2027}
+.theme-a .ap-edit .t{font-size:15.5px;font-weight:800;color:#ea580c;margin-bottom:2px}
+.theme-a .ap-hist{margin-top:8px;font-size:12px;color:#6f7680;line-height:1.8;border-top:1px dashed #3a3f4a;padding-top:8px}
 .theme-a .ap-date-hint{min-height:24px;font-size:14.5px;font-weight:700;line-height:1.6;color:#9aa1ab;margin-top:8px}
 .theme-a .ap-date-hint.ok{color:#ea580c}
 .theme-a .ap-date-hint.warn{color:#ef4444}

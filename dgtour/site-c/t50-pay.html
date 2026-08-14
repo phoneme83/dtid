@@ -143,7 +143,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#334
 
 <script src="../site-assets/data.js?v=20260707f"></script>
 <script>/* site-c 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
-try{var _pb=JSON.parse(localStorage.getItem("dtidC_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김관광";}catch(e){}</script>
+try{var _pb=JSON.parse(localStorage.getItem("dtidC_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script>
 /* 대민시스템·관리시스템과 같은 저장소를 공유한다 — 계정별 분리 저장 */
 const P_UID=localStorage.getItem('dgtour_user_id')||'guest';
@@ -190,6 +190,13 @@ function pWallet(a){
 }
 function pTx(w,label,amt){
   w.tx.unshift({label:label,amt:amt,ts:new Date().toISOString().slice(5,10).replace('-','.')});
+}
+/* 청년·가족할인 가산 안내 문구 (지자체가 승인 시 계산한 youthBonus/familyBonus 기준) */
+function pBonusTxt(a){
+  const parts=[];
+  if(a.youthBonus)parts.push('🎉 청년 20%');
+  if(a.familyBonus)parts.push('👨‍👩‍👧 가족 10%');
+  return parts.length?' ('+parts.join('+')+' 포함)':'';
 }
 
 /* TOUR ONEPASS 통합 로그인 — 관광주민증(index.html)과 동일한 계정·저장키(dgtour_user_id)를 사용 */
@@ -240,7 +247,7 @@ function payRender(){
       }
       /* 환급 충전은 상품권 구입 여부와 무관하게 환급 승인 즉시 표시 */
       if(a.status==='refund_ok'&&!w.refundCharged)
-        bd+='<button class="buy" style="margin-top:10px" onclick="payRefund('+i+')">💰 환급 금액 충전받기<small>지자체 환급 승인 '+pWon(a.refundAmount||amt)+(a.bonus?' (🎉 청년 20% 포함)':'')+' → 잔액에 충전</small></button>';
+        bd+='<button class="buy" style="margin-top:10px" onclick="payRefund('+i+')">💰 환급 금액 충전받기<small>지자체 환급 승인 '+pWon(a.refundAmount||amt)+pBonusTxt(a)+' → 잔액에 충전</small></button>';
       if(a.status==='refund_ok'&&w.refundCharged)
         bd+='<div class="note" style="margin-top:10px">✅ 환급 금액 '+pWon(a.refundAmount||amt)+' 충전 완료 — 아래 결재내역에서 확인할 수 있습니다.</div>';
       if(a.status==='refund_req'||a.status==='refund_fix')

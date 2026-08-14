@@ -56,12 +56,7 @@
   <button class="bnav-a" onclick="location.href='event.html'">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
     이벤트
-  </button>
-  <button class="bnav-a" onclick="toast('디민증 발급 페이지')" disabled aria-label="준비 중">
-    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
-    디민증발급
-  </button>
-  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
+  </button>  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
     마이
   </button>
@@ -111,13 +106,15 @@
 
 <script src="../site-assets/data.js?v=20260707f"></script>
 <script>/* site-a 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
-try{var _pb=JSON.parse(localStorage.getItem("dtidA_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김관광";}catch(e){}</script>
+try{var _pb=JSON.parse(localStorage.getItem("dtidA_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script src="../assets/common.js?v=20260707f"></script>
 <script>
 const user=requireUser();
 let couponTab='default';
 let curCoupon=null;
-if(user){setActiveBottomNav('my');renderCoupons();}
+/* 쿠폰 사용 상태는 새로고침 후에도 유지되도록 localStorage에 저장 (최상위 선언 — TDZ 방지) */
+const CPN_USED_KEY='dtidA_couponUsed_'+(user?user.id:'guest');
+if(user){setActiveBottomNav('my');applyUsedCoupons();renderCoupons();}
 
 function setCouponTab(t){
   couponTab=t;
@@ -154,10 +151,24 @@ function closeCouponPop(){
   document.getElementById('cpnPopOverlay').classList.remove('open');
   document.body.style.overflow='';
 }
+function loadUsedCoupons(){
+  try{return JSON.parse(localStorage.getItem(CPN_USED_KEY)||'[]');}catch(e){return [];}
+}
+function markCouponUsed(no){
+  const used=loadUsedCoupons();
+  if(used.indexOf(no)<0){used.push(no);localStorage.setItem(CPN_USED_KEY,JSON.stringify(used));}
+}
+function applyUsedCoupons(){
+  const used=loadUsedCoupons();
+  COUPON_ITEMS.forEach(c=>{if(used.indexOf(c.no)>=0)c.used=true;});
+}
 function checkCouponCode(){
   const code=document.getElementById('cpnCodeInput').value.trim();
   if(!code){toast('직원 확인 코드를 입력해 주세요');return;}
   curCoupon.used=true;
+  markCouponUsed(curCoupon.no);
+  /* 쿠폰 사용 = 실제 "이용" → 해당 지역을 이용내역(방문 지역)에 기록 */
+  if(curCoupon.region&&user)addVisit('dtidA',user.id,curCoupon.region,curCoupon.store);
   closeCouponPop();
   toast('쿠폰이 사용 처리되었습니다');
   renderCoupons();

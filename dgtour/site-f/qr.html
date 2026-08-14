@@ -151,7 +151,7 @@ function renderWallet(){
   el.innerHTML=fCards().map((c,i)=>
     '<button class="pill'+(i===curCard?' on':'')+'" onclick="pickCard('+i+')">'+
       (CARD_ICONS[c]||'🪪')+' '+fEsc(fRegionShort(c))+'</button>').join('')+
-    '<a class="pill" href="issue.html">＋ 추가 발급</a>';
+    '<a class="pill" href="map.html">＋ 새 지역 혜택 찾기</a>';
 }
 function pickCard(i){
   curCard=i;
@@ -178,7 +178,7 @@ function renderInfo(){
 
 function renderUseList(){
   document.getElementById('useList').innerHTML=VENUES.slice(0,8).map(v=>
-    '<button class="vrow" style="width:100%;text-align:left" onclick="doUse(\''+fEsc(v.name)+'\')">'+
+    '<button class="vrow" style="width:100%;text-align:left" onclick="doUse(\''+fEsc(v.name)+'\',\''+fEsc(v.region)+'\')">'+
       '<span class="th"><img src="'+v.img+'" alt=""></span>'+
       '<span class="bd"><span class="nm" style="display:block">'+fEsc(v.name)+'</span>'+
         '<span class="ds" style="display:block"><span class="badge n">'+fEsc(v.region)+'</span>'+v.dist.toFixed(1)+'km · '+fEsc(v.catLabel)+'</span>'+
@@ -186,8 +186,8 @@ function renderUseList(){
       '<span class="hv" style="color:var(--pri)">›</span>'+
     '</button>').join('');
 }
-function doUse(name){
-  fUseBenefit(name);
+function doUse(name,region){
+  fUseBenefit(name,region);
   fCloseModal('useModal');
   renderInfo();
 }

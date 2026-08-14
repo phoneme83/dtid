@@ -125,12 +125,17 @@ function drawQr(cv,text){
 }
 function qrMatrix(str){
   const data=new TextEncoder().encode(str);
+  // CAP: 바이트모드 최대 "입력" 글자 수(버전 선택용, 모드·길이·종단 오버헤드 차감된 값).
   const CAP={1:17,2:32,3:53,4:78,5:106,6:134,7:154,8:192,9:230,10:271};
   const ECC={1:7,2:10,3:15,4:20,5:26,6:18,7:20,8:24,9:30,10:18};
-  const BLK={1:1,2:1,3:1,4:1,5:1,6:2,7:2,8:2,9:2,10:2};
+  const BLK={1:1,2:1,3:1,4:1,5:1,6:2,7:2,8:2,9:2,10:4};
+  // DCW: 실제 RS 블록에 채워야 하는 "총 데이터 코드워드" 수(버전당 고정, CAP와는 다른 값).
+  // 이전 코드는 CAP를 DCW로 잘못 재사용해 데이터가 2~3바이트씩 부족하게 채워지고
+  // RS 오류정정 바이트도 잘못 계산되어 생성된 QR이 전부 스캔 불가였다.
+  const DCW={1:19,2:34,3:55,4:80,5:108,6:136,7:156,8:194,9:232,10:274};
   let ver=0; for(let v=1;v<=10;v++) if(data.length+2<=CAP[v]){ver=v;break;}
   if(!ver) throw new Error('too long');
-  const size=17+ver*4, total=CAP[ver]+ECC[ver]*BLK[ver];
+  const size=17+ver*4;
   // 비트스트림: 모드(0100) + 길이 + 데이터 + 종단
   const bits=[];
   const push=(v,len)=>{for(let i=len-1;i>=0;i--)bits.push((v>>i)&1);};
@@ -138,7 +143,7 @@ function qrMatrix(str){
   data.forEach(b=>push(b,8));
   push(0,4);
   while(bits.length%8) bits.push(0);
-  const dcw=CAP[ver];
+  const dcw=DCW[ver];
   const bytes=[]; for(let i=0;i<bits.length;i+=8){let v=0;for(let j=0;j<8;j++)v=(v<<1)|bits[i+j];bytes.push(v);}
   const PAD=[0xEC,0x11]; let pi=0; while(bytes.length<dcw) bytes.push(PAD[pi++%2]);
   // 리드-솔로몬
@@ -171,15 +176,32 @@ function qrMatrix(str){
     set(x,y,on?1:0);}};
   finder(0,0); finder(size-7,0); finder(0,size-7);
   for(let i=8;i<size-8;i++){ set(i,6,i%2===0?1:0); set(6,i,i%2===0?1:0); }
-  if(ver>1){ const a=size-7;
-    for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
-      const on=(Math.abs(dx)===2||Math.abs(dy)===2||(dx===0&&dy===0));
-      set(a+dx,a+dy,on?1:0);} }
+  // 얼라인먼트 패턴 — 버전7부터는 표(ALPOS)의 좌표 조합마다 하나씩(파인더와 겹치는 3곳만 제외)
+  // 여러 개가 필요하다. (이전 코드는 버전2~6에서만 맞는 우하단 1개짜리 규칙을 그대로 썼다.)
+  if(ver>1){
+    const ALPOS={7:[6,22,38],8:[6,24,42],9:[6,26,46],10:[6,28,50]};
+    const L = ver<=6 ? [6,size-7] : ALPOS[ver];
+    const first=L[0], last=L[L.length-1];
+    for(const r of L) for(const c of L){
+      if((r===first&&c===first)||(r===first&&c===last)||(r===last&&c===first)) continue;
+      for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
+        const on=(Math.abs(dx)===2||Math.abs(dy)===2||(dx===0&&dy===0));
+        set(c+dx,r+dy,on?1:0);
+      }
+    }
+  }
   set(8,size-8,1);
   const fmtArea=[];
   for(let i=0;i<=8;i++){ if(M[8][i]===null)fmtArea.push([i,8]); if(M[i][8]===null)fmtArea.push([8,i]); }
   for(let i=size-8;i<size;i++){ if(M[8][i]===null)fmtArea.push([i,8]); if(M[i][8]===null)fmtArea.push([8,i]); }
   fmtArea.forEach(([x,y])=>set(x,y,0));
+  // 버전 정보(버전7 이상 전용, 18비트) 영역을 데이터 배치 전에 미리 예약해 둔다.
+  if(ver>=7){
+    for(let i=0;i<18;i++){
+      const a=size-11+i%3, b=Math.floor(i/3);
+      set(a,b,0); set(b,a,0);
+    }
+  }
   let bi=0, dir=-1, col=size-1;
   const bitAt=k=>(out[k>>3]>>(7-(k&7)))&1;
   const totalBits=out.length*8;
@@ -196,12 +218,27 @@ function qrMatrix(str){
     }
     dir=-dir; col-=2;
   }
-  // 형식 정보(오류정정 L + 마스크 0)
+  // 형식 정보(오류정정 L + 마스크 0). 표준 배치: 왼쪽 위 파인더 주위를 세로→가로로 감싸는
+  // 1차 사본, 오른쪽 위·왼쪽 아래에 걸친 2차 사본. (이전 코드는 가로·세로 좌표가 뒤바뀌어
+  // 있어 디코더가 마스크·오류정정 레벨을 읽지 못했다.)
   const FMT=0x77C4;
-  const fp=[[0,8],[1,8],[2,8],[3,8],[4,8],[5,8],[7,8],[8,8],[8,7],[8,5],[8,4],[8,3],[8,2],[8,1],[8,0]];
-  const fp2=[[8,size-1],[8,size-2],[8,size-3],[8,size-4],[8,size-5],[8,size-6],[8,size-7],
-             [size-8,8],[size-7,8],[size-6,8],[size-5,8],[size-4,8],[size-3,8],[size-2,8],[size-1,8]];
-  for(let i=0;i<15;i++){ const b=(FMT>>i)&1; set(fp[i][0],fp[i][1],b); set(fp2[i][0],fp2[i][1],b); }
+  const fbit=i=>(FMT>>i)&1;
+  for(let i=0;i<=5;i++) set(8,i,fbit(i));
+  set(8,7,fbit(6)); set(8,8,fbit(7)); set(7,8,fbit(8));
+  for(let i=9;i<15;i++) set(14-i,8,fbit(i));
+  for(let i=0;i<=7;i++) set(size-1-i,8,fbit(i));
+  for(let i=8;i<15;i++) set(8,size-15+i,fbit(i));
+  set(8,size-8,1);
+  // 버전 정보(버전7 이상 전용, BCH(18,6) — 마스크는 적용하지 않는다)
+  if(ver>=7){
+    let rem=ver;
+    for(let i=0;i<12;i++) rem=(rem<<1)^(((rem>>>11)&1)?0x1F25:0);
+    const vbits=(ver<<12)|rem;
+    for(let i=0;i<18;i++){
+      const b=(vbits>>i)&1, a=size-11+i%3, r=Math.floor(i/3);
+      set(a,r,b); set(r,a,b);
+    }
+  }
   return M.map(r=>r.map(v=>v?1:0));
 }
 </script>

@@ -62,6 +62,34 @@ body.theme-d.dtd-big{zoom:1.15}
 .theme-d .notice-bar .plus{color:#4b5563;font-size:18px}
 .theme-d .map-heading p{font-size:17.5px;color:#1f2937}
 
+/* ── 메인: 지역 선택 목록 (사진 지도 대체) ──
+   접근성 우선 시안이므로 모든 조작 대상은 56px 이상, 17px 이상 글자,
+   상태는 색만이 아니라 텍스트(✓ 방문)로도 함께 표시한다. */
+.theme-d .dtd-rgn{background:#fff;padding-bottom:26px}
+.theme-d .dtd-rgn-cnt{font-size:15px;color:#4b5563;font-weight:600;margin-top:8px}
+.theme-d .dtd-rgn-groups{max-width:var(--content-max);margin:0 auto;padding:6px 16px 0;display:grid;gap:10px}
+
+.theme-d .dtd-province{border:2px solid #d8e0de;border-radius:18px;overflow:hidden;background:#fff}
+.theme-d .dtd-province-hd{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:15px 16px;
+  background:#fff;border:none;cursor:pointer;font-family:inherit;color:#111827;text-align:left}
+.theme-d .dtd-province-hd .pn{font-size:18px;font-weight:800;letter-spacing:-.3px}
+.theme-d .dtd-province-hd .pc{font-size:15px;font-weight:600;color:#4b5563}
+.theme-d .dtd-province-hd .ar{margin-left:auto;font-size:19px;color:#0f766e;transition:transform .2s}
+.theme-d .dtd-province.open .dtd-province-hd{background:#f2f7f6;border-bottom:1.5px solid #dfe8e6}
+.theme-d .dtd-province.open .dtd-province-hd .ar{transform:rotate(180deg)}
+.theme-d .dtd-province-hd:focus-visible,
+.theme-d .dtd-rgn-row:focus-visible{outline:3px solid #0f766e;outline-offset:-3px}
+
+.theme-d .dtd-rgn-row{display:flex;align-items:center;gap:10px;min-height:58px;padding:14px 16px;
+  border-top:1.5px solid #eef2f1;color:#111827;text-decoration:none;background:#fff}
+.theme-d .dtd-province-rows>.dtd-rgn-row:first-child{border-top:none}
+.theme-d .dtd-rgn-row:active{background:#f2f7f6}
+.theme-d .dtd-rgn-row .rn{font-size:17px;font-weight:700}
+.theme-d .dtd-rgn-row .seen{font-size:13.5px;font-weight:800;color:#0f766e;background:#e3f1ef;
+  border:1px solid #b9d9d5;border-radius:8px;padding:3px 8px}
+.theme-d .dtd-rgn-row .vc{margin-left:auto;font-size:14.5px;color:#4b5563;font-weight:500}
+.theme-d .dtd-rgn-row .ar{font-size:19px;color:#0f766e;flex-shrink:0}
+
 /* ── 메인: TOP10 / FAQ / 인기 콘텐츠 / 이벤트 카드 ── */
 .theme-d .top10-wrap,.theme-d .faq-wrap,.theme-d .insta-tour-wrap,.theme-d .main-event-wrap{border-top:10px solid #eef2f1}
 .theme-d .top10-tab{font-size:14.5px;padding:12px 18px;min-height:48px;border:2px solid #cfd8d6;color:#374151;border-radius:26px}
@@ -467,6 +495,21 @@ body.theme-d.dtd-big{zoom:1.15}
 .theme-d .ap-period .rng{font-size:19px;font-weight:800;color:#0f766e;margin:4px 0}
 .theme-d .ap-period .rng small{font-size:14px;font-weight:700;color:#115e59}
 .theme-d .ap-period small{color:#374151}
+.theme-d .ap-rg .cap{display:block;font-size:12px;font-weight:700;color:#0f766e;padding:2px 12px 0}
+.theme-d .ap-notice{margin-top:10px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px 12px;font-size:13.5px;color:#9a3412;line-height:1.6}
+
+/* ── 대기열·과부하(선착순 접수) ── */
+.theme-d .ap-queue{text-align:center;padding:20px 0 10px}
+.theme-d .ap-queue .no{font-size:52px;font-weight:800;color:#0f766e;margin:10px 0}
+.theme-d .ap-queue .no small{display:block;font-size:15px;font-weight:700;color:#374151}
+.theme-d .ap-overload{text-align:center;padding:26px 0 10px}
+.theme-d .ap-overload .ic{font-size:44px}
+.theme-d .ap-myq{border:2px solid #0f766e;background:#e7f4f1;border-radius:14px;padding:14px 16px;margin-bottom:14px;font-size:14px;color:#111827;line-height:1.6}
+
+/* ── 신청서 수정 폼 / 상태변경 알림 로그 ── */
+.theme-d .ap-edit{border:2px solid #0f766e;border-radius:14px;padding:14px 16px;margin-top:10px;background:#fff}
+.theme-d .ap-edit .t{font-size:15.5px;font-weight:800;color:#0f766e;margin-bottom:2px}
+.theme-d .ap-hist{margin-top:8px;font-size:12px;color:#9ca3af;line-height:1.8;border-top:1px dashed #e5e7eb;padding-top:8px}
 .theme-d .ap-date-hint{min-height:24px;font-size:14.5px;font-weight:700;line-height:1.6;color:#6b7280;margin-top:8px}
 .theme-d .ap-date-hint.ok{color:#0f766e}
 .theme-d .ap-date-hint.warn{color:#b91c1c}

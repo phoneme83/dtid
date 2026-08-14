@@ -28,13 +28,13 @@
   <button class="back-btn" onclick="location.href='my.html'" aria-label="뒤로가기">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
   </button>
-  <span class="page-bar-title">관광주민증 보관함</span>
+  <span class="page-bar-title">방문 지역 보관함</span>
 </div>
 
 <div class="mypage-sub-content">
   <div class="mypage-sub-tabs" id="doTabs"></div>
   <div class="pocket-grid" id="pocketGrid"></div>
-  <a class="pocket-more" href="javascript:void(0)" onclick="toast('지역 선택 화면')">더 많은 관광주민증을 받고 싶다면? ›</a>
+  <a class="pocket-more" href="javascript:void(0)" onclick="location.href='main.html'">더 많은 지역을 방문해보고 싶다면? ›</a>
 </div>
 
 <nav class="bottom-nav" id="bottomNav">
@@ -49,12 +49,7 @@
   <button class="bnav-a" onclick="location.href='event.html'">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
     이벤트
-  </button>
-  <button class="bnav-a" onclick="toast('디민증 발급 페이지')" disabled aria-label="준비 중">
-    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
-    디민증발급
-  </button>
-  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
+  </button>  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
     마이
   </button>
@@ -85,7 +80,7 @@
 
 <script src="../site-assets/data.js?v=20260707f"></script>
 <script>/* site-c 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
-try{var _pb=JSON.parse(localStorage.getItem("dtidC_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김관광";}catch(e){}</script>
+try{var _pb=JSON.parse(localStorage.getItem("dtidC_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script src="../assets/common.js?v=20260707f"></script>
 <script>
 const user=requireUser();
@@ -109,14 +104,16 @@ function setCardDoFilter(t,btn){
 
 function renderPocket(){
   const grid=document.getElementById('pocketGrid');
-  const list=(user.cards||[]).filter(c=>cardDoFilter==='전체'||c.startsWith(cardDoFilter));
+  /* 보관함 = 실제로 혜택을 이용한 "방문한 지역" (발급 지역이 아니라 이용내역 기준) */
+  const list=getVisitedRegions('dtidC',user.id).filter(c=>cardDoFilter==='전체'||c.startsWith(cardDoFilter));
   grid.innerHTML=list.map(c=>{
     const region=c.split(' ').pop();
     return `<div class="pocket-card" onclick="location.href='mypage-card-detail.html?r=${encodeURIComponent(region)}'">
       <div class="em">${CARD_ICONS[c]||'📍'}</div>
       <div class="nm">${region}</div>
     </div>`;
-  }).join('');
+  }).join('')||'<div class="mypage-empty" style="padding:30px 0;grid-column:1/-1">'+
+    '<span class="ico">🗺️</span><p>아직 방문한 지역이 없어요<br>지역 혜택을 사용하면 여기에 쌓입니다</p></div>';
 }
 </script>
 <script src="theme.js?v=2"></script>

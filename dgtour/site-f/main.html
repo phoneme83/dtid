@@ -139,7 +139,7 @@ function renderCardPills(){
     const short=fRegionShort(c);
     return '<a class="pill'+(i===0?' on':'')+'" href="qr.html?r='+encodeURIComponent(short)+'">'+
       (CARD_ICONS[c]||'🪪')+' '+fEsc(fRegionLabel(short))+' 주민증</a>';
-  }).join('')+'<a class="pill" href="issue.html">＋ 추가 발급</a>';
+  }).join('')+'<a class="pill" href="map.html">＋ 새 지역 혜택 찾기</a>';
   el.innerHTML=html;
 }
 

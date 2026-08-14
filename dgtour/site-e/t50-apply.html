@@ -109,11 +109,12 @@
     <div class="ap-cal" id="apCal"></div>
     <div class="ap-date-hint" id="apDateHint" aria-live="polite"></div>
     <label class="ap-lb" for="apPeople">인원</label>
-    <select class="ap-in" id="apPeople">
+    <select class="ap-in" id="apPeople" onchange="apPeopleHint()">
       <option value="1">1명</option><option value="2" selected>2명</option>
       <option value="3">3명</option><option value="4">4명</option>
       <option value="5">5명</option><option value="6">6명 이상</option>
     </select>
+    <div class="ap-note" id="apFamHint" style="display:none">👨‍👩‍👧 3인 이상 가족 신청은 환급 시 <b>10% 추가 환급</b> 혜택이 적용됩니다.</div>
     <label class="ap-lb" for="apPlan">간단한 여행 계획 <small>(선택)</small></label>
     <textarea class="ap-in" id="apPlan" rows="3" placeholder="예) 1일차 숙소 체크인 후 시장 구경, 2일차 해변 산책"></textarea>
     <div class="ap-note">입력하신 신청자격·여행 계획은 해당 <b>지자체(관리시스템)</b>로 전달되어 승인/반려 심사에 사용됩니다.</div>
@@ -144,8 +145,33 @@
   <!-- [6] 나의 신청 내역 -->
   <section class="ap-view" id="apV6">
     <h2 class="ap-q">나의 신청 내역</h2>
+    <div id="apMyQ"></div>
     <div id="apList"></div>
     <button class="ap-big" onclick="apGo(0)">‹ 신청 안내로</button>
+  </section>
+
+  <!-- [7] 대기열(신청 인원 초과 시 선착순 대기) -->
+  <section class="ap-view" id="apV7">
+    <div class="ap-queue">
+      <div style="font-size:34px">🕐</div>
+      <h2>신청이 몰려 대기열에 등록되었습니다</h2>
+      <div class="no" id="apQNo">-<small>내 대기 순번</small></div>
+      <p id="apQMsg"></p>
+    </div>
+    <button class="ap-big hero" onclick="apQueueRefresh()">↻ 순번 새로고침</button>
+    <button class="ap-big" onclick="apQueueCancel()">대기열 취소</button>
+    <button class="ap-back" onclick="apGo(6)">‹ 나의 신청 내역으로</button>
+  </section>
+
+  <!-- [8] 과부하 차단 안내 -->
+  <section class="ap-view" id="apV8">
+    <div class="ap-overload">
+      <div class="ic">🚧</div>
+      <h2>접속량이 많아 접수가 원활하지 않습니다</h2>
+      <p id="apOverMsg">잠시 후 다시 시도해 주세요.</p>
+    </div>
+    <button class="ap-big hero" onclick="apGo(4)">다시 접수 시도</button>
+    <button class="ap-big" onclick="location.href='main.html'">메인으로</button>
   </section>
 
 </div>
@@ -173,12 +199,7 @@
   <button class="bnav-a" data-nav="event" onclick="location.href='event.html'">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
     이벤트
-  </button>
-  <button class="bnav-a" onclick="toast('디민증 발급 페이지')" disabled aria-label="준비 중">
-    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
-    디민증발급
-  </button>
-  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
+  </button>  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
     마이
   </button>
@@ -208,8 +229,9 @@
 <div class="toast" id="toastEl"></div>
 
 <script src="../site-assets/data.js?v=20260707f"></script>
+<script src="t50-config.js?v=1"></script>
 <script>/* site-e 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
-try{var _pb=JSON.parse(localStorage.getItem("dtidE_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김관광";}catch(e){}</script>
+try{var _pb=JSON.parse(localStorage.getItem("dtidE_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script src="../assets/common.js?v=20260707f"></script>
 <script>
 const user=requireUser();
@@ -217,6 +239,7 @@ const user=requireUser();
 /* ── 상태 (모든 top-level 선언은 init 코드보다 위에 둔다) ── */
 /* 신청 데이터는 로그인 계정별로 분리 저장 — 계정을 바꿔도 각자의 신청 내역이 유지된다 */
 const AP_KEY='dtidE_t50Applies_'+(user?user.id:'guest');
+const MYQ_KEY=T50_MYQ_PREFIX+(user?user.id:'guest');   /* 대기열 진입 중인 내 신청 티켓(지역+id) */
 /* 예전 공용 키에 남아 있던 신청 건은 현재 계정으로 1회 이관 */
 try{
   const legacy=localStorage.getItem('dtidE_t50Applies');
@@ -240,18 +263,9 @@ function apPickAddr(){
   const sigungu=AP_SI[r.name]||(r.name+'군');
   return {sido:r.sido,sigungu:sigungu,full:r.sido+' '+sigungu};
 }
-/* 지자체별 반값여행 가능기간 — 여행 시작일·종료일이 모두 이 기간 안에 있어야 신청 가능 (모의 데이터) */
-const AP_PERIODS={
-  '영광':{s:'2026-07-01',e:'2026-08-31'},'해남':{s:'2026-07-15',e:'2026-09-30'},
-  '완도':{s:'2026-07-07',e:'2026-08-24'},'강진':{s:'2026-08-01',e:'2026-10-31'},
-  '고창':{s:'2026-09-01',e:'2026-10-31'},'거창':{s:'2026-08-16',e:'2026-11-15'},
-  '하동':{s:'2026-06-01',e:'2026-06-30'},'횡성':{s:'2026-06-01',e:'2026-07-15'},
-  '고흥':{s:'2026-05-15',e:'2026-06-30'},'영암':{s:'2026-06-10',e:'2026-07-20'},
-  '남해':{s:'2026-05-01',e:'2026-06-15'},'밀양':{s:'2026-06-01',e:'2026-06-30'},
-  '제천':{s:'2026-05-20',e:'2026-06-30'},'합천':{s:'2026-06-15',e:'2026-07-31'},
-  '영월':{s:'2026-06-01',e:'2026-07-31'},'평창':{s:'2026-07-01',e:'2026-09-15'}
-};
-function apPeriod(name){return AP_PERIODS[name]||null;}
+/* 지자체별 반값여행 여행기간·신청기간·신청인원조건·공지사항은 관리시스템의 "사업설정" 값을 사용한다
+   (t50-config.js — 관리자가 아직 설정을 안 만졌으면 기존 기본값과 동일하게 시드된다) */
+function apPeriod(name){const c=t50RegionCfg(name);return {s:c.travelStart,e:c.travelEnd};}
 function apFmt(d){return d.replace(/-/g,'.');}
 function apFmtShort(d){return d.slice(5).replace('-','.');}
 function apDays(p){return Math.round((new Date(p.e)-new Date(p.s))/86400000)+1;}
@@ -263,12 +277,14 @@ const AP_ST_LABEL={
   notified:{t:'결과 통보 완료',lane:'공사',ic:'📨'},
   refund_req:{t:'환급 신청 접수',lane:'공사',ic:'🧾'},
   refund_fix:{t:'증빙 보완 요청',lane:'지자체',ic:'✏️'},
-  refund_ok:{t:'환급 승인',lane:'지자체',ic:'💰'}
+  refund_ok:{t:'환급 승인',lane:'지자체',ic:'💰'},
+  canceled:{t:'신청 취소',lane:'신청자',ic:'🚫'}
 };
 const AP_FLOW=['received','review','approved','notified','refund_req','refund_ok'];
 let apSel=null;          // 선택한 지역명
 let apAddrOk=false;      // 주소지 확인 여부
 let apYouth=false;       // 청년(만 19~34세) 여부 — 환급 시 20% 추가
+let apAge=null;          // 주민등록번호로 확인한 만 나이 (통계·관리의 연령대별 통계에 사용)
 
 /* 주민등록번호로 만 나이 계산 (뒷자리 첫 숫자로 세기 판별). 형식 오류면 null */
 function apAgeFromRrn(r1,r2){
@@ -320,8 +336,15 @@ function apGo(n){
     s.classList.toggle('on',Number(s.dataset.st)<=n);
   });
   if(n===3)apRenderRegions();
-  if(n===6)apRenderList();
+  if(n===4)apPeopleHint();
+  if(n===6){apRenderMyQ();apRenderList();}
+  if(n===7)apQueueRender();
   window.scrollTo(0,0);
+}
+function apPeopleHint(){
+  const el=document.getElementById('apFamHint');
+  if(!el)return;
+  el.style.display=(t50PeopleNum({people:document.getElementById('apPeople').value})>=3)?'block':'none';
 }
 
 function apStart(){
@@ -352,6 +375,7 @@ function apAddrCheck(){
     alert('만 19세 미만 미성년자는 반값여행을 신청할 수 없습니다.\n(입력하신 주민등록번호 기준 만 '+age+'세)');
     return;
   }
+  apAge=age;
   /* 청년(만 19~34세) 20% 추가 환급 대상 */
   apYouth=(age>=19&&age<35);
   if(apYouth)alert('🎉 청년 신청으로 확인되었습니다. (만 '+age+'세)\n청년(만 19~34세)은 환급 시 20% 추가 환급 혜택이 적용됩니다.');
@@ -374,21 +398,24 @@ function apAddrSave(){
 function apRenderRegions(){
   const grid=document.getElementById('apRegionGrid');
   grid.innerHTML=TOUR50_REGIONS.map(r=>{
+    const cfg=t50RegionCfg(r.name);
     const same=!!apAddr&&(AP_SI[r.name]||(r.name+'군'))===apAddr.sigungu;   // 주소지와 동일 지자체 = 신청 불가
     const near=!same&&!!apAddr&&r.sido===apAddr.sido;                       // 거주지 동일 시·도 = 인근 지역 신청 X
-    const closed=r.status!=='open';
-    const dis=same||near||closed;
-    const why=same?'거주 지자체 — 신청 불가':near?'인근 지역 신청 불가':(r.status==='prep'?'모집 준비중':'모집 마감');
-    const round=(r.rounds&&r.rounds.length)?r.rounds[r.rounds.length-1]:null;
-    const p=apPeriod(r.name);
+    const notOpen=!cfg.open;                                                // 지자체 사업설정에서 사업 미개설
+    const outApply=!notOpen&&!t50InApplyPeriod(cfg);                        // 지자체 사업설정의 신청기간 밖
+    const dis=same||near||notOpen||outApply;
+    const why=same?'거주 지자체 — 신청 불가':near?'인근 지역 신청 불가':notOpen?'사업 미개설':
+      '신청기간 아님 ('+apFmtShort(cfg.applyStart)+'~'+apFmtShort(cfg.applyEnd)+')';
+    const used=t50UsedCount(r.name);
+    const capTxt=(cfg.capacity<9999)?('<span class="cap">신청 인원 '+used+'/'+cfg.capacity+'명</span>'):'';
     return '<button type="button" class="ap-rg'+(dis?' dis':'')+(apSel===r.name?' sel':'')+'" '+
       (same?'onclick="apSameRegion()" aria-disabled="true"':dis?'disabled aria-disabled="true"':'onclick="apPick(\''+r.name+'\')"')+'>'+
       '<img src="'+r.image+'" alt="" loading="lazy">'+
       '<span class="nm">'+r.name+(r.star?' ★':'')+'</span>'+
       '<span class="sd">'+r.sido+'</span>'+
-      (p?'<span class="tp">🗓 여행기간 '+apFmtShort(p.s)+' ~ '+apFmtShort(p.e)+'</span>':'')+
+      '<span class="tp">🗓 여행기간 '+apFmtShort(cfg.travelStart)+' ~ '+apFmtShort(cfg.travelEnd)+'</span>'+
       (dis?'<span class="why">'+why+'</span>'
-          :'<span class="rd">'+(round?round.n+' 신청 '+round.period:'모집중')+'</span>')+
+          :'<span class="rd">신청기간 '+apFmtShort(cfg.applyStart)+'~'+apFmtShort(cfg.applyEnd)+'</span>'+capTxt)+
       '</button>';
   }).join('');
   document.getElementById('apRegionNext').disabled=!apSel;
@@ -408,13 +435,12 @@ function apPick(name){
   document.getElementById('apRegionNext').disabled=false;
   /* 선택 지역의 여행 가능기간을 계획 화면에 반영 (가능기간 전용 캘린더 + 안내 배너) */
   const p=apPeriod(name);
-  if(p){
-    document.getElementById('apPeriodBox').innerHTML=
-      '🗓 <b>'+name+'</b> 반값여행 가능기간<div class="rng">'+apFmt(p.s)+' ~ '+apFmt(p.e)+' <small>('+apDays(p)+'일간)</small></div>'+
-      '<small>아래 캘린더에는 이 기간의 날짜만 선택할 수 있습니다. 지원 기간은 지자체마다 다릅니다.</small>';
-  }else{
-    document.getElementById('apPeriodBox').innerHTML='';
-  }
+  const cfg=t50RegionCfg(name);
+  const notice=(cfg.notices&&cfg.notices.length)?cfg.notices[0]:null;
+  document.getElementById('apPeriodBox').innerHTML=
+    '🗓 <b>'+name+'</b> 반값여행 가능기간<div class="rng">'+apFmt(p.s)+' ~ '+apFmt(p.e)+' <small>('+apDays(p)+'일간)</small></div>'+
+    '<small>아래 캘린더에는 이 기간의 날짜만 선택할 수 있습니다. 지원 기간은 지자체마다 다릅니다.</small>'+
+    (notice?'<div class="ap-notice">📢 <b>'+notice.title+'</b><br>'+notice.body+'</div>':'');
   apCalInit();
 }
 
@@ -480,6 +506,18 @@ function apDateHint(){
   el.classList.add('ok');
 }
 
+/* 지역별 신청 인원조건(capacity) 초과 시 대기열, capacity×1.3 초과 시 과부하 안내로 분기.
+   락 버전을 신청 직전에 다시 확인해 "동시접속 신청 정합성 검증"을 1회 재시도한다 */
+function apDecideCapacity(region,ppl){
+  const cfg=t50RegionCfg(region);
+  const v0=t50LockVersion(region);
+  let used=t50UsedCount(region);
+  if(t50LockVersion(region)!==v0)used=t50UsedCount(region);   /* 다른 탭에서 접수 발생 → 최신값 재확인 */
+  if(used+ppl<=cfg.capacity)return{mode:'ok',cfg:cfg,used:used};
+  if(used+ppl<=Math.ceil(cfg.capacity*1.3))return{mode:'queue',cfg:cfg,used:used};
+  return{mode:'overload',cfg:cfg,used:used};
+}
+
 function apSubmit(){
   if(!apAddrOk){toast('주소지 확인을 먼저 진행해 주세요');apGo(2);return;}
   if(!apSel){toast('지역을 선택해 주세요');apGo(3);return;}
@@ -491,26 +529,89 @@ function apSubmit(){
     toast('여행 가능기간('+apFmt(pd.s)+' ~ '+apFmt(pd.e)+') 안에서 선택해 주세요');
     apDateHint();return;
   }
-  const list=apLoad();
-  const no='T50-2026-'+String(1001+list.length);
+  const peopleVal=document.getElementById('apPeople').value;
+  const ppl=t50PeopleNum({people:peopleVal});
   const r=TOUR50_REGIONS.find(x=>x.name===apSel);
-  list.unshift({no:no,region:apSel,sido:r?r.sido:'',start:d1,end:d2,period:pd,
-    people:document.getElementById('apPeople').value,
-    plan:document.getElementById('apPlan').value.trim(),
-    applicant:user?user.name:'',uid:user?user.id:'',youth:apYouth,addr:apAddr?apAddr.full:'',
-    status:'received',ts:new Date().toISOString().slice(0,10)});
-  apSave(list);
-  document.getElementById('apDoneNo').textContent='접수번호 '+no;
-  document.getElementById('apDoneSum').innerHTML='<b>'+apSel+'</b> · '+d1+' ~ '+d2+' · '+document.getElementById('apPeople').value+'명';
-  apSel=null;
-  apGo(5);
-  apBadge();
+  const draft={region:apSel,sido:r?r.sido:'',start:d1,end:d2,period:pd,
+    people:peopleVal,plan:document.getElementById('apPlan').value.trim(),
+    applicant:user?user.name:'',uid:user?user.id:'',youth:apYouth,age:apAge,
+    familyEligible:ppl>=3,addr:apAddr?apAddr.full:'',
+    ts:new Date().toISOString().slice(0,10),tsFull:new Date().toISOString()};
+  const dec=apDecideCapacity(apSel,ppl);
+  if(dec.mode==='ok'){
+    t50LockBump(apSel);
+    const list=apLoad();
+    const no='T50-2026-'+String(1001+list.length);
+    draft.no=no;draft.status='received';
+    draft.history=[{st:'received',ts:draft.tsFull,note:'신청 접수'}];
+    list.unshift(draft);
+    apSave(list);
+    document.getElementById('apDoneNo').textContent='접수번호 '+no;
+    document.getElementById('apDoneSum').innerHTML='<b>'+apSel+'</b> · '+d1+' ~ '+d2+' · '+peopleVal+'명';
+    apSel=null;apGo(5);apBadge();
+  }else if(dec.mode==='queue'){
+    const q=t50QueueLoad(apSel);
+    const id='Q-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
+    q.push({id:id,uid:draft.uid,ts:draft.tsFull,draft:draft});
+    t50QueueSave(apSel,q);
+    localStorage.setItem(MYQ_KEY,JSON.stringify({region:apSel,id:id}));
+    apSel=null;apGo(7);
+  }else{
+    document.getElementById('apOverMsg').textContent=
+      apSel+' 신청 인원('+dec.used+'명)이 접수 가능 인원('+dec.cfg.capacity+'명)의 130%를 넘어 접수가 지연되고 있습니다. 잠시 후 다시 시도해 주세요.';
+    apGo(8);
+  }
 }
 
-/* 청년 가산 내역 문구 (승인 시점에 이미 20% 가산된 금액) */
+/* ── 대기열 조회·새로고침·취소 ── */
+function apMyQueueTicket(){try{return JSON.parse(localStorage.getItem(MYQ_KEY)||'null');}catch(e){return null;}}
+function apRenderMyQ(){
+  const t=apMyQueueTicket();
+  const el=document.getElementById('apMyQ');
+  if(!t){el.innerHTML='';return;}
+  const pos=t50QueuePos(t.region,t.id);
+  if(pos<0){localStorage.removeItem(MYQ_KEY);el.innerHTML='';return;}
+  el.innerHTML='<div class="ap-myq">🕐 <b>'+t.region+'</b> 대기열 진입 중 — 내 순번 <b>'+pos+'</b>번'+
+    ' <button class="ap-sm" style="margin-top:8px" onclick="apGoQueue()">대기열 화면 보기</button></div>';
+}
+function apGoQueue(){
+  const t=apMyQueueTicket();
+  if(!t){toast('대기 중인 신청이 없습니다');return;}
+  apSel=t.region;apGo(7);
+}
+function apQueueRender(){
+  const t=apMyQueueTicket();
+  if(!t){apGo(6);return;}
+  t50QueueAdvance(t.region);
+  const pos=t50QueuePos(t.region,t.id);
+  if(pos<0){
+    localStorage.removeItem(MYQ_KEY);
+    toast('대기열을 통과해 접수되었습니다');
+    apGo(6);return;
+  }
+  document.getElementById('apQNo').innerHTML=pos+'<small>'+t.region+' · 앞으로 '+(pos-1)+'명</small>';
+  document.getElementById('apQMsg').textContent='접수 가능 인원이 늘어나는 대로 순서대로 자동 접수됩니다.';
+}
+function apQueueRefresh(){apQueueRender();toast('순번을 새로고침했습니다');}
+function apQueueCancel(){
+  const t=apMyQueueTicket();
+  if(!t)return;
+  if(!confirm('대기열 등록을 취소할까요?'))return;
+  const q=t50QueueLoad(t.region).filter(x=>x.id!==t.id);
+  t50QueueSave(t.region,q);
+  localStorage.removeItem(MYQ_KEY);
+  toast('대기열을 취소했습니다');
+  apGo(0);
+}
+
+/* 청년·가족할인 가산 내역 문구 (승인 시점에 이미 가산된 금액) */
 function apBonusTxt(a){
-  if(!a.bonus||!a.baseAmount)return '';
-  return ' (기본 '+a.baseAmount.toLocaleString('ko-KR')+'원 + 🎉 청년 20% '+a.bonus.toLocaleString('ko-KR')+'원)';
+  if(!a.baseAmount)return '';
+  const parts=[];
+  if(a.youthBonus)parts.push('🎉 청년 20% '+a.youthBonus.toLocaleString('ko-KR')+'원');
+  if(a.familyBonus)parts.push('👨‍👩‍👧 가족(3인 이상) 10% '+a.familyBonus.toLocaleString('ko-KR')+'원');
+  if(!parts.length)return '';
+  return ' (기본 '+a.baseAmount.toLocaleString('ko-KR')+'원 + '+parts.join(' + ')+')';
 }
 
 /* ── 나의 신청 내역 ── */
@@ -520,14 +621,17 @@ function apRenderList(){
   if(!list.length){el.innerHTML='<div class="ap-empty">아직 신청 내역이 없습니다.</div>';return;}
   el.innerHTML=list.map((a,i)=>{
     const idx=AP_FLOW.indexOf(a.status);
+    const terminal=(a.status==='rejected'||a.status==='canceled');
     const steps=AP_FLOW.slice(0,4).map(k=>{
-      const on=a.status==='rejected'?(k==='received'||k==='review'):(AP_FLOW.indexOf(k)<=idx);
-      const lb=(a.status==='rejected'&&k==='approved')?AP_ST_LABEL.rejected:AP_ST_LABEL[k];
-      return '<span class="ap-tl'+(on?' on':'')+(lb===AP_ST_LABEL.rejected?' bad':'')+'">'+lb.ic+' '+lb.t+'<small>'+lb.lane+'</small></span>';
+      const on=terminal?(k==='received'||k==='review'):(AP_FLOW.indexOf(k)<=idx);
+      const lb=(terminal&&k==='approved')?AP_ST_LABEL[a.status]:AP_ST_LABEL[k];
+      return '<span class="ap-tl'+(on?' on':'')+((lb===AP_ST_LABEL.rejected||lb===AP_ST_LABEL.canceled)?' bad':'')+'">'+lb.ic+' '+lb.t+'<small>'+lb.lane+'</small></span>';
     }).join('<span class="ap-tl-ar">›</span>');
     let act='';
     if(a.status==='received'||a.status==='review')
       act='<div class="ap-note">🏛 <b>지자체(관리시스템)</b>에서 신청자격·계획을 심사하고 있습니다. 결과가 나오면 이곳에 표시됩니다.</div>';
+    else if(a.status==='canceled')
+      act='<div class="ap-note bad">🚫 신청을 취소했습니다. 다시 신청할 수 있습니다.</div>';
     else if(a.status==='approved')
       act='<div class="ap-note">✅ 지자체 승인이 완료되었습니다'+(a.amount?' (지원금 '+a.amount.toLocaleString('ko-KR')+'원'+apBonusTxt(a)+')':'')+'. 곧 결과 통보가 도착합니다.</div>';
     else if(a.status==='notified')
@@ -552,12 +656,63 @@ function apRenderList(){
       '<span class="ap-tl on">'+AP_ST_LABEL.refund_req.ic+' '+AP_ST_LABEL.refund_req.t+'<small>공사</small></span><span class="ap-tl-ar">›</span>'+
       (a.status==='refund_fix'?'<span class="ap-tl bad on">'+AP_ST_LABEL.refund_fix.ic+' '+AP_ST_LABEL.refund_fix.t+'<small>지자체</small></span><span class="ap-tl-ar">›</span>':'')+
       '<span class="ap-tl'+(a.status==='refund_ok'?' on':'')+'">'+AP_ST_LABEL.refund_ok.ic+' '+AP_ST_LABEL.refund_ok.t+'<small>지자체</small></span></div>':'';
+    const editCancel=(a.status==='received'||a.status==='review')?
+      '<button class="ap-sm" onclick="apEditToggle('+i+')">✏️ 신청서 수정</button>'+
+      '<button class="ap-sm bad" onclick="apCancel('+i+')">🚫 신청 취소</button>'+apEditForm(a,i):'';
+    const hist=(a.history&&a.history.length)?'<div class="ap-hist">'+a.history.map(function(h){
+      const lb=AP_ST_LABEL[h.st];
+      return '📨 '+(lb?lb.ic+' '+lb.t:h.st)+' '+apFmtShort(h.ts.slice(0,10))+(h.note?'('+h.note+')':'')+(h.by?' — '+h.by:'');
+    }).join(' · ')+'</div>':'';
     return '<div class="ap-card"><div class="ap-card-h"><b>'+a.region+'</b> <span>'+a.sido+'</span>'+
-      (a.youth?'<span class="ap-chip-youth">🎉 청년 +20% 환급</span>':'')+'<em>'+a.no+'</em></div>'+
+      (a.youth?'<span class="ap-chip-youth">🎉 청년 +20% 환급</span>':'')+
+      (a.familyEligible?'<span class="ap-chip-youth">👨‍👩‍👧 가족 3인+ 10% 환급</span>':'')+'<em>'+a.no+'</em></div>'+
       '<div class="ap-card-d">'+a.start+' ~ '+a.end+' · '+a.people+'명 · 신청일 '+a.ts+
       (a.period?'<br><small>지역 여행 가능기간: '+apFmt(a.period.s)+' ~ '+apFmt(a.period.e)+'</small>':'')+'</div>'+
-      '<div class="ap-tl-row">'+steps+'</div>'+refund+act+'</div>';
+      '<div class="ap-tl-row">'+steps+'</div>'+refund+act+editCancel+hist+'</div>';
   }).join('');
+}
+
+/* ── 신청서 수정(EI) · 취소(EI) — 접수대기/검토중 상태에서만 가능 ── */
+let apEditOpen={};
+function apEditToggle(i){apEditOpen[i]=!apEditOpen[i];apRenderList();}
+function apEditForm(a,i){
+  if(!apEditOpen[i])return'';
+  const cfg=t50RegionCfg(a.region);
+  return '<div class="ap-edit"><div class="t">신청서 수정</div>'+
+    '<label class="ap-lb">여행 시작일</label><input class="ap-in" id="apEdS'+i+'" type="date" value="'+a.start+'" min="'+cfg.travelStart+'" max="'+cfg.travelEnd+'">'+
+    '<label class="ap-lb">여행 종료일</label><input class="ap-in" id="apEdE'+i+'" type="date" value="'+a.end+'" min="'+cfg.travelStart+'" max="'+cfg.travelEnd+'">'+
+    '<label class="ap-lb">인원</label><select class="ap-in" id="apEdP'+i+'">'+
+    [1,2,3,4,5,6].map(function(n){return '<option value="'+n+'"'+(String(a.people)===String(n)?' selected':'')+'>'+(n===6?'6명 이상':n+'명')+'</option>';}).join('')+'</select>'+
+    '<label class="ap-lb">여행 계획</label><textarea class="ap-in" id="apEdPl'+i+'" rows="3">'+(a.plan||'')+'</textarea>'+
+    '<div class="ap-note">여행 가능기간('+apFmt(cfg.travelStart)+' ~ '+apFmt(cfg.travelEnd)+') 안에서만 수정할 수 있습니다.</div>'+
+    '<button class="ap-sm hero" onclick="apEditSave('+i+')">수정 저장</button>'+
+    '<button class="ap-sm" onclick="apEditToggle('+i+')">닫기</button></div>';
+}
+function apEditSave(i){
+  const list=apLoad();const a=list[i];if(!a)return;
+  const cfg=t50RegionCfg(a.region);
+  const s=document.getElementById('apEdS'+i).value,e=document.getElementById('apEdE'+i).value;
+  const ppl=document.getElementById('apEdP'+i).value,plan=document.getElementById('apEdPl'+i).value.trim();
+  if(!s||!e){toast('여행 기간을 입력해 주세요');return;}
+  if(e<s){toast('종료일이 시작일보다 빠릅니다');return;}
+  if(s<cfg.travelStart||e>cfg.travelEnd){toast('여행 가능기간('+apFmt(cfg.travelStart)+' ~ '+apFmt(cfg.travelEnd)+') 안에서 수정해 주세요');return;}
+  a.start=s;a.end=e;a.people=ppl;a.plan=plan;a.familyEligible=t50PeopleNum(a)>=3;
+  if(!a.history)a.history=[];
+  a.history.push({st:a.status,ts:new Date().toISOString(),note:'신청서 수정'});
+  apSave(list);
+  apEditOpen[i]=false;
+  apRenderList();
+  toast('신청서를 수정했습니다');
+}
+function apCancel(i){
+  const list=apLoad();const a=list[i];if(!a)return;
+  if(!confirm('신청을 취소할까요? 취소하면 대기열 인원이 다시 계산됩니다.'))return;
+  a.status='canceled';
+  if(!a.history)a.history=[];
+  a.history.push({st:'canceled',ts:new Date().toISOString(),note:'신청자 취소'});
+  apSave(list);
+  apRenderList();
+  toast('신청을 취소했습니다');
 }
 
 /* ── 증빙자료 등록 · 환급 신청 (OCR 대조) ── */

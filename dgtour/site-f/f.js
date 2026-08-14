@@ -95,25 +95,15 @@ function fLogin(id){ localStorage.setItem(F_LOGIN_KEY,id); location.href='main.h
 function fLogout(){ localStorage.removeItem(F_LOGIN_KEY); location.href='index.html'; }
 
 function fBase(){ const u=fUser(); return (u&&F_BASE[u.id])||F_BASE.user1; }
-const F_EXTRA_KEY='dtidF_extraCards';
-/* 보유 주민증 = 계정 기본 카드 + 시안 F에서 추가 발급한 카드 */
+/* 방문 지역 = 실제로 혜택을 이용한 지역(이용내역 기준). 발급 개념은 사용하지 않는다. */
 function fCards(){
   const u=fUser();
   if(!u) return [];
-  const extra=fLoad(F_EXTRA_KEY,[]).filter(c=>u.cards.indexOf(c)<0);
-  return u.cards.concat(extra);
-}
-function fIssueCard(short){
-  const u=fUser();
-  if(!u) return false;
-  const sido=(typeof REGION_SIDO!=='undefined'&&REGION_SIDO[short])?REGION_SIDO[short]:'';
-  const shortSido=(typeof SIDO_SHORT!=='undefined'&&SIDO_SHORT[sido])?SIDO_SHORT[sido]:sido.replace(/(특별자치도|광역시|특별시|도)$/,'');
-  const card=(shortSido?shortSido+' ':'')+fRegionLabel(short);
-  if(fCards().indexOf(card)>=0) return false;
-  const extra=fLoad(F_EXTRA_KEY,[]);
-  extra.push(card);
-  fSave(F_EXTRA_KEY,extra);
-  return card;
+  if(typeof getVisitedRegions==='function'){
+    const visited=getVisitedRegions('dtidF',u.id);
+    if(visited.length) return visited;
+  }
+  return u.cards;
 }
 function fPoints(){ return fLoad(F_PT_KEY, fBase().pt); }
 function fUses(){   return fLoad(F_USE_KEY,{uses:fBase().uses,month:fBase().month,cum:fBase().cum}); }
@@ -241,8 +231,10 @@ function fToggleFav(id,btn){
   if(btn){ btn.classList.toggle('on',list.indexOf(id)>=0); btn.textContent=list.indexOf(id)>=0?'♥':'♡'; }
 }
 
-/* ── 혜택 사용(QR 제시) 시뮬레이션 ─────────────────────── */
-function fUseBenefit(venue){
+/* ── 혜택 사용(QR 제시) 시뮬레이션 ───────────────────────
+   실제 사용 시점에 이용내역(방문 지역)까지 함께 기록한다. region을 넘기면
+   그 지역이 "방문 지역"으로 남아 지갑·마이페이지에 반영된다. */
+function fUseBenefit(venue,region){
   const u=fUses();
   const amount=[3000,5000,8000,12000][fHash(venue||'x')%4];
   u.uses+=1; u.month+=1; u.cum+=amount;
@@ -251,6 +243,8 @@ function fUseBenefit(venue){
   const m=fMission();
   if(m.m1<3) m.m1+=1;
   fSave(F_MIS_KEY,m);
+  const me=fUser();
+  if(region&&me&&typeof addVisit==='function') addVisit('dtidF',me.id,region,venue);
   toast('혜택 적용 완료 · '+fmt(amount)+'원 할인 / 500P 적립');
   return amount;
 }
@@ -328,7 +322,7 @@ function fShell(opt){
       '<aside class="drawer" id="fDrawer">'+
         '<div class="dr-top">'+
           '<div class="nm">'+(u?fEsc(u.name)+'님':'로그인이 필요합니다')+'</div>'+
-          '<div class="sb">'+(u?'관광주민증 회원 · '+fBase().grade+' 등급':'통합 인증으로 30초 발급')+'</div>'+
+          '<div class="sb">'+(u?'관광주민증 회원 · '+fBase().grade+' 등급':'통합 인증으로 30초 시작')+'</div>'+
         '</div>'+
         '<div class="dr-sec"><div class="h">주요 기능</div>'+
           F_TABS.map(t=>'<a class="dr-a'+(active===t.key?' on':'')+'" href="'+t.href+'"><span class="ic">'+t.ic+'</span>'+

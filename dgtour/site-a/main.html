@@ -54,17 +54,16 @@
   <span class="go">🧳 반값여행 신청하기 ›</span>
 </div>
 
-<div class="map-section">
-  <div class="map-outer">
-    <div class="map-heading">
-      <p>디지털 관광주민증 참여지역의<br><strong>다양한 여행정보</strong>를 확인해보세요!</p>
-    </div>
-    <div class="map-container">
-      <img class="map-img" src="../assets/img/map-regions.jpg" alt="디지털 관광주민증 참여지역 지도">
-      <div class="map-badges" id="mapBadges"></div>
-    </div>
+<!-- ═══ 지역 카드 지갑 — 지역을 카드로 골라 담는 월렛형 선택 UI ═══ -->
+<section class="wa-rgn-section" aria-label="지역별 혜택 둘러보기">
+  <div class="wa-rgn-head">
+    <p>참여지역의 <strong>혜택과 여행정보</strong>를<br>카드로 골라 확인해보세요!</p>
+    <span class="cnt" id="waRgnCnt"></span>
   </div>
-</div>
+  <div class="wa-rgn-tabs" id="waRgnTabs" role="tablist" aria-label="시·도 선택"></div>
+  <div class="wa-rgn-scroll" id="waRgnScroll"></div>
+  <p class="wa-rgn-empty" id="waRgnEmpty" style="display:none">해당 시·도의 참여지역이 없어요</p>
+</section>
 
 <div class="notice-bar">
   <span class="ico">🔔</span>
@@ -128,12 +127,7 @@
   <button class="bnav-a" data-nav="event" onclick="location.href='event.html'">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
     이벤트
-  </button>
-  <button class="bnav-a" onclick="toast('디민증 발급 페이지')" disabled aria-label="준비 중">
-    <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
-    디민증발급
-  </button>
-  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
+  </button>  <button class="bnav-a" data-nav="my" onclick="location.href='my.html'">
     <div class="bnav-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
     마이
   </button>
@@ -182,25 +176,20 @@
 
 <script src="../site-assets/data.js?v=20260707f"></script>
 <script>/* site-a 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
-try{var _pb=JSON.parse(localStorage.getItem("dtidA_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김관광";}catch(e){}</script>
+try{var _pb=JSON.parse(localStorage.getItem("dtidA_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script src="../assets/common.js?v=20260707f"></script>
 <script>
+/* 최상위 const/let 은 파싱 시 실행되는 아래 init 블록보다 반드시 위에 선언 (TDZ 방지) */
 const user=requireUser();
 const POP_EVENT_COUNT=2;
 let popEventIdx=0;
+let waRgnSido='전체'; /* 지역 카드 지갑에서 선택된 시·도 */
 if(user){
   setActiveBottomNav('main');
   document.getElementById('qrName').textContent=user.name+'님의 통합관광주민증';
 
-  const badges=document.getElementById('mapBadges');
-  REGIONS.forEach(r=>{
-    const b=document.createElement('button');
-    b.className='r-hit';
-    b.style.cssText=`left:${r.l}%;top:${r.t}%;width:${r.w}%;height:${r.h}%`;
-    b.setAttribute('aria-label',r.n+' 관광주민증 발급 화면 이동');
-    b.onclick=()=>location.href='region.html?r='+encodeURIComponent(r.n);
-    badges.appendChild(b);
-  });
+  renderWaRgnTabs();
+  renderWaRgnCards();
 
   renderWallet();
   renderTop10('주간 TOP10');
@@ -208,6 +197,60 @@ if(user){
   renderInsta();
   renderMainEvents();
   openPopEventIfNeeded();
+}
+
+/* ═══ 지역 카드 지갑 — 시·도 칩 + 지역 카드 ═══
+   사진 지도 대신, 월렛 컨셉에 맞춰 지역을 카드로 골라 담는 방식.
+   "방문" 표시는 실제로 혜택을 이용한 지역만(이용내역 기준, hasVisited). */
+function waRgnSidoList(){
+  const seen=[],out=[];
+  REGIONS.forEach(r=>{
+    const s=REGION_SIDO[r.n];
+    if(s&&seen.indexOf(s)<0){seen.push(s);out.push(s);}
+  });
+  return out;
+}
+function renderWaRgnTabs(){
+  const wrap=document.getElementById('waRgnTabs');
+  wrap.innerHTML='';
+  ['전체'].concat(waRgnSidoList()).forEach(s=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='wa-rgn-chip'+(s===waRgnSido?' on':'');
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-selected',s===waRgnSido?'true':'false');
+    b.textContent=(s==='전체')?'전체':(SIDO_SHORT[s]||s);
+    b.onclick=()=>{waRgnSido=s;renderWaRgnTabs();renderWaRgnCards();};
+    wrap.appendChild(b);
+  });
+}
+function renderWaRgnCards(){
+  const wrap=document.getElementById('waRgnScroll');
+  wrap.innerHTML='';
+  const list=REGIONS.filter(r=>waRgnSido==='전체'||REGION_SIDO[r.n]===waRgnSido);
+  let seenCount=0;
+  list.forEach(r=>{
+    const detail=getRegionDetail(r.n);
+    const label=regionGunLabel(r.n);
+    const sidoShort=SIDO_SHORT[REGION_SIDO[r.n]]||'';
+    const seen=hasVisited('dtidA',user.id,r.n);
+    if(seen)seenCount++;
+    const card=document.createElement('button');
+    card.type='button';
+    card.className='wa-rgn-card'+(seen?' seen':'');
+    card.setAttribute('aria-label',`${sidoShort} ${label} 혜택 보기${seen?' (혜택 이용한 지역)':''}`);
+    card.innerHTML=
+      (seen?'<span class="seen-bdg">✓ 방문</span>':'')+
+      `<span class="ic">${CARD_ICONS[sidoShort+' '+label]||'📍'}</span>`+
+      `<span><span class="sido">${sidoShort}</span><span class="nm">${label}</span>`+
+      `<span class="cnt">가맹점 ${(detail.venues||[]).length}곳</span></span>`;
+    card.onclick=()=>location.href='region.html?r='+encodeURIComponent(r.n);
+    wrap.appendChild(card);
+  });
+  document.getElementById('waRgnEmpty').style.display=list.length?'none':'block';
+  const total=REGIONS.filter(r=>hasVisited('dtidA',user.id,r.n)).length;
+  document.getElementById('waRgnCnt').textContent=
+    `참여지역 ${REGIONS.length}곳 · 내가 혜택을 이용한 지역 ${total}곳`;
 }
 
 /* ── 진입 이벤트 팝업(popEvent 재현) — '오늘은 그만보기'는 당일에 한해 숨김 ── */
@@ -249,7 +292,7 @@ function closePopEventToday(){
   closePopEvent();
 }
 
-/* ── 시안 A: 월렛 히어로 렌더링 — 보유 주민증 카드 캐러셀 ── */
+/* ── 시안 A: 월렛 히어로 렌더링 — 방문한 지역 카드 캐러셀 ── */
 function renderWallet(){
   const GRADS=[
     'linear-gradient(135deg,#ea580c,#c2410c 60%,#9a3412)',
@@ -258,20 +301,21 @@ function renderWallet(){
     'linear-gradient(135deg,#059669,#047857 60%,#064e3b)',
     'linear-gradient(135deg,#be185d,#9d174d 60%,#831843)'
   ];
-  const cards=user.cards||[];
+  /* 카드 = 실제로 혜택을 이용한 "방문한 지역" (발급 개념 대신 이용내역 기준) */
+  const cards=getVisitedRegions('dtidA',user.id);
   const car=document.getElementById('waCarousel');
-  car.innerHTML=cards.map((c,i)=>`
+  car.innerHTML=cards.length?cards.map((c,i)=>`
     <div class="wa-card" style="background:${GRADS[i%GRADS.length]}" onclick="location.href='mypage-card-detail.html?r=${encodeURIComponent(c.split(' ').pop())}'">
       <div class="wa-deco"></div><div class="wa-deco2"></div>
       <div class="wa-emb">${CARD_ICONS[c]||'📍'}</div>
-      <div class="wa-chip">사용가능</div>
-      <div class="wa-rg">${c} 관광주민증</div>
+      <div class="wa-chip">방문</div>
+      <div class="wa-rg">${c}</div>
       <div class="wa-nm">${user.name}</div>
       <div class="wa-no">NO. DT-2026-00${1230+i} · ${user.levelIcon} ${user.level}</div>
     </div>`).join('')
-    +`<div class="wa-card wa-add" onclick="toast('아래 참여지역 지도에서 새 주민증을 발급해보세요')"><span class="wa-pl">＋</span><span>새 주민증 발급</span></div>`;
-  document.getElementById('waCount').textContent='보유 주민증 '+cards.length+'장';
-  const total=cards.length+1;
+    :`<div class="wa-card wa-add"><span class="wa-pl">🗺️</span><span>아래 지역 카드에서<br>혜택을 사용해보세요</span></div>`;
+  document.getElementById('waCount').textContent='방문한 지역 '+cards.length+'곳';
+  const total=Math.max(1,cards.length);
   const dotsEl=document.getElementById('waDots');
   dotsEl.innerHTML=Array.from({length:total},(_,i)=>`<i class="${i===0?'on':''}"></i>`).join('');
   car.addEventListener('scroll',()=>{
