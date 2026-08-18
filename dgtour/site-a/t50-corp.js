@@ -34,9 +34,8 @@ const T50_NONCORP_WORDS  = ['체크', '선불', '기프트'];
    verified:true 는 영수증 표기로 확인된 것, count 는 관찰 건수.
    운영 전환 시에는 카드사·여신금융협회 BIN 정보나 PG 승인응답의 카드구분 값으로 교체한다. */
 const T50_BIN_SEED = [
-  {prefix:'123456', kind:'corp',     issuer:'신한카드', memo:'법인',          verified:true,  count:34},
+  {prefix:'123456', kind:'corp',     issuer:'신한카드', memo:'법인',          verified:true,  count:35},
   {prefix:'876543', kind:'corp',     issuer:'신한카드', memo:'법인',          verified:true,  count:16},
-  {prefix:'111222', kind:'corp',     issuer:'신한카드', memo:'법인',          verified:true,  count:1},
   {prefix:'556677', kind:'personal', issuer:'신한카드', memo:'체크카드',       verified:true,  count:3},
   {prefix:'998877', kind:'personal', issuer:'신한카드', memo:'체크카드',       verified:true,  count:2},
   {prefix:'334455', kind:'personal', issuer:'한국도로공사', memo:'하이패스 통행료 전용', verified:true, count:4},
