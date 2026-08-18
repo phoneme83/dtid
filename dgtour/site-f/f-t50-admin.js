@@ -157,6 +157,13 @@ function t50aCard(x){
     acts='<span class="wait">여행 진행 — 신청자의 결제내역 제출·환급 신청을 기다리는 중</span>';
   else if(a.status==='refund_req')
     acts=(function(){
+      const dp=t50aDup(x);
+      return dp
+        ? '<div class="t50a-plan" style="background:#fef2f2;border-color:#fecaca;color:#b91c1c;width:100%">'+
+            '🚫 <b>중복 제출 의심</b> — '+fEsc(ft50DupMsg(dp))+
+            '<br>같은 결제내역으로 이미 환급 절차가 진행된 건이 있습니다. 환급 승인 전에 반드시 확인해 주세요.</div>'
+        : '';
+    })()+(function(){
       const c=t50aCorp(a);
       if(!c||!c.needsReview) return '';
       const cd=(a.evidence&&a.evidence.card)?a.evidence.card:'';
@@ -219,6 +226,11 @@ function t50aCorpLine(a){
   if(!chk) return '';
   return '<br><span class="badge '+ft50CorpBadgeCls(chk)+'">'+ft50CorpIcon(chk)+' '+chk.label+'</span>'+
     '<span style="color:var(--sub);font-size:11px"> '+fEsc(chk.detail)+'</span>';
+}
+
+/* 증빙 중복 여부 — 다른 신청 건에 같은 영수증이 있는지 */
+function t50aDup(x){
+  return x.a.evidence ? ft50FindEvidenceDup(x.a.evidence, x.k, x.i) : null;
 }
 
 /* 담당자 확정 — 판정 결과를 신청 건에 남기고 BIN 판정표에도 학습시킨다 */
@@ -325,8 +337,13 @@ function t50aDetail(k,i){
       row('첨부파일',fEsc(a.evidence.file||'-'))+
       row('OCR 대조','✓ '+fEsc(a.evidence.ocr||'판독 결과와 대조 일치'));
     const _c=t50aCorp(a);
-    if(_c) h+=row('법인카드 확인','<span class="badge '+ft50CorpBadgeCls(_c)+'">'+ft50CorpIcon(_c)+' '+_c.label+'</span>')+
+    if(_c) h+=row('법인카드 확인','<span class="badge '+ft50CorpBadgeCls(_c)+'">'+ft50CorpIcon(_c)+' '+ _c.label+'</span>')+
       row('판정 근거',fEsc(_c.detail));
+    const _d=ft50FindEvidenceDup(a.evidence,k,i);
+    h+=row('중복 제출 검사', _d
+      ? '<span class="badge o">🚫 중복 의심</span>'
+      : '<span class="badge g">✓ 중복 없음</span>')+
+      (_d?row('중복 내역',fEsc(ft50DupMsg(_d))):'');
   }
   if(a.history&&a.history.length){
     h+='<div class="sec-t" style="margin:14px 0 6px">처리 이력</div>'+

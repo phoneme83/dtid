@@ -90,6 +90,50 @@ function t50UsedCount(region){
     .reduce((s,x)=>s+t50PeopleNum(x.a),0);
 }
 
+/* ── 증빙 중복 제출 차단 ─────────────────────────────────────
+   같은 영수증을 다시 제출하는 것이 가장 흔한 부정수급 유형이다.
+   ① 승인번호가 같은 건, 또는 ② 카드 앞자리·결재금액·결제일이 모두 같은 건이
+   다른 신청 건(다른 계정 포함)에 이미 있으면 중복으로 판정한다.
+   취소·반려된 건은 환급이 이뤄지지 않았으므로 대상에서 제외한다. */
+const T50_DUP_EXCLUDE=['canceled','rejected'];
+const T50_DUP_ST_LABEL={received:'접수 대기',review:'검토중',approved:'승인',notified:'결과 통보',
+  refund_req:'환급 심사 대기',refund_fix:'증빙 보완 요청',refund_ok:'환급 완료'};
+function t50NormAppr(v){return String(v||'').replace(/[^0-9]/g,'');}
+function t50EvKeyCombo(e){
+  if(!e)return null;
+  const lead=String(e.card||'').replace(/[\s\-]/g,'').replace(/[^0-9]/g,'*').match(/^\d+/);
+  if(!lead||!e.amt||!e.date)return null;
+  return lead[0].slice(0,6)+'|'+e.amt+'|'+e.date;
+}
+/* selfKey/selfIdx 는 지금 제출하는 신청 건 — 자기 자신은 중복으로 보지 않는다 */
+function t50FindEvidenceDup(ev,selfKey,selfIdx){
+  const appr=t50NormAppr(ev&&ev.appr);
+  const combo=t50EvKeyCombo(ev);
+  let found=null;
+  t50AllApplications().some(function(x){
+    if(x.k===selfKey&&x.i===selfIdx)return false;
+    if(T50_DUP_EXCLUDE.indexOf(x.a.status)>=0)return false;
+    const e=x.a.evidence;
+    if(!e)return false;
+    let reason=null;
+    if(appr.length>=6&&t50NormAppr(e.appr)===appr)reason='appr';
+    else if(combo&&t50EvKeyCombo(e)===combo)reason='combo';
+    if(!reason)return false;
+    found={reason:reason,no:x.a.no,uid:x.a.uid||'',region:x.a.region,status:x.a.status,
+           appr:e.appr,amt:e.amt,date:e.date};
+    return true;
+  });
+  return found;
+}
+function t50DupMsg(dup){
+  if(!dup)return '';
+  const why=dup.reason==='appr'
+    ? '승인번호 '+dup.appr+' 가 이미 사용되었습니다'
+    : '카드 앞자리·결재금액·결제일이 모두 같은 증빙이 이미 제출되었습니다';
+  return why+' (접수번호 '+dup.no+' · '+dup.region+' · 계정 '+dup.uid+
+         ' · 현재 상태 '+(T50_DUP_ST_LABEL[dup.status]||dup.status)+')';
+}
+
 /* ── 대기열(선착순 초과 시) ── */
 const T50_QUEUE_PREFIX='dtidA_t50Queue_';
 function t50QueueKey(region){return T50_QUEUE_PREFIX+region;}

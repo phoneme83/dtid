@@ -72,7 +72,7 @@
 
 <script src="../site-assets/data.js?v=20260818a"></script>
 <script src="f.js?v=2"></script>
-<script src="f-t50.js?v=3"></script>
+<script src="f-t50.js?v=4"></script>
 <script src="f-t50-evidence.js?v=1"></script>
 <script src="f-t50-corp.js?v=1"></script>
 <script>
@@ -845,6 +845,15 @@ function t50EvSubmit(){
   if(!t50Ocr){ err.textContent='영수증 등 증빙파일을 첨부해 주세요. 첨부하면 자동으로 판독됩니다.'; return; }
   const fail=ft50EvVerify(t50Ocr,act.a,{card:card,appr:appr,amt:amt,date:payDate});
   if(fail){ err.innerHTML=fail; return; }
+  /* 중복 제출 차단 — 같은 영수증이 다른 신청 건에 이미 쓰였는지 확인 */
+  const evDraft={card:card,appr:appr,amt:amt,
+    date:(t50Ocr.mode==='real'&&t50Ocr.ex&&t50Ocr.ex.date)?t50Ocr.ex.date:payDate};
+  const dup=ft50FindEvidenceDup(evDraft,ft50Key(U.id),act.i);
+  if(dup){
+    err.innerHTML='❌ <b>이미 사용된 증빙입니다.</b> '+fEsc(ft50DupMsg(dup))+
+      '<br>같은 결제내역으로는 한 번만 환급받을 수 있습니다. 다른 결제 영수증을 첨부해 주세요.';
+    return;
+  }
   const list=t50List();
   const a=list[act.i];
   a.status='refund_req';

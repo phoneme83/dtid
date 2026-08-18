@@ -231,7 +231,7 @@
 <div class="toast" id="toastEl"></div>
 
 <script src="../site-assets/data.js?v=20260818a"></script>
-<script src="t50-config.js?v=2"></script>
+<script src="t50-config.js?v=3"></script>
 <script src="t50-corp.js?v=1"></script>
 <script>/* site-d 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidD_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
@@ -1171,6 +1171,14 @@ function apEvSubmit(i){
       err.innerHTML='❌ <b>결제일이 여행기간 밖입니다.</b> 결제일은 <b>'+payDate+'</b>이나, 이 신청 건의 여행기간은 <b>'+a0.start+' ~ '+a0.end+'</b>입니다. 여행기간 중에 결제한 영수증만 환급 대상입니다.';
       return;
     }
+  }
+  /* 중복 제출 차단 — 같은 영수증이 다른 신청 건에 이미 쓰였는지 확인 */
+  const dup=t50FindEvidenceDup(
+    {card:card,appr:appr,amt:amt,date:(o.mode==='real'&&o.ex&&o.ex.date)?o.ex.date:payDate},AP_KEY,i);
+  if(dup){
+    err.innerHTML='❌ <b>이미 사용된 증빙입니다.</b> '+t50DupMsg(dup)+
+      '<br>같은 결제내역으로는 한 번만 환급받을 수 있습니다. 다른 결제 영수증을 첨부해 주세요.';
+    return;
   }
   const list=apLoad();if(!list[i])return;
   list[i].status='refund_req';

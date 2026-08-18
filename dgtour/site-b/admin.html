@@ -195,7 +195,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
 </div>
 
 <script src="../site-assets/data.js?v=20260818a"></script>
-<script src="t50-config.js?v=2"></script>
+<script src="t50-config.js?v=3"></script>
 <script src="t50-corp.js?v=1"></script>
 <script>/* site-b 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidB_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
@@ -253,6 +253,10 @@ function admAmt(a){return (a.people==='6'?6:Number(a.people))*50000;}
 function admCap(a){return a.refundCap||t50RefundCap(a);}
 function admWon(n){return n.toLocaleString('ko-KR')+'원';}
 
+/* 증빙 중복 여부 — 다른 신청 건에 같은 영수증이 있는지 */
+function admDup(k,i,a){
+  return a.evidence?t50FindEvidenceDup(a.evidence,k,i):null;
+}
 /* 법인카드 확인 — 저장된 판정이 없으면 카드번호(BIN)로 그 자리에서 판정한다 */
 function admCorp(a){
   if(a.corpCheck)return a.corpCheck;
@@ -375,6 +379,14 @@ function admRender(){
       acts=(a.evidence
         ?'<div class="plan">🧾 제출 증빙자료 — 카드번호 '+a.evidence.card+' · 승인번호 '+a.evidence.appr+' · 결재금액 '+admWon(a.evidence.amt)+(a.evidence.date?' · 결제일 '+a.evidence.date:'')+' · 첨부 '+a.evidence.file+'<br><b style="color:#2563eb">✓ 영수증 OCR 판독 결과와 대조 일치'+(a.evidence.date?' · 결제일 여행기간('+a.start+'~'+a.end+') 내 확인':'')+' (공사 대민시스템 검증 완료)</b>'+admCorpLine(a)+'</div>'
         :'<div class="plan">🧾 제출 증빙(모의): 지역화폐 결재내역 '+(a.people||1)+'건 · 사용액 '+admWon(amt*2)+' · CI 대조 일치</div>')+
+        (function(){
+          const dp=admDup(k,i,a);
+          return dp
+            ? '<div class="plan" style="background:#fef2f2;border-color:#fecaca;color:#b91c1c">'+
+              '🚫 <b>중복 제출 의심</b> — '+t50DupMsg(dp)+
+              '<br>같은 결제내역으로 이미 환급 절차가 진행된 건이 있습니다. 환급 승인 전에 반드시 확인해 주세요.</div>'
+            : '';
+        })()+
         (function(){
           const c=admCorp(a);
           if(!c||!c.needsReview)return '';
@@ -503,6 +515,9 @@ function admDetail(k,i){
     const _c=admCorp(a);
     if(_c)h+=row('법인카드 확인','<b style="color:'+t50CorpColor(_c)+'">'+t50CorpIcon(_c)+' '+_c.label+'</b>')+
       row('판정 근거',_c.detail);
+    const _d=admDup(k,i,a);
+    h+=row('중복 제출 검사',_d?'<b style="color:#b91c1c">🚫 중복 의심</b>':'<b style="color:#2563eb">✓ 중복 없음</b>')+
+      (_d?row('중복 내역',t50DupMsg(_d)):'');
   }
   if(a.rejectReason)h+='<div class="dsec">반려</div>'+row('반려 사유',a.rejectReason);
   if(a.fixReason)h+='<div class="dsec">증빙 보완</div>'+row('보완 요청 사유',a.fixReason);
