@@ -89,6 +89,11 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
 .st{cursor:pointer;transition:.12s}
 .st:hover{border-color:#ea580c}
 .st.on{background:#fff7ed;border-color:#ea580c;box-shadow:0 0 0 1px #ea580c inset}
+.st.plain{cursor:default}
+.st.plain:hover{border-color:#e2e8f0}
+.st .n small{font-size:15px;font-weight:800;margin-left:2px}
+.sum-t{font-size:14px;font-weight:800;color:#334155;margin:2px 0 8px}
+.sum-t small{font-size:12px;font-weight:600;color:#94a3b8;margin-left:6px}
 .st .l{user-select:none}
 .card .hd .dtl{margin-left:auto;min-height:36px;border:1.5px solid #cbd5e1;border-radius:8px;background:#fff;color:#334155;font-size:12px;font-weight:800;padding:0 12px;font-family:inherit;cursor:pointer}
 .card .hd .dtl:hover{border-color:#ea580c;color:#ea580c}
@@ -153,6 +158,9 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
         <button onclick="admReset()">데모 데이터 초기화</button>
       </div>
     </div>
+    <div class="sum-t">지역사랑 휴가지원 실적</div>
+    <div class="stats" id="admSummary"></div>
+    <div class="sum-t">단계별 신청 현황 <small>숫자를 누르면 해당 단계만 표시됩니다</small></div>
     <div class="stats" id="admStats"></div>
     <div id="admList"></div>
   </div>
@@ -264,6 +272,25 @@ function admTile(key){
   s.value=(s.value===key?'':key);   /* 같은 타일 재클릭 시 필터 해제 */
   admRender();
 }
+/* 대시보드 실적 요약 — 신청자수·환급자수·환급금액.
+   신청자수·환급자수는 동반 인원을 포함한 실제 인원(취소·반려 제외),
+   환급금액은 지자체가 환급 승인한 금액의 합계다. */
+function admSummary(list){
+  const active=list.filter(a=>T50_INACTIVE_STATUS.indexOf(a.status)<0);
+  const done=list.filter(a=>a.status==='refund_ok');
+  const ppl=active.reduce((s,a)=>s+t50PeopleNum(a),0);
+  const rppl=done.reduce((s,a)=>s+t50PeopleNum(a),0);
+  const ramt=done.reduce((s,a)=>s+(a.refundAmount||a.amount||0),0);
+  function card(n,unit,label,sub){
+    return '<div class="st plain"><div class="n">'+n+(unit?'<small>'+unit+'</small>':'')+'</div>'+
+      '<div class="l">'+label+(sub?' <span style="font-weight:600;color:#94a3b8">'+sub+'</span>':'')+'</div></div>';
+  }
+  document.getElementById('admSummary').innerHTML=
+    card(ppl.toLocaleString('ko-KR'),'명','신청자수','(취소·반려 제외)')+
+    card(rppl.toLocaleString('ko-KR'),'명','환급자수','(환급 완료)')+
+    card(ramt.toLocaleString('ko-KR'),'원','환급금액','(지급 확정)')+
+    card(active.length.toLocaleString('ko-KR'),'건','신청건수','');
+}
 function admStats(list){
   const cur=document.getElementById('admStatus').value;
   const c=k=>list.filter(a=>a.status===k).length;
@@ -287,6 +314,7 @@ function admRender(){
   const allRaw=admLoadAll();
   const all=scope?allRaw.filter(x=>x.a.region===scope):allRaw;    /* 지자체 계정은 담당 지역만 집계 */
   admRegionOpts(all);
+  admSummary(all.map(x=>x.a));
   admStats(all.map(x=>x.a));
   const rg=document.getElementById('admRegion').value;
   const stArr=admStatuses(document.getElementById('admStatus').value);
@@ -573,6 +601,10 @@ function statRender(){
   const list=statScopedList();
   const active=list.filter(a=>a.status!=='canceled'&&a.status!=='rejected');
   const cnt=list.length,ppl=active.reduce((s,a)=>s+t50PeopleNum(a),0);
+  /* 환급 실적 — 환급 완료(refund_ok) 건 기준 */
+  const refunded=list.filter(a=>a.status==='refund_ok');
+  const rppl=refunded.reduce((s,a)=>s+t50PeopleNum(a),0);
+  const ramt=refunded.reduce((s,a)=>s+(a.refundAmount||a.amount||0),0);
 
   /* 지역별 */
   const byRegion={};list.forEach(a=>{byRegion[a.region]=(byRegion[a.region]||0)+1;});
@@ -596,6 +628,8 @@ function statRender(){
     '<div class="stat-cards">'+
       '<div class="c"><div class="n">'+cnt+'</div><div class="l">신청건수 집계</div></div>'+
       '<div class="c"><div class="n">'+ppl+'</div><div class="l">신청자수 집계(취소·반려 제외)</div></div>'+
+      '<div class="c"><div class="n">'+rppl+'</div><div class="l">환급자수 집계(환급 완료)</div></div>'+
+      '<div class="c"><div class="n">'+admWon(ramt)+'</div><div class="l">환급금액 집계(지급 확정)</div></div>'+
     '</div>'+
     '<div class="stat-sec-t">🗺 지역별 신청현황</div>'+regionHtml+
     '<div class="stat-sec-t">🎂 연령대별 신청현황</div>'+ageHtml+

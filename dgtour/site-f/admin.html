@@ -35,6 +35,15 @@
     </div>
     <div class="kpi" id="admKpi"></div>
 
+    <div class="sec">
+      <div class="sec-h">
+        <div class="sec-t">지역사랑 휴가지원 실적<span class="cap">실제 신청 데이터</span></div>
+        <button class="more" onclick="pickTab('t50')">신청 심사</button>
+      </div>
+      <div class="kpi" id="admT50Kpi"></div>
+      <div style="font-size:11px;color:var(--sub);margin-top:9px;line-height:1.7" id="admT50KpiNote"></div>
+    </div>
+
     <div class="pc2">
       <div>
         <div class="sec">
@@ -160,7 +169,7 @@
 <script src="../site-assets/data.js?v=20260707f"></script>
 <script src="f.js?v=2"></script>
 <script src="f-t50.js?v=1"></script>
-<script src="f-t50-admin.js?v=1"></script>
+<script src="f-t50-admin.js?v=2"></script>
 <script>
 const ADM_TABS=[
   {key:'dash',  label:'대시보드'},

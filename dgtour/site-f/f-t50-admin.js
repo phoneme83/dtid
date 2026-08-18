@@ -45,7 +45,35 @@ function t50aSubTabs(){
 }
 function t50aGo(k){ t50aSub=k; t50aRender(); }
 
+/* 대시보드 KPI — 지역사랑 휴가지원 신청자수·환급자수·환급금액.
+   신청자수·환급자수는 동반 인원을 포함한 실제 인원(취소·반려 제외),
+   환급금액은 담당자가 환급 승인한 금액의 합계다. */
+function t50aKpi(){
+  const el=document.getElementById('admT50Kpi');
+  if(!el) return;
+  const list=t50aScoped().map(x=>x.a);
+  const active=list.filter(a=>FT50_INACTIVE.indexOf(a.status)<0);
+  const done=list.filter(a=>a.status==='refund_ok');
+  const ppl=active.reduce((s,a)=>s+ft50PeopleNum(a),0);
+  const rppl=done.reduce((s,a)=>s+ft50PeopleNum(a),0);
+  const ramt=done.reduce((s,a)=>s+(a.refundAmount||a.amount||0),0);
+  const rows=[
+    {lb:'신청자수',  vl:ppl,  un:'명',  dt:'취소·반려 제외'},
+    {lb:'환급자수',  vl:rppl, un:'명',  dt:'환급 완료'},
+    {lb:'환급금액',  vl:ramt, un:'원',  dt:'지급 확정'},
+    {lb:'신청건수',  vl:active.length, un:'건', dt:'진행 중 포함'}
+  ];
+  el.innerHTML=rows.map(k=>
+    '<div class="k"><div class="lb">'+k.lb+'</div>'+
+      '<div class="vl">'+fmt(k.vl)+'<small>'+k.un+'</small></div>'+
+      '<div class="dt" style="color:var(--sub)">'+k.dt+'</div></div>').join('');
+  const scope=t50aScope();
+  document.getElementById('admT50KpiNote').textContent=
+    (scope?scope+' 담당 지역 기준':'전 지자체 기준')+' · 신청자 화면에서 접수된 실제 데이터를 집계합니다.';
+}
+
 function t50aRender(){
+  t50aKpi();
   t50aSubTabs();
   if(t50aSub==='biz') t50aRenderBiz();
   else if(t50aSub==='stat') t50aRenderStat();
