@@ -1,6 +1,7 @@
 {
   "permissions": {
     "allow": [
+      "Bash(*)",
       "Bash(curl -s \"https://api.github.com/*)",
       "mcp__Claude_Preview__preview_screenshot",
       "mcp__Claude_Preview__preview_console_logs",
