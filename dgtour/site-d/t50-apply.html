@@ -232,6 +232,7 @@
 
 <script src="../site-assets/data.js?v=20260818a"></script>
 <script src="t50-config.js?v=2"></script>
+<script src="t50-corp.js?v=1"></script>
 <script>/* site-d 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidD_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script src="../assets/common.js?v=20260707f"></script>
@@ -828,6 +829,7 @@ function apEvForm(a,i){
       '<div class="row"><span>판독된 승인번호</span><b>'+(ex.appr||'미검출')+'</b></div>'+
       '<div class="row"><span>판독된 금액</span><b>'+(ex.amts&&ex.amts.length?ex.amts.map(function(v){return Number(v).toLocaleString('ko-KR');}).join(', ')+'원':'미검출')+'</b></div>'+
       '<div class="row"><span>판독된 결제일</span><b>'+(ex.date?ex.date+(apInPeriod(a,ex.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖'):'미검출')+'</b></div>'+
+      apCorpRow(ex.card,o.text)+
       '<small>입력하신 카드번호·승인번호·결재금액·결제일이 영수증 판독 결과와 대조되며, 결제일은 여행기간('+a.start+' ~ '+a.end+') 안이어야 합니다. 카드번호의 *(마스킹) 자리는 비교에서 제외됩니다.</small></div>';
   }else if(o){
     ocr='<div class="ap-ocr"><div class="t">📄 영수증 판독 결과 (모의 — OCR 엔진 로드 실패) — <b>'+o.file+'</b></div>'+
@@ -836,6 +838,7 @@ function apEvForm(a,i){
       '<div class="row"><span>결재금액</span><b>'+o.amt.toLocaleString('ko-KR')+'원</b></div>'+
       '<div class="row"><span>승인번호</span><b>'+o.appr+'</b></div>'+
       '<div class="row"><span>결제일</span><b>'+(o.date?o.date+(apInPeriod(a,o.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖'):'미검출')+'</b></div>'+
+      apCorpRow(o.card,'')+
       '<small>입력하신 승인번호·결재금액·결제일이 판독 결과와 일치해야 제출됩니다.</small></div>';
   }else{
     ocr='<div class="ap-ocr wait" id="apOcrWait'+i+'" style="display:none">🔍 영수증 판독 중…</div>';
@@ -859,6 +862,14 @@ function apEvForm(a,i){
     '<button class="ap-sm hero" onclick="apEvSubmit('+i+')">환급 신청 제출</button>'+
     '<button class="ap-sm" onclick="apEvToggle('+i+',true)">닫기</button></div>';
 }
+/* 법인카드 확인 — 카드번호(BIN)와 영수증 표기로 판정한 결과를 보여준다.
+   법인카드 결제는 업무 목적 지출로 보아 환급 대상이 아니다 */
+function apCorpRow(card,text){
+  const chk=t50CorpCheck(card,text);
+  return '<div class="row"><span>법인카드 확인</span><b style="color:'+t50CorpColor(chk)+'">'+
+      t50CorpIcon(chk)+' '+chk.label+'</b></div>'+
+    '<div class="row"><span></span><b style="font-weight:400;color:#94a3b8;font-size:12px">'+chk.detail+'</b></div>';
+}
 function apEvDone(a){
   if(!a.evidence)return '';
   const e=a.evidence;
@@ -868,6 +879,8 @@ function apEvDone(a){
     '<div class="row"><span>결재금액</span><b>'+e.amt.toLocaleString('ko-KR')+'원</b></div>'+
     (e.date?'<div class="row"><span>결제일</span><b>'+e.date+' ✅ 여행기간 내</b></div>':'')+
     '<div class="row"><span>첨부파일</span><b>'+e.file+'</b></div>'+
+    (a.corpCheck?'<div class="row"><span>법인카드 확인</span><b style="color:'+t50CorpColor(a.corpCheck)+'">'+
+      t50CorpIcon(a.corpCheck)+' '+a.corpCheck.label+'</b></div>':'')+
     '<small>✓ 영수증 OCR 판독 결과와 대조 완료 (결제일-여행기간 검증 포함)</small></div>';
 }
 function apEvToggle(i,close){
@@ -1161,7 +1174,9 @@ function apEvSubmit(i){
   }
   const list=apLoad();if(!list[i])return;
   list[i].status='refund_req';
-  list[i].evidence={card:card.slice(0,4)+'-****-****-'+card.slice(-4),appr:appr,amt:amt,date:(o.mode==='real'&&o.ex&&o.ex.date)?o.ex.date:payDate,file:o.file};
+  list[i].evidence={card:card.slice(0,4)+'-'+card.slice(4,6)+'**-****-'+card.slice(-4),appr:appr,amt:amt,date:(o.mode==='real'&&o.ex&&o.ex.date)?o.ex.date:payDate,file:o.file};
+  /* 법인카드 판정 결과를 신청 건에 남기고, 영수증 표기로 확인된 건은 BIN 판정표에 학습시킨다 */
+  list[i].corpCheck=t50CorpCheck((o.mode==='real'&&o.ex&&o.ex.card)?o.ex.card:card,o.mode==='real'?o.text:'',true);
   delete list[i].fixReason;
   apSave(list);
   apEvOpen[i]=false;delete apOcr[i];

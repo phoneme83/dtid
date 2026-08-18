@@ -196,6 +196,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
 
 <script src="../site-assets/data.js?v=20260818a"></script>
 <script src="t50-config.js?v=2"></script>
+<script src="t50-corp.js?v=1"></script>
 <script>/* site-c 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidC_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script>
@@ -252,6 +253,26 @@ function admAmt(a){return (a.people==='6'?6:Number(a.people))*50000;}
 function admCap(a){return a.refundCap||t50RefundCap(a);}
 function admWon(n){return n.toLocaleString('ko-KR')+'원';}
 
+/* 법인카드 확인 — 저장된 판정이 없으면 카드번호(BIN)로 그 자리에서 판정한다 */
+function admCorp(a){
+  if(a.corpCheck)return a.corpCheck;
+  if(a.evidence&&a.evidence.card)return t50CorpCheck(a.evidence.card,'');
+  return null;
+}
+function admCorpLine(a){
+  const chk=admCorp(a);
+  if(!chk)return '';
+  return '<br><b style="color:'+t50CorpColor(chk)+'">'+t50CorpIcon(chk)+' '+chk.label+'</b>'+
+    '<span style="color:#94a3b8"> — '+chk.detail+'</span>';
+}
+/* 담당자 확정 — 판정 결과를 신청 건에 남기고 BIN 판정표에도 학습시킨다 */
+function admCorpSet(k,i,kind){
+  const l=admLoadKey(k);if(!l[i])return;
+  l[i].corpCheck=t50CorpDecide(l[i].evidence?l[i].evidence.card:'',kind,admPersona().name);
+  admHist(l[i],l[i].status,l[i].corpCheck.label);
+  admSaveKey(k,l);admRender();
+  admToast(l[i].corpCheck.label);
+}
 function admRegionOpts(all){
   const sel=document.getElementById('admRegion');
   const scope=admScopeRegion();
@@ -352,8 +373,19 @@ function admRender(){
       acts='<span class="wait">여행 진행 — 신청자의 증빙 작성·환급 신청을 기다리는 중</span>';
     else if(a.status==='refund_req')
       acts=(a.evidence
-        ?'<div class="plan">🧾 제출 증빙자료 — 카드번호 '+a.evidence.card+' · 승인번호 '+a.evidence.appr+' · 결재금액 '+admWon(a.evidence.amt)+(a.evidence.date?' · 결제일 '+a.evidence.date:'')+' · 첨부 '+a.evidence.file+'<br><b style="color:#7c3aed">✓ 영수증 OCR 판독 결과와 대조 일치'+(a.evidence.date?' · 결제일 여행기간('+a.start+'~'+a.end+') 내 확인':'')+' (공사 대민시스템 검증 완료)</b></div>'
+        ?'<div class="plan">🧾 제출 증빙자료 — 카드번호 '+a.evidence.card+' · 승인번호 '+a.evidence.appr+' · 결재금액 '+admWon(a.evidence.amt)+(a.evidence.date?' · 결제일 '+a.evidence.date:'')+' · 첨부 '+a.evidence.file+'<br><b style="color:#7c3aed">✓ 영수증 OCR 판독 결과와 대조 일치'+(a.evidence.date?' · 결제일 여행기간('+a.start+'~'+a.end+') 내 확인':'')+' (공사 대민시스템 검증 완료)</b>'+admCorpLine(a)+'</div>'
         :'<div class="plan">🧾 제출 증빙(모의): 지역화폐 결재내역 '+(a.people||1)+'건 · 사용액 '+admWon(amt*2)+' · CI 대조 일치</div>')+
+        (function(){
+          const c=admCorp(a);
+          if(!c||!c.needsReview)return '';
+          return '<div class="plan" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412">'+
+            t50CorpIcon(c)+' <b>'+c.label+'</b> — '+c.detail+
+            '<br>영수증을 확인해 카드 구분을 확정해 주세요. 확정 결과는 BIN 판정표에 학습됩니다.'+
+            '<div style="display:flex;gap:8px;margin-top:8px">'+
+              '<button class="ap-none" style="min-height:38px;border-radius:8px;border:2px solid #cbd5e1;background:#fff;font-size:12.5px;font-weight:700;padding:0 12px;cursor:pointer;font-family:inherit" onclick="admCorpSet('+K+',\'personal\')">💳 개인카드로 확정</button>'+
+              '<button class="ap-none" style="min-height:38px;border-radius:8px;border:2px solid #cbd5e1;background:#fff;font-size:12.5px;font-weight:700;padding:0 12px;cursor:pointer;font-family:inherit" onclick="admCorpSet('+K+',\'corp\')">🏢 법인카드로 확정</button>'+
+            '</div></div>';
+        })()+
         '<button onclick="admRefundOk('+K+')">💰 환급 승인 — '+admWon(amt)+' 충전 지시'+((a.youthBonus||a.familyBonus)?' ('+[a.youthBonus?'청년 20%':'',a.familyBonus?'가족 10%':''].filter(Boolean).join('+')+' 포함)':'')+'</button>'+
         '<button class="bad" onclick="admRsn('+K+',\'refund_fix\',\''+rid+'\')">✏️ 증빙 보완 요청</button>'+
         '<textarea class="rsn" id="'+rid+'" placeholder="보완 요청 사유를 입력하세요 (예: 숙박 결재내역 누락)"></textarea>';
@@ -468,6 +500,9 @@ function admDetail(k,i){
       (a.evidence.date?row('결제일',a.evidence.date+' (여행기간 '+a.start+'~'+a.end+' 내 ✓)'):'')+
       row('첨부파일',a.evidence.file)+
       row('OCR 대조','✓ 영수증 판독 결과와 일치 (공사 대민시스템 검증)');
+    const _c=admCorp(a);
+    if(_c)h+=row('법인카드 확인','<b style="color:'+t50CorpColor(_c)+'">'+t50CorpIcon(_c)+' '+_c.label+'</b>')+
+      row('판정 근거',_c.detail);
   }
   if(a.rejectReason)h+='<div class="dsec">반려</div>'+row('반려 사유',a.rejectReason);
   if(a.fixReason)h+='<div class="dsec">증빙 보완</div>'+row('보완 요청 사유',a.fixReason);
@@ -526,12 +561,61 @@ function bizRender(){
       '<div><label>1건당 신청 인원(최소~최대)</label><div style="display:flex;gap:8px"><input type="number" id="bzMin" min="1" value="'+cfg.minPeople+'"><input type="number" id="bzMax" min="1" value="'+cfg.maxPeople+'"></div></div>'+
     '</div>'+
     '<button class="biz-save" onclick="bizSave()">💾 사업설정 저장</button>'+
+    '<div style="margin-top:22px;font-size:14px;font-weight:800;color:#0f172a">카드 BIN 판정표 <small style="font-weight:600;color:#64748b;font-size:12.5px">카드번호로 법인카드 여부 예측</small></div>'+
+    '<div style="font-size:12.5px;color:#64748b;line-height:1.7;margin:4px 0 8px">'+
+      '영수증은 카드번호를 마스킹해도 앞자리는 노출되므로(1234-56** 등), <b>앞 6~8자리</b>로 카드 상품을 식별해 '+
+      '법인카드 여부를 예측합니다. 영수증에 카드종류가 인쇄된 건과 담당자가 확정한 건은 <b>자동으로 이 표에 학습</b>되어 '+
+      '이후 같은 대역은 번호만으로 판정됩니다.</div>'+
+    '<div id="bizBinList">'+bizBinListHtml()+'</div>'+
+    '<div class="biz-row">'+
+      '<div><label>카드번호 앞자리 (6 또는 8자리)</label><input type="text" id="bzBinNo" placeholder="예) 123456 / 12345678"></div>'+
+      '<div><label>구분</label><select id="bzBinKind"><option value="corp">법인카드</option><option value="personal">개인카드</option></select></div>'+
+    '</div>'+
+    '<label>카드사·비고 (선택)</label><input type="text" id="bzBinIssuer" placeholder="예) 신한카드">'+
+    '<button class="biz-save" onclick="bizBinAdd()">🏢 판정표에 추가</button>'+
+    '<button class="csv-btn" style="margin-top:14px" onclick="bizBinReset()">판정표 초기값으로 되돌리기</button>'+
     '<div style="margin-top:22px;font-size:14px;font-weight:800;color:#0f172a">공지사항</div>'+
     '<div id="bizNotices">'+bizNoticesHtml(cfg)+'</div>'+
     '<label style="margin-top:14px">공지 제목</label><input type="text" id="bzNTitle" placeholder="예) 여행기간 연장 안내">'+
     '<label>공지 내용</label><textarea id="bzNBody" placeholder="공지 내용을 입력하세요"></textarea>'+
     '<button class="biz-save" onclick="bizNoticeAdd()">📢 공지 등록</button>';
 }
+function bizBinListHtml(){
+  const list=t50Bins();
+  if(!list.length)return '<div style="font-size:13px;color:#64748b;padding:6px 0">판정표가 비어 있습니다.</div>';
+  return list.map(function(b){
+    const corp=b.kind==='corp';
+    return '<div class="biz-notice" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'+
+      '<b>'+b.prefix+'</b>'+
+      '<span style="font-weight:800;color:'+(corp?'#b45309':'#7c3aed')+'">'+(corp?'🏢 법인':'💳 개인')+'</span>'+
+      (b.issuer?'<span style="color:#475569">'+b.issuer+'</span>':'')+
+      (b.memo?'<span style="color:#94a3b8;font-size:12.5px">'+b.memo+'</span>':'')+
+      '<span style="color:#94a3b8;font-size:12.5px">이력 '+(b.count||0)+'건'+(b.conflict?' · ⚠ 상반 '+b.conflict+'건':'')+'</span>'+
+      '<button style="margin-left:auto" onclick="bizBinDel(\''+b.prefix+'\')">삭제</button></div>';
+  }).join('');
+}
+function bizBinAdd(){
+  const no=document.getElementById('bzBinNo').value.trim();
+  const kind=document.getElementById('bzBinKind').value;
+  const issuer=document.getElementById('bzBinIssuer').value.trim();
+  if(!no){admToast('카드번호 앞자리를 입력해 주세요');return;}
+  const rec=t50AddBin(no,kind,issuer,'담당자 등록');
+  if(!rec){admToast('앞 6자리 또는 8자리로 입력해 주세요');return;}
+  admToast('판정표에 추가했습니다 — '+rec.prefix+' '+(kind==='corp'?'법인':'개인'));
+  bizRender();
+}
+function bizBinDel(prefix){
+  t50DelBin(prefix);
+  admToast('판정표에서 삭제했습니다');
+  bizRender();
+}
+function bizBinReset(){
+  if(!confirm('BIN 판정표를 초기값으로 되돌릴까요? 학습된 내용은 사라집니다.'))return;
+  t50ResetBins();
+  admToast('초기값으로 되돌렸습니다');
+  bizRender();
+}
+
 function bizNoticesHtml(cfg){
   if(!cfg.notices||!cfg.notices.length)return '<div class="empty" style="padding:16px 0">등록된 공지사항이 없습니다.</div>';
   return cfg.notices.map(function(n,idx){
@@ -670,9 +754,13 @@ function statExportApplies(){
 }
 function statExportRefund(){
   const list=statScopedList().filter(a=>a.status==='refund_ok');
-  const rows=[['접수번호','지자체','신청자','기본지원금','청년가산','가족가산','환급금액','카드번호','승인번호','결제일']];
-  list.forEach(a=>rows.push([a.no,a.region,a.applicant,a.baseAmount||'',a.youthBonus||'',a.familyBonus||'',a.refundAmount||'',
-    a.evidence?a.evidence.card:'',a.evidence?a.evidence.appr:'',a.evidence?a.evidence.date:'']));
+  const rows=[['접수번호','지자체','신청자','기본지원금','청년가산','가족가산','환급금액','카드번호','승인번호','결제일','법인카드확인','판정근거']];
+  list.forEach(function(a){
+    const c=admCorp(a);
+    rows.push([a.no,a.region,a.applicant,a.baseAmount||'',a.youthBonus||'',a.familyBonus||'',a.refundAmount||'',
+      a.evidence?a.evidence.card:'',a.evidence?a.evidence.appr:'',a.evidence?a.evidence.date:'',
+      c?c.label:'',c?c.detail:'']);
+  });
   statCsvDownload('반값여행_정산데이터.csv',rows);
   admToast('정산 데이터를 다운로드했습니다');
 }

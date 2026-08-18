@@ -156,7 +156,19 @@ function t50aCard(x){
   else if(a.status==='notified')
     acts='<span class="wait">여행 진행 — 신청자의 결제내역 제출·환급 신청을 기다리는 중</span>';
   else if(a.status==='refund_req')
-    acts='<button class="btn" onclick="t50aRefundOk('+K+')">💰 환급 승인 — '+ft50Won(t50aRefundAmt(a))+' 지급</button>'+
+    acts=(function(){
+      const c=t50aCorp(a);
+      if(!c||!c.needsReview) return '';
+      const cd=(a.evidence&&a.evidence.card)?a.evidence.card:'';
+      return '<div class="t50a-plan" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412;width:100%">'+
+          ft50CorpIcon(c)+' <b>'+c.label+'</b> — '+fEsc(c.detail)+
+          '<br>영수증을 확인해 카드 구분을 확정해 주세요. 확정 결과는 BIN 판정표에 학습됩니다.'+
+          '<div style="display:flex;gap:7px;margin-top:8px">'+
+            '<button class="btn gy" style="font-size:11.5px;padding:6px 10px" onclick="t50aCorpSet('+K+',\'personal\')">💳 개인카드로 확정</button>'+
+            '<button class="btn gy" style="font-size:11.5px;padding:6px 10px" onclick="t50aCorpSet('+K+',\'corp\')">🏢 법인카드로 확정</button>'+
+          '</div></div>';
+    })()+
+      '<button class="btn" onclick="t50aRefundOk('+K+')">💰 환급 승인 — '+ft50Won(t50aRefundAmt(a))+' 지급</button>'+
       '<button class="btn o" style="color:#c2410c;border-color:#fed7aa" onclick="t50aReason('+K+',\'refund_fix\',\''+rid+'\')">✏️ 증빙 보완 요청</button>'+
       '<textarea class="t50a-rsn" id="'+rid+'" placeholder="보완 요청 사유를 입력하세요 (예: 숙박 결제내역 누락)"></textarea>';
   else if(a.status==='refund_fix')
@@ -189,10 +201,33 @@ function t50aCard(x){
     (a.evidence?'<div class="t50a-plan">🧾 제출 증빙 — 카드번호 '+fEsc(a.evidence.card||'-')+' · 승인번호 '+fEsc(a.evidence.appr||'-')+
       ' · 결재금액 '+ft50Won(a.evidence.amt)+(a.evidence.date?' · 결제일 '+fEsc(a.evidence.date):'')+' · 첨부 '+fEsc(a.evidence.file||'-')+
       '<br><b style="color:var(--ok)">✓ '+fEsc(a.evidence.ocr||'판독 결과와 대조 일치')+
-      (a.evidence.date?' · 결제일 여행기간('+a.start+'~'+a.end+') 내 확인':'')+'</b></div>':'')+
+      (a.evidence.date?' · 결제일 여행기간('+a.start+'~'+a.end+') 내 확인':'')+'</b>'+
+      t50aCorpLine(a)+'</div>':'')+
     '<div class="t50a-acts">'+acts+'</div>'+
     (log?'<div class="t50a-log">'+log+'</div>':'')+
   '</div>';
+}
+
+/* 법인카드 확인 결과 한 줄 — 저장된 판정이 없으면 그 자리에서 다시 판정한다 */
+function t50aCorp(a){
+  if(a.corpCheck) return a.corpCheck;
+  if(a.evidence&&a.evidence.card) return ft50CorpCheck(a.evidence.card,'');
+  return null;
+}
+function t50aCorpLine(a){
+  const chk=t50aCorp(a);
+  if(!chk) return '';
+  return '<br><span class="badge '+ft50CorpBadgeCls(chk)+'">'+ft50CorpIcon(chk)+' '+chk.label+'</span>'+
+    '<span style="color:var(--sub);font-size:11px"> '+fEsc(chk.detail)+'</span>';
+}
+
+/* 담당자 확정 — 판정 결과를 신청 건에 남기고 BIN 판정표에도 학습시킨다 */
+function t50aCorpSet(k,i,kind){
+  const r=t50aMutate(k,i,function(rec){
+    rec.corpCheck=ft50CorpDecide(rec.evidence?rec.evidence.card:'',kind,ft50Persona().name);
+    ft50Hist(rec,rec.status,ft50Persona().name,rec.corpCheck.label);
+  });
+  if(r) toast(r.corpCheck.label);
 }
 
 /* 환급액 = 결제금액의 50%. 승인 지원금과 인원별 환급 한도(1명당 10만원)를 모두 넘지 못한다 */
@@ -289,6 +324,9 @@ function t50aDetail(k,i){
       (a.evidence.date?row('결제일',fEsc(a.evidence.date)+' (여행기간 '+a.start+'~'+a.end+' 내 ✓)'):'')+
       row('첨부파일',fEsc(a.evidence.file||'-'))+
       row('OCR 대조','✓ '+fEsc(a.evidence.ocr||'판독 결과와 대조 일치'));
+    const _c=t50aCorp(a);
+    if(_c) h+=row('법인카드 확인','<span class="badge '+ft50CorpBadgeCls(_c)+'">'+ft50CorpIcon(_c)+' '+_c.label+'</span>')+
+      row('판정 근거',fEsc(_c.detail));
   }
   if(a.history&&a.history.length){
     h+='<div class="sec-t" style="margin:14px 0 6px">처리 이력</div>'+
@@ -337,6 +375,22 @@ function t50aRenderBiz(){
       '<button class="btn blk" style="margin-top:12px" onclick="t50aBizSave()">💾 사업설정 저장</button>'+
     '</div>'+
     '<div class="t50a-card">'+
+      '<div class="sec-t">카드 BIN 판정표<span class="cap" style="font-weight:500;color:var(--sub);font-size:11.5px"> 카드번호로 법인카드 여부 예측</span></div>'+
+      '<div style="font-size:11.5px;color:var(--sub);line-height:1.7;margin:4px 0 8px">'+
+        '영수증은 카드번호를 마스킹해도 앞자리는 노출되므로(1234-56** 등), <b>앞 6~8자리</b>로 카드 상품을 식별해 '+
+        '법인카드 여부를 예측합니다. 영수증에 카드종류가 인쇄된 건과 담당자가 확정한 건은 <b>자동으로 이 표에 학습</b>되어 '+
+        '이후 같은 대역은 번호만으로 판정됩니다.</div>'+
+      t50aBinListHtml()+
+      '<label class="f-lb">카드번호 앞자리 <span style="font-weight:500;color:var(--sub)">(6자리 또는 8자리)</span></label>'+
+      '<input class="f-in" type="text" id="t50aBinNo" placeholder="예) 123456 또는 12345678">'+
+      '<label class="f-lb">구분</label>'+
+      '<select class="f-in" id="t50aBinKind"><option value="corp">법인카드</option><option value="personal">개인카드</option></select>'+
+      '<label class="f-lb">카드사·비고 <span style="font-weight:500;color:var(--sub)">(선택)</span></label>'+
+      '<input class="f-in" type="text" id="t50aBinIssuer" placeholder="예) 신한카드">'+
+      '<button class="btn blk" style="margin-top:10px" onclick="t50aBinAdd()">🏢 판정표에 추가</button>'+
+      '<button class="btn gy blk" style="margin-top:7px" onclick="t50aBinReset()">판정표 초기값으로 되돌리기</button>'+
+    '</div>'+
+    '<div class="t50a-card">'+
       '<div class="sec-t">공지사항</div>'+
       ((cfg.notices&&cfg.notices.length)
         ? cfg.notices.map((n,idx)=>'<div class="t50a-plan"><b>'+fEsc(n.title)+'</b><br>'+fEsc(n.body)+
@@ -348,6 +402,43 @@ function t50aRenderBiz(){
       '<button class="btn blk" style="margin-top:10px" onclick="t50aNoticeAdd()">📢 공지 등록</button>'+
     '</div>';
 }
+function t50aBinListHtml(){
+  const list=ft50Bins();
+  if(!list.length) return '<div style="font-size:12px;color:var(--sub);padding:6px 0">판정표가 비어 있습니다.</div>';
+  return list.map(function(b){
+    const corp=b.kind==='corp';
+    return '<div class="t50a-plan" style="display:flex;align-items:center;gap:8px">'+
+      '<b>'+fEsc(b.prefix)+'</b>'+
+      '<span class="badge '+(corp?'o':'g')+'">'+(corp?'🏢 법인':'💳 개인')+'</span>'+
+      (b.issuer?'<span style="color:var(--sub)">'+fEsc(b.issuer)+'</span>':'')+
+      (b.memo?'<span style="color:var(--sub2);font-size:11px">'+fEsc(b.memo)+'</span>':'')+
+      '<span style="color:var(--sub2);font-size:11px">이력 '+(b.count||0)+'건'+
+        (b.conflict?' · ⚠ 상반 '+b.conflict+'건':'')+'</span>'+
+      '<button style="margin-left:auto;color:#b91c1c;font-size:11px;font-weight:700" onclick="t50aBinDel(\''+b.prefix+'\')">삭제</button></div>';
+  }).join('');
+}
+function t50aBinAdd(){
+  const no=document.getElementById('t50aBinNo').value.trim();
+  const kind=document.getElementById('t50aBinKind').value;
+  const issuer=document.getElementById('t50aBinIssuer').value.trim();
+  if(!no){ toast('카드번호 앞자리를 입력해 주세요'); return; }
+  const rec=ft50AddBin(no,kind,issuer,'담당자 등록');
+  if(!rec){ toast('앞 6자리 또는 8자리로 입력해 주세요'); return; }
+  toast('판정표에 추가했습니다 — '+rec.prefix+' '+(kind==='corp'?'법인':'개인'));
+  t50aRenderBiz();
+}
+function t50aBinDel(prefix){
+  ft50DelBin(prefix);
+  toast('판정표에서 삭제했습니다');
+  t50aRenderBiz();
+}
+function t50aBinReset(){
+  if(!confirm('BIN 판정표를 초기값으로 되돌릴까요? 학습된 내용은 사라집니다.')) return;
+  ft50ResetBins();
+  toast('초기값으로 되돌렸습니다');
+  t50aRenderBiz();
+}
+
 function t50aBizSave(){
   const v=id=>document.getElementById(id).value;
   ft50SetRegionCfg(t50aBizRegion,{
@@ -465,11 +556,14 @@ function t50aExportApplies(){
   toast('신청 데이터를 내려받았습니다');
 }
 function t50aExportRefund(){
-  const rows=[['접수번호','지자체','신청자','인원','기본지원금','청년가산','가족가산','승인지원금','환급한도','결재금액','카드번호','승인번호','결제일','환급금액']];
-  t50aStatList().filter(a=>a.status==='refund_ok').forEach(a=>rows.push([a.no,a.region,a.applicant,a.people,
-    a.baseAmount||'',a.youthBonus||'',a.familyBonus||'',a.amount||'',a.refundCap||ft50RefundCap(a),
-    a.evidence?a.evidence.amt:'',a.evidence?a.evidence.card:'',a.evidence?a.evidence.appr:'',a.evidence?a.evidence.date:'',
-    a.refundAmount||'']));
+  const rows=[['접수번호','지자체','신청자','인원','기본지원금','청년가산','가족가산','승인지원금','환급한도','결재금액','카드번호','승인번호','결제일','법인카드확인','판정근거','환급금액']];
+  t50aStatList().filter(a=>a.status==='refund_ok').forEach(function(a){
+    const c=t50aCorp(a);
+    rows.push([a.no,a.region,a.applicant,a.people,
+      a.baseAmount||'',a.youthBonus||'',a.familyBonus||'',a.amount||'',a.refundCap||ft50RefundCap(a),
+      a.evidence?a.evidence.amt:'',a.evidence?a.evidence.card:'',a.evidence?a.evidence.appr:'',a.evidence?a.evidence.date:'',
+      c?c.label:'',c?c.detail:'',a.refundAmount||'']);
+  });
   t50aCsv('지역사랑휴가지원_정산데이터.csv',rows);
   toast('정산 데이터를 내려받았습니다');
 }

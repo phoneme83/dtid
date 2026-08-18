@@ -74,6 +74,7 @@
 <script src="f.js?v=2"></script>
 <script src="f-t50.js?v=3"></script>
 <script src="f-t50-evidence.js?v=1"></script>
+<script src="f-t50-corp.js?v=1"></script>
 <script>
 const U=fRequireUser();
 const T50_STEPS=['본인인증','주소지 확인','지역 선택','여행 계획','접수 완료'];
@@ -715,6 +716,8 @@ function renderRefund(){
           '<div class="row"><span>결재금액</span><b>'+fmt(a.evidence.amt)+'원</b></div>'+
           (a.evidence.date?'<div class="row"><span>결제일</span><b>'+fEsc(a.evidence.date)+' ✅ 여행기간 내</b></div>':'')+
           '<div class="row"><span>첨부파일</span><b>'+fEsc(a.evidence.file||'-')+'</b></div>'+
+          (a.corpCheck?'<div class="row"><span>법인카드 확인</span><b><span class="badge '+ft50CorpBadgeCls(a.corpCheck)+'">'+
+            ft50CorpIcon(a.corpCheck)+' '+a.corpCheck.label+'</span></b></div>':'')+
           '<small>✓ '+fEsc(a.evidence.ocr||'판독 결과와 대조 완료')+' — 담당자 심사 결과를 기다리는 중입니다.</small></div>'
       : '')+
     (a.status==='refund_ok'
@@ -762,6 +765,7 @@ function t50EvOcrHtml(a){
       '<div class="row"><span>판독된 승인번호</span><b>'+fEsc(ex.appr||'미검출')+'</b></div>'+
       '<div class="row"><span>판독된 금액</span><b>'+((ex.amts&&ex.amts.length)?ex.amts.map(function(v){return fmt(Number(v));}).join(', ')+'원':'미검출')+'</b></div>'+
       '<div class="row"><span>판독된 결제일</span><b>'+(ex.date?ex.date+(ft50EvInPeriod(a,ex.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖'):'미검출')+'</b></div>'+
+      t50CorpRow(ex.card,o.text)+
       '<small>입력하신 카드번호·승인번호·결재금액·결제일이 판독 결과와 대조되며, 결제일은 여행기간('+a.start+' ~ '+a.end+') 안이어야 합니다. 카드번호의 *(마스킹) 자리는 비교에서 제외됩니다.</small></div>';
   }
   return '<div class="t50e-ocr"><div class="t">📄 영수증 판독 결과 (모의 — OCR 엔진 로드 실패) — <b>'+fEsc(o.file)+'</b></div>'+
@@ -770,7 +774,16 @@ function t50EvOcrHtml(a){
     '<div class="row"><span>결재금액</span><b>'+fmt(o.amt)+'원</b></div>'+
     '<div class="row"><span>승인번호</span><b>'+fEsc(o.appr)+'</b></div>'+
     '<div class="row"><span>결제일</span><b>'+(o.date?o.date+(ft50EvInPeriod(a,o.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖'):'미검출')+'</b></div>'+
+    t50CorpRow(o.card,'')+
     '<small>입력하신 승인번호·결재금액·결제일이 판독 결과와 일치해야 제출됩니다.</small></div>';
+}
+/* 법인카드 확인 — 판독된 카드번호와 원문으로 3단 판정한 결과를 한 줄로 보여준다 */
+function t50CorpRow(card, text){
+  const chk = ft50CorpCheck(card, text);
+  return '<div class="row"><span>법인카드 확인</span>'+
+    '<b><span class="badge '+ft50CorpBadgeCls(chk)+'">'+ft50CorpIcon(chk)+' '+chk.label+'</span></b></div>'+
+    '<div class="row" style="border-bottom:0"><span></span>'+
+    '<b style="font-weight:500;color:var(--sub);font-size:11px">'+fEsc(chk.detail)+'</b></div>';
 }
 function t50EvForm(a){
   return '<div class="t50e-box">'+
@@ -836,13 +849,17 @@ function t50EvSubmit(){
   const a=list[act.i];
   a.status='refund_req';
   a.evidence={
-    card:card.slice(0,4)+'-****-****-'+card.slice(-4),
+    card:card.slice(0,4)+'-'+card.slice(4,6)+'**-****-'+card.slice(-4),   /* BIN 판정용으로 앞 6자리를 남긴다 */
     appr:appr, amt:amt,
     date:(t50Ocr.mode==='real'&&t50Ocr.ex&&t50Ocr.ex.date)?t50Ocr.ex.date:payDate,
     file:t50Ocr.file,
     ocr:(t50Ocr.mode==='real'?'영수증 OCR 판독 결과와 대조 일치':'모의 판독 결과와 대조 일치'),
     ts:ft50Today()
   };
+  /* 법인카드 확인 결과를 신청 건에 남겨 관리자 심사에서 그대로 본다 */
+  a.corpCheck=ft50CorpCheck(
+    (t50Ocr.mode==='real'&&t50Ocr.ex&&t50Ocr.ex.card)?t50Ocr.ex.card:card,
+    t50Ocr.mode==='real'?t50Ocr.text:'', true);   /* 제출 시점에만 BIN 판정표에 학습 */
   delete a.fixReason;
   ft50Hist(a,'refund_req',U.name,'증빙 제출 — 결재금액 '+ft50Won(amt));
   t50Save(list);
