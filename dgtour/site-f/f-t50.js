@@ -117,35 +117,99 @@ function ft50Calc(a){
   return {base:base,youth:youth,family:family,total:base+youth+family};
 }
 
-/* ── 본인인증(PASS·행정정보 공동이용) 모의 결과 ──────────────
-   실제 서비스는 인증기관이 성명·생년월일·주민등록상 주소를 회신한다.
-   여기서는 계정 id로 고정된 값을 만들어 재신청 시에도 같은 자격이 나오게 한다. */
-const FT50_RESIDENCES=[
-  {sido:'서울특별시',sgg:'마포구'},{sido:'경기도',sgg:'성남시 분당구'},
-  {sido:'부산광역시',sgg:'해운대구'},{sido:'충청북도',sgg:'청주시 상당구'},
-  {sido:'대전광역시',sgg:'유성구'}
-];
-function ft50Identity(uid,name){
-  try{
-    const saved=JSON.parse(localStorage.getItem(FT50_ID_PREFIX+uid)||'null');
-    if(saved) return saved;
-  }catch(e){}
-  const h=(typeof fHash==='function')?fHash(uid||'guest'):7;
-  const res=FT50_RESIDENCES[h%FT50_RESIDENCES.length];
-  const age=[27,33,41,52,29][h%5];
-  const rec={
-    name:name||'회원',
-    age:age,
-    youth:(age>=19&&age<=34),
-    sido:res.sido,
-    addr:res.sido+' '+res.sgg,
-    means:['PASS 통신사 인증','모바일 신분증','행정정보 공동이용','금융인증서'][h%4],
-    ts:new Date().toISOString()
-  };
-  localStorage.setItem(FT50_ID_PREFIX+uid,JSON.stringify(rec));
-  return rec;
+/* ── 본인인증 · 주소지 확인 ────────────────────────────────
+   실제 서비스는 인증기관(PASS·모바일 신분증 등)과 행정정보 공동이용망이
+   성명·생년월일·주민등록상 주소를 회신한다. 프로토타입에서는 입력받은
+   주민등록번호로 만 나이만 판정하고(번호는 어디에도 저장하지 않는다),
+   주소지는 반값여행 참여 지자체 중 1곳을 시뮬레이션으로 배정한다. */
+const FT50_SI={'밀양':'밀양시','제천':'제천시'};   /* 시(市)인 지자체, 나머지는 군 */
+function ft50Sigungu(name){ return FT50_SI[name]||(name+'군'); }
+function ft50PickAddr(){
+  /* 배정하면 모집중 지역이 전부 인근 처리되어 신청 가능 지역이 0이 되는
+     시·도는 후보에서 제외한다 (예: 모집중이 모두 전라남도인데 전남 주소지) */
+  const all=ft50Regions();
+  const cands=all.filter(function(c){
+    return all.some(function(o){ return o.status==='open'&&o.sido!==c.sido; });
+  });
+  const pool=cands.length?cands:all;
+  const r=pool[Math.floor(Math.random()*pool.length)];
+  const sigungu=ft50Sigungu(r.name);
+  return {sido:r.sido,sigungu:sigungu,full:r.sido+' '+sigungu};
 }
-function ft50IdentityDone(uid){ return !!localStorage.getItem(FT50_ID_PREFIX+uid); }
+/* 주민등록번호로 만 나이 계산 (뒷자리 첫 숫자로 세기 판별). 형식 오류면 null */
+function ft50AgeFromRrn(r1,r2){
+  const yy=Number(r1.slice(0,2)),mm=Number(r1.slice(2,4)),dd=Number(r1.slice(4,6));
+  const g=Number(r2.charAt(0));
+  if(mm<1||mm>12||dd<1||dd>31) return null;
+  let century;
+  if(g===1||g===2||g===5||g===6) century=1900;
+  else if(g===3||g===4||g===7||g===8) century=2000;
+  else if(g===9||g===0) century=1800;
+  else return null;
+  function calcAge(c){
+    const birth=new Date(c+yy,mm-1,dd);
+    if(isNaN(birth.getTime())) return null;
+    const today=new Date();
+    let a=today.getFullYear()-birth.getFullYear();
+    if(today.getMonth()<birth.getMonth()||(today.getMonth()===birth.getMonth()&&today.getDate()<birth.getDate())) a--;
+    return a;
+  }
+  let age=calcAge(century);
+  /* 프로토타입 편의 보정: 2000년대생을 뒷자리 1·2로 입력하는 흔한 실수(→만 100세 이상)는 2000년대로 재해석 */
+  if(age!==null&&century===1900&&age>=100) age=calcAge(2000);
+  return age;
+}
+
+/* ── 대기열(신청 인원조건 초과 시 선착순 대기) ────────────── */
+const FT50_QUEUE_PREFIX='dtidF_t50Queue_';
+const FT50_MYQ_PREFIX  ='dtidF_t50MyQueue_';
+const FT50_LOCK_PREFIX ='dtidF_t50Lock_';
+function ft50QueueLoad(region){ try{ return JSON.parse(localStorage.getItem(FT50_QUEUE_PREFIX+region)||'[]'); }catch(e){ return []; } }
+function ft50QueueSave(region,list){ localStorage.setItem(FT50_QUEUE_PREFIX+region,JSON.stringify(list)); }
+function ft50QueuePos(region,id){
+  const q=ft50QueueLoad(region);
+  const i=q.findIndex(x=>x.id===id);
+  return i<0?-1:i+1;
+}
+/* 자리가 나면 대기열 맨 앞부터 실제 신청(received)으로 전환 */
+function ft50QueueAdvance(region){
+  const cfg=ft50RegionCfg(region);
+  let used=ft50UsedCount(region);
+  const q=ft50QueueLoad(region);
+  const promoted=[];
+  while(q.length){
+    const head=q[0];
+    const ppl=ft50PeopleNum(head.draft);
+    if(used+ppl>cfg.capacity) break;
+    const key=ft50Key(head.uid);
+    const list=ft50LoadKey(key);
+    const rec=Object.assign({},head.draft,{status:'received',no:'T50-2026-'+String(1001+ft50All().length)});
+    ft50Hist(rec,'received',head.draft.applicant||'','대기열 통과 후 접수');
+    list.unshift(rec);
+    ft50SaveKey(key,list);
+    used+=ppl; q.shift();
+    promoted.push(head);
+  }
+  if(promoted.length) ft50QueueSave(region,q);
+  return promoted;
+}
+/* 동시접속 신청 정합성 확인용 버전 카운터 */
+function ft50LockVersion(region){ return Number(localStorage.getItem(FT50_LOCK_PREFIX+region)||'0'); }
+function ft50LockBump(region){
+  const v=ft50LockVersion(region)+1;
+  localStorage.setItem(FT50_LOCK_PREFIX+region,String(v));
+  return v;
+}
+/* 정원 대비 접수 가능 여부 — ok / queue(정원~130%) / overload(130% 초과) */
+function ft50DecideCapacity(region,ppl){
+  const cfg=ft50RegionCfg(region);
+  const v0=ft50LockVersion(region);
+  let used=ft50UsedCount(region);
+  if(ft50LockVersion(region)!==v0) used=ft50UsedCount(region);   /* 다른 탭에서 접수 발생 → 최신값 재확인 */
+  if(used+ppl<=cfg.capacity) return {mode:'ok',cfg:cfg,used:used};
+  if(used+ppl<=Math.ceil(cfg.capacity*1.3)) return {mode:'queue',cfg:cfg,used:used};
+  return {mode:'overload',cfg:cfg,used:used};
+}
 
 /* ── 관리자 계정(페르소나) — 공사 총괄 / 지자체 담당자 권한 분리 ── */
 const FT50_ADMIN_ACCOUNTS=[{id:'kto',name:'공사 총괄 관리자',region:null}].concat(
