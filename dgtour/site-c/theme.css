@@ -295,6 +295,23 @@ body.theme-c{background:var(--c-bg)}
 .theme-c .ap-note{background:#f3effd;border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.65;color:#374151;margin:12px 0}
 .theme-c .ap-note.bad{background:#fef2f2;color:#991b1b}
 .theme-c .ap-addr{font-size:15px;color:#111827;background:#ede9fe;border-radius:12px;padding:12px 14px;margin-bottom:8px}
+
+/* 신청 단위(개인/가족) · 주민등록등본 조회 */
+.theme-c .ap-unit{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 4px}
+.theme-c .ap-unit .u{border:2px solid #e5e0f5;border-radius:12px;background:#ffffff;color:#111827;min-height:66px;font-size:14.5px;font-weight:800;font-family:inherit;cursor:pointer;padding:8px 6px;line-height:1.35}
+.theme-c .ap-unit .u small{display:block;font-size:12px;font-weight:600;color:#6b7280;margin-top:4px}
+.theme-c .ap-unit .u.on{border-color:#7c3aed;background:#ede9fe;color:#7c3aed}
+.theme-c .ap-fam{display:flex;align-items:center;gap:11px;width:100%;text-align:left;border:2px solid #e5e0f5;border-radius:12px;background:#ffffff;color:#111827;padding:11px 13px;margin-top:9px;font-family:inherit;cursor:pointer}
+.theme-c .ap-fam .ck{width:26px;height:26px;flex:0 0 auto;border-radius:7px;border:2px solid #e5e0f5;display:grid;place-items:center;font-size:14px;font-weight:800;color:#fff;background:#ffffff}
+.theme-c .ap-fam.on{border-color:#7c3aed;background:#ede9fe}
+.theme-c .ap-fam.on .ck{background:#7c3aed;border-color:#7c3aed}
+.theme-c .ap-fam.self .ck{background:#7c3aed;border-color:#7c3aed}
+.theme-c .ap-fam.dis{opacity:.55;cursor:default}
+.theme-c .ap-fam .bd{min-width:0}
+.theme-c .ap-fam .bd b{font-size:15px}
+.theme-c .ap-fam .rel{font-size:13px;font-weight:700;color:#7c3aed;margin-left:6px}
+.theme-c .ap-fam .why{display:block;font-size:12.5px;color:#6b7280;margin-top:3px}
+.theme-c .ap-fam-sum{font-size:13px;color:#6b7280;line-height:1.6;margin-top:6px}
 .theme-c .ap-rgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0}
 .theme-c .ap-rg{position:relative;text-align:left;border:2px solid #e4dcf7;border-radius:14px;background:#fff;overflow:hidden;font-family:inherit;cursor:pointer;padding:0 0 12px}
 .theme-c .ap-rg img{width:100%;height:86px;object-fit:cover;display:block;margin-bottom:8px}

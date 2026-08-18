@@ -6,7 +6,7 @@
 <title>디지털관광주민증 - 반값여행 통합신청 · 시안 B</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/common.css?v=20260707f">
-<link rel="stylesheet" href="theme.css?v=2">
+<link rel="stylesheet" href="theme.css?v=4">
 </head>
 <body class="theme-b">
 
@@ -109,12 +109,13 @@
     <label class="ap-lb">여행 기간 <small>(여행 가능기간의 날짜만 선택할 수 있습니다)</small></label>
     <div class="ap-cal" id="apCal"></div>
     <div class="ap-date-hint" id="apDateHint" aria-live="polite"></div>
-    <label class="ap-lb" for="apPeople">인원</label>
-    <select class="ap-in" id="apPeople" onchange="apPeopleHint()">
-      <option value="1">1명</option><option value="2" selected>2명</option>
-      <option value="3">3명</option><option value="4">4명</option>
-      <option value="5">5명</option><option value="6">6명 이상</option>
-    </select>
+    <label class="ap-lb">신청 단위</label>
+    <div class="ap-unit">
+      <button type="button" class="u on" id="apUnitP" onclick="apSetUnit('personal')">👤 개인 신청<small>신청자 본인 1명</small></button>
+      <button type="button" class="u" id="apUnitF" onclick="apSetUnit('family')">👨‍👩‍👧 가족 신청<small>본인 포함 최대 5명</small></button>
+    </div>
+    <div id="apFamBox"></div>
+    <input type="hidden" id="apPeople" value="1">
     <div class="ap-note" id="apFamHint" style="display:none">👨‍👩‍👧 3인 이상 가족 신청은 환급 시 <b>10% 추가 환급</b> 혜택이 적용됩니다.</div>
     <label class="ap-lb" for="apPlan">간단한 여행 계획 <small>(선택)</small></label>
     <textarea class="ap-in" id="apPlan" rows="3" placeholder="예) 1일차 숙소 체크인 후 시장 구경, 2일차 해변 산책"></textarea>
@@ -230,7 +231,7 @@
 <div class="toast" id="toastEl"></div>
 
 <script src="../site-assets/data.js?v=20260818a"></script>
-<script src="t50-config.js?v=1"></script>
+<script src="t50-config.js?v=2"></script>
 <script>/* site-b 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidB_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script src="../assets/common.js?v=20260707f"></script>
@@ -287,6 +288,10 @@ let apAddrOk=false;      // 주소지 확인 여부
 let apYouth=false;       // 청년(만 19~34세) 여부 — 환급 시 20% 추가
 let apAge=null;          // 주민등록번호로 확인한 만 나이 (통계·관리의 연령대별 통계에 사용)
 let apBirth=null;        // 본인인증으로 회신받은 생년월일 (주민등록번호 앞자리 대조 기준)
+let apUnit='personal';   // 신청 단위: personal | family
+let apFamPick=[];        // 선택한 가족(등본 구성원 id)
+let apHome=null;         // 주민등록등본 조회 결과
+let apHomeOpen=false;    // 등본을 조회했는지
 
 /* 주민등록번호로 만 나이 계산 (뒷자리 첫 숫자로 세기 판별). 형식 오류면 null */
 function apAgeFromRrn(r1,r2){
@@ -343,11 +348,70 @@ function apGo(n){
   if(n===7)apQueueRender();
   window.scrollTo(0,0);
 }
-function apPeopleHint(){
-  const el=document.getElementById('apFamHint');
-  if(!el)return;
-  el.style.display=(t50PeopleNum({people:document.getElementById('apPeople').value})>=3)?'block':'none';
+/* ── 신청 단위(개인 / 가족) ──────────────────────────────────
+   가족 신청은 주민등록등본 조회로 확인된 배우자·직계 존비속만,
+   본인 포함 최대 T50_FAMILY_MAX 명까지 선택할 수 있다 */
+function apPeopleCount(){return apUnit==='family'?(1+apFamPick.length):1;}
+function apSetUnit(u){
+  apUnit=u;
+  if(u==='personal')apFamPick=[];
+  apRenderFam();
 }
+function apHousehold(){
+  if(!apHome)apHome=t50Household(user?user.id:'guest',user?user.name:'김',apAge||40);
+  return apHome;
+}
+function apFamLookup(){
+  apHomeOpen=true;apHousehold();apRenderFam();
+  toast('주민등록등본 조회 완료 — 신청 가능한 가족을 선택하세요');
+}
+function apFamToggle(id){
+  const i=apFamPick.indexOf(id);
+  if(i>=0)apFamPick.splice(i,1);
+  else{
+    if(1+apFamPick.length>=T50_FAMILY_MAX){
+      alert('가족 신청은 신청자 본인을 포함해 최대 '+T50_FAMILY_MAX+'명까지 신청할 수 있습니다.');
+      return;
+    }
+    apFamPick.push(id);
+  }
+  apRenderFam();
+}
+function apRenderFam(){
+  const el=document.getElementById('apFamBox');
+  if(!el)return;
+  const bp=document.getElementById('apUnitP'),bf=document.getElementById('apUnitF');
+  if(bp)bp.classList.toggle('on',apUnit==='personal');
+  if(bf)bf.classList.toggle('on',apUnit==='family');
+  const n=apPeopleCount();
+  const hid=document.getElementById('apPeople');
+  if(hid)hid.value=String(n);
+  const cap='<div class="ap-note">신청 인원 <b>'+n+'명</b> · 환급 한도 <b>'+(n*T50_MAX_PER_PERSON).toLocaleString('ko-KR')+
+    '원</b> <small>(신청자 1명당 최대 '+T50_MAX_PER_PERSON.toLocaleString('ko-KR')+'원)</small></div>';
+  const fh=document.getElementById('apFamHint');
+  if(fh)fh.style.display=(n>=3)?'block':'none';
+  if(apUnit==='personal'){el.innerHTML=cap;return;}
+  if(!apHomeOpen){
+    el.innerHTML='<div class="ap-note">가족과 함께 신청하려면 주민등록등본으로 세대원을 확인해야 합니다. 조회된 세대원 중 <b>배우자·직계 존비속</b>만 선택할 수 있습니다.</div>'+
+      '<button type="button" class="ap-sm" onclick="apFamLookup()">📄 주민등록등본 조회</button>'+cap;
+    return;
+  }
+  const rows=apHousehold().map(function(m){
+    if(!m.eligible){
+      return '<div class="ap-fam dis"><span class="ck">–</span><span class="bd"><b>'+m.masked+'</b> <span class="rel">'+m.rel+'</span>'+
+        '<span class="why">'+m.why+'</span></span></div>';
+    }
+    const on=apFamPick.indexOf(m.id)>=0;
+    return '<button type="button" class="ap-fam'+(on?' on':'')+'" onclick="apFamToggle(\''+m.id+'\')">'+
+      '<span class="ck">'+(on?'✓':'')+'</span><span class="bd"><b>'+m.masked+'</b> <span class="rel">'+m.rel+'</span>'+
+      '<span class="why">'+m.birthYear+'년생 · 만 '+m.age+'세</span></span></button>';
+  }).join('');
+  el.innerHTML='<div class="ap-note">📄 주민등록등본 조회 결과 — 개인정보 보호를 위해 이름은 가운데 글자를 가려 표시합니다. 배우자·직계 존비속만 선택할 수 있으며, 본인 포함 최대 <b>'+T50_FAMILY_MAX+'명</b>입니다.</div>'+
+    '<div class="ap-fam self"><span class="ck">✓</span><span class="bd"><b>'+t50MaskName(user?user.name:'')+'</b> '+
+      '<span class="rel">본인</span><span class="why">신청자 — 항상 포함됩니다</span></span></div>'+
+    rows+cap;
+}
+function apPeopleHint(){apRenderFam();}
 
 function apStart(){
   document.getElementById('apName').value=user?user.name:'';
@@ -555,13 +619,20 @@ function apSubmit(){
     toast('여행 가능기간('+apFmt(pd.s)+' ~ '+apFmt(pd.e)+') 안에서 선택해 주세요');
     apDateHint();return;
   }
-  const peopleVal=document.getElementById('apPeople').value;
-  const ppl=t50PeopleNum({people:peopleVal});
+  const ppl=apPeopleCount();
+  const peopleVal=String(ppl);
+  const cfgMax=Math.min(t50RegionCfg(apSel).maxPeople,T50_FAMILY_MAX);
+  if(apUnit==='family'&&ppl<2){toast('함께 신청할 가족을 1명 이상 선택해 주세요');return;}
+  if(ppl>cfgMax){toast('신청 인원은 최대 '+cfgMax+'명까지 가능합니다');return;}
   const r=TOUR50_REGIONS.find(x=>x.name===apSel);
   const draft={region:apSel,sido:r?r.sido:'',start:d1,end:d2,period:pd,
     people:peopleVal,plan:document.getElementById('apPlan').value.trim(),
     applicant:user?user.name:'',uid:user?user.id:'',youth:apYouth,age:apAge,
     familyEligible:ppl>=3,addr:apAddr?apAddr.full:'',
+    unit:apUnit,
+    members:(apUnit==='family'?apHousehold().filter(function(m){return apFamPick.indexOf(m.id)>=0;})
+      .map(function(m){return {masked:m.masked,rel:m.rel,birthYear:m.birthYear,age:m.age};}):[]),
+    refundCap:ppl*T50_MAX_PER_PERSON,
     ts:new Date().toISOString().slice(0,10),tsFull:new Date().toISOString()};
   const dec=apDecideCapacity(apSel,ppl);
   if(dec.mode==='ok'){
@@ -574,7 +645,7 @@ function apSubmit(){
     apSave(list);
     document.getElementById('apDoneNo').textContent='접수번호 '+no;
     document.getElementById('apDoneSum').innerHTML='<b>'+apSel+'</b> · '+d1+' ~ '+d2+' · '+peopleVal+'명';
-    apSel=null;apGo(5);apBadge();
+    apSel=null;apUnit='personal';apFamPick=[];apHomeOpen=false;apGo(5);apBadge();
   }else if(dec.mode==='queue'){
     const q=t50QueueLoad(apSel);
     const id='Q-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
@@ -691,7 +762,11 @@ function apRenderList(){
     }).join(' · ')+'</div>':'';
     return '<div class="ap-card"><div class="ap-card-h"><b>'+a.region+'</b> <span>'+a.sido+'</span>'+
       (a.youth?'<span class="ap-chip-youth">🎉 청년 +20% 환급</span>':'')+
-      (a.familyEligible?'<span class="ap-chip-youth">👨‍👩‍👧 가족 3인+ 10% 환급</span>':'')+'<em>'+a.no+'</em></div>'+
+      (a.familyEligible?'<span class="ap-chip-youth">👨‍👩‍👧 가족 3인+ 10% 환급</span>':'')+
+      '<span class="ap-chip-youth">'+(a.unit==='family'?'👨‍👩‍👧 가족 신청':'👤 개인 신청')+' '+a.people+'명</span>'+
+      '<em>'+a.no+'</em></div>'+
+      ((a.members&&a.members.length)?'<div class="ap-fam-sum">동반 가족 '+a.members.map(function(m){return m.masked+'('+m.rel+')';}).join(', ')+
+        ' · 환급 한도 '+(a.refundCap||t50RefundCap(a)).toLocaleString('ko-KR')+'원</div>':'')+
       '<div class="ap-card-d">'+a.start+' ~ '+a.end+' · '+a.people+'명 · 신청일 '+a.ts+
       (a.period?'<br><small>지역 여행 가능기간: '+apFmt(a.period.s)+' ~ '+apFmt(a.period.e)+'</small>':'')+'</div>'+
       '<div class="ap-tl-row">'+steps+'</div>'+refund+act+editCancel+hist+'</div>';

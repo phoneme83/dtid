@@ -195,7 +195,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
 </div>
 
 <script src="../site-assets/data.js?v=20260818a"></script>
-<script src="t50-config.js?v=1"></script>
+<script src="t50-config.js?v=2"></script>
 <script>/* site-a 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidA_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script>
@@ -248,6 +248,8 @@ function admToast(m){
 }
 function admFmt(d){return d?d.replace(/-/g,'.'):'';}
 function admAmt(a){return (a.people==='6'?6:Number(a.people))*50000;}
+/* 환급 한도 — 신청자 1명당 최대 환급액(10만원) */
+function admCap(a){return a.refundCap||t50RefundCap(a);}
 function admWon(n){return n.toLocaleString('ko-KR')+'원';}
 
 function admRegionOpts(all){
@@ -371,7 +373,9 @@ function admRender(){
       '<div class="hd"><b>'+a.region+'</b><span class="no">'+a.no+'</span><span>신청자 '+(a.applicant||'김관광')+' <small style="color:#94a3b8">(계정 '+(a.uid||admUid(k))+')</small></span>'+
       '<button class="dtl" onclick="admDetail('+K+')">상세조회</button>'+
       '<span class="bdg b-'+a.status+'">'+ADM_ST[a.status]+'</span></div>'+
-      '<div class="dt">여행 '+admFmt(a.start)+' ~ '+admFmt(a.end)+' · '+a.people+'명 · 신청일 '+a.ts+
+      '<div class="dt">여행 '+admFmt(a.start)+' ~ '+admFmt(a.end)+' · '+(a.unit==='family'?'가족':'개인')+' '+a.people+'명 · 신청일 '+a.ts+
+      ((a.members&&a.members.length)?'<br>동반 가족 '+a.members.map(function(m){return m.masked+'('+m.rel+' · 만 '+m.age+'세)';}).join(', '):'')+
+      '<br>환급 한도 '+admWon(admCap(a))+' (1명당 '+admWon(T50_MAX_PER_PERSON)+')'+
       '<br><small>'+(a.addr?a.addr+' (주민등록상 주소지 · 시·군·구 단위)':ADM_ADDR)+'</small></div>'+chk+
       (a.plan?'<div class="plan">여행 계획: '+a.plan+'</div>':'')+
       '<div class="acts">'+acts+'</div>'+(log?'<div class="log">'+log+'</div>':'')+
@@ -396,7 +400,7 @@ function admApprove(k,i){
   const ybonus=l[i].youth?Math.round(base*0.2):0;
   const fbonus=l[i].familyEligible?Math.round(base*0.1):0;
   l[i].status='approved';l[i].baseAmount=base;l[i].youthBonus=ybonus;l[i].familyBonus=fbonus;
-  l[i].bonus=ybonus+fbonus;l[i].amount=base+ybonus+fbonus;
+  l[i].bonus=ybonus+fbonus;l[i].amount=Math.min(base+ybonus+fbonus,admCap(l[i]));
   admHist(l[i],'approved');
   admSaveKey(k,l);admRender();
   const bonusTxt=[ybonus?'청년 20%':'',fbonus?'가족 10%':''].filter(Boolean).join('+');
@@ -417,7 +421,9 @@ function admRsn(k,i,st,rid){
 function admRefundOk(k,i){
   const l=admLoadKey(k);if(!l[i])return;
   /* 환급액 = 승인 지원금 (청년·가족 가산은 승인 시 이미 반영되어 있음 — 이중 가산 금지) */
-  l[i].status='refund_ok';l[i].refundAmount=l[i].amount||admAmt(l[i]);
+  /* 환급액은 승인 지원금과 인원별 환급 한도(1명당 10만원)를 넘지 못한다 */
+  l[i].status='refund_ok';
+  l[i].refundAmount=Math.min(l[i].amount||admAmt(l[i]),admCap(l[i]));
   admHist(l[i],'refund_ok');
   admSaveKey(k,l);admRender();
   const bonusTxt=[l[i].youthBonus?'청년 20%':'',l[i].familyBonus?'가족 10%':''].filter(Boolean).join('+');
@@ -433,6 +439,9 @@ function admDetail(k,i){
     row('신청자',(a.applicant||'-')+' (계정 '+(a.uid||admUid(k))+')')+
     row('신청 지역',a.region+' ('+a.sido+')')+
     row('여행 기간',admFmt(a.start)+' ~ '+admFmt(a.end)+' · '+a.people+'명')+
+    row('신청 단위',a.unit==='family'?'가족 신청':'개인 신청')+
+    ((a.members&&a.members.length)?row('동반 가족',a.members.map(function(m){return m.masked+'('+m.rel+')';}).join(', ')):'')+
+    row('환급 한도',admWon(admCap(a))+' (1명당 '+admWon(T50_MAX_PER_PERSON)+')')+
     (a.period?row('지역 여행 가능기간',admFmt(a.period.s)+' ~ '+admFmt(a.period.e)):'')+
     row('신청일',a.ts)+
     row('주민등록상 주소지',(a.addr||'-')+' (시·군·구 단위)')+
@@ -651,8 +660,11 @@ function statCsvDownload(filename,rows){
 }
 function statExportApplies(){
   const list=statScopedList();
-  const rows=[['접수번호','지자체','시도','상태','신청자','계정','인원','여행시작','여행종료','신청일','청년','가족할인대상','승인지원금']];
-  list.forEach(a=>rows.push([a.no,a.region,a.sido,ADM_ST[a.status]||a.status,a.applicant,a.uid,a.people,a.start,a.end,a.ts,a.youth?'Y':'N',a.familyEligible?'Y':'N',a.amount||'']));
+  const rows=[['접수번호','지자체','시도','상태','신청자','계정','신청단위','인원','동반가족','여행시작','여행종료','신청일','청년','가족할인대상','승인지원금','환급한도']];
+  list.forEach(a=>rows.push([a.no,a.region,a.sido,ADM_ST[a.status]||a.status,a.applicant,a.uid,
+    a.unit==='family'?'가족':'개인',a.people,
+    (a.members||[]).map(function(m){return m.masked+'('+m.rel+')';}).join(' '),
+    a.start,a.end,a.ts,a.youth?'Y':'N',a.familyEligible?'Y':'N',a.amount||'',admCap(a)]));
   statCsvDownload('반값여행_신청데이터.csv',rows);
   admToast('신청 데이터를 다운로드했습니다');
 }

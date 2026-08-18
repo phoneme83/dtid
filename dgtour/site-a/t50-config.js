@@ -133,3 +133,46 @@ function t50LockBump(region){
   localStorage.setItem(T50_LOCK_PREFIX+region,String(v));
   return v;
 }
+
+/* ── 신청 단위(개인/가족) · 환급 한도 ────────────────────────
+   신청자 1명당 최대 환급액은 10만원, 가족 신청은 본인 포함 5명까지다. */
+const T50_MAX_PER_PERSON=100000;
+const T50_FAMILY_MAX=5;
+function t50RefundCap(a){return t50PeopleNum(a)*T50_MAX_PER_PERSON;}
+
+/* ── 주민등록등본 조회(모의) ──────────────────────────────────
+   실제 서비스는 행정정보 공동이용망으로 세대원을 회신받는다. 프로토타입에서는
+   계정·나이로 결정되는 세대를 구성하며, 개인정보 최소화를 위해 이름은 가운데
+   글자를 가려 표시한다. 신청 대상은 배우자와 직계 존·비속뿐이다. */
+const T50_DIRECT_RELS=['배우자','자녀','부','모','조부','조모','손자','손녀'];
+function t50MaskName(name){
+  const s=String(name||'');
+  if(s.length<=1)return s;
+  if(s.length===2)return s.charAt(0)+'*';
+  return s.charAt(0)+new Array(s.length-1).join('*')+s.charAt(s.length-1);
+}
+function t50IsDirect(rel){return T50_DIRECT_RELS.indexOf(rel)>=0;}
+function t50HashStr(s){let h=0;for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))|0;}return Math.abs(h);}
+function t50Household(uid,selfName,selfAge){
+  const h=t50HashStr((uid||'guest')+'household');
+  const sur=String(selfName||'김').charAt(0);
+  const given=['서준','지우','하윤','도윤','서연','민준','지호','수아','예은','시우','채원','현우'];
+  const pick=function(k){return given[(h>>k)%given.length];};
+  const y=new Date().getFullYear();
+  const rows=[];
+  if(selfAge>=30)rows.push({rel:'배우자',name:(sur==='김'?'이':sur)+pick(1),birthYear:y-selfAge+((h>>2)%5-2)});
+  if(selfAge>=35){
+    rows.push({rel:'자녀',name:sur+pick(3),birthYear:y-((h>>3)%14+6)});
+    if((h>>4)%2===0)rows.push({rel:'자녀',name:sur+pick(5),birthYear:y-((h>>5)%10+3)});
+  }
+  rows.push({rel:'부',name:sur+pick(6),birthYear:y-selfAge-((h>>6)%8+25)});
+  rows.push({rel:'모',name:(sur==='김'?'박':sur)+pick(7),birthYear:y-selfAge-((h>>7)%8+23)});
+  /* 신청 대상이 아닌 세대원 — 제외 사유를 보여주기 위해 함께 조회된다 */
+  rows.push({rel:'형제',name:sur+pick(8),birthYear:y-selfAge-((h>>8)%6-3)});
+  return rows.map(function(r,i){
+    const ok=t50IsDirect(r.rel);
+    return {id:'H'+i,rel:r.rel,name:r.name,masked:t50MaskName(r.name),
+      birthYear:r.birthYear,age:y-r.birthYear,eligible:ok,
+      why:ok?'':'직계 존·비속 및 배우자가 아니어서 신청할 수 없습니다'};
+  });
+}
