@@ -70,7 +70,7 @@
 
 <div id="shellBottom"></div>
 
-<script src="../site-assets/data.js?v=20260707f"></script>
+<script src="../site-assets/data.js?v=20260818a"></script>
 <script src="f.js?v=2"></script>
 <script src="f-t50.js?v=2"></script>
 <script>
@@ -170,14 +170,19 @@ function t50DoAuth(){
   const ph=document.getElementById('t50Phone').value.replace(/[^0-9]/g,'');
   if(!nm){ toast('이름을 입력해 주세요'); return; }
   if(ph.length<10){ toast('휴대폰 번호를 확인해 주세요'); return; }
-  t50Auth1={name:nm,phone:ph,means:'PASS 통신사 인증'};
+  /* 인증기관이 성명·생년월일을 회신한 것으로 보고, 이후 주소지 확인에서
+     입력한 주민등록번호 앞자리가 이 생년월일과 같은지 대조한다 */
+  t50Auth1={name:nm,phone:ph,means:'PASS 통신사 인증',birth:getAccountBirth(U.id)};
   toast('본인인증이 완료되었습니다');
   t50Go(2);
 }
 
 /* [2] 주소지 확인 — 주민등록번호 입력 → 팝업 확인 → 저장 */
 function bodyAddr(){
+  const b=t50Auth1&&t50Auth1.birth?t50Auth1.birth:null;
   return '<div class="t50w-q">주소지 확인을 위해<br>주민등록번호를 입력해 주세요</div>'+
+    (b?'<div class="t50w-addr">✅ 본인인증 정보: <b>'+fEsc(t50Auth1.name)+'</b> · 생년월일 <b>'+b.dot+'</b><br>'+
+        '<span style="font-weight:500">본인 명의의 주민등록번호만 입력할 수 있습니다.</span></div>':'')+
     '<label class="f-lb">주민등록번호</label>'+
     '<div class="t50w-rrn">'+
       '<input class="f-in" id="t50Rrn1" type="text" inputmode="numeric" maxlength="6" placeholder="앞 6자리" aria-label="주민등록번호 앞 6자리">'+
@@ -196,8 +201,18 @@ function t50AddrCheck(){
   const age=ft50AgeFromRrn(r1,r2);
   if(age===null){ toast('주민등록번호 형식이 올바르지 않습니다'); return; }
   /* 미성년자 신청 불가 */
-  if(age<19){
+  if(age>=0&&age<19){
     alert('만 19세 미만 미성년자는 휴가지원제를 신청할 수 없습니다.\n(입력하신 주민등록번호 기준 만 '+age+'세)');
+    return;
+  }
+  /* 본인 확인 — 입력한 주민등록번호 앞자리(생년월일)가 본인인증 정보와 다르면
+     타인 명의 조회이므로 진행할 수 없다. 팝업 후 주소지 확인 단계로 되돌린다 */
+  const birth=(t50Auth1&&t50Auth1.birth)?t50Auth1.birth:getAccountBirth(U.id);
+  if(!t50BirthMatch(r1,r2,birth)){
+    alert('본인의 주소지만 확인할 수 있습니다.\n\n본인인증 정보의 생년월일('+birth.dot+')과 입력하신 주민등록번호 앞자리가 다릅니다.');
+    t50Go(2);
+    const el=document.getElementById('t50Rrn1');
+    if(el) el.focus();
     return;
   }
   t50Age=age;
@@ -209,6 +224,14 @@ function t50AddrCheck(){
     '📍 '+fEsc(t50Addr.full)+' · <b>만 '+age+'세 확인</b><br>'+
     '<span style="font-weight:500">* 개인정보 최소화를 위해 시·군·구 단위까지만 저장됩니다</span>';
   fOpenModal('t50AddrModal');
+}
+/* 입력한 주민등록번호의 생년월일(앞 6자리 + 뒷자리 첫 숫자의 세기)이 본인 생년월일과 같은지 */
+function t50BirthMatch(r1,r2,b){
+  if(!b) return true;
+  if(r1!==b.rrn6) return false;
+  const g=Number(r2.charAt(0));
+  const century=(g===1||g===2||g===5||g===6)?1900:((g===3||g===4||g===7||g===8)?2000:1800);
+  return century+Number(r1.slice(0,2))===b.y;
 }
 function t50AddrSave(){
   t50AddrOk=true;

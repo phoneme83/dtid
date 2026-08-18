@@ -103,7 +103,7 @@
 
 <div id="shellBottom"></div>
 
-<script src="../site-assets/data.js?v=20260707f"></script>
+<script src="../site-assets/data.js?v=20260818a"></script>
 <script src="f.js?v=2"></script>
 <script src="f-t50.js?v=2"></script>
 <script>
@@ -116,10 +116,8 @@ function qMemberNo(){
   const h=fHash((U?U.id:'x')+'member');
   return '2026-'+String(h%100000000).padStart(8,'0');
 }
-function qBirth(){
-  const h=fHash((U?U.id:'x')+'birth');
-  return (1965+h%40)+'.'+String(1+h%12).padStart(2,'0')+'.'+String(1+(h>>3)%28).padStart(2,'0');
-}
+/* 생년월일은 data.js 의 계정 공용값을 쓴다 — 휴가지원제 주소지 확인(주민등록번호 대조)과 같은 값 */
+function qBirth(){ return getAccountBirth(U?U.id:'x').dot; }
 function qBarcode(){
   const h=fHash((U?U.id:'x')+'bar');
   let bars='';

@@ -1231,3 +1231,24 @@ function getCurLevelIdx(exp){
   for(let i=LEVELS.length-1;i>=0;i--){if(exp>=LEVELS[i].minExp)return i;}
   return 0;
 }
+
+/* ── 계정별 생년월일 ───────────────────────────────────────
+   시안 F의 QR 주민증 표기와 지역사랑 휴가지원 주소지 확인(주민등록번호 대조)이
+   같은 값을 봐야 하므로 여기 한 곳에서 계정 id로 결정한다.
+   (기존 site-f/qr.html 의 qBirth() 산식과 동일한 결과를 낸다) */
+function accBirthHash(s){
+  let h=0;
+  for(let i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))|0; }
+  return Math.abs(h);
+}
+function getAccountBirth(userId){
+  const h=accBirthHash((userId||'x')+'birth');
+  const y=1965+h%40, m=1+h%12, d=1+((h>>3)%28);
+  const p2=n=>String(n).padStart(2,'0');
+  return {
+    y:y, m:m, d:d,
+    ymd:y+'-'+p2(m)+'-'+p2(d),          /* 2026-01-02 */
+    dot:y+'.'+p2(m)+'.'+p2(d),          /* 2026.01.02 */
+    rrn6:String(y%100).padStart(2,'0')+p2(m)+p2(d)   /* 주민등록번호 앞 6자리 */
+  };
+}

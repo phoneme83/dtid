@@ -80,6 +80,7 @@
   <!-- [2] 주소지 확인 -->
   <section class="ap-view" id="apV2">
     <h2 class="ap-q">주소지 확인을 위해<br>주민등록번호를 입력해 주세요</h2>
+    <div class="ap-addr" id="apAuthInfo" style="display:none"></div>
     <label class="ap-lb" for="apRrn1">주민등록번호</label>
     <div class="ap-rrn">
       <input class="ap-in" id="apRrn1" type="text" inputmode="numeric" maxlength="6" placeholder="앞 6자리" aria-label="주민등록번호 앞 6자리">
@@ -228,7 +229,7 @@
 
 <div class="toast" id="toastEl"></div>
 
-<script src="../site-assets/data.js?v=20260707f"></script>
+<script src="../site-assets/data.js?v=20260818a"></script>
 <script src="t50-config.js?v=1"></script>
 <script>/* site-a 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidA_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
@@ -285,6 +286,7 @@ let apSel=null;          // 선택한 지역명
 let apAddrOk=false;      // 주소지 확인 여부
 let apYouth=false;       // 청년(만 19~34세) 여부 — 환급 시 20% 추가
 let apAge=null;          // 주민등록번호로 확인한 만 나이 (통계·관리의 연령대별 통계에 사용)
+let apBirth=null;        // 본인인증으로 회신받은 생년월일 (주민등록번호 앞자리 대조 기준)
 
 /* 주민등록번호로 만 나이 계산 (뒷자리 첫 숫자로 세기 판별). 형식 오류면 null */
 function apAgeFromRrn(r1,r2){
@@ -358,8 +360,22 @@ function apAuth(){
   const ph=document.getElementById('apPhone').value.replace(/[^0-9]/g,'');
   if(!nm){toast('이름을 입력해 주세요');return;}
   if(ph.length<10){toast('휴대폰 번호를 확인해 주세요');return;}
+  /* 인증기관이 성명·생년월일을 회신한 것으로 본다 — 주소지 확인 단계에서
+     입력한 주민등록번호 앞자리가 이 생년월일과 같은지 대조하는 기준이 된다 */
+  apBirth=getAccountBirth(user?user.id:'guest');
+  const info=document.getElementById('apAuthInfo');
+  info.style.display='block';
+  info.innerHTML='✅ 본인인증 정보: <b>'+nm+'</b> · 생년월일 <b>'+apBirth.dot+'</b><br><small>본인 명의의 주민등록번호만 입력할 수 있습니다.</small>';
   toast('본인인증이 완료되었습니다');
   apGo(2);
+}
+/* 입력한 주민등록번호의 생년월일(앞 6자리 + 뒷자리 첫 숫자의 세기)이 본인 생년월일과 같은지 */
+function apBirthMatch(r1,r2){
+  if(!apBirth)return true;
+  if(r1!==apBirth.rrn6)return false;
+  const g=Number(r2.charAt(0));
+  const century=(g===1||g===2||g===5||g===6)?1900:((g===3||g===4||g===7||g===8)?2000:1800);
+  return century+Number(r1.slice(0,2))===apBirth.y;
 }
 
 /* 주소지 확인: 주민등록번호 입력 → 팝업. 번호 자체는 어디에도 저장하지 않는다 */
@@ -371,8 +387,18 @@ function apAddrCheck(){
   const age=apAgeFromRrn(r1,r2);
   if(age===null){toast('주민등록번호 형식이 올바르지 않습니다');return;}
   /* 미성년자 신청 불가 */
-  if(age<19){
+  if(age>=0&&age<19){
     alert('만 19세 미만 미성년자는 반값여행을 신청할 수 없습니다.\n(입력하신 주민등록번호 기준 만 '+age+'세)');
+    return;
+  }
+  /* 본인 확인 — 앞자리(생년월일)가 본인인증 정보와 다르면 타인 명의 조회이므로 진행 불가.
+     팝업 후 주소지 확인 단계로 되돌린다 */
+  if(!apBirthMatch(r1,r2)){
+    alert('본인의 주소지만 확인할 수 있습니다.\n\n본인인증 정보의 생년월일('+apBirth.dot+')과 입력하신 주민등록번호 앞자리가 다릅니다.');
+    document.getElementById('apRrn1').value='';
+    document.getElementById('apRrn2').value='';
+    apGo(2);
+    document.getElementById('apRrn1').focus();
     return;
   }
   apAge=age;
