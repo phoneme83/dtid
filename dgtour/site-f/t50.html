@@ -72,7 +72,8 @@
 
 <script src="../site-assets/data.js?v=20260818a"></script>
 <script src="f.js?v=2"></script>
-<script src="f-t50.js?v=2"></script>
+<script src="f-t50.js?v=3"></script>
+<script src="f-t50-evidence.js?v=1"></script>
 <script>
 const U=fRequireUser();
 const T50_STEPS=['본인인증','주소지 확인','지역 선택','여행 계획','접수 완료'];
@@ -88,7 +89,13 @@ let t50Youth=false;   /* 청년(만 19~34세) */
 let t50Age=null;      /* 주민등록번호로 확인한 만 나이 */
 let t50Auth1=null;    /* 본인인증 결과 {name,phone,means} */
 let t50D1=null,t50D2=null,t50CalCur=null;   /* 캘린더 선택 상태 */
+let t50Unit='personal';   /* 신청 단위: personal | family */
+let t50FamPick=[];        /* 선택한 가족(등본 구성원 id) */
+let t50Home=null;         /* 주민등록등본 조회 결과 */
+let t50HomeOpen=false;    /* 등본을 조회했는지 */
 let t50DoneNo='',t50DoneSum='',t50OverMsg='';
+let t50EvOpen=false;      /* 증빙 등록 폼 열림 */
+let t50Ocr=null;          /* 영수증 판독 결과 */
 
 /* ── 신청 데이터 ─────────────────────────────────────────── */
 function t50List(){ return U?ft50My(U.id):[]; }
@@ -132,7 +139,7 @@ function renderBody(){
   if(t50View===1){ el.innerHTML=bodyAuth(); return; }
   if(t50View===2){ el.innerHTML=bodyAddr(); return; }
   if(t50View===3){ el.innerHTML=bodyRegion(); t50RenderRegions(); return; }
-  if(t50View===4){ el.innerHTML=bodyPlan(); t50CalRender(); t50DateHint(); t50PeopleHint(); return; }
+  if(t50View===4){ el.innerHTML=bodyPlan(); t50CalRender(); t50DateHint(); t50RenderFam(); t50PeopleHint(); return; }
   if(t50View===5){ el.innerHTML=bodySubmitted(); return; }
   if(t50View===6){ el.innerHTML=bodyQueue(); t50QueueRender(); return; }
   if(t50View===7){ el.innerHTML=bodyOverload(); return; }
@@ -298,9 +305,6 @@ function bodyPlan(){
   const p=t50Period(t50Sel);
   const notice=(cfg.notices&&cfg.notices.length)?cfg.notices[0]:null;
   const r=ft50Regions().find(x=>x.name===t50Sel);
-  const opts=[];
-  for(let n=cfg.minPeople;n<=cfg.maxPeople;n++)
-    opts.push('<option value="'+n+'"'+(n===2?' selected':'')+'>'+n+'명'+(n===6?' 이상':'')+'</option>');
   return '<div class="t50w-q">'+fEsc(t50Sel)+'('+fEsc(r?r.sido:'')+') 여행 계획을 알려주세요</div>'+
     '<div class="t50w-per">🗓 <b>'+fEsc(t50Sel)+'</b> 휴가지원 여행 가능기간'+
       '<div class="rng">'+t50Fmt(p.s)+' ~ '+t50Fmt(p.e)+' <small>('+t50Days(p)+'일간)</small></div>'+
@@ -310,8 +314,13 @@ function bodyPlan(){
     '<label class="f-lb">여행 기간 <span style="font-weight:500;color:var(--sub)">(가능기간의 날짜만 선택할 수 있습니다)</span></label>'+
     '<div class="t50w-cal" id="t50Cal"></div>'+
     '<div class="t50w-hint" id="t50DateHint" aria-live="polite"></div>'+
-    '<label class="f-lb" for="t50People">인원</label>'+
-    '<select class="f-in" id="t50People" onchange="t50PeopleHint()">'+opts.join('')+'</select>'+
+    '<label class="f-lb">신청 단위</label>'+
+    '<div class="t50w-unit">'+
+      '<button type="button" class="u'+(t50Unit==='personal'?' on':'')+'" onclick="t50SetUnit(\'personal\')">👤 개인 신청<small>신청자 본인 1명</small></button>'+
+      '<button type="button" class="u'+(t50Unit==='family'?' on':'')+'" onclick="t50SetUnit(\'family\')">👨‍👩‍👧 가족 신청<small>본인 포함 최대 '+FT50_FAMILY_MAX+'명</small></button>'+
+    '</div>'+
+    '<div id="t50FamBox"></div>'+
+    '<input type="hidden" id="t50People" value="'+t50PeopleCount()+'">'+
     '<div class="t50w-note" id="t50FamHint" style="display:none">👨‍👩‍👧 3인 이상 가족 신청은 지원금에 <b>10% 추가</b> 혜택이 적용됩니다.</div>'+
     '<label class="f-lb" for="t50Plan">간단한 여행 계획 <span style="font-weight:500;color:var(--sub)">(선택)</span></label>'+
     '<textarea class="f-in" id="t50Plan" rows="3" placeholder="예) 1일차 숙소 체크인 후 전통시장, 2일차 해안 산책"></textarea>'+
@@ -319,11 +328,90 @@ function bodyPlan(){
     '<button class="btn blk" style="margin-top:11px" onclick="t50Submit()">신청 접수하기</button>'+
     '<button class="btn gy blk" style="margin-top:7px" onclick="t50Go(3)">‹ 이전으로</button>';
 }
+/* ── 신청 단위(개인 / 가족) ─────────────────────────────────
+   가족 신청은 주민등록등본 조회로 확인된 배우자·직계 존비속만,
+   본인 포함 최대 FT50_FAMILY_MAX 명까지 선택할 수 있다 */
+function t50PeopleCount(){
+  return t50Unit==='family' ? (1+t50FamPick.length) : 1;
+}
+function t50SetUnit(u){
+  t50Unit=u;
+  if(u==='personal'){ t50FamPick=[]; }
+  t50RenderFam();
+  t50PeopleHint();
+}
+function t50Household(){
+  if(!t50Home) t50Home=ft50Household(U.id,t50Auth1?t50Auth1.name:U.name,t50Age||40);
+  return t50Home;
+}
+function t50FamLookup(){
+  t50HomeOpen=true;
+  t50Household();
+  t50RenderFam();
+  toast('주민등록등본 조회 완료 — 신청 가능한 가족을 선택하세요');
+}
+function t50FamToggle(id){
+  const i=t50FamPick.indexOf(id);
+  if(i>=0){ t50FamPick.splice(i,1); }
+  else{
+    if(1+t50FamPick.length>=FT50_FAMILY_MAX){
+      alert('가족 신청은 신청자 본인을 포함해 최대 '+FT50_FAMILY_MAX+'명까지 신청할 수 있습니다.');
+      return;
+    }
+    t50FamPick.push(id);
+  }
+  t50RenderFam();
+  t50PeopleHint();
+}
+function t50RenderFam(){
+  const el=document.getElementById('t50FamBox');
+  if(!el) return;
+  /* 선택 단위 버튼 상태 갱신 */
+  const us=document.querySelectorAll('.t50w-unit .u');
+  if(us.length===2){
+    us[0].classList.toggle('on',t50Unit==='personal');
+    us[1].classList.toggle('on',t50Unit==='family');
+  }
+  const n=t50PeopleCount();
+  const cap='<div class="t50w-note">신청 인원 <b>'+n+'명</b> · 환급 한도 <b>'+ft50Won(n*FT50_MAX_PER_PERSON)+'</b> '+
+    '<span style="color:var(--sub)">(신청자 1명당 최대 '+ft50Won(FT50_MAX_PER_PERSON)+')</span></div>';
+  if(t50Unit==='personal'){
+    el.innerHTML=cap;
+    const h=document.getElementById('t50People'); if(h) h.value=String(n);
+    return;
+  }
+  if(!t50HomeOpen){
+    el.innerHTML='<div class="t50w-note">가족과 함께 신청하려면 주민등록등본으로 세대원을 확인해야 합니다. '+
+        '조회된 세대원 중 <b>배우자·직계 존비속</b>만 선택할 수 있습니다.</div>'+
+      '<button class="btn o blk" style="margin-top:8px" onclick="t50FamLookup()">📄 주민등록등본 조회</button>'+cap;
+    const h=document.getElementById('t50People'); if(h) h.value=String(n);
+    return;
+  }
+  const rows=t50Household().map(function(m){
+    const on=t50FamPick.indexOf(m.id)>=0;
+    if(!m.eligible){
+      return '<div class="t50w-fam dis"><span class="ck">–</span>'+
+        '<span class="bd"><b>'+fEsc(m.masked)+'</b> <span class="rel">'+fEsc(m.rel)+'</span>'+
+        '<span class="why">'+fEsc(m.why)+'</span></span></div>';
+    }
+    return '<button type="button" class="t50w-fam'+(on?' on':'')+'" onclick="t50FamToggle(\''+m.id+'\')">'+
+      '<span class="ck">'+(on?'✓':'')+'</span>'+
+      '<span class="bd"><b>'+fEsc(m.masked)+'</b> <span class="rel">'+fEsc(m.rel)+'</span>'+
+      '<span class="why">'+m.birthYear+'년생 · 만 '+m.age+'세</span></span></button>';
+  }).join('');
+  el.innerHTML=
+    '<div class="t50w-note">📄 주민등록등본 조회 결과 — 개인정보 보호를 위해 이름은 가운데 글자를 가려 표시합니다. '+
+      '배우자·직계 존비속만 선택할 수 있으며, 본인 포함 최대 <b>'+FT50_FAMILY_MAX+'명</b>입니다.</div>'+
+    '<div class="t50w-fam self"><span class="ck">✓</span><span class="bd"><b>'+fEsc(ft50MaskName(t50Auth1?t50Auth1.name:U.name))+'</b> '+
+      '<span class="rel">본인</span><span class="why">신청자 — 항상 포함됩니다</span></span></div>'+
+    rows+cap;
+  const h=document.getElementById('t50People'); if(h) h.value=String(n);
+}
 function t50PeopleHint(){
   const el=document.getElementById('t50FamHint');
-  const sel=document.getElementById('t50People');
-  if(!el||!sel) return;
-  el.style.display=(ft50PeopleNum({people:sel.value})>=3)?'block':'none';
+  if(!el) return;
+  el.style.display=(t50PeopleCount()>=3)?'block':'none';
+  const h=document.getElementById('t50People'); if(h) h.value=String(t50PeopleCount());
 }
 function t50CalInit(){
   const p=t50Sel?t50Period(t50Sel):null;
@@ -391,14 +479,21 @@ function t50Submit(){
   if(!t50D1||!t50D2){ toast('캘린더에서 여행 기간을 선택해 주세요'); t50DateHint(); return; }
   const p=t50Period(t50Sel);
   if(t50D1<p.s||t50D2>p.e){ toast('여행 가능기간('+t50Fmt(p.s)+' ~ '+t50Fmt(p.e)+') 안에서 선택해 주세요'); t50DateHint(); return; }
-  const peopleVal=document.getElementById('t50People').value;
-  const ppl=ft50PeopleNum({people:peopleVal});
+  const ppl=t50PeopleCount();
+  const peopleVal=String(ppl);
+  const cfgMax=Math.min(ft50RegionCfg(t50Sel).maxPeople,FT50_FAMILY_MAX);
+  if(t50Unit==='family'&&ppl<2){ toast('함께 신청할 가족을 1명 이상 선택해 주세요'); return; }
+  if(ppl>cfgMax){ toast('신청 인원은 최대 '+cfgMax+'명까지 가능합니다'); return; }
   const r=ft50Regions().find(x=>x.name===t50Sel);
   const now=new Date();
   const draft={
     region:t50Sel, sido:r?r.sido:'',
     start:t50D1, end:t50D2, period:p,
     people:peopleVal, plan:document.getElementById('t50Plan').value.trim(),
+    unit:t50Unit,
+    members:(t50Unit==='family'?t50Household().filter(function(m){return t50FamPick.indexOf(m.id)>=0;})
+      .map(function(m){return {masked:m.masked,rel:m.rel,birthYear:m.birthYear,age:m.age};}):[]),
+    refundCap:ppl*FT50_MAX_PER_PERSON,
     applicant:t50Auth1?t50Auth1.name:(U?U.name:''), uid:U?U.id:'',
     youth:t50Youth, age:t50Age, familyEligible:ppl>=3,
     addr:t50Addr?t50Addr.full:'', authMeans:t50Auth1?t50Auth1.means:'',
@@ -416,7 +511,7 @@ function t50Submit(){
     t50Save(list);
     t50DoneNo='접수번호 '+no;
     t50DoneSum=draft.region+' · '+t50Fmt(draft.start)+' ~ '+t50Fmt(draft.end)+' · '+peopleVal+'명';
-    t50Sel=null;
+    t50Sel=null; t50Unit='personal'; t50FamPick=[]; t50HomeOpen=false;
     renderAll();
     t50Go(5);
   }else if(dec.mode==='queue'){
@@ -569,7 +664,9 @@ function renderStatus(){
         '<span style="font-size:11px;color:var(--sub)">'+fEsc(a.no)+'</span>'+
         '<span class="badge '+st.cls+'" style="margin-left:auto">'+st.ic+' '+st.t+'</span></div>'+
       '<div style="font-size:11.5px;color:var(--sub);margin-top:4px;line-height:1.7">'+
-        '여행 '+t50Fmt(a.start)+' ~ '+t50Fmt(a.end)+' · '+fEsc(a.people)+'명 · 접수 '+t50Fmt(a.ts)+
+        '여행 '+t50Fmt(a.start)+' ~ '+t50Fmt(a.end)+' · '+(a.unit==='family'?'가족':'개인')+' '+fEsc(a.people)+'명 · 접수 '+t50Fmt(a.ts)+
+        ((a.members&&a.members.length)?'<br>동반 가족 '+a.members.map(function(m){return fEsc(m.masked)+'('+fEsc(m.rel)+')';}).join(', '):'')+
+        '<br>환급 한도 '+ft50Won(a.refundCap||ft50RefundCap(a))+' (1명당 '+ft50Won(FT50_MAX_PER_PERSON)+')'+
         (grant!==null?'<br>승인 지원금 <b style="color:var(--pri)">'+ft50Won(grant)+'</b>'+
           ((a.youthBonus||a.familyBonus)?' (청년·가족 가산 포함)':''):
           '<br>예상 지원금 '+ft50Won(c.total)+' (심사 후 확정)')+
@@ -596,19 +693,29 @@ function renderRefund(){
   }
   const a=act.a;
   const spend=a.spend||0;
-  const expect=(typeof a.amount==='number')?Math.min(a.amount,Math.round(spend/2)):Math.round(spend/2);
+  const cap=a.refundCap||ft50RefundCap(a);
+  const expect=Math.min(Math.round(spend/2),cap,(typeof a.amount==='number')?a.amount:cap);
   el.innerHTML=
     '<div class="kv"><span class="k">환급 대상 결제금액</span><span class="v">'+fmt(spend)+' 원</span></div>'+
-    '<div class="kv"><span class="k">환급 예정액(50% · 승인 지원금 한도)</span><span class="v pri">'+fmt(expect)+' 원</span></div>'+
+    '<div class="kv"><span class="k">환급 예정액(50%)</span><span class="v pri">'+fmt(expect)+' 원</span></div>'+
+    '<div class="kv"><span class="k">환급 한도('+fEsc(a.people)+'명 × '+fmt(FT50_MAX_PER_PERSON)+'원)</span><span class="v">'+fmt(cap)+' 원</span></div>'+
     base+
     (a.status==='notified'||a.status==='refund_fix'
       ? '<div style="display:flex;gap:8px;margin-top:11px">'+
           '<button class="btn o" style="flex:1" onclick="t50Spend()">가맹점 결제(모의)</button>'+
-          '<button class="btn" style="flex:1" onclick="t50RefundReq()">'+(a.status==='refund_fix'?'증빙 보완 후 재제출':'환급 신청')+'</button>'+
-        '</div>'
+          '<button class="btn" style="flex:1" onclick="t50EvToggle()">'+
+            (t50EvOpen?'증빙 등록 닫기':(a.status==='refund_fix'?'증빙 보완 후 재제출':'환급 신청(증빙 등록)'))+'</button>'+
+        '</div>'+
+        (t50EvOpen?t50EvForm(a):'')
       : '')+
-    (a.status==='refund_req'
-      ? '<div style="font-size:11.5px;color:var(--sub);line-height:1.7;margin-top:11px">🧾 결제내역 '+((a.evidence&&a.evidence.count)||0)+'건(합계 '+fmt((a.evidence&&a.evidence.amt)||0)+'원)을 제출했습니다. 담당자 심사 결과를 기다리는 중입니다.</div>'
+    (a.status==='refund_req'&&a.evidence
+      ? '<div class="t50e-ocr" style="margin-top:11px"><div class="t">제출한 증빙자료</div>'+
+          '<div class="row"><span>카드번호</span><b>'+fEsc(a.evidence.card)+'</b></div>'+
+          '<div class="row"><span>승인번호</span><b>'+fEsc(a.evidence.appr)+'</b></div>'+
+          '<div class="row"><span>결재금액</span><b>'+fmt(a.evidence.amt)+'원</b></div>'+
+          (a.evidence.date?'<div class="row"><span>결제일</span><b>'+fEsc(a.evidence.date)+' ✅ 여행기간 내</b></div>':'')+
+          '<div class="row"><span>첨부파일</span><b>'+fEsc(a.evidence.file||'-')+'</b></div>'+
+          '<small>✓ '+fEsc(a.evidence.ocr||'판독 결과와 대조 완료')+' — 담당자 심사 결과를 기다리는 중입니다.</small></div>'
       : '')+
     (a.status==='refund_ok'
       ? '<div style="font-size:11.5px;color:var(--ok);font-weight:700;line-height:1.7;margin-top:11px">💰 환급 '+fmt(a.refundAmount||0)+'원이 지역사랑상품권으로 지급되었습니다.</div>'
@@ -620,23 +727,127 @@ function t50Spend(){
   const act=t50Active(); if(!act) return;
   const list=t50List();
   const a=list[act.i];
-  const amt=[18000,25000,42000,31000][fHash(U.id+String(a.spend||0))%4];
+  const idx=fHash(U.id+String(a.spend||0))%4;
+  const amt=[18000,25000,42000,31000][idx];
+  const merchant=['\ud83c\udfe8 바다뷰 펜션','\ud83c\udf72 항구식당','\u2615 등대카페','\ud83c\udfa3 갯벌체험장'][idx];
   a.spend=(a.spend||0)+amt;
   a.spendCount=(a.spendCount||0)+1;
+  if(!a.payments) a.payments=[];
+  a.payments.push({merchant:merchant,amt:amt,ts:ft50Today()});
   t50Save(list);
-  toast(a.region+' 가맹점 결제 '+fmt(amt)+'원 (환급 대상 반영)');
+  toast(a.region+' '+merchant+' 결제 '+fmt(amt)+'원 (환급 대상 반영)');
   renderAll();
 }
-function t50RefundReq(){
+/* ── 환급 증빙 등록 (영수증 OCR 대조) ─────────────────────
+   입력한 카드번호·승인번호·결재금액·결제일이 첨부한 영수증의 판독 결과와
+   모두 일치해야 제출된다. 결제일은 여행기간 안이어야 한다. */
+function t50EvToggle(close){
+  t50EvOpen=close?false:!t50EvOpen;
+  if(!t50EvOpen) t50Ocr=null;
+  renderRefund();
+}
+function t50EvSample(){
   const act=t50Active(); if(!act) return;
+  const r=ft50EvSampleImage(act.a);
+  toast('데모 영수증 다운로드 — 카드 1234-56○○-○○○○-3456 형태(가려진 자리는 아무 숫자), 승인번호 '+
+    r.appr+', 금액 '+fmt(r.amt)+'원, 결제일 '+r.date+'로 입력하세요');
+}
+function t50EvOcrHtml(a){
+  const o=t50Ocr;
+  if(!o) return '<div class="t50e-ocr wait" id="t50EvWait" style="display:none">🔍 영수증 판독 중…</div>';
+  if(o.mode==='real'){
+    const ex=o.ex||{};
+    return '<div class="t50e-ocr"><div class="t">📄 영수증 OCR 판독 완료 (실제 판독) — <b>'+fEsc(o.file)+'</b></div>'+
+      '<div class="row"><span>판독된 카드번호</span><b>'+fEsc(ex.card||'미검출')+'</b></div>'+
+      '<div class="row"><span>판독된 승인번호</span><b>'+fEsc(ex.appr||'미검출')+'</b></div>'+
+      '<div class="row"><span>판독된 금액</span><b>'+((ex.amts&&ex.amts.length)?ex.amts.map(function(v){return fmt(Number(v));}).join(', ')+'원':'미검출')+'</b></div>'+
+      '<div class="row"><span>판독된 결제일</span><b>'+(ex.date?ex.date+(ft50EvInPeriod(a,ex.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖'):'미검출')+'</b></div>'+
+      '<small>입력하신 카드번호·승인번호·결재금액·결제일이 판독 결과와 대조되며, 결제일은 여행기간('+a.start+' ~ '+a.end+') 안이어야 합니다. 카드번호의 *(마스킹) 자리는 비교에서 제외됩니다.</small></div>';
+  }
+  return '<div class="t50e-ocr"><div class="t">📄 영수증 판독 결과 (모의 — OCR 엔진 로드 실패) — <b>'+fEsc(o.file)+'</b></div>'+
+    '<div class="row"><span>가맹점</span><b>'+fEsc(o.merchant)+'</b></div>'+
+    '<div class="row"><span>카드번호</span><b>'+fEsc(o.card||'미검출')+'</b></div>'+
+    '<div class="row"><span>결재금액</span><b>'+fmt(o.amt)+'원</b></div>'+
+    '<div class="row"><span>승인번호</span><b>'+fEsc(o.appr)+'</b></div>'+
+    '<div class="row"><span>결제일</span><b>'+(o.date?o.date+(ft50EvInPeriod(a,o.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖'):'미검출')+'</b></div>'+
+    '<small>입력하신 승인번호·결재금액·결제일이 판독 결과와 일치해야 제출됩니다.</small></div>';
+}
+function t50EvForm(a){
+  return '<div class="t50e-box">'+
+    '<div class="t">증빙자료 등록</div>'+
+    '<div class="t50w-note">테스트용 영수증이 필요하면 아래 버튼으로 승인번호·금액이 인쇄된 데모 영수증 이미지를 받은 뒤 첨부하세요.</div>'+
+    '<button class="btn o blk" style="margin-top:8px" onclick="t50EvSample()">📄 데모 영수증 이미지 받기</button>'+
+    '<label class="f-lb" for="t50EvCard">카드번호</label>'+
+    '<input class="f-in" id="t50EvCard" type="text" inputmode="numeric" maxlength="19" placeholder="0000-0000-0000-0000">'+
+    '<label class="f-lb" for="t50EvAppr">승인번호</label>'+
+    '<input class="f-in" id="t50EvAppr" type="text" inputmode="numeric" maxlength="8" placeholder="영수증의 승인번호 8자리">'+
+    '<label class="f-lb" for="t50EvAmt">결재금액</label>'+
+    '<input class="f-in" id="t50EvAmt" type="number" inputmode="numeric" placeholder="영수증의 결재금액 (원)">'+
+    '<label class="f-lb" for="t50EvDate">결제일 <span style="font-weight:500;color:var(--sub)">(영수증의 승인·결제 날짜 — 여행기간 '+a.start+' ~ '+a.end+' 내)</span></label>'+
+    '<input class="f-in" id="t50EvDate" type="date">'+
+    '<label class="f-lb" for="t50EvFile">영수증 등 증빙파일 첨부</label>'+
+    '<input class="f-in" id="t50EvFile" type="file" accept="image/*,.pdf" onchange="t50EvRead(this)">'+
+    t50EvOcrHtml(a)+
+    '<div class="t50e-err" id="t50EvErr" aria-live="polite"></div>'+
+    '<button class="btn blk" style="margin-top:10px" onclick="t50EvSubmit()">환급 신청 제출</button>'+
+    '<button class="btn gy blk" style="margin-top:7px" onclick="t50EvToggle(true)">닫기</button>'+
+  '</div>';
+}
+function t50EvRead(input){
+  if(!input.files||!input.files.length) return;
+  const act=t50Active(); if(!act) return;
+  const file=input.files[0];
+  const wait=document.getElementById('t50EvWait');
+  if(wait){ wait.style.display='block'; wait.textContent='🔍 영수증 판독 중… (실제 OCR — 처음에는 엔진 내려받느라 수 초 걸립니다)'; }
+  /* 입력값은 판독 완료 후 다시 채워 넣는다 (재렌더링으로 지워지므로) */
+  const keep={
+    card:document.getElementById('t50EvCard').value,
+    appr:document.getElementById('t50EvAppr').value,
+    amt:document.getElementById('t50EvAmt').value,
+    date:document.getElementById('t50EvDate').value
+  };
+  ft50EvRead(file,act.a,function(msg){ const w=document.getElementById('t50EvWait'); if(w) w.textContent=msg; })
+    .then(function(o){
+      t50Ocr=o;
+      renderRefund();
+      const c=document.getElementById('t50EvCard'); if(c) c.value=keep.card;
+      const p=document.getElementById('t50EvAppr'); if(p) p.value=keep.appr;
+      const m=document.getElementById('t50EvAmt'); if(m) m.value=keep.amt;
+      const d=document.getElementById('t50EvDate'); if(d) d.value=keep.date;
+      toast(o.mode==='real'?'영수증 판독이 완료되었습니다 (실제 OCR)':'OCR 엔진을 불러오지 못해 모의 판독으로 대체했습니다');
+    });
+}
+function t50EvSubmit(){
+  const err=document.getElementById('t50EvErr');
+  err.textContent='';
+  const act=t50Active(); if(!act) return;
+  const card=document.getElementById('t50EvCard').value.replace(/[^0-9]/g,'');
+  const appr=document.getElementById('t50EvAppr').value.trim();
+  const amt=Math.floor(Number(document.getElementById('t50EvAmt').value)||0);
+  const payDate=document.getElementById('t50EvDate').value;
+  if(card.length<15){ err.textContent='카드번호를 확인해 주세요 (15~16자리 숫자)'; return; }
+  if(!appr){ err.textContent='승인번호를 입력해 주세요'; return; }
+  if(amt<=0){ err.textContent='결재금액을 입력해 주세요'; return; }
+  if(!payDate){ err.textContent='결제일(영수증의 승인·결제 날짜)을 입력해 주세요'; return; }
+  if(!t50Ocr){ err.textContent='영수증 등 증빙파일을 첨부해 주세요. 첨부하면 자동으로 판독됩니다.'; return; }
+  const fail=ft50EvVerify(t50Ocr,act.a,{card:card,appr:appr,amt:amt,date:payDate});
+  if(fail){ err.innerHTML=fail; return; }
   const list=t50List();
   const a=list[act.i];
-  if(!a.spend){ toast('환급 대상 결제내역이 없습니다'); return; }
-  a.evidence={count:a.spendCount||1,amt:a.spend,ocr:'AI OCR 1차 판독 통과 (관광목적 지출)',ts:ft50Today()};
   a.status='refund_req';
-  ft50Hist(a,'refund_req',U.name,'결제내역 '+(a.spendCount||1)+'건 제출');
+  a.evidence={
+    card:card.slice(0,4)+'-****-****-'+card.slice(-4),
+    appr:appr, amt:amt,
+    date:(t50Ocr.mode==='real'&&t50Ocr.ex&&t50Ocr.ex.date)?t50Ocr.ex.date:payDate,
+    file:t50Ocr.file,
+    ocr:(t50Ocr.mode==='real'?'영수증 OCR 판독 결과와 대조 일치':'모의 판독 결과와 대조 일치'),
+    ts:ft50Today()
+  };
+  delete a.fixReason;
+  ft50Hist(a,'refund_req',U.name,'증빙 제출 — 결재금액 '+ft50Won(amt));
   t50Save(list);
-  toast('환급 신청 접수 · 지자체 담당자 심사가 시작됩니다');
+  t50EvOpen=false; t50Ocr=null;
+  toast('증빙 대조 완료 — 환급 신청이 제출되었습니다');
   renderAll();
 }
 

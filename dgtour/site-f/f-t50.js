@@ -11,10 +11,12 @@ const FT50_CFG_KEY    = 'dtidF_t50BizCfg';
 const FT50_PERSONA_KEY= 'dtidF_admPersona';
 const FT50_ID_PREFIX  = 'dtidF_t50Identity_';   /* 본인인증(PASS·행정정보 공동이용) 결과 */
 
-/* 1인당 기본 지원금 · 가산율 */
+/* 1인당 기본 지원금 · 가산율 · 한도 */
 const FT50_PER_PERSON = 50000;
 const FT50_YOUTH_RATE = 0.2;                     /* 청년(만 19~34세) */
 const FT50_FAMILY_RATE= 0.1;                     /* 가족(3인 이상) */
+const FT50_MAX_PER_PERSON = 100000;              /* 신청자 1명당 최대 환급액 */
+const FT50_FAMILY_MAX = 5;                       /* 가족 단위 신청 시 본인 포함 최대 인원 */
 
 const FT50_ST = {
   received:  {t:'접수 대기',      lane:'공사',   ic:'📥', cls:'n'},
@@ -109,12 +111,64 @@ function ft50Hist(rec,st,by,note){
   rec.history.push({st:st,ts:new Date().toISOString(),by:by||'',note:note||''});
 }
 
-/* 지원금 산정 — 기본(인원×5만) + 청년 20% + 가족(3인 이상) 10% */
+/* 지원금 산정 — 기본(인원×5만) + 청년 20% + 가족(3인 이상) 10%.
+   단 신청자 1명당 최대 환급액(10만원)을 넘지 못한다 */
 function ft50Calc(a){
-  const base=ft50PeopleNum(a)*FT50_PER_PERSON;
+  const n=ft50PeopleNum(a);
+  const base=n*FT50_PER_PERSON;
   const youth=a.youth?Math.round(base*FT50_YOUTH_RATE):0;
-  const family=(ft50PeopleNum(a)>=3)?Math.round(base*FT50_FAMILY_RATE):0;
-  return {base:base,youth:youth,family:family,total:base+youth+family};
+  const family=(n>=3)?Math.round(base*FT50_FAMILY_RATE):0;
+  const cap=ft50RefundCap(a);
+  const sum=base+youth+family;
+  return {base:base,youth:youth,family:family,cap:cap,capped:sum>cap,total:Math.min(sum,cap)};
+}
+/* 환급 한도 = 인원 × 1인당 최대 환급액 */
+function ft50RefundCap(a){ return ft50PeopleNum(a)*FT50_MAX_PER_PERSON; }
+
+/* ── 주민등록등본 조회(모의) ────────────────────────────────
+   실제 서비스는 행정정보 공동이용망으로 세대원을 회신받는다. 프로토타입에서는
+   본인 주민등록번호를 입력한 시점에 계정·생년월일로 결정되는 세대를 구성한다.
+   개인정보 최소화를 위해 이름은 가운데 글자를 가린 상태로만 표시한다.
+   신청 가능 대상은 배우자와 직계 존·비속뿐이며, 형제·자매 등은 제외된다. */
+const FT50_DIRECT_RELS=['배우자','자녀','부','모','조부','조모','손자','손녀'];
+function ft50MaskName(name){
+  const s=String(name||'');
+  if(s.length<=1) return s;
+  if(s.length===2) return s.charAt(0)+'*';
+  return s.charAt(0)+'*'.repeat(s.length-2)+s.charAt(s.length-1);
+}
+function ft50IsDirect(rel){ return FT50_DIRECT_RELS.indexOf(rel)>=0; }
+function ft50Household(uid,selfName,selfAge){
+  const h=(typeof fHash==='function')?fHash((uid||'guest')+'household'):11;
+  const sur=String(selfName||'김').charAt(0);
+  const given=['서준','지우','하윤','도윤','서연','민준','지호','수아','예은','시우','채원','현우'];
+  const pick=function(k){ return given[(h>>k)%given.length]; };
+  const y=new Date().getFullYear();
+  const rows=[];
+  /* 배우자 — 신청자가 만 30세 이상일 때만 세대에 있다고 본다 */
+  if(selfAge>=30) rows.push({rel:'배우자',name:sur==='김'?'이'+pick(1):sur+pick(1),birthYear:y-selfAge+((h>>2)%5-2)});
+  /* 자녀 — 만 35세 이상이면 1~2명 */
+  if(selfAge>=35){
+    rows.push({rel:'자녀',name:sur+pick(3),birthYear:y-((h>>3)%14+6)});
+    if((h>>4)%2===0) rows.push({rel:'자녀',name:sur+pick(5),birthYear:y-((h>>5)%10+3)});
+  }
+  /* 직계 존속 */
+  rows.push({rel:'부',name:sur+pick(6),birthYear:y-selfAge-((h>>6)%8+25)});
+  rows.push({rel:'모',name:sur==='김'?'박'+pick(7):sur+pick(7),birthYear:y-selfAge-((h>>7)%8+23)});
+  /* 신청 대상이 아닌 세대원(형제·자매) — 제외 사유를 보여주기 위해 함께 조회된다 */
+  rows.push({rel:'형제',name:sur+pick(8),birthYear:y-selfAge-((h>>8)%6-3)});
+  return rows.map(function(r,i){
+    return {
+      id:'H'+i,
+      rel:r.rel,
+      name:r.name,
+      masked:ft50MaskName(r.name),
+      birthYear:r.birthYear,
+      age:y-r.birthYear,
+      eligible:ft50IsDirect(r.rel),
+      why:ft50IsDirect(r.rel)?'':'직계 존·비속 및 배우자가 아니어서 신청할 수 없습니다'
+    };
+  });
 }
 
 /* ── 본인인증 · 주소지 확인 ────────────────────────────────

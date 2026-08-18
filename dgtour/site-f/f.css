@@ -378,6 +378,36 @@ textarea.f-in{resize:vertical;line-height:1.6}
 .t50w-myq{background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px 12px;font-size:12px;color:#9a3412;line-height:1.7;margin-bottom:10px}
 @media (min-width:960px){ .t50w-rgrid{grid-template-columns:repeat(3,minmax(0,1fr))} }
 
+/* 신청 단위(개인/가족) · 주민등록등본 조회 */
+.t50w-unit{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.t50w-unit .u{border:1.5px solid var(--line);border-radius:11px;padding:11px 10px;background:#fff;font-size:13px;font-weight:800;text-align:center;line-height:1.4}
+.t50w-unit .u small{display:block;font-size:10.5px;font-weight:600;color:var(--sub);margin-top:3px}
+.t50w-unit .u.on{border-color:var(--pri);background:var(--pri-l);color:var(--pri-d)}
+.t50w-fam{display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:1.5px solid var(--line);border-radius:11px;padding:9px 11px;background:#fff;margin-top:7px}
+.t50w-fam .ck{width:22px;height:22px;flex:0 0 auto;border-radius:6px;border:1.5px solid var(--line);display:grid;place-items:center;font-size:12px;font-weight:800;color:#fff;background:#fff}
+.t50w-fam.on{border-color:var(--pri);background:var(--pri-l)}
+.t50w-fam.on .ck{background:var(--pri);border-color:var(--pri)}
+.t50w-fam.self{background:#f8fafc}
+.t50w-fam.self .ck{background:var(--ok);border-color:var(--ok)}
+.t50w-fam.dis{opacity:.55}
+.t50w-fam .bd{min-width:0}
+.t50w-fam .bd b{font-size:13px}
+.t50w-fam .rel{font-size:11px;font-weight:700;color:var(--pri);margin-left:5px}
+.t50w-fam .why{display:block;font-size:10.5px;color:var(--sub);margin-top:2px}
+
+/* 환급 증빙 등록 */
+.t50e-box{border:1.5px solid var(--line);border-radius:12px;padding:12px 13px;margin-top:11px;background:#fbfcfe}
+.t50e-box .t{font-size:13.5px;font-weight:800;margin-bottom:8px}
+.t50e-ocr{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:12px}
+.t50e-ocr .t{font-size:12.5px;font-weight:800;margin-bottom:6px}
+.t50e-ocr .row{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px dashed var(--line)}
+.t50e-ocr .row span{color:var(--sub)}
+.t50e-ocr .row b{text-align:right;word-break:break-all}
+.t50e-ocr small{display:block;color:var(--sub);line-height:1.6;margin-top:7px}
+.t50e-ocr.wait{background:var(--pri-l);border-color:var(--pri-l);color:var(--pri-d);font-weight:700}
+.t50e-err{font-size:12px;color:#b91c1c;line-height:1.65;margin-top:9px}
+.t50e-err b{font-weight:800}
+
 /* ── 관리자 › 지역사랑 휴가지원 ──────────────────────────── */
 .t50a-sub{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
 .t50a-sub button{border-radius:8px;padding:7px 14px;font-size:12.5px;font-weight:700;background:#f1f5f9;color:var(--ink2)}

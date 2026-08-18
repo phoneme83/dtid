@@ -180,21 +180,26 @@ function t50aCard(x){
       '<span style="font-size:12px">신청자 '+fEsc(a.applicant||'-')+' <small style="color:var(--sub2)">(계정 '+fEsc(a.uid||ft50Uid(x.k))+')</small></span>'+
       '<button class="btn gy" style="margin-left:auto;padding:5px 11px;font-size:11.5px" onclick="t50aDetail('+K+')">상세조회</button>'+
       '<span class="badge '+st.cls+'">'+st.ic+' '+st.t+'</span></div>'+
-    '<div class="dt">여행 '+ft50Dot(a.start)+' ~ '+ft50Dot(a.end)+' · '+fEsc(a.people)+'명 · 접수일 '+ft50Dot(a.ts)+
+    '<div class="dt">여행 '+ft50Dot(a.start)+' ~ '+ft50Dot(a.end)+' · '+(a.unit==='family'?'가족':'개인')+' '+fEsc(a.people)+'명 · 접수일 '+ft50Dot(a.ts)+
+      ((a.members&&a.members.length)?'<br>동반 가족 '+a.members.map(function(m){return fEsc(m.masked)+'('+fEsc(m.rel)+' · 만 '+m.age+'세)';}).join(', '):'')+
+      '<br>환급 한도 '+ft50Won(a.refundCap||ft50RefundCap(a))+' (1명당 '+ft50Won(FT50_MAX_PER_PERSON)+')'+
       '<br><small>'+fEsc(a.addr||'-')+' (주민등록상 주소지 · '+fEsc(a.authMeans||'본인인증')+')</small></div>'+
     chk+
     (a.plan?'<div class="t50a-plan">여행 계획: '+fEsc(a.plan)+'</div>':'')+
-    (a.evidence?'<div class="t50a-plan">🧾 제출 증빙 — 가맹점 결제 '+a.evidence.count+'건 · 합계 '+ft50Won(a.evidence.amt)+' · 제출일 '+ft50Dot(a.evidence.ts)+
-      '<br><b style="color:var(--ok)">✓ '+fEsc(a.evidence.ocr)+'</b></div>':'')+
+    (a.evidence?'<div class="t50a-plan">🧾 제출 증빙 — 카드번호 '+fEsc(a.evidence.card||'-')+' · 승인번호 '+fEsc(a.evidence.appr||'-')+
+      ' · 결재금액 '+ft50Won(a.evidence.amt)+(a.evidence.date?' · 결제일 '+fEsc(a.evidence.date):'')+' · 첨부 '+fEsc(a.evidence.file||'-')+
+      '<br><b style="color:var(--ok)">✓ '+fEsc(a.evidence.ocr||'판독 결과와 대조 일치')+
+      (a.evidence.date?' · 결제일 여행기간('+a.start+'~'+a.end+') 내 확인':'')+'</b></div>':'')+
     '<div class="t50a-acts">'+acts+'</div>'+
     (log?'<div class="t50a-log">'+log+'</div>':'')+
   '</div>';
 }
 
-/* 환급액 = 결제금액의 50%, 승인 지원금 한도 */
+/* 환급액 = 결제금액의 50%. 승인 지원금과 인원별 환급 한도(1명당 10만원)를 모두 넘지 못한다 */
 function t50aRefundAmt(a){
   const half=Math.round((a.evidence?a.evidence.amt:(a.spend||0))/2);
-  return (typeof a.amount==='number')?Math.min(a.amount,half):half;
+  const cap=a.refundCap||ft50RefundCap(a);
+  return Math.min(half,cap,(typeof a.amount==='number')?a.amount:cap);
 }
 
 /* ── 처리 동작 ─────────────────────────────────────────── */
@@ -258,6 +263,9 @@ function t50aDetail(k,i){
     row('신청자',fEsc(a.applicant||'-')+' (계정 '+fEsc(a.uid||ft50Uid(k))+')')+
     row('신청 지역',fEsc(a.region)+' ('+fEsc(a.sido)+')')+
     row('여행 기간',ft50Dot(a.start)+' ~ '+ft50Dot(a.end)+' · '+fEsc(a.people)+'명')+
+    row('신청 단위',(a.unit==='family'?'가족 신청':'개인 신청'))+
+    ((a.members&&a.members.length)?row('동반 가족',a.members.map(function(m){return fEsc(m.masked)+'('+fEsc(m.rel)+')';}).join(', ')):'')+
+    row('환급 한도',ft50Won(a.refundCap||ft50RefundCap(a))+' (1명당 '+ft50Won(FT50_MAX_PER_PERSON)+')')+
     (a.period?row('지역 여행 가능기간',ft50Dot(a.period.s)+' ~ '+ft50Dot(a.period.e)):'')+
     row('접수일',ft50Dot(a.ts))+
     row('주민등록상 주소지',fEsc(a.addr||'-'))+
@@ -275,10 +283,12 @@ function t50aDetail(k,i){
     row('환급 금액',a.refundAmount?ft50Won(a.refundAmount):'-');
   if(a.evidence){
     h+='<div class="sec-t" style="margin:14px 0 6px">제출 증빙</div>'+
-      row('결제 건수',a.evidence.count+'건')+
-      row('결제 합계',ft50Won(a.evidence.amt))+
-      row('제출일',ft50Dot(a.evidence.ts))+
-      row('AI 판독',fEsc(a.evidence.ocr));
+      row('카드번호',fEsc(a.evidence.card||'-'))+
+      row('승인번호',fEsc(a.evidence.appr||'-'))+
+      row('결재금액',ft50Won(a.evidence.amt))+
+      (a.evidence.date?row('결제일',fEsc(a.evidence.date)+' (여행기간 '+a.start+'~'+a.end+' 내 ✓)'):'')+
+      row('첨부파일',fEsc(a.evidence.file||'-'))+
+      row('OCR 대조','✓ '+fEsc(a.evidence.ocr||'판독 결과와 대조 일치'));
   }
   if(a.history&&a.history.length){
     h+='<div class="sec-t" style="margin:14px 0 6px">처리 이력</div>'+
@@ -446,16 +456,20 @@ function t50aCsv(filename,rows){
   document.body.appendChild(a); a.click(); a.remove();
 }
 function t50aExportApplies(){
-  const rows=[['접수번호','지자체','시도','상태','신청자','계정','인원','여행시작','여행종료','접수일','청년','가족(3인이상)','승인지원금']];
-  t50aStatList().forEach(a=>rows.push([a.no,a.region,a.sido,(FT50_ST[a.status]||{t:a.status}).t,a.applicant,a.uid,a.people,
-    a.start,a.end,a.ts,a.youth?'Y':'N',ft50PeopleNum(a)>=3?'Y':'N',a.amount||'']));
+  const rows=[['접수번호','지자체','시도','상태','신청자','계정','신청단위','인원','동반가족','여행시작','여행종료','접수일','청년','가족(3인이상)','승인지원금','환급한도']];
+  t50aStatList().forEach(a=>rows.push([a.no,a.region,a.sido,(FT50_ST[a.status]||{t:a.status}).t,a.applicant,a.uid,
+    a.unit==='family'?'가족':'개인',a.people,
+    (a.members||[]).map(function(m){return m.masked+'('+m.rel+')';}).join(' '),
+    a.start,a.end,a.ts,a.youth?'Y':'N',ft50PeopleNum(a)>=3?'Y':'N',a.amount||'',a.refundCap||ft50RefundCap(a)]));
   t50aCsv('지역사랑휴가지원_신청데이터.csv',rows);
   toast('신청 데이터를 내려받았습니다');
 }
 function t50aExportRefund(){
-  const rows=[['접수번호','지자체','신청자','기본지원금','청년가산','가족가산','승인지원금','결제합계','환급금액','제출일']];
-  t50aStatList().filter(a=>a.status==='refund_ok').forEach(a=>rows.push([a.no,a.region,a.applicant,
-    a.baseAmount||'',a.youthBonus||'',a.familyBonus||'',a.amount||'',a.evidence?a.evidence.amt:'',a.refundAmount||'',a.evidence?a.evidence.ts:'']));
+  const rows=[['접수번호','지자체','신청자','인원','기본지원금','청년가산','가족가산','승인지원금','환급한도','결재금액','카드번호','승인번호','결제일','환급금액']];
+  t50aStatList().filter(a=>a.status==='refund_ok').forEach(a=>rows.push([a.no,a.region,a.applicant,a.people,
+    a.baseAmount||'',a.youthBonus||'',a.familyBonus||'',a.amount||'',a.refundCap||ft50RefundCap(a),
+    a.evidence?a.evidence.amt:'',a.evidence?a.evidence.card:'',a.evidence?a.evidence.appr:'',a.evidence?a.evidence.date:'',
+    a.refundAmount||'']));
   t50aCsv('지역사랑휴가지원_정산데이터.csv',rows);
   toast('정산 데이터를 내려받았습니다');
 }
