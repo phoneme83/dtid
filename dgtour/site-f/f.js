@@ -17,7 +17,6 @@ const F_FAV_KEY   = 'dtidF_favs';
 const F_MIS_KEY   = 'dtidF_mission';
 const F_WATCH_KEY = 'dtidF_watch';
 const F_AUTH_KEY  = 'dtidF_authMeans';
-const F_T50_KEY   = 'dtidF_t50';
 
 /* 계정별 기준 실적 목업 — 와이어프레임의 표기 지표(이용 가능 지역/이번 달
    사용/누적 혜택/사용 이력/보유 포인트) 구성을 그대로 따른 값 */

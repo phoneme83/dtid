@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
-<title>관리자 대시보드(WEB) — 시안 F(컨설팅 제안)</title>
+<title>관리자 페이지 — 시안 F(컨설팅 제안)</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="f.css?v=1">
+<link rel="stylesheet" href="f.css?v=2">
 </head>
 <body class="adm">
 
 <header class="adm-bar">
   <div class="adm-bar-in">
     <button class="ab-ico" style="color:#fff" onclick="location.href='main.html'" aria-label="앱으로">☰</button>
-    <div class="tt">관리자 대시보드</div>
+    <div class="tt">관리자 페이지</div>
     <a href="main.html" style="font-size:12px;opacity:.85">앱 화면으로 ↗</a>
     <span style="width:30px;height:30px;border-radius:50%;background:#334155;display:grid;place-items:center">👤</span>
   </div>
@@ -56,6 +56,27 @@
           <div id="admCat"></div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- 지역사랑 휴가지원 -->
+  <section data-tab="t50" hidden>
+    <div class="sec">
+      <div class="sec-h">
+        <div class="sec-t">지역사랑 휴가지원<span class="cap">대한민국 반값여행 — 신청 심사 · 사업설정 · 통계</span></div>
+        <select id="t50aPersona" onchange="t50aPersonaChange()" style="border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:#fff;font-size:12.5px;font-family:inherit"></select>
+      </div>
+      <div style="font-size:12px;color:var(--ink2);line-height:1.75;margin-bottom:11px">
+        신청자 화면에서 접수된 통합신청 건을 담당자가 확인·심사합니다. <b>검토 시작 → 승인/반려 → 결과 통보 → 환급 심사</b>의 각 단계는
+        이 화면에서만 처리되며, 결과는 신청자 화면 「나의 신청현황」에 즉시 반영됩니다.
+        담당자 계정을 지자체로 바꾸면 담당 지역 건만 조회·처리할 수 있습니다.
+      </div>
+      <div class="t50a-sub" id="t50aSubTabs"></div>
+      <div id="t50aBody"></div>
+    </div>
+    <div class="src">
+      <b>화면 근거</b> — 최종보고 II.지역사랑휴가지원제 6.중장기운영전략(안)(p.185) 「KTO 중심 통합 관리체계」의
+      자격검증 자동화 · 실시간 예산 모니터링 · AI 표준 정산 보조(OCR 검증), IV.시스템 3-2 「관리자 페이지 개선방안 및 통계기능 강화방안」(p.226~229).
     </div>
   </section>
 
@@ -124,13 +145,26 @@
   </div>
 </div>
 
+<!-- 신청 건 상세조회 -->
+<div class="modal" id="t50aDtl" role="dialog" aria-modal="true" aria-labelledby="t50aDtlTitle">
+  <div class="bg" onclick="fCloseModal('t50aDtl')"></div>
+  <div class="pn">
+    <div class="hd"><div class="t" id="t50aDtlTitle">상세조회</div>
+      <button class="x" onclick="fCloseModal('t50aDtl')" aria-label="닫기">✕</button></div>
+    <div id="t50aDtlBody"></div>
+  </div>
+</div>
+
 <div id="toastEl" role="status" aria-live="polite"></div>
 
 <script src="../site-assets/data.js?v=20260707f"></script>
-<script src="f.js?v=1"></script>
+<script src="f.js?v=2"></script>
+<script src="f-t50.js?v=1"></script>
+<script src="f-t50-admin.js?v=1"></script>
 <script>
 const ADM_TABS=[
   {key:'dash',  label:'대시보드'},
+  {key:'t50',   label:'지역사랑 휴가지원'},
   {key:'member',label:'회원관리'},
   {key:'store', label:'혜택업체관리'},
   {key:'stat',  label:'통계분석'},
@@ -170,6 +204,7 @@ function renderTabs(){
 function pickTab(k){
   admTab=k; renderTabs();
   document.querySelectorAll('section[data-tab]').forEach(s=>{ s.hidden=(s.getAttribute('data-tab')!==k); });
+  if(k==='t50') t50aRender();
 }
 
 function renderKpi(){
@@ -351,6 +386,8 @@ function pushMake(){
 function renderAll(){ renderKpi(); renderChart(); }
 
 renderTabs();
+t50aPersonaInit();
+t50aRender();
 renderPush();
 renderAll();
 renderRank();

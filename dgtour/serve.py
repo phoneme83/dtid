@@ -75,6 +75,7 @@ if __name__ == "__main__":
     for ip in ips or ["<PC의 IP를 확인하세요>"]:
         print(f"    http://{ip}:{PORT}/download.html      ← 시안별 앱 다운로드")
     print(f"    http://localhost:{PORT}/admin-push.html   ← 앱 푸시 관리(관리자)")
+    print(f"    http://localhost:{PORT}/site-d/admin.html ← 관리자 페이지(지역사랑 휴가지원) · site-a~f")
     print(f"    http://localhost:{PORT}/sites.html        ← 시안 홈페이지 6종\n")
     print("  ※ 앱에 입력할 서버 주소는 위 http://IP:포트/ 까지입니다.")
     print("  ※ 휴대폰이 같은 공유기(사내망)에 연결되어 있어야 하며,")

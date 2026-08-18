@@ -318,6 +318,47 @@ table.adm th{background:#f8fafc;font-size:11.5px;color:var(--sub);font-weight:80
 table.adm td.r,table.adm th.r{text-align:right}
 .tbl-scroll{overflow-x:auto}
 
+/* ── 폼 입력 (휴가지원제 신청 위저드 · 관리자 사업설정) ───── */
+.f-in{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;font-size:13px;font-family:inherit;background:#fff;color:var(--ink);margin-top:4px}
+.f-in:focus{outline:none;border-color:var(--pri)}
+textarea.f-in{resize:vertical;line-height:1.6}
+.f-lb{display:block;font-size:12px;font-weight:800;color:var(--ink2);margin-top:9px}
+.pill[disabled]{cursor:not-allowed}
+
+/* ── 관리자 › 지역사랑 휴가지원 ──────────────────────────── */
+.t50a-sub{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.t50a-sub button{border-radius:8px;padding:7px 14px;font-size:12.5px;font-weight:700;background:#f1f5f9;color:var(--ink2)}
+.t50a-sub button.on{background:#1e40af;color:#fff}
+.t50a-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:11px}
+.t50a-bar select{border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:#fff;font-size:12.5px;font-family:inherit}
+.t50a-bar .rt{margin-left:auto;display:flex;gap:7px}
+.t50a-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:9px;margin-bottom:12px}
+.t50a-tile{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 12px;text-align:left;cursor:pointer}
+.t50a-tile.on{border-color:var(--pri);box-shadow:0 0 0 1px var(--pri) inset;background:var(--pri-l)}
+.t50a-tile .n{font-size:21px;font-weight:800;color:var(--pri-d)}
+.t50a-tile .l{font-size:11.5px;font-weight:700;color:var(--sub);margin-top:2px}
+.t50a-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin-bottom:10px}
+.t50a-card .hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.t50a-card .hd b{font-size:14.5px}
+.t50a-card .hd .no{font-size:11.5px;color:var(--sub);font-weight:700}
+.t50a-card .dt{font-size:12px;color:var(--ink2);line-height:1.75;margin-top:6px}
+.t50a-card .dt small{color:var(--sub2)}
+.t50a-chk{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.t50a-chk span{font-size:11px;font-weight:700;border-radius:7px;padding:4px 8px;background:#ecfdf5;color:#047857;border:1px solid #bbf7d0}
+.t50a-chk span.bad{background:#fef2f2;color:#b91c1c;border-color:#fecaca}
+.t50a-plan{background:#f8fafc;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:12px;color:var(--ink2);margin-top:8px;line-height:1.7}
+.t50a-acts{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.t50a-acts .wait{font-size:12px;color:var(--sub);font-weight:700}
+.t50a-rsn{width:100%;margin-top:8px;border:1.5px solid var(--line);border-radius:9px;padding:9px 11px;font-size:12.5px;font-family:inherit;min-height:58px;display:none;resize:vertical}
+.t50a-rsn.on{display:block}
+.t50a-log{margin-top:9px;padding-top:7px;border-top:1px dashed var(--line);font-size:11px;color:var(--sub2);line-height:1.7}
+.t50a-empty{text-align:center;color:var(--sub);font-size:13px;padding:40px 0;line-height:1.8}
+.t50a-bars .row{display:flex;align-items:center;gap:9px;font-size:12.5px;margin-bottom:7px}
+.t50a-bars .row .lb{width:96px;flex:0 0 auto;font-weight:700;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t50a-bars .row .br{flex:1;height:16px;border-radius:5px;background:#eef2f7;overflow:hidden}
+.t50a-bars .row .br i{display:block;height:100%;background:linear-gradient(90deg,#1d4ed8,#60a5fa)}
+.t50a-bars .row .vl{width:44px;text-align:right;font-weight:800}
+
 /* ── 로그인 (인증수단 선택 · 개선과제 1-2) ────────────────── */
 body.login{background:linear-gradient(170deg,#eaf1ff 0%,#f6f9ff 42%,#fff 100%);padding-bottom:24px;min-height:100vh}
 .lg-wrap{max-width:420px;margin:0 auto;padding:38px 20px 40px}

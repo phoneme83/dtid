@@ -1,4 +1,4 @@
-/* 반값여행(t50) 공용 설정·집계 스크립트 — t50-admin.html / t50-apply.html / mypage-history.html 공유
+/* 반값여행(t50) 공용 설정·집계 스크립트 — admin.html(관리자 페이지) / t50-apply.html / mypage-history.html 공유
    업무구조도(2026년 지역사랑 휴가지원 업무구조도.pptx) 중 "지자체 사업설정"·"신청 접수(대기열/선착순)"가
    admin·apply 양쪽에서 같은 데이터를 봐야 하므로 여기 한 곳에 모은다. theme.js/common.js와 같은 공용 스크립트 컨벤션. */
 

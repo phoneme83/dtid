@@ -1,0 +1,438 @@
+/* ============================================================
+   시안 F — 관리자 페이지 › 지역사랑 휴가지원
+   신청 심사(접수확인→검토→승인/반려→결과통보→환급심사) ·
+   지자체 사업설정 · 통계를 담당자가 처리하는 화면.
+   신청 데이터는 f-t50.js 의 공용 저장소(dtidF_t50Applies_<uid>)를 본다.
+   ============================================================ */
+
+let t50aSub='list';      /* list | biz | stat */
+let t50aRegion='';       /* 지자체 필터 */
+let t50aStatus='';       /* 상태 필터 */
+let t50aBizRegion='';    /* 사업설정 대상 지자체 */
+let t50aStatRegion='';   /* 통계 대상 지자체 */
+
+const T50A_SUBS=[
+  {key:'list',label:'📋 신청관리'},
+  {key:'biz', label:'⚙️ 사업설정'},
+  {key:'stat',label:'📊 통계'}
+];
+/* 대시보드 타일 ↔ 상태 필터. 승인/환급심사는 복합 상태 */
+const T50A_GROUP={appr2:['approved','notified'],refund2:['refund_req','refund_fix']};
+
+/* 지자체 담당자로 로그인하면 자기 지역만 보인다 */
+function t50aScope(){ return ft50Persona().region; }
+function t50aScoped(){
+  const scope=t50aScope();
+  const all=ft50All();
+  return scope?all.filter(x=>x.a.region===scope):all;
+}
+function t50aStatuses(key){ return key?(T50A_GROUP[key]||[key]):null; }
+
+function t50aPersonaInit(){
+  const sel=document.getElementById('t50aPersona');
+  sel.innerHTML=FT50_ADMIN_ACCOUNTS.map(a=>'<option value="'+a.id+'">'+fEsc(a.name)+'</option>').join('');
+  sel.value=ft50Persona().id;
+}
+function t50aPersonaChange(){
+  ft50SetPersona(document.getElementById('t50aPersona').value);
+  t50aRegion=''; t50aBizRegion=''; t50aStatRegion='';
+  t50aRender();
+}
+
+function t50aSubTabs(){
+  document.getElementById('t50aSubTabs').innerHTML=T50A_SUBS.map(s=>
+    '<button class="'+(s.key===t50aSub?'on':'')+'" onclick="t50aGo(\''+s.key+'\')">'+s.label+'</button>').join('');
+}
+function t50aGo(k){ t50aSub=k; t50aRender(); }
+
+function t50aRender(){
+  t50aSubTabs();
+  if(t50aSub==='biz') t50aRenderBiz();
+  else if(t50aSub==='stat') t50aRenderStat();
+  else t50aRenderList();
+}
+
+/* ══ 신청관리 ══════════════════════════════════════════════ */
+function t50aRegionSelect(){
+  const scope=t50aScope();
+  if(scope) return '<select disabled><option>'+fEsc(scope)+'</option></select>';
+  const names=[...new Set(ft50All().map(x=>x.a.region))];
+  return '<select onchange="t50aSetRegion(this.value)"><option value="">전체 지자체</option>'+
+    names.map(n=>'<option value="'+fEsc(n)+'"'+(n===t50aRegion?' selected':'')+'>'+fEsc(n)+'</option>').join('')+'</select>';
+}
+function t50aSetRegion(v){ t50aRegion=v; t50aRenderList(); }
+function t50aSetStatus(v){ t50aStatus=v; t50aRenderList(); }
+function t50aTile(k){ t50aStatus=(t50aStatus===k?'':k); t50aRenderList(); }
+
+function t50aRenderList(){
+  const all=t50aScoped();
+  const c=k=>all.filter(x=>x.a.status===k).length;
+  const tile=(key,n,label)=>
+    '<div class="t50a-tile'+(t50aStatus===key?' on':'')+'" role="button" tabindex="0" onclick="t50aTile(\''+key+'\')" '+
+    'onkeydown="if(event.key===\'Enter\')t50aTile(\''+key+'\')"><div class="n">'+n+'</div><div class="l">'+label+' ›</div></div>';
+
+  const scope=t50aScope();
+  const stArr=t50aStatuses(t50aStatus);
+  const list=all.filter(x=>(scope||!t50aRegion||x.a.region===t50aRegion)&&(!stArr||stArr.indexOf(x.a.status)>=0));
+
+  document.getElementById('t50aBody').innerHTML=
+    '<div class="t50a-bar">'+t50aRegionSelect()+
+      '<select onchange="t50aSetStatus(this.value)">'+
+        ['','received','review','appr2','rejected','canceled','refund2','refund_ok'].map(function(k){
+          const lb={'':'전체 상태',received:'접수 대기',review:'검토중',appr2:'승인(통보 포함)',
+                    rejected:'반려',canceled:'신청 취소',refund2:'환급 심사',refund_ok:'환급 완료'}[k];
+          return '<option value="'+k+'"'+(k===t50aStatus?' selected':'')+'>'+lb+'</option>';
+        }).join('')+'</select>'+
+      '<div class="rt"><button class="btn gy" onclick="t50aRender()">↻ 새로고침</button>'+
+        '<button class="btn gy" onclick="t50aReset()">데모 데이터 초기화</button></div>'+
+    '</div>'+
+    '<div class="t50a-tiles">'+
+      tile('received',c('received'),'접수 대기')+
+      tile('review',c('review'),'검토중')+
+      tile('appr2',c('approved')+c('notified'),'승인')+
+      tile('rejected',c('rejected'),'반려')+
+      tile('canceled',c('canceled'),'신청 취소')+
+      tile('refund2',c('refund_req')+c('refund_fix'),'환급 심사')+
+      tile('refund_ok',c('refund_ok'),'환급 완료')+
+    '</div>'+
+    (list.length?list.map(t50aCard).join('')
+      :'<div class="t50a-empty">표시할 신청 건이 없습니다.<br><a href="t50.html" style="color:var(--pri);font-weight:800">신청자 화면</a>에서 먼저 통합신청을 접수해 보세요.</div>');
+}
+
+function t50aCard(x){
+  const a=x.a, K="'"+x.k+"',"+x.i;
+  const rid='t50aRsn_'+ft50Uid(x.k)+'_'+x.i;
+  const st=FT50_ST[a.status]||{t:a.status,cls:'n',ic:'•'};
+  const calc=ft50Calc(a);
+  const sameSido=(a.addr||'').indexOf(a.sido)===0;
+  const inPeriod=(!a.period)||(a.start>=a.period.s&&a.end<=a.period.e);
+
+  const chk='<div class="t50a-chk">'+
+    '<span'+(sameSido?' class="bad"':'')+'>'+(sameSido?'✕':'✔')+' 관외거주 — 주소지 '+fEsc(a.addr||'-')+' / 신청지 '+fEsc(a.sido)+'</span>'+
+    (a.period?'<span'+(inPeriod?'':' class="bad"')+'>'+(inPeriod?'✔':'✕')+' 여행기간 — 가능기간('+ft50Dot(a.period.s)+'~'+ft50Dot(a.period.e)+') 내 일정</span>':'')+
+    '<span>'+(a.youth?'🎉 청년(만 '+a.age+'세) — 20% 가산 대상':'· 청년 가산 해당 없음')+'</span>'+
+    '<span>'+(ft50PeopleNum(a)>=3?'👨‍👩‍👧 가족(3인 이상) — 10% 가산 대상':'· 가족 가산 해당 없음')+'</span>'+
+  '</div>';
+
+  let acts='';
+  if(a.status==='received')
+    acts='<button class="btn" onclick="t50aDo('+K+',\'review\')">검토 시작</button>';
+  else if(a.status==='review'){
+    const bonus=[calc.youth?'청년 20% '+ft50Won(calc.youth):'',calc.family?'가족 10% '+ft50Won(calc.family):''].filter(Boolean).join(' + ');
+    acts='<button class="btn" onclick="t50aApprove('+K+')">✅ 승인 — 지원금 '+ft50Won(calc.total)+(bonus?' (기본 '+ft50Won(calc.base)+' + '+bonus+')':'')+'</button>'+
+      '<button class="btn o" style="color:#b91c1c;border-color:#fecaca" onclick="t50aReason('+K+',\'rejected\',\''+rid+'\')">⛔ 반려</button>'+
+      '<textarea class="t50a-rsn" id="'+rid+'" placeholder="반려 사유를 입력하세요 (예: 신청자격 미충족, 여행 계획 불명확)"></textarea>';
+  }
+  else if(a.status==='approved')
+    acts='<button class="btn" onclick="t50aDo('+K+',\'notified\')">📨 결과 통보 발송 — 승인 금액을 신청자·지역화폐로 전달</button>';
+  else if(a.status==='notified')
+    acts='<span class="wait">여행 진행 — 신청자의 결제내역 제출·환급 신청을 기다리는 중</span>';
+  else if(a.status==='refund_req')
+    acts='<button class="btn" onclick="t50aRefundOk('+K+')">💰 환급 승인 — '+ft50Won(t50aRefundAmt(a))+' 지급</button>'+
+      '<button class="btn o" style="color:#c2410c;border-color:#fed7aa" onclick="t50aReason('+K+',\'refund_fix\',\''+rid+'\')">✏️ 증빙 보완 요청</button>'+
+      '<textarea class="t50a-rsn" id="'+rid+'" placeholder="보완 요청 사유를 입력하세요 (예: 숙박 결제내역 누락)"></textarea>';
+  else if(a.status==='refund_fix')
+    acts='<span class="wait">신청자 증빙 보완 대기중</span>';
+  else if(a.status==='refund_ok')
+    acts='<span class="wait">처리 완료 — 환급금이 지역사랑상품권으로 지급되었습니다</span>';
+  else if(a.status==='rejected')
+    acts='<span class="wait">반려 처리 완료</span>';
+  else if(a.status==='canceled')
+    acts='<span class="wait">신청자가 신청을 취소했습니다</span>';
+
+  let log='';
+  if(a.rejectReason) log+='반려 사유: '+fEsc(a.rejectReason)+'<br>';
+  if(a.fixReason) log+='보완 요청 사유: '+fEsc(a.fixReason)+'<br>';
+  if(typeof a.amount==='number') log+='승인 지원금: '+ft50Won(a.amount)+'<br>';
+  if(a.history&&a.history.length)
+    log+='처리 이력: '+a.history.map(h=>((FT50_ST[h.st]||{t:h.st}).t)+(h.by?'('+fEsc(h.by)+')':'')+' '+ft50Dot(h.ts.slice(0,10))).join(' → ');
+
+  return '<div class="t50a-card">'+
+    '<div class="hd"><b>'+fEsc(a.region)+'</b><span class="no">'+fEsc(a.no)+'</span>'+
+      '<span style="font-size:12px">신청자 '+fEsc(a.applicant||'-')+' <small style="color:var(--sub2)">(계정 '+fEsc(a.uid||ft50Uid(x.k))+')</small></span>'+
+      '<button class="btn gy" style="margin-left:auto;padding:5px 11px;font-size:11.5px" onclick="t50aDetail('+K+')">상세조회</button>'+
+      '<span class="badge '+st.cls+'">'+st.ic+' '+st.t+'</span></div>'+
+    '<div class="dt">여행 '+ft50Dot(a.start)+' ~ '+ft50Dot(a.end)+' · '+fEsc(a.people)+'명 · 접수일 '+ft50Dot(a.ts)+
+      '<br><small>'+fEsc(a.addr||'-')+' (주민등록상 주소지 · '+fEsc(a.authMeans||'본인인증')+')</small></div>'+
+    chk+
+    (a.plan?'<div class="t50a-plan">여행 계획: '+fEsc(a.plan)+'</div>':'')+
+    (a.evidence?'<div class="t50a-plan">🧾 제출 증빙 — 가맹점 결제 '+a.evidence.count+'건 · 합계 '+ft50Won(a.evidence.amt)+' · 제출일 '+ft50Dot(a.evidence.ts)+
+      '<br><b style="color:var(--ok)">✓ '+fEsc(a.evidence.ocr)+'</b></div>':'')+
+    '<div class="t50a-acts">'+acts+'</div>'+
+    (log?'<div class="t50a-log">'+log+'</div>':'')+
+  '</div>';
+}
+
+/* 환급액 = 결제금액의 50%, 승인 지원금 한도 */
+function t50aRefundAmt(a){
+  const half=Math.round((a.evidence?a.evidence.amt:(a.spend||0))/2);
+  return (typeof a.amount==='number')?Math.min(a.amount,half):half;
+}
+
+/* ── 처리 동작 ─────────────────────────────────────────── */
+function t50aMutate(k,i,fn){
+  const l=ft50LoadKey(k);
+  if(!l[i]) return null;
+  fn(l[i]);
+  ft50SaveKey(k,l);
+  t50aRender();
+  return l[i];
+}
+function t50aDo(k,i,st){
+  const r=t50aMutate(k,i,function(rec){ rec.status=st; ft50Hist(rec,st,ft50Persona().name); });
+  if(r) toast(FT50_ST[st].t+' 처리했습니다');
+}
+function t50aApprove(k,i){
+  const r=t50aMutate(k,i,function(rec){
+    const c=ft50Calc(rec);
+    rec.status='approved';
+    rec.baseAmount=c.base; rec.youthBonus=c.youth; rec.familyBonus=c.family; rec.amount=c.total;
+    ft50Hist(rec,'approved',ft50Persona().name,'지원금 '+ft50Won(c.total));
+  });
+  if(r) toast('승인 — 지원금 '+ft50Won(r.amount));
+}
+function t50aReason(k,i,st,rid){
+  const ta=document.getElementById(rid);
+  if(!ta) return;
+  if(!ta.classList.contains('on')){ ta.classList.add('on'); ta.focus(); return; }
+  const v=ta.value.trim();
+  if(!v){ toast('사유를 입력해 주세요'); ta.focus(); return; }
+  t50aMutate(k,i,function(rec){
+    rec.status=st;
+    if(st==='rejected') rec.rejectReason=v; else rec.fixReason=v;
+    ft50Hist(rec,st,ft50Persona().name,v);
+  });
+  toast(st==='rejected'?'반려 처리했습니다':'보완 요청을 보냈습니다');
+}
+function t50aRefundOk(k,i){
+  const r=t50aMutate(k,i,function(rec){
+    rec.status='refund_ok';
+    rec.refundAmount=t50aRefundAmt(rec);
+    ft50Hist(rec,'refund_ok',ft50Persona().name,'환급 '+ft50Won(rec.refundAmount));
+  });
+  if(r) toast('환급 승인 — '+ft50Won(r.refundAmount));
+}
+function t50aReset(){
+  if(!confirm('전 계정의 휴가지원제 신청 데모 데이터를 삭제할까요? (사업설정은 유지됩니다)')) return;
+  ft50AppKeys().forEach(k=>localStorage.removeItem(k));
+  t50aRender();
+  toast('초기화했습니다');
+}
+
+/* ── 상세조회 ──────────────────────────────────────────── */
+function t50aDetail(k,i){
+  const a=ft50LoadKey(k)[i]; if(!a) return;
+  const row=(l,v)=>'<div class="kv"><span class="k">'+l+'</span><span class="v">'+(v==null||v===''?'-':v)+'</span></div>';
+  const st=FT50_ST[a.status]||{t:a.status,cls:'n',ic:'•'};
+  let h='<div class="sec-t" style="margin-bottom:6px">신청 정보</div>'+
+    row('접수번호',fEsc(a.no))+
+    row('상태','<span class="badge '+st.cls+'">'+st.ic+' '+st.t+'</span>')+
+    row('신청자',fEsc(a.applicant||'-')+' (계정 '+fEsc(a.uid||ft50Uid(k))+')')+
+    row('신청 지역',fEsc(a.region)+' ('+fEsc(a.sido)+')')+
+    row('여행 기간',ft50Dot(a.start)+' ~ '+ft50Dot(a.end)+' · '+fEsc(a.people)+'명')+
+    (a.period?row('지역 여행 가능기간',ft50Dot(a.period.s)+' ~ '+ft50Dot(a.period.e)):'')+
+    row('접수일',ft50Dot(a.ts))+
+    row('주민등록상 주소지',fEsc(a.addr||'-'))+
+    row('본인인증 수단',fEsc(a.authMeans||'-'))+
+    (a.plan?row('여행 계획',fEsc(a.plan)):'')+
+    '<div class="sec-t" style="margin:14px 0 6px">자격 점검</div>'+
+    row('관외거주',(a.addr||'').indexOf(a.sido)===0?'미충족 — 거주지와 동일 시·도':'충족')+
+    row('청년(만 19~34세)',a.youth?'해당 — 20% 가산 대상 (만 '+a.age+'세)':'해당 없음')+
+    row('가족(3인 이상)',ft50PeopleNum(a)>=3?'해당 — 10% 가산 대상':'해당 없음')+
+    '<div class="sec-t" style="margin:14px 0 6px">지원금</div>'+
+    row('기본 지원금',a.baseAmount?ft50Won(a.baseAmount):'-')+
+    row('청년 가산(20%)',a.youthBonus?ft50Won(a.youthBonus):'-')+
+    row('가족 가산(10%)',a.familyBonus?ft50Won(a.familyBonus):'-')+
+    row('승인 지원금',typeof a.amount==='number'?ft50Won(a.amount):'-')+
+    row('환급 금액',a.refundAmount?ft50Won(a.refundAmount):'-');
+  if(a.evidence){
+    h+='<div class="sec-t" style="margin:14px 0 6px">제출 증빙</div>'+
+      row('결제 건수',a.evidence.count+'건')+
+      row('결제 합계',ft50Won(a.evidence.amt))+
+      row('제출일',ft50Dot(a.evidence.ts))+
+      row('AI 판독',fEsc(a.evidence.ocr));
+  }
+  if(a.history&&a.history.length){
+    h+='<div class="sec-t" style="margin:14px 0 6px">처리 이력</div>'+
+      a.history.map(hi=>row((FT50_ST[hi.st]||{t:hi.st}).t,
+        hi.ts.slice(0,16).replace('T',' ')+(hi.by?' · '+fEsc(hi.by):'')+(hi.note?' · '+fEsc(hi.note):''))).join('');
+  }
+  if(a.rejectReason) h+='<div class="sec-t" style="margin:14px 0 6px">반려</div>'+row('사유',fEsc(a.rejectReason));
+  if(a.fixReason) h+='<div class="sec-t" style="margin:14px 0 6px">증빙 보완</div>'+row('사유',fEsc(a.fixReason));
+  document.getElementById('t50aDtlTitle').textContent=a.region+' · '+a.no;
+  document.getElementById('t50aDtlBody').innerHTML=h;
+  fOpenModal('t50aDtl');
+}
+
+/* ══ 사업설정 ══════════════════════════════════════════════ */
+function t50aBizNames(){
+  const scope=t50aScope();
+  return scope?[scope]:ft50Regions().map(r=>r.name);
+}
+function t50aSetBizRegion(v){ t50aBizRegion=v; t50aRenderBiz(); }
+function t50aRenderBiz(){
+  const names=t50aBizNames();
+  if(names.indexOf(t50aBizRegion)<0) t50aBizRegion=names[0]||'';
+  if(!t50aBizRegion){ document.getElementById('t50aBody').innerHTML='<div class="t50a-empty">담당 지역이 없습니다.</div>'; return; }
+  const name=t50aBizRegion;
+  const cfg=ft50RegionCfg(name);
+  const used=ft50UsedCount(name);
+  document.getElementById('t50aBody').innerHTML=
+    '<div class="t50a-bar"><select onchange="t50aSetBizRegion(this.value)"'+(t50aScope()?' disabled':'')+'>'+
+      names.map(n=>'<option value="'+fEsc(n)+'"'+(n===name?' selected':'')+'>'+fEsc(n)+'</option>').join('')+'</select></div>'+
+    '<div class="t50a-tiles">'+
+      '<div class="t50a-tile" style="cursor:default"><div class="n">'+used+'</div><div class="l">현재 접수 인원</div></div>'+
+      '<div class="t50a-tile" style="cursor:default"><div class="n">'+cfg.capacity+'</div><div class="l">신청인원조건(정원)</div></div>'+
+      '<div class="t50a-tile" style="cursor:default"><div class="n">'+Math.max(0,cfg.capacity-used)+'</div><div class="l">잔여 인원</div></div>'+
+    '</div>'+
+    '<div class="t50a-card">'+
+      '<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--ink2)">'+
+        '<input type="checkbox" id="t50aBzOpen"'+(cfg.open?' checked':'')+'> 사업 개설(신청 접수 허용)</label>'+
+      '<label class="f-lb">신청기간 시작</label><input class="f-in" type="date" id="t50aBzApS" value="'+cfg.applyStart+'">'+
+      '<label class="f-lb">신청기간 종료</label><input class="f-in" type="date" id="t50aBzApE" value="'+cfg.applyEnd+'">'+
+      '<label class="f-lb">여행 가능기간 시작</label><input class="f-in" type="date" id="t50aBzTrS" value="'+cfg.travelStart+'">'+
+      '<label class="f-lb">여행 가능기간 종료</label><input class="f-in" type="date" id="t50aBzTrE" value="'+cfg.travelEnd+'">'+
+      '<label class="f-lb">총 접수 가능 인원</label><input class="f-in" type="number" min="1" id="t50aBzCap" value="'+cfg.capacity+'">'+
+      '<label class="f-lb">1건당 신청 인원(최소 / 최대)</label>'+
+      '<div style="display:flex;gap:8px"><input class="f-in" type="number" min="1" id="t50aBzMin" value="'+cfg.minPeople+'">'+
+        '<input class="f-in" type="number" min="1" id="t50aBzMax" value="'+cfg.maxPeople+'"></div>'+
+      '<button class="btn blk" style="margin-top:12px" onclick="t50aBizSave()">💾 사업설정 저장</button>'+
+    '</div>'+
+    '<div class="t50a-card">'+
+      '<div class="sec-t">공지사항</div>'+
+      ((cfg.notices&&cfg.notices.length)
+        ? cfg.notices.map((n,idx)=>'<div class="t50a-plan"><b>'+fEsc(n.title)+'</b><br>'+fEsc(n.body)+
+            '<br><small style="color:var(--sub2)">'+ft50Dot(n.ts)+'</small> '+
+            '<button style="color:#b91c1c;font-size:11px;font-weight:700" onclick="t50aNoticeDel('+idx+')">삭제</button></div>').join('')
+        : '<div style="font-size:12px;color:var(--sub);padding:8px 0">등록된 공지사항이 없습니다.</div>')+
+      '<label class="f-lb">공지 제목</label><input class="f-in" type="text" id="t50aNTitle" placeholder="예) 여행기간 연장 안내">'+
+      '<label class="f-lb">공지 내용</label><textarea class="f-in" id="t50aNBody" rows="3" placeholder="공지 내용을 입력하세요"></textarea>'+
+      '<button class="btn blk" style="margin-top:10px" onclick="t50aNoticeAdd()">📢 공지 등록</button>'+
+    '</div>';
+}
+function t50aBizSave(){
+  const v=id=>document.getElementById(id).value;
+  ft50SetRegionCfg(t50aBizRegion,{
+    open:document.getElementById('t50aBzOpen').checked,
+    applyStart:v('t50aBzApS'),applyEnd:v('t50aBzApE'),
+    travelStart:v('t50aBzTrS'),travelEnd:v('t50aBzTrE'),
+    capacity:Math.max(1,Number(v('t50aBzCap'))||1),
+    minPeople:Math.max(1,Number(v('t50aBzMin'))||1),
+    maxPeople:Math.max(1,Number(v('t50aBzMax'))||1)
+  });
+  toast(t50aBizRegion+' 사업설정을 저장했습니다');
+  t50aRenderBiz();
+}
+function t50aNoticeAdd(){
+  const title=document.getElementById('t50aNTitle').value.trim();
+  const body=document.getElementById('t50aNBody').value.trim();
+  if(!title||!body){ toast('공지 제목·내용을 입력해 주세요'); return; }
+  const cfg=ft50RegionCfg(t50aBizRegion);
+  ft50SetRegionCfg(t50aBizRegion,{notices:[{id:'N'+cfg.notices.length+'_'+ft50Today(),title:title,body:body,ts:ft50Today()}].concat(cfg.notices||[])});
+  toast('공지사항을 등록했습니다');
+  t50aRenderBiz();
+}
+function t50aNoticeDel(idx){
+  const cfg=ft50RegionCfg(t50aBizRegion);
+  ft50SetRegionCfg(t50aBizRegion,{notices:(cfg.notices||[]).filter((n,i)=>i!==idx)});
+  t50aRenderBiz();
+}
+
+/* ══ 통계 ══════════════════════════════════════════════════ */
+function t50aSetStatRegion(v){ t50aStatRegion=v; t50aRenderStat(); }
+function t50aStatList(){
+  const scope=t50aScope();
+  let list=ft50All().map(x=>x.a);
+  if(scope) list=list.filter(a=>a.region===scope);
+  else if(t50aStatRegion) list=list.filter(a=>a.region===t50aStatRegion);
+  return list;
+}
+function t50aBar(label,n,max){
+  return '<div class="row"><div class="lb">'+fEsc(label)+'</div>'+
+    '<div class="br"><i style="width:'+(max?Math.round(n/max*100):0)+'%"></i></div><div class="vl">'+n+'</div></div>';
+}
+function t50aAgeBucket(age){
+  if(age==null) return '미확인';
+  if(age<20) return '10대'; if(age<30) return '20대'; if(age<40) return '30대';
+  if(age<50) return '40대'; if(age<60) return '50대'; return '60대 이상';
+}
+function t50aHourBucket(tsFull){
+  if(!tsFull) return '시각 미확인';
+  const h=new Date(tsFull).getHours();
+  const bands=[[0,6],[6,9],[9,12],[12,15],[15,18],[18,21],[21,24]];
+  const b=bands.find(x=>h>=x[0]&&h<x[1])||bands[bands.length-1];
+  return String(b[0]).padStart(2,'0')+'-'+String(b[1]).padStart(2,'0')+'시';
+}
+function t50aGroupHtml(map,order){
+  const keys=order?order.filter(k=>map[k]):Object.keys(map).sort((a,b)=>map[b]-map[a]);
+  if(!keys.length) return '<div style="font-size:12px;color:var(--sub);padding:8px 0">데이터가 없습니다.</div>';
+  const max=Math.max.apply(null,keys.map(k=>map[k]));
+  return '<div class="t50a-bars">'+keys.map(k=>t50aBar(k,map[k],max)).join('')+'</div>';
+}
+function t50aRenderStat(){
+  const scope=t50aScope();
+  const list=t50aStatList();
+  const active=list.filter(a=>FT50_INACTIVE.indexOf(a.status)<0);
+  const ppl=active.reduce((s,a)=>s+ft50PeopleNum(a),0);
+  const grant=list.filter(a=>typeof a.amount==='number'&&FT50_INACTIVE.indexOf(a.status)<0).reduce((s,a)=>s+a.amount,0);
+  const refund=list.reduce((s,a)=>s+(a.refundAmount||0),0);
+
+  const byRegion={}, byAge={}, byHour={};
+  list.forEach(function(a){
+    byRegion[a.region]=(byRegion[a.region]||0)+1;
+    const ab=t50aAgeBucket(a.age); byAge[ab]=(byAge[ab]||0)+1;
+    const hb=t50aHourBucket(a.tsFull); byHour[hb]=(byHour[hb]||0)+1;
+  });
+
+  document.getElementById('t50aBody').innerHTML=
+    '<div class="t50a-bar">'+
+      (scope?'<select disabled><option>'+fEsc(scope)+'</option></select>'
+        :'<select onchange="t50aSetStatRegion(this.value)"><option value="">전체 지자체</option>'+
+          ft50Regions().map(r=>'<option value="'+fEsc(r.name)+'"'+(r.name===t50aStatRegion?' selected':'')+'>'+fEsc(r.name)+'</option>').join('')+'</select>')+
+      '<div class="rt"><button class="btn gy" onclick="t50aExportApplies()">⬇ 신청 데이터 CSV</button>'+
+        '<button class="btn gy" onclick="t50aExportRefund()">⬇ 정산 데이터 CSV</button></div>'+
+    '</div>'+
+    '<div class="t50a-tiles">'+
+      '<div class="t50a-tile" style="cursor:default"><div class="n">'+list.length+'</div><div class="l">신청건수</div></div>'+
+      '<div class="t50a-tile" style="cursor:default"><div class="n">'+ppl+'</div><div class="l">신청자수(취소·반려 제외)</div></div>'+
+      '<div class="t50a-tile" style="cursor:default"><div class="n">'+fmt(grant)+'</div><div class="l">승인 지원금(원)</div></div>'+
+      '<div class="t50a-tile" style="cursor:default"><div class="n">'+fmt(refund)+'</div><div class="l">환급 지급액(원)</div></div>'+
+    '</div>'+
+    '<div class="t50a-card"><div class="sec-t">🗺 지역별 신청현황</div>'+t50aGroupHtml(byRegion)+'</div>'+
+    '<div class="t50a-card"><div class="sec-t">🎂 연령대별 신청현황</div>'+
+      t50aGroupHtml(byAge,['10대','20대','30대','40대','50대','60대 이상','미확인'])+'</div>'+
+    '<div class="t50a-card"><div class="sec-t">🕐 시간대별 신청현황</div>'+
+      t50aGroupHtml(byHour,['00-06시','06-09시','09-12시','12-15시','15-18시','18-21시','21-24시','시각 미확인'])+'</div>';
+}
+/* CSV — 자유입력 값이 =,+,-,@로 시작하면 엑셀이 수식으로 해석하므로 앞에 '를 붙여 무력화 */
+function t50aCsvCell(v){
+  let s=String(v==null?'':v);
+  if(/^[=+\-@]/.test(s)) s="'"+s;
+  return '"'+s.replace(/"/g,'""')+'"';
+}
+function t50aCsv(filename,rows){
+  const csv='﻿'+rows.map(r=>r.map(t50aCsvCell).join(',')).join('\r\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=filename;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function t50aExportApplies(){
+  const rows=[['접수번호','지자체','시도','상태','신청자','계정','인원','여행시작','여행종료','접수일','청년','가족(3인이상)','승인지원금']];
+  t50aStatList().forEach(a=>rows.push([a.no,a.region,a.sido,(FT50_ST[a.status]||{t:a.status}).t,a.applicant,a.uid,a.people,
+    a.start,a.end,a.ts,a.youth?'Y':'N',ft50PeopleNum(a)>=3?'Y':'N',a.amount||'']));
+  t50aCsv('지역사랑휴가지원_신청데이터.csv',rows);
+  toast('신청 데이터를 내려받았습니다');
+}
+function t50aExportRefund(){
+  const rows=[['접수번호','지자체','신청자','기본지원금','청년가산','가족가산','승인지원금','결제합계','환급금액','제출일']];
+  t50aStatList().filter(a=>a.status==='refund_ok').forEach(a=>rows.push([a.no,a.region,a.applicant,
+    a.baseAmount||'',a.youthBonus||'',a.familyBonus||'',a.amount||'',a.evidence?a.evidence.amt:'',a.refundAmount||'',a.evidence?a.evidence.ts:'']));
+  t50aCsv('지역사랑휴가지원_정산데이터.csv',rows);
+  toast('정산 데이터를 내려받았습니다');
+}
+
+/* 신청자 화면(다른 탭)에서 접수·환급신청하면 자동 갱신 */
+window.addEventListener('storage',function(e){
+  if(e.key&&e.key.indexOf(FT50_AP_PREFIX)===0) t50aRender();
+});

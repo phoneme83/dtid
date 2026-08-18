@@ -90,7 +90,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#0b0
 </head>
 <body>
 <div class="app">
-  <div class="demo">지역화폐(앱) 구간 프로토타입 · <a href="t50-apply.html">대민시스템(신청)</a> · <a href="t50-admin.html">지자체(관리)</a></div>
+  <div class="demo">지역화폐(앱) 구간 프로토타입 · <a href="t50-apply.html">대민시스템(신청)</a> · <a href="admin.html">관리자 페이지</a></div>
   <div class="top">
     <div class="hd"><span class="lg">🪙</span><h1>관광 지역화폐</h1><span class="pay-who" id="payWho"></span><a href="t50-apply.html">신청 화면으로</a></div>
     <div class="sub">반값여행 상품권 발행(개인) · 충전 · 사용 · 환급 충전 · 잔액 회수</div>
@@ -229,7 +229,7 @@ function payRender(){
   if(!list.length){
     el.innerHTML='<div class="empty">발행된 반값여행 상품권이 없습니다.<br><br>'+
       '① <a href="t50-apply.html">신청자 화면</a>에서 통합신청 접수<br>'+
-      '② <a href="t50-admin.html">지자체 관리 화면</a>에서 승인·결과 통보<br>'+
+      '② <a href="admin.html">관리자 페이지 › 지역사랑 휴가지원</a>에서 승인·결과 통보<br>'+
       '③ 이곳에서 상품권이 발행(개인)됩니다</div>';
     return;
   }
