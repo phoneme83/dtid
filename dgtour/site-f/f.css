@@ -401,8 +401,13 @@ textarea.f-in{resize:vertical;line-height:1.6}
 .t50e-ocr{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:12px}
 .t50e-ocr .t{font-size:12.5px;font-weight:800;margin-bottom:6px}
 .t50e-ocr .row{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px dashed var(--line)}
-.t50e-ocr .row span{color:var(--sub)}
-.t50e-ocr .row b{text-align:right;word-break:break-all}
+.t50e-ocr .row span{color:var(--sub);white-space:nowrap;flex:0 0 auto}
+.t50e-ocr .row b{text-align:right;word-break:break-all;min-width:0}
+/* 360px 미만에서는 좌우 배치로 둘 다 좁아져 라벨이 글자 단위로 쪼개진다 → 위아래로 쌓는다 */
+@media (max-width:359px){
+  .t50e-ocr .row{flex-direction:column;align-items:stretch;gap:1px}
+  .t50e-ocr .row b{text-align:left}
+}
 .t50e-ocr small{display:block;color:var(--sub);line-height:1.6;margin-top:7px}
 .t50e-ocr.wait{background:var(--pri-l);border-color:var(--pri-l);color:var(--pri-d);font-weight:700}
 .t50e-err{font-size:12px;color:#b91c1c;line-height:1.65;margin-top:9px}

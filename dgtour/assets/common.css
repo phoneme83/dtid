@@ -733,3 +733,14 @@ button{font-family:inherit;cursor:pointer}
 .pop-event-dots{display:none}
 .pop-event-btns{display:flex;gap:1px;margin-top:1px;border-radius:0 0 14px 14px;overflow:hidden}
 .pop-event-btns button{flex:1;padding:13px 0;border:none;background:#1a1a1a;color:#fff;font-size:13px;font-weight:500;cursor:pointer}
+
+/* ── 증빙 판독 패널 행 (반응형) ─────────────────────────────
+   라벨과 값을 좌우로 배치하는데, 좁은 화면에서 라벨이 '가/맹/점'처럼 글자 단위로
+   쪼개지던 문제가 있었다. 라벨은 줄바꿈을 막고 값 쪽이 접히게 한다.
+   360px 미만에서는 좌우 배치로는 둘 다 좁아지므로 위아래로 쌓는다. */
+.ap-ocr .row span{white-space:nowrap;flex:0 0 auto}
+.ap-ocr .row b{min-width:0;text-align:right;word-break:break-all}
+@media (max-width:359px){
+  .ap-ocr .row{flex-direction:column;align-items:stretch;gap:1px}
+  .ap-ocr .row b{text-align:left}
+}
