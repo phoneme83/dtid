@@ -6,7 +6,7 @@
 
    판정의 주 수단은 **카드번호(BIN) 예측**이다.
    국내 카드영수증은 카드번호를 마스킹해도 앞자리는 노출되므로
-   (1234-56** / 12345678****901* 등) 앞 6~8자리로 카드 상품을 식별할 수 있다.
+   (1234-56** / 12345678****9012 등) 앞 6~8자리로 카드 상품을 식별할 수 있다.
    신청자는 전국의 일반 국민이라 기관이 카드 목록을 미리 등록해 둘 수는 없지만,
    BIN 판정표는 기관이 관리할 수 있다.
 
@@ -30,33 +30,19 @@ const T50_PERSONAL_WORDS = ['개인'];
 /* 체크·선불카드는 법인카드가 아니다(법인체크는 '법인' 표기가 함께 붙는다) */
 const T50_NONCORP_WORDS  = ['체크', '선불', '기프트'];
 
-/* BIN 판정표 시드값 — 실측 카드영수증 71장을 전수 대조해 산출한 대역이다.
-   같은 거래를 두 장 찍은 3건(#47·#67·#68)을 제외한 고유 거래 66건이 모집단이고,
-   count 는 그 관찰 건수, verified:true 는 영수증의 카드종류 표기로 확인된 대역이다.
-
-   ⚠ 8자리 대역을 함부로 추가하지 말 것 — t50LookupBin 은 8자리를 6자리보다 우선
-   조회하는데 '확인' 판정은 count>=3 을 요구한다. 관찰 1~2건짜리 8자리 대역을 넣으면
-   이미 검증된 6자리 대역의 판정을 '추정 · 담당자 확인 필요'로 떨어뜨린다.
-   (55667788 은 관찰 1건뿐이라 일부러 넣지 않았다 — 556677 로 판정되게 둔다)
-
-   운영 전환 시에는 카드사·여신금융협회 BIN 정보나 PG 승인응답의 카드구분 값으로 교체한다. */
-const T50_BIN_SEED = [
-  /* 법인카드 — 영수증 '신한카드-법인' 표기로 확인 */
-  {prefix:'12345678', kind:'corp',     issuer:'신한카드',     memo:'법인 · 8자리 노출 건',   verified:true,  count:7},
-  {prefix:'87654321', kind:'corp',     issuer:'신한카드',     memo:'법인 · 8자리 노출 건',   verified:true,  count:6},
-  {prefix:'123456',   kind:'corp',     issuer:'신한카드',     memo:'법인 (표기 33/34건)',    verified:true,  count:34},
-  {prefix:'876543',   kind:'corp',     issuer:'신한카드',     memo:'법인 (표기 16/18건)',    verified:true,  count:18},
-  /* 개인카드 — 영수증 '신한카드-체크' 표기로 확인 (체크카드는 법인카드가 아니다) */
-  {prefix:'556677',   kind:'personal', issuer:'신한카드',     memo:'체크카드 (영수증 표기로 확인)', verified:true,  count:3},
-  {prefix:'998877',   kind:'personal', issuer:'신한카드',     memo:'체크카드 (영수증 표기로 확인)', verified:true,  count:2},
-  /* 카드종류 표기가 없어 미확정 — verified:false 로 두어 담당자 확인으로 넘긴다 */
-  {prefix:'334455',   kind:'personal', issuer:'한국도로공사', memo:'하이패스 통행료 전용 · 카드종류 미표기', verified:false, count:4},
-  {prefix:'667788',   kind:'personal', issuer:'통신사',       memo:'멤버십 전표 · 결제카드 아님', verified:false, count:1}
-];
+/* BIN 판정표 시드값 — 비워 둔다.
+   실측 영수증에서 뽑은 카드 대역은 특정 카드 소지자를 가리키는 원본 데이터라
+   공개 저장소에 남기지 않는다. 판정은 아래 두 경로로 충분히 동작한다.
+     ① 영수증 카드종류 표기 — 실측 기준 74%의 전표에 인쇄되어 있고 BIN 예측보다 근거가 강하다
+     ② 담당자 확정 — ①로 확정되지 않은 건
+   확정된 결과는 t50LearnBin 이 브라우저(localStorage)에만 학습시키므로 저장소에는 남지 않는다.
+   기관이 여신금융협회 BIN 정보나 PG 승인응답의 카드구분 값을 확보하면
+   관리자 화면 「카드 BIN 판정표」에서 등록해 쓴다. */
+const T50_BIN_SEED = [];
 
 /* ── 카드번호 정규화 ────────────────────────────────────────
-   '1234-56**-****-9012' → {tok:'123456********9012', bin8:null, bin6:'123456', last4:'8904'}
-   '12345678****901*'    → {bin8:'12345678', bin6:'123456'} */
+   '1234-56**-****-9012' → {tok:'123456******9012', bin8:null, bin6:'123456', last4:'9012'}
+   '12345678****9012'    → {bin8:'12345678', bin6:'123456'} */
 function t50CardParts(cardNo){
   const raw = String(cardNo || '').replace(/[\s\-]/g, '');
   const tok = raw.replace(/[^0-9]/g, '*');       /* 마스킹 문자는 어떤 기호로 읽혔든 * 로 */
@@ -129,15 +115,20 @@ function t50LearnBin(cardNo, kind, source){
   return rec;
 }
 
-/* ── 영수증 판독 원문에서 카드종류 표기 읽기 ──────────────── */
+/* ── 영수증 판독 원문에서 카드종류 표기 읽기 ──────────────
+   라벨('카드종류' '카드사명' '매입사')이 있는 줄을 우선 보되, 실측 전표에는 라벨 없이
+   '신한카드-법인 매출표' '[신한카드법인]' 처럼 카드사 표기가 독립 줄로 인쇄되는 형태가
+   많아 라벨만 보면 상당수를 놓친다. 라벨 줄이 없으면 '카드'와 구분어가 서로 붙어 있는
+   줄을 찾는다. 인접 조건이 있어 '법인등록번호'나 상호명 속 '법인'은 걸리지 않는다.
+   라벨에 공백이 끼어드는 경우('카 드 명')도 허용한다. */
+const T50_TYPE_LB  = /(카\s*드\s*종\s*류|카\s*드\s*사\s*명?|카\s*드\s*명|매\s*입\s*사\s*명?|card\s*type)/i;
+const T50_TYPE_ADJ = /카\s*드[^가-힣0-9]{0,3}(법인|개인|체크|선불|기프트)|(법인|개인|체크|선불|기프트)[^가-힣0-9]{0,3}카\s*드/;
 function t50CardTypeFromText(text){
   const t = String(text || '');
   if(!t) return null;
-  /* 카드종류·카드사 표기가 있는 줄만 본다 (상호명에 '법인'이 들어간 경우 오판 방지) */
-  const lines = t.split(/\n+/).filter(function(ln){
-    return /(카드종류|카드사|카드명|매입사|card\s*type)/i.test(ln);
-  });
-  const scope = lines.length ? lines.join('\n') : '';
+  const lines = t.split(/\n+/);
+  let scope = lines.filter(function(ln){ return T50_TYPE_LB.test(ln); }).join('\n');
+  if(!scope) scope = lines.filter(function(ln){ return T50_TYPE_ADJ.test(ln); }).join('\n');
   if(!scope) return null;
   if(T50_CORP_WORDS.some(function(w){ return scope.indexOf(w) >= 0; }))
     return {kind:'corp', line:scope.trim()};

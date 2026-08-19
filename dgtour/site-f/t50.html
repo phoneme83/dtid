@@ -758,24 +758,40 @@ function t50EvSample(){
 function t50EvOcrHtml(a){
   const o=t50Ocr;
   if(!o) return '<div class="t50e-ocr wait" id="t50EvWait" style="display:none">🔍 영수증 판독 중…</div>';
+  /* 판독되지 않은 항목은 '확인 불가'로 표시한다 — 담당자가 원본을 봐야 하는 항목이라는 뜻 */
+  const V=function(v){ return v?fEsc(String(v)):'<span style="color:#b45309;font-weight:700">확인 불가</span>'; };
+  const warn=function(reason){
+    return reason?('<div style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:9px 11px;margin:8px 0;font-size:12.5px;color:#9a3412;line-height:1.6">⚠️ <b>카드 결제 증빙이 아닙니다 — '+fEsc(reason)+'</b><br>'+
+      '카드번호 자리에 인쇄된 번호가 결제카드 번호가 아니어서 대조할 수 없습니다. '+
+      '신용카드 매출전표(카드번호·승인번호가 인쇄된 영수증)를 첨부해 주세요.</div>'):'';
+  };
+  const okBox='<label style="display:flex;align-items:center;gap:7px;margin:10px 0 2px;font-size:13px;font-weight:600;cursor:pointer"><input type="checkbox" id="t50EvOk"> 위 판독 내용을 확인했습니다</label>';
   if(o.mode==='real'){
     const ex=o.ex||{};
-    return '<div class="t50e-ocr"><div class="t">📄 영수증 OCR 판독 완료 (실제 판독) — <b>'+fEsc(o.file)+'</b></div>'+
-      '<div class="row"><span>판독된 카드번호</span><b>'+fEsc(ex.card||'미검출')+'</b></div>'+
-      '<div class="row"><span>판독된 승인번호</span><b>'+fEsc(ex.appr||'미검출')+'</b></div>'+
-      '<div class="row"><span>판독된 금액</span><b>'+((ex.amts&&ex.amts.length)?ex.amts.map(function(v){return fmt(Number(v));}).join(', ')+'원':'미검출')+'</b></div>'+
-      '<div class="row"><span>판독된 결제일</span><b>'+(ex.date?ex.date+(ft50EvInPeriod(a,ex.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖'):'미검출')+'</b></div>'+
-      t50CorpRow(ex.card,o.text)+
-      '<small>입력하신 카드번호·승인번호·결재금액·결제일이 판독 결과와 대조되며, 결제일은 여행기간('+a.start+' ~ '+a.end+') 안이어야 합니다. 카드번호의 *(마스킹) 자리는 비교에서 제외됩니다.</small></div>';
+    const amtTxt=(ex.amts&&ex.amts.length)?ex.amts.map(function(v){ return fmt(Number(v)); }).join(', ')+'원':null;
+    const dateTxt=ex.date?(ex.date+(ft50EvInPeriod(a,ex.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖')):null;
+    return '<div class="t50e-ocr"><div class="t">📄 영수증 판독 결과 (실제 OCR) — <b>'+fEsc(o.file)+'</b></div>'+
+      warn(ex.nonCard)+
+      '<div class="row"><span>가맹점</span><b>'+V(ex.shop)+'</b></div>'+
+      '<div class="row"><span>결제지역</span><b>'+V(ft50EvRegionText(ex.region))+'</b></div>'+
+      '<div class="row"><span>카드번호</span><b>'+V(ex.card)+'</b></div>'+
+      '<div class="row"><span>승인번호</span><b>'+V(ex.appr)+'</b></div>'+
+      '<div class="row"><span>결재금액</span><b>'+V(amtTxt)+'</b></div>'+
+      '<div class="row"><span>결제일</span><b>'+V(dateTxt)+'</b></div>'+
+      t50CorpRow(ex.card,o.text)+ okBox +
+      '<small>판독되지 않은 항목은 <b>확인 불가</b>로 표시됩니다. 확인 불가 항목은 입력값과 대조할 수 없어 담당자가 영수증 원본을 확인합니다. '+
+      '입력하신 카드번호·승인번호·결재금액·결제일이 판독 결과와 다르면 제출되지 않고, 결제일은 여행기간('+a.start+' ~ '+a.end+') 안이어야 합니다. '+
+      '카드번호의 *(마스킹) 자리는 비교에서 제외됩니다.</small></div>';
   }
   return '<div class="t50e-ocr"><div class="t">📄 영수증 판독 결과 (모의 — OCR 엔진 로드 실패) — <b>'+fEsc(o.file)+'</b></div>'+
-    '<div class="row"><span>가맹점</span><b>'+fEsc(o.merchant)+'</b></div>'+
-    '<div class="row"><span>카드번호</span><b>'+fEsc(o.card||'미검출')+'</b></div>'+
-    '<div class="row"><span>결재금액</span><b>'+fmt(o.amt)+'원</b></div>'+
-    '<div class="row"><span>승인번호</span><b>'+fEsc(o.appr)+'</b></div>'+
-    '<div class="row"><span>결제일</span><b>'+(o.date?o.date+(ft50EvInPeriod(a,o.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖'):'미검출')+'</b></div>'+
-    t50CorpRow(o.card,'')+
-    '<small>입력하신 승인번호·결재금액·결제일이 판독 결과와 일치해야 제출됩니다.</small></div>';
+    '<div class="row"><span>가맹점</span><b>'+V(o.merchant)+'</b></div>'+
+    '<div class="row"><span>결제지역</span><b>'+'<span style="color:#b45309;font-weight:700">확인 불가</span>'+'</b></div>'+
+    '<div class="row"><span>카드번호</span><b>'+V(o.card)+'</b></div>'+
+    '<div class="row"><span>승인번호</span><b>'+V(o.appr)+'</b></div>'+
+    '<div class="row"><span>결재금액</span><b>'+V(o.amt?fmt(o.amt)+'원':null)+'</b></div>'+
+    '<div class="row"><span>결제일</span><b>'+V(o.date?o.date+(ft50EvInPeriod(a,o.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖'):null)+'</b></div>'+
+    t50CorpRow(o.card,'')+ okBox +
+    '<small>모의 판독이라 결제지역은 확인 불가입니다. 입력하신 승인번호·결재금액·결제일이 판독 결과와 일치해야 제출됩니다.</small></div>';
 }
 /* 법인카드 확인 — 판독된 카드번호와 원문으로 3단 판정한 결과를 한 줄로 보여준다 */
 function t50CorpRow(card, text){
@@ -843,6 +859,9 @@ function t50EvSubmit(){
   if(amt<=0){ err.textContent='결재금액을 입력해 주세요'; return; }
   if(!payDate){ err.textContent='결제일(영수증의 승인·결제 날짜)을 입력해 주세요'; return; }
   if(!t50Ocr){ err.textContent='영수증 등 증빙파일을 첨부해 주세요. 첨부하면 자동으로 판독됩니다.'; return; }
+  /* 판독 결과를 사용자가 확인한 뒤에만 제출된다 */
+  const okBox=document.getElementById('t50EvOk');
+  if(!okBox||!okBox.checked){ err.textContent='판독 결과를 확인하신 뒤 「위 판독 내용을 확인했습니다」에 체크해 주세요'; return; }
   const fail=ft50EvVerify(t50Ocr,act.a,{card:card,appr:appr,amt:amt,date:payDate});
   if(fail){ err.innerHTML=fail; return; }
   /* 중복 제출 차단 — 같은 영수증이 다른 신청 건에 이미 쓰였는지 확인 */

@@ -822,24 +822,36 @@ function apEvForm(a,i){
   if(!apEvOpen[i])return '';
   const o=apOcr[i];
   let ocr;
+  /* 판독되지 않은 항목은 '확인 불가'로 표시한다 — 담당자가 원본을 봐야 하는 항목이라는 뜻 */
+  const V=function(v){ return v?String(v):'<span style="color:#b45309;font-weight:700">확인 불가</span>'; };
+  const okBox='<label style="display:flex;align-items:center;gap:7px;margin:10px 0 2px;font-size:13px;font-weight:600;cursor:pointer"><input type="checkbox" id="apEvOk'+i+'"> 위 판독 내용을 확인했습니다</label>';
   if(o&&o.mode==='real'){
     const ex=o.ex||{};
-    ocr='<div class="ap-ocr"><div class="t">📄 영수증 OCR 판독 완료 (실제 판독) — <b>'+o.file+'</b></div>'+
-      '<div class="row"><span>판독된 카드번호</span><b>'+(ex.card||'미검출')+'</b></div>'+
-      '<div class="row"><span>판독된 승인번호</span><b>'+(ex.appr||'미검출')+'</b></div>'+
-      '<div class="row"><span>판독된 금액</span><b>'+(ex.amts&&ex.amts.length?ex.amts.map(function(v){return Number(v).toLocaleString('ko-KR');}).join(', ')+'원':'미검출')+'</b></div>'+
-      '<div class="row"><span>판독된 결제일</span><b>'+(ex.date?ex.date+(apInPeriod(a,ex.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖'):'미검출')+'</b></div>'+
-      apCorpRow(ex.card,o.text)+
-      '<small>입력하신 카드번호·승인번호·결재금액·결제일이 영수증 판독 결과와 대조되며, 결제일은 여행기간('+a.start+' ~ '+a.end+') 안이어야 합니다. 카드번호의 *(마스킹) 자리는 비교에서 제외됩니다.</small></div>';
+    const amtTxt=(ex.amts&&ex.amts.length)?ex.amts.map(function(v){ return Number(v).toLocaleString('ko-KR'); }).join(', ')+'원':null;
+    const dateTxt=ex.date?(ex.date+(apInPeriod(a,ex.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖')):null;
+    const warn=ex.nonCard?('<div style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:9px 11px;margin:8px 0;font-size:12.5px;color:#9a3412;line-height:1.6">⚠️ <b>카드 결제 증빙이 아닙니다 — '+ex.nonCard+'</b><br>'+
+      '카드번호 자리에 인쇄된 번호가 결제카드 번호가 아니어서 대조할 수 없습니다. '+
+      '신용카드 매출전표(카드번호·승인번호가 인쇄된 영수증)를 첨부해 주세요.</div>'):'';
+    ocr='<div class="ap-ocr"><div class="t">📄 영수증 판독 결과 (실제 OCR) — <b>'+o.file+'</b></div>'+ warn +
+      '<div class="row"><span>가맹점</span><b>'+V(ex.shop)+'</b></div>'+
+      '<div class="row"><span>결제지역</span><b>'+V(apOcrRegionText(ex.region))+'</b></div>'+
+      '<div class="row"><span>카드번호</span><b>'+V(ex.card)+'</b></div>'+
+      '<div class="row"><span>승인번호</span><b>'+V(ex.appr)+'</b></div>'+
+      '<div class="row"><span>결재금액</span><b>'+V(amtTxt)+'</b></div>'+
+      '<div class="row"><span>결제일</span><b>'+V(dateTxt)+'</b></div>'+
+      apCorpRow(ex.card,o.text)+ okBox +
+      '<small>판독되지 않은 항목은 <b>확인 불가</b>로 표시됩니다. 확인 불가 항목은 입력값과 대조할 수 없어 담당자가 영수증 원본을 확인합니다. '+
+      '입력하신 카드번호·승인번호·결재금액·결제일이 판독 결과와 다르면 제출되지 않고, 결제일은 여행기간('+a.start+' ~ '+a.end+') 안이어야 합니다.</small></div>';
   }else if(o){
     ocr='<div class="ap-ocr"><div class="t">📄 영수증 판독 결과 (모의 — OCR 엔진 로드 실패) — <b>'+o.file+'</b></div>'+
-      '<div class="row"><span>가맹점</span><b>'+o.merchant+'</b></div>'+
-      '<div class="row"><span>카드번호</span><b>'+(o.card||'미검출')+'</b></div>'+
-      '<div class="row"><span>결재금액</span><b>'+o.amt.toLocaleString('ko-KR')+'원</b></div>'+
-      '<div class="row"><span>승인번호</span><b>'+o.appr+'</b></div>'+
-      '<div class="row"><span>결제일</span><b>'+(o.date?o.date+(apInPeriod(a,o.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖'):'미검출')+'</b></div>'+
-      apCorpRow(o.card,'')+
-      '<small>입력하신 승인번호·결재금액·결제일이 판독 결과와 일치해야 제출됩니다.</small></div>';
+      '<div class="row"><span>가맹점</span><b>'+V(o.merchant)+'</b></div>'+
+      '<div class="row"><span>결제지역</span><b>'+'<span style="color:#b45309;font-weight:700">확인 불가</span>'+'</b></div>'+
+      '<div class="row"><span>카드번호</span><b>'+V(o.card)+'</b></div>'+
+      '<div class="row"><span>승인번호</span><b>'+V(o.appr)+'</b></div>'+
+      '<div class="row"><span>결재금액</span><b>'+V(o.amt?o.amt.toLocaleString('ko-KR')+'원':null)+'</b></div>'+
+      '<div class="row"><span>결제일</span><b>'+V(o.date?o.date+(apInPeriod(a,o.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖'):null)+'</b></div>'+
+      apCorpRow(o.card,'')+ okBox +
+      '<small>모의 판독이라 결제지역은 확인 불가입니다. 입력하신 승인번호·결재금액·결제일이 판독 결과와 일치해야 제출됩니다.</small></div>';
   }else{
     ocr='<div class="ap-ocr wait" id="apOcrWait'+i+'" style="display:none">🔍 영수증 판독 중…</div>';
   }
@@ -892,23 +904,27 @@ function apEvToggle(i,close){
 function apEvSample(i){
   const a=apLoad()[i];if(!a)return;
   const src=apOcrSource(a),appr=apApprNo(src.amt);
-  const c=document.createElement('canvas');c.width=480;c.height=520;
+  const c=document.createElement('canvas');c.width=520;c.height=640;
   const x=c.getContext('2d');
-  x.fillStyle='#ffffff';x.fillRect(0,0,480,520);
+  x.fillStyle='#ffffff';x.fillRect(0,0,520,640);
   x.fillStyle='#111111';x.textAlign='center';
-  x.font='bold 34px Arial';x.fillText('RECEIPT',240,64);
+  x.font='bold 34px Arial';x.fillText('RECEIPT',260,60);
   x.font='22px Arial';x.textAlign='left';
+  /* 상호·주소·카드종류는 한글 라벨로 (실제 전표와 같은 형태여야 판독 로직을 탄다),
+     숫자 필드는 판독률 때문에 Latin 라벨을 유지한다 */
   const lines=[
-    'STORE : '+src.merchant.replace(/[^0-9A-Za-z가-힣 ]/g,'').trim(),
+    '상 호 명 : '+src.merchant.replace(/[^0-9A-Za-z가-힣 ]/g,'').trim(),
+    '주소 : '+a.region+' 중앙로 1',
     'DATE : '+a.start+' 14:22',   /* 결제일-여행기간 검증을 통과하도록 여행 시작일로 인쇄 */
     '--------------------------------',
+    '카드종류 : 신한카드개인',
     'CARD NO : 1234-56XX-XXXX-3456',
     'AMOUNT : '+src.amt,
     'APPROVAL NO : '+appr,
     '--------------------------------',
     'BANGAP TRAVEL DEMO RECEIPT'
   ];
-  lines.forEach(function(t,li){x.fillText(t,36,130+li*46);});
+  lines.forEach(function(t,li){x.fillText(t,32,116+li*52);});
   const el=document.createElement('a');
   el.href=c.toDataURL('image/png');
   el.download='demo-receipt-'+appr+'.png';
@@ -952,6 +968,113 @@ function apOcrDate(raw){
     return false;
   });
   return found;
+}
+
+
+/* ── 비카드 전표 식별 ─────────────────────────────────────────
+   현금영수증·멤버십 전표는 카드 결제 증빙이 아니다. 카드번호 자리에 휴대폰번호나
+   멤버십 번호가 인쇄되므로, 그대로 두면 임의의 카드번호를 입력해도 카드번호 대조가
+   건너뛰어져 통과된다. 첨부 단계에서 걸러 반려 사유를 준다.
+   신용카드 승인 표기가 함께 있으면(멤버십 할인 전표가 붙어 나온 경우) 카드 결제로 본다. */
+function apOcrNonCard(raw){
+  const t=String(raw||'');
+  const credit=/신용\s*카드|신용\s*거래|신용\s*승인|신용\s*재승인|카드\s*결제|매\s*입\s*사/.test(t);
+  if(!credit&&/멤버\s*[십쉽][^\n]{0,12}매\s*출\s*전\s*표/.test(t)) return '멤버십 전표';
+  if(credit) return null;
+  if(/현금\s*영수증|현금\s*[（(]\s*소득공제|자진\s*발급/.test(t)) return '현금영수증';
+  if(/멤버\s*[십쉽]|포인트\s*전표/.test(t)) return '멤버십·포인트 전표';
+  return null;
+}
+
+/* ── 상호명 추출 — 라벨이 '상호' '상 호 명' '가맹점명' 등으로 갈리고 공백이 끼어든다 ── */
+function apOcrShop(raw){
+  const LB=/(상\s*호\s*명?|가\s*맹\s*점\s*명?|매\s*장\s*명|store)\s*[:：]/i;
+  let found=null;
+  String(raw||'').split(/\n+/).some(function(ln){
+    const m=ln.match(LB);
+    if(!m) return false;
+    let v=ln.slice(m.index+m[0].length).trim();
+    v=v.split(/\s{2,}/)[0].trim();
+    v=v.replace(/\s*(대\s*표\s*자|TEL|전\s*화|사업자).*$/i,'').trim();
+    if(v.length>=2){ found=v; return true; }
+    return false;
+  });
+  return found;
+}
+
+/* ── 결제지역 추출 ───────────────────────────────────────────
+   반값여행은 지역 소비 증빙이라 결제지역이 신청 지자체와 맞는지가 핵심인데
+   기존 판독은 주소를 아예 보지 않았다. 실측 전표의 표기 편차를 반영한다:
+     ① 시도명 축약 혼재 — '강원' / '강원도' / '강원특별자치도'
+     ② 구는 시와 함께 적어야 식별된다 ('중구'만으로는 서울/대구 구분 불가)
+     ③ 읍면동이 빠지고 도로명만 인쇄된 전표가 흔하다 → 도로명으로 대체
+     ④ 동을 괄호로 병기하는 형태 — '세계로 53 (반곡동)'
+     ⑤ '종로2가'처럼 '가'로 끝나는 법정동이 있다 */
+const AP_SIDO=[
+  ['서울특별시','서울시'],['부산광역시','부산시'],['대구광역시','대구시'],
+  ['인천광역시','인천시'],['광주광역시','광주시'],['대전광역시','대전시'],
+  ['울산광역시','울산시'],['세종특별자치시','세종시'],
+  ['강원특별자치도','강원도'],['전북특별자치도','전북'],['제주특별자치도','제주도'],
+  ['경기도','경기도'],['강원도','강원도'],['충청북도','충북'],['충청남도','충남'],
+  ['전라북도','전북'],['전라남도','전남'],['경상북도','경북'],['경상남도','경남'],
+  ['제주도','제주도'],
+  ['서울','서울시'],['부산','부산시'],['대구','대구시'],['인천','인천시'],
+  ['광주','광주시'],['대전','대전시'],['울산','울산시'],['세종','세종시'],
+  ['경기','경기도'],['강원','강원도'],['충북','충북'],['충남','충남'],
+  ['전북','전북'],['전남','전남'],['경북','경북'],['경남','경남'],['제주','제주도']
+];
+/* 시도 이름이면서 '시'로 끝나는 것 — 기초자치단체 '시'와 구분해야 한다 */
+const AP_SIDO_SI=['서울특별시','부산광역시','대구광역시','인천광역시',
+                 '광주광역시','대전광역시','울산광역시','세종특별자치시'];
+function apOcrSido(s){
+  for(let i=0;i<AP_SIDO.length;i++){ if(s.indexOf(AP_SIDO[i][0])>=0) return AP_SIDO[i][1]; }
+  return null;
+}
+function apOcrParseAddr(s){
+  if(!s) return null;
+  const sd=apOcrSido(s);
+  let sgg=null,m;
+  /* 구가 있으면 반드시 앞에 시를 붙인다 ('중구'처럼 두 글자 구가 있어 최소 1자) */
+  m=s.match(/([가-힣]{1,8}구)(?![가-힣])/);
+  if(m){
+    const gu=m[1];
+    const pre=s.slice(0,m.index).match(/([가-힣]{2,10}시)\s*$/);
+    if(pre&&AP_SIDO_SI.indexOf(pre[1])<0) sgg=pre[1]+' '+gu;      /* 성남시 분당구 */
+    else if(sd&&/시$/.test(sd))            sgg=sd+' '+gu;           /* 서울시 송파구 */
+    else                                   sgg=gu;
+  }
+  if(!sgg){
+    m=s.match(/([가-힣]{2,10}(?:시|군))(?![가-힣])/);
+    if(m&&AP_SIDO_SI.indexOf(m[1])<0) sgg=m[1];
+  }
+  /* 읍면동 — 괄호 병기 > 읍·면 > 동·가 > 도로명 */
+  let emd=null;
+  m=s.match(/[（(]\s*([가-힣]{1,8}\d?(?:읍|면|동|가))\s*[）)]/);
+  if(m) emd=m[1];
+  if(!emd){ m=s.match(/([가-힣]{1,8}(?:읍|면))(?![가-힣])/);            if(m) emd=m[1]; }
+  if(!emd){ m=s.match(/([가-힣]{1,6}\d?(?:동|가))(?![가-힣])/);          if(m) emd=m[1]; }
+  if(!emd){ m=s.match(/([가-힣]{1,10}\d*(?:번길|가길|로|길))(?![가-힣])/); if(m) emd=m[1]; }
+  if(!sgg&&!emd) return null;
+  return {sgg:sgg,emd:emd};
+}
+function apOcrRegion(raw){
+  const LB=/(주\s*소|사\s*업\s*장|가맹점\s*주소)\s*[:：]?/;
+  let labeled=null,plain=null;
+  String(raw||'').split(/\n+/).forEach(function(ln){
+    const m=ln.match(LB);
+    const body=(m?ln.slice(m.index+m[0].length):ln).trim();
+    if(!apOcrSido(body)&&!/[가-힣]{1,10}(시|군|구)(?![가-힣])/.test(body)) return;
+    const r=apOcrParseAddr(body);
+    if(!r) return;
+    if(m){ if(!labeled) labeled=r; }
+    else if(!plain) plain=r;
+  });
+  return labeled||plain;
+}
+/* 결제지역을 한 줄로 — 둘 다 없으면 null (화면에서 '확인 불가'로 표시된다) */
+function apOcrRegionText(r){
+  if(!r) return null;
+  return [r.sgg,r.emd].filter(Boolean).join(' ')||null;
 }
 
 /* OCR 원문에서 카드번호·승인번호·금액 필드를 라벨 기준으로 추출.
@@ -1011,6 +1134,10 @@ function apOcrExtract(raw){
       return false;
     });
   }
+  /* 상호명·결제지역·비카드 전표 여부 (미검출은 null → 화면에서 '확인 불가') */
+  res.shop=apOcrShop(raw);
+  res.region=apOcrRegion(raw);
+  res.nonCard=apOcrNonCard(raw);
   return res;
 }
 
@@ -1136,18 +1263,26 @@ function apEvSubmit(i){
   /* OCR 판독 결과(apOcr)는 파일이 첨부되어야만 생성된다 */
   const o=apOcr[i];
   if(!o){err.textContent='영수증 등 증빙파일을 첨부해 주세요. 첨부하면 자동으로 판독됩니다.';return;}
+  /* 판독 결과를 사용자가 확인한 뒤에만 제출된다 */
+  const okBox=document.getElementById('apEvOk'+i);
+  if(!okBox||!okBox.checked){err.textContent='판독 결과를 확인하신 뒤 「위 판독 내용을 확인했습니다」에 체크해 주세요';return;}
   const a0=apLoad()[i];if(!a0)return;
   /* OCR 대조: 영수증에서 추출한 카드번호·승인번호·금액·결제일 필드와 입력값을 각각 비교 */
   if(o.mode==='real'){
     const ex=o.ex||{};
+    /* 카드 결제 증빙이 아니면 대조 자체가 성립하지 않는다 */
+    if(ex.nonCard){
+      err.innerHTML='❌ <b>카드 결제 증빙이 아닙니다.</b> 첨부하신 파일은 <b>'+ex.nonCard+'</b>으로 판독되었습니다. 카드번호 자리에 인쇄된 번호는 결제카드 번호가 아니므로 대조할 수 없습니다. 신용카드 매출전표(카드번호·승인번호가 인쇄된 영수증)를 첨부해 주세요.';
+      return;
+    }
     const fails=[];
     /* 승인번호: 라벨 추출값 우선, 없으면 원문 포함 여부 */
     if(ex.appr){if(ex.appr!==appr)fails.push('승인번호(영수증: '+ex.appr+')');}
-    else if(o.text.indexOf(appr)<0)fails.push('승인번호(영수증에서 미검출)');
+    else if(o.text.indexOf(appr)<0)fails.push('승인번호(영수증에서 확인 불가)');
     /* 금액: 라벨 추출값 우선, 없으면 원문 포함 여부 */
     const amtStr=String(amt);
     if(ex.amts&&ex.amts.length){if(ex.amts.indexOf(amtStr)<0)fails.push('결재금액(영수증: '+ex.amts.map(function(v){return Number(v).toLocaleString('ko-KR');}).join('/')+'원)');}
-    else if(o.text.indexOf(amtStr)<0)fails.push('결재금액(영수증에서 미검출)');
+    else if(o.text.indexOf(amtStr)<0)fails.push('결재금액(영수증에서 확인 불가)');
     /* 카드번호: 영수증에서 검출된 경우에만 대조 — 마스킹(*) 자리는 제외, 보이는 숫자는 자리까지 일치해야 함 */
     if(ex.card&&!apCardMatch(card,ex.card))fails.push('카드번호(영수증: '+ex.card+')');
     /* 결제일: 영수증에서 검출된 경우 입력값과 일치해야 함 */

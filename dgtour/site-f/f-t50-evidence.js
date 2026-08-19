@@ -116,6 +116,10 @@ function ft50EvExtract(raw){
       return false;
     });
   }
+  /* 상호명·결제지역·비카드 전표 여부 (미검출은 null → 화면에서 '확인 불가') */
+  res.shop=ft50EvShop(raw);
+  res.region=ft50EvRegion(raw);
+  res.nonCard=ft50EvNonCard(raw);
   return res;
 }
 
@@ -177,28 +181,139 @@ function ft50EvLoadTess(){
    숫자는 Latin 라벨로 인쇄해야 판독률이 높다 */
 function ft50EvSampleImage(a){
   const src=ft50EvSource(a), appr=ft50EvApprNo(src.amt);
-  const c=document.createElement('canvas'); c.width=480; c.height=520;
+  const c=document.createElement('canvas'); c.width=520; c.height=640;
   const x=c.getContext('2d');
-  x.fillStyle='#ffffff'; x.fillRect(0,0,480,520);
+  x.fillStyle='#ffffff'; x.fillRect(0,0,520,640);
   x.fillStyle='#111111'; x.textAlign='center';
-  x.font='bold 34px Arial'; x.fillText('RECEIPT',240,64);
+  x.font='bold 34px Arial'; x.fillText('RECEIPT',260,60);
   x.font='22px Arial'; x.textAlign='left';
+  /* 상호·주소·카드종류는 한글 라벨로 (실제 전표와 같은 형태여야 판독 로직을 탄다),
+     숫자 필드는 판독률 때문에 Latin 라벨을 유지한다 */
   const lines=[
-    'STORE : '+String(src.merchant).replace(/[^0-9A-Za-z가-힣 ]/g,'').trim(),
+    '상 호 명 : '+String(src.merchant).replace(/[^0-9A-Za-z가-힣 ]/g,'').trim(),
+    '주소 : '+a.region+' 중앙로 1',
     'DATE : '+a.start+' 14:22',      /* 결제일-여행기간 검증을 통과하도록 여행 시작일로 인쇄 */
     '--------------------------------',
+    '카드종류 : 신한카드개인',
     'CARD NO : 1234-56XX-XXXX-3456',
     'AMOUNT : '+src.amt,
     'APPROVAL NO : '+appr,
     '--------------------------------',
     'JIYEOKSARANG DEMO RECEIPT'
   ];
-  lines.forEach(function(t,li){ x.fillText(t,36,130+li*46); });
+  lines.forEach(function(t,li){ x.fillText(t,32,116+li*52); });
   const el=document.createElement('a');
   el.href=c.toDataURL('image/png');
   el.download='demo-receipt-'+appr+'.png';
   document.body.appendChild(el); el.click(); el.remove();
   return {appr:appr,amt:src.amt,date:a.start};
+}
+
+
+/* ── 비카드 전표 식별 ─────────────────────────────────────────
+   현금영수증·멤버십 전표는 카드 결제 증빙이 아니다. 카드번호 자리에 휴대폰번호나
+   멤버십 번호가 인쇄되므로, 그대로 두면 임의의 카드번호를 입력해도 카드번호 대조가
+   건너뛰어져 통과된다. 첨부 단계에서 걸러 반려 사유를 준다.
+   신용카드 승인 표기가 함께 있으면(멤버십 할인 전표가 붙어 나온 경우) 카드 결제로 본다. */
+function ft50EvNonCard(raw){
+  const t=String(raw||'');
+  const credit=/신용\s*카드|신용\s*거래|신용\s*승인|신용\s*재승인|카드\s*결제|매\s*입\s*사/.test(t);
+  if(!credit&&/멤버\s*[십쉽][^\n]{0,12}매\s*출\s*전\s*표/.test(t)) return '멤버십 전표';
+  if(credit) return null;
+  if(/현금\s*영수증|현금\s*[（(]\s*소득공제|자진\s*발급/.test(t)) return '현금영수증';
+  if(/멤버\s*[십쉽]|포인트\s*전표/.test(t)) return '멤버십·포인트 전표';
+  return null;
+}
+
+/* ── 상호명 추출 — 라벨이 '상호' '상 호 명' '가맹점명' 등으로 갈리고 공백이 끼어든다 ── */
+function ft50EvShop(raw){
+  const LB=/(상\s*호\s*명?|가\s*맹\s*점\s*명?|매\s*장\s*명|store)\s*[:：]/i;
+  let found=null;
+  String(raw||'').split(/\n+/).some(function(ln){
+    const m=ln.match(LB);
+    if(!m) return false;
+    let v=ln.slice(m.index+m[0].length).trim();
+    v=v.split(/\s{2,}/)[0].trim();
+    v=v.replace(/\s*(대\s*표\s*자|TEL|전\s*화|사업자).*$/i,'').trim();
+    if(v.length>=2){ found=v; return true; }
+    return false;
+  });
+  return found;
+}
+
+/* ── 결제지역 추출 ───────────────────────────────────────────
+   반값여행은 지역 소비 증빙이라 결제지역이 신청 지자체와 맞는지가 핵심인데
+   기존 판독은 주소를 아예 보지 않았다. 실측 전표의 표기 편차를 반영한다:
+     ① 시도명 축약 혼재 — '강원' / '강원도' / '강원특별자치도'
+     ② 구는 시와 함께 적어야 식별된다 ('중구'만으로는 서울/대구 구분 불가)
+     ③ 읍면동이 빠지고 도로명만 인쇄된 전표가 흔하다 → 도로명으로 대체
+     ④ 동을 괄호로 병기하는 형태 — '세계로 53 (반곡동)'
+     ⑤ '종로2가'처럼 '가'로 끝나는 법정동이 있다 */
+const FT50_SIDO=[
+  ['서울특별시','서울시'],['부산광역시','부산시'],['대구광역시','대구시'],
+  ['인천광역시','인천시'],['광주광역시','광주시'],['대전광역시','대전시'],
+  ['울산광역시','울산시'],['세종특별자치시','세종시'],
+  ['강원특별자치도','강원도'],['전북특별자치도','전북'],['제주특별자치도','제주도'],
+  ['경기도','경기도'],['강원도','강원도'],['충청북도','충북'],['충청남도','충남'],
+  ['전라북도','전북'],['전라남도','전남'],['경상북도','경북'],['경상남도','경남'],
+  ['제주도','제주도'],
+  ['서울','서울시'],['부산','부산시'],['대구','대구시'],['인천','인천시'],
+  ['광주','광주시'],['대전','대전시'],['울산','울산시'],['세종','세종시'],
+  ['경기','경기도'],['강원','강원도'],['충북','충북'],['충남','충남'],
+  ['전북','전북'],['전남','전남'],['경북','경북'],['경남','경남'],['제주','제주도']
+];
+/* 시도 이름이면서 '시'로 끝나는 것 — 기초자치단체 '시'와 구분해야 한다 */
+const FT50_SIDO_SI=['서울특별시','부산광역시','대구광역시','인천광역시',
+                 '광주광역시','대전광역시','울산광역시','세종특별자치시'];
+function ft50EvSido(s){
+  for(let i=0;i<FT50_SIDO.length;i++){ if(s.indexOf(FT50_SIDO[i][0])>=0) return FT50_SIDO[i][1]; }
+  return null;
+}
+function ft50EvParseAddr(s){
+  if(!s) return null;
+  const sd=ft50EvSido(s);
+  let sgg=null,m;
+  /* 구가 있으면 반드시 앞에 시를 붙인다 ('중구'처럼 두 글자 구가 있어 최소 1자) */
+  m=s.match(/([가-힣]{1,8}구)(?![가-힣])/);
+  if(m){
+    const gu=m[1];
+    const pre=s.slice(0,m.index).match(/([가-힣]{2,10}시)\s*$/);
+    if(pre&&FT50_SIDO_SI.indexOf(pre[1])<0) sgg=pre[1]+' '+gu;      /* 성남시 분당구 */
+    else if(sd&&/시$/.test(sd))            sgg=sd+' '+gu;           /* 서울시 송파구 */
+    else                                   sgg=gu;
+  }
+  if(!sgg){
+    m=s.match(/([가-힣]{2,10}(?:시|군))(?![가-힣])/);
+    if(m&&FT50_SIDO_SI.indexOf(m[1])<0) sgg=m[1];
+  }
+  /* 읍면동 — 괄호 병기 > 읍·면 > 동·가 > 도로명 */
+  let emd=null;
+  m=s.match(/[（(]\s*([가-힣]{1,8}\d?(?:읍|면|동|가))\s*[）)]/);
+  if(m) emd=m[1];
+  if(!emd){ m=s.match(/([가-힣]{1,8}(?:읍|면))(?![가-힣])/);            if(m) emd=m[1]; }
+  if(!emd){ m=s.match(/([가-힣]{1,6}\d?(?:동|가))(?![가-힣])/);          if(m) emd=m[1]; }
+  if(!emd){ m=s.match(/([가-힣]{1,10}\d*(?:번길|가길|로|길))(?![가-힣])/); if(m) emd=m[1]; }
+  if(!sgg&&!emd) return null;
+  return {sgg:sgg,emd:emd};
+}
+function ft50EvRegion(raw){
+  const LB=/(주\s*소|사\s*업\s*장|가맹점\s*주소)\s*[:：]?/;
+  let labeled=null,plain=null;
+  String(raw||'').split(/\n+/).forEach(function(ln){
+    const m=ln.match(LB);
+    const body=(m?ln.slice(m.index+m[0].length):ln).trim();
+    if(!ft50EvSido(body)&&!/[가-힣]{1,10}(시|군|구)(?![가-힣])/.test(body)) return;
+    const r=ft50EvParseAddr(body);
+    if(!r) return;
+    if(m){ if(!labeled) labeled=r; }
+    else if(!plain) plain=r;
+  });
+  return labeled||plain;
+}
+/* 결제지역을 한 줄로 — 둘 다 없으면 null (화면에서 '확인 불가'로 표시된다) */
+function ft50EvRegionText(r){
+  if(!r) return null;
+  return [r.sgg,r.emd].filter(Boolean).join(' ')||null;
 }
 
 /* 첨부 파일 판독 — {mode:'real',text,ex,file} 또는 {mode:'mock',...} 으로 resolve.
@@ -242,14 +357,19 @@ function ft50EvVerify(o,a,input){
   const card=input.card, appr=input.appr, amt=input.amt, payDate=input.date;
   if(o.mode==='real'){
     const ex=o.ex||{};
+    /* 카드 결제 증빙이 아니면 대조 자체가 성립하지 않는다 */
+    if(ex.nonCard)
+      return '❌ <b>카드 결제 증빙이 아닙니다.</b> 첨부하신 파일은 <b>'+ex.nonCard+
+        '</b>으로 판독되었습니다. 카드번호 자리에 인쇄된 번호는 결제카드 번호가 아니므로 대조할 수 없습니다. '+
+        '신용카드 매출전표(카드번호·승인번호가 인쇄된 영수증)를 첨부해 주세요.';
     const fails=[];
     if(ex.appr){ if(ex.appr!==appr) fails.push('승인번호(영수증: '+ex.appr+')'); }
-    else if(o.text.indexOf(appr)<0) fails.push('승인번호(영수증에서 미검출)');
+    else if(o.text.indexOf(appr)<0) fails.push('승인번호(영수증에서 확인 불가)');
     const amtStr=String(amt);
     if(ex.amts&&ex.amts.length){
       if(ex.amts.indexOf(amtStr)<0)
         fails.push('결재금액(영수증: '+ex.amts.map(function(v){ return Number(v).toLocaleString('ko-KR'); }).join('/')+'원)');
-    }else if(o.text.indexOf(amtStr)<0) fails.push('결재금액(영수증에서 미검출)');
+    }else if(o.text.indexOf(amtStr)<0) fails.push('결재금액(영수증에서 확인 불가)');
     if(ex.card&&!ft50EvCardMatch(card,ex.card)) fails.push('카드번호(영수증: '+ex.card+')');
     if(ex.date&&ex.date!==payDate) fails.push('결제일(영수증: '+ex.date+')');
     if(fails.length)
