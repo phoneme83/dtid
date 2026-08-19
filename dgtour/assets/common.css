@@ -744,3 +744,18 @@ button{font-family:inherit;cursor:pointer}
   .ap-ocr .row{flex-direction:column;align-items:stretch;gap:1px}
   .ap-ocr .row b{text-align:left}
 }
+
+/* ── 터치 타깃·입력 폰트 (접근성 실측 반영) ─────────────────
+   WCAG 2.2 는 최소 24×24px, Apple·Android 지침은 44px 를 권장한다.
+   iOS Safari 는 폼 컨트롤 글자가 16px 미만이면 포커스 시 화면을 확대하므로
+   모바일 폭에서만 16px 를 보장한다(데스크톱 미리보기는 기존 디자인 유지). */
+.gnb-menu{min-width:44px;min-height:44px;align-items:center;justify-content:center}
+.gnb-left{min-height:44px}
+/* 판독 확인 체크박스 — label 전체가 탭 영역이므로 높이를 확보한다 */
+.ap-ocr label{min-height:44px}
+.ap-ocr label input[type=checkbox]{width:20px;height:20px;flex:0 0 auto}
+@media (max-width:768px){
+  .ap-in,.ap-file{font-size:16px}
+  .ap-in{min-height:44px}
+  .ap-sm,.ap-big{min-height:44px}
+}

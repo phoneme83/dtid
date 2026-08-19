@@ -108,6 +108,21 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
 .adm-dtl .drow{display:flex;justify-content:space-between;gap:14px;font-size:13.5px;padding:5px 0;border-bottom:1px dashed #f1f5f9}
 .adm-dtl .drow span{color:#64748b;flex-shrink:0}
 .adm-dtl .drow b{text-align:right;color:#0f172a;font-weight:700;word-break:break-all}
+
+/* ── 터치 타깃·입력 폰트 (접근성 실측 반영) ─────────────────
+   WCAG 2.2 최소 24px / 권장 44px. iOS Safari 는 폼 컨트롤이 16px 미만이면
+   포커스 시 화면을 확대하므로 모바일 폭에서 16px 를 보장한다. */
+.adm-persona{min-height:44px;font-size:16px}
+.dtl{min-height:44px}
+.adm-gnb .rt a{display:inline-flex;align-items:center;min-height:44px;padding:0 6px}
+.card .hd .dtl{min-height:44px}
+.adm-top a{display:inline-flex;align-items:center;min-height:44px}
+@media (max-width:768px){
+  /* .bar select 등 더 구체적인 규칙과 인라인 style 을 덮어야 iOS 자동확대를 막는다 */
+  select,textarea,input[type=text],input[type=search],input[type=number],input[type=date]{
+    font-size:16px !important;min-height:44px}
+  button{min-height:44px}
+}
 </style>
 </head>
 <body>

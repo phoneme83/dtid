@@ -556,3 +556,30 @@ body.login{background:linear-gradient(170deg,#eaf1ff 0%,#f6f9ff 42%,#fff 100%);p
 @media (min-width:960px){
   .mo-only{display:none}
 }
+
+/* ── 터치 타깃·입력 폰트 (접근성 실측 반영) ─────────────────
+   WCAG 2.2 는 최소 24×24px, Apple·Android 지침은 44px 를 권장한다.
+   iOS Safari 는 폼 컨트롤 글자가 16px 미만이면 포커스 시 화면을 확대하므로
+   모바일 폭에서만 16px 를 보장한다(데스크톱 미리보기는 기존 디자인 유지). */
+.ab-ico{min-width:44px;min-height:44px}
+/* 지역 사이트 이동(↗) 링크 — 아이콘은 작지만 탭 영역은 확보한다 */
+a.hv{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px}
+/* 판독 확인 체크박스 — label 전체가 탭 영역이다 */
+.t50e-ocr label{min-height:44px}
+.t50e-ocr label input[type=checkbox]{width:20px;height:20px;flex:0 0 auto}
+.adm-tab{min-height:44px}
+.more{min-height:44px}
+.adm-bar-in a{display:inline-flex;align-items:center;min-height:44px}
+@media (max-width:768px){
+  .f-in{font-size:16px;min-height:44px}
+  .btn{min-height:44px}
+  /* 관리자 화면의 select·입력은 인라인 style 로 크기가 박혀 있어 CSS 로는 못 이긴다.
+     iOS 자동확대를 막기 위해 모바일 폭에서만 한정적으로 덮는다. */
+  select,textarea,input[type=text],input[type=search],input[type=number],input[type=date]{
+    font-size:16px !important;min-height:44px}
+}
+@media (max-width:520px){
+  /* 폼 폰트를 16px 로 올리면 select 가 넓어져 섹션 제목과 폭을 다툰다 → 아래로 내린다 */
+  .sec-h{flex-wrap:wrap}
+  .sec-h > select{width:100%}
+}
