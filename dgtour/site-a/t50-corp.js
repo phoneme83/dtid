@@ -15,7 +15,7 @@
                              아직 검증 전이면 '추정'으로 구분한다.
      ② 영수증 카드종류 표기 — 판독 원문에 카드종류가 인쇄되어 있으면 그것으로 확정하고,
                              그 결과를 판정표에 학습시켜 이후 같은 BIN 은 번호만으로 판정된다.
-                             (실측 영수증 71장 중 51장 = 72% 에 인쇄되어 있었다)
+                             (실측 71장의 고유 거래 66건 중 49건 = 74% 에 인쇄되어 있었다)
      ③ 담당자 확정         — ①②로 확정되지 않은 건은 담당자가 확정하고, 그 결과도 학습된다.
 
    판정 결과: {result:'corp'|'personal'|'unknown', label, basis, detail, needsReview}
@@ -30,16 +30,28 @@ const T50_PERSONAL_WORDS = ['개인'];
 /* 체크·선불카드는 법인카드가 아니다(법인체크는 '법인' 표기가 함께 붙는다) */
 const T50_NONCORP_WORDS  = ['체크', '선불', '기프트'];
 
-/* BIN 판정표 시드값 — 실측 영수증 71장에서 카드종류 표기와 함께 관찰된 대역.
-   verified:true 는 영수증 표기로 확인된 것, count 는 관찰 건수.
+/* BIN 판정표 시드값 — 실측 카드영수증 71장을 전수 대조해 산출한 대역이다.
+   같은 거래를 두 장 찍은 3건(#47·#67·#68)을 제외한 고유 거래 66건이 모집단이고,
+   count 는 그 관찰 건수, verified:true 는 영수증의 카드종류 표기로 확인된 대역이다.
+
+   ⚠ 8자리 대역을 함부로 추가하지 말 것 — t50LookupBin 은 8자리를 6자리보다 우선
+   조회하는데 '확인' 판정은 count>=3 을 요구한다. 관찰 1~2건짜리 8자리 대역을 넣으면
+   이미 검증된 6자리 대역의 판정을 '추정 · 담당자 확인 필요'로 떨어뜨린다.
+   (55667788 은 관찰 1건뿐이라 일부러 넣지 않았다 — 556677 로 판정되게 둔다)
+
    운영 전환 시에는 카드사·여신금융협회 BIN 정보나 PG 승인응답의 카드구분 값으로 교체한다. */
 const T50_BIN_SEED = [
-  {prefix:'123456', kind:'corp',     issuer:'신한카드', memo:'법인',          verified:true,  count:35},
-  {prefix:'876543', kind:'corp',     issuer:'신한카드', memo:'법인',          verified:true,  count:16},
-  {prefix:'556677', kind:'personal', issuer:'신한카드', memo:'체크카드',       verified:true,  count:3},
-  {prefix:'998877', kind:'personal', issuer:'신한카드', memo:'체크카드',       verified:true,  count:2},
-  {prefix:'334455', kind:'personal', issuer:'한국도로공사', memo:'하이패스 통행료 전용', verified:true, count:4},
-  {prefix:'667788', kind:'personal', issuer:'통신사',   memo:'멤버십 전표',    verified:true,  count:1}
+  /* 법인카드 — 영수증 '신한카드-법인' 표기로 확인 */
+  {prefix:'12345678', kind:'corp',     issuer:'신한카드',     memo:'법인 · 8자리 노출 건',   verified:true,  count:7},
+  {prefix:'87654321', kind:'corp',     issuer:'신한카드',     memo:'법인 · 8자리 노출 건',   verified:true,  count:6},
+  {prefix:'123456',   kind:'corp',     issuer:'신한카드',     memo:'법인 (표기 33/34건)',    verified:true,  count:34},
+  {prefix:'876543',   kind:'corp',     issuer:'신한카드',     memo:'법인 (표기 16/18건)',    verified:true,  count:18},
+  /* 개인카드 — 영수증 '신한카드-체크' 표기로 확인 (체크카드는 법인카드가 아니다) */
+  {prefix:'556677',   kind:'personal', issuer:'신한카드',     memo:'체크카드 (영수증 표기로 확인)', verified:true,  count:3},
+  {prefix:'998877',   kind:'personal', issuer:'신한카드',     memo:'체크카드 (영수증 표기로 확인)', verified:true,  count:2},
+  /* 카드종류 표기가 없어 미확정 — verified:false 로 두어 담당자 확인으로 넘긴다 */
+  {prefix:'334455',   kind:'personal', issuer:'한국도로공사', memo:'하이패스 통행료 전용 · 카드종류 미표기', verified:false, count:4},
+  {prefix:'667788',   kind:'personal', issuer:'통신사',       memo:'멤버십 전표 · 결제카드 아님', verified:false, count:1}
 ];
 
 /* ── 카드번호 정규화 ────────────────────────────────────────

@@ -9,3 +9,6 @@ android-siteapp/local.properties
 android-widget/app/build/
 android-widget/.gradle/
 android-widget/local.properties
+
+# 실측 카드영수증 사진·검증 엑셀 (카드번호·사업자번호 포함 — 공개 레포 미포함)
+영수증/
