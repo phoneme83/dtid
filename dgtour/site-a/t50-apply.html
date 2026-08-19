@@ -829,12 +829,15 @@ function apEvForm(a,i){
     const ex=o.ex||{};
     const amtTxt=(ex.amts&&ex.amts.length)?ex.amts.map(function(v){ return Number(v).toLocaleString('ko-KR'); }).join(', ')+'원':null;
     const dateTxt=ex.date?(ex.date+(apInPeriod(a,ex.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖')):null;
+    const rgTxt=apOcrRegionText(ex.region);
+    const rgm=apOcrRegionMatch(ex.region,a.region);
+    const rgDisp=rgTxt?(rgTxt+(rgm==='match'?' ✅ 신청 지자체 일치':(rgm==='mismatch'?' ⚠️ 신청 지자체('+a.region+')와 다름':''))):null;
     const warn=ex.nonCard?('<div style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:9px 11px;margin:8px 0;font-size:12.5px;color:#9a3412;line-height:1.6">⚠️ <b>카드 결제 증빙이 아닙니다 — '+ex.nonCard+'</b><br>'+
       '카드번호 자리에 인쇄된 번호가 결제카드 번호가 아니어서 대조할 수 없습니다. '+
       '신용카드 매출전표(카드번호·승인번호가 인쇄된 영수증)를 첨부해 주세요.</div>'):'';
     ocr='<div class="ap-ocr"><div class="t">📄 영수증 판독 결과 (실제 OCR) — <b>'+o.file+'</b></div>'+ warn +
       '<div class="row"><span>가맹점</span><b>'+V(ex.shop)+'</b></div>'+
-      '<div class="row"><span>결제지역</span><b>'+V(apOcrRegionText(ex.region))+'</b></div>'+
+      '<div class="row"><span>결제지역</span><b>'+V(rgDisp)+'</b></div>'+
       '<div class="row"><span>카드번호</span><b>'+V(ex.card)+'</b></div>'+
       '<div class="row"><span>승인번호</span><b>'+V(ex.appr)+'</b></div>'+
       '<div class="row"><span>결재금액</span><b>'+V(amtTxt)+'</b></div>'+
@@ -914,7 +917,7 @@ function apEvSample(i){
      숫자 필드는 판독률 때문에 Latin 라벨을 유지한다 */
   const lines=[
     '상 호 명 : '+src.merchant.replace(/[^0-9A-Za-z가-힣 ]/g,'').trim(),
-    '주소 : '+a.region+' 중앙로 1',
+    '주소 : '+a.region+(('제천밀양').indexOf(a.region)>=0?'시':'군')+' 중앙로 1',   /* 지자체 목록엔 접미사가 없어 전표 형식에 맞춰 붙인다 */
     'DATE : '+a.start+' 14:22',   /* 결제일-여행기간 검증을 통과하도록 여행 시작일로 인쇄 */
     '--------------------------------',
     '카드종류 : 신한카드개인',
@@ -1075,6 +1078,22 @@ function apOcrRegion(raw){
 function apOcrRegionText(r){
   if(!r) return null;
   return [r.sgg,r.emd].filter(Boolean).join(' ')||null;
+}
+
+/* ── 결제지역 대조 ───────────────────────────────────────────
+   반값여행은 신청 지자체에서 쓴 돈을 환급하는 사업이라, 결제지역이 신청 지자체와
+   다르면 환급 대상이 아니다. 다만 주소를 못 읽었다고 반려하면 정상 신청까지 막히므로
+   시군구를 실제로 읽어낸 경우에만 판정한다.
+   지자체 목록은 '완도'처럼 접미사 없이 들어 있고 영수증에는 '완도군'으로 찍히므로
+   시·군·구 접미사를 떼고 비교한다.
+   반환: 'match' | 'mismatch' | null(판정 불가 → 담당자 확인) */
+function apOcrRegionMatch(region, applyRegion){
+  if(!region || !region.sgg || !applyRegion) return null;
+  const base=function(v){ return String(v||'').replace(/\s+/g,'').replace(/(시|군|구)$/,''); };
+  const want=base(applyRegion);
+  if(!want) return null;
+  const hit=String(region.sgg).split(/\s+/).some(function(tk){ return base(tk)===want; });
+  return hit?'match':'mismatch';
 }
 
 /* OCR 원문에서 카드번호·승인번호·금액 필드를 라벨 기준으로 추출.
@@ -1295,6 +1314,11 @@ function apEvSubmit(i){
     const effDate=ex.date||payDate;
     if(!apInPeriod(a0,effDate)){
       err.innerHTML='❌ <b>결제일이 여행기간 밖입니다.</b> 영수증의 결제일은 <b>'+effDate+'</b>이나, 이 신청 건의 여행기간은 <b>'+a0.start+' ~ '+a0.end+'</b>입니다. 여행기간 중에 결제한 영수증만 환급 대상입니다.';
+      return;
+    }
+    /* 결제지역 대조 — 시군구를 읽어냈는데 신청 지자체와 다르면 반려한다 */
+    if(apOcrRegionMatch(ex.region,a0.region)==='mismatch'){
+      err.innerHTML='❌ <b>결제지역이 신청 지자체와 다릅니다.</b> 영수증의 결제지역은 <b>'+apOcrRegionText(ex.region)+'</b>이나, 이 신청 건의 지자체는 <b>'+a0.region+'</b>입니다. 신청하신 지자체에서 결제한 영수증만 환급 대상입니다.';
       return;
     }
   }else{

@@ -191,7 +191,7 @@ function ft50EvSampleImage(a){
      숫자 필드는 판독률 때문에 Latin 라벨을 유지한다 */
   const lines=[
     '상 호 명 : '+String(src.merchant).replace(/[^0-9A-Za-z가-힣 ]/g,'').trim(),
-    '주소 : '+a.region+' 중앙로 1',
+    '주소 : '+a.region+(('제천밀양').indexOf(a.region)>=0?'시':'군')+' 중앙로 1',   /* 지자체 목록엔 접미사가 없어 전표 형식에 맞춰 붙인다 */
     'DATE : '+a.start+' 14:22',      /* 결제일-여행기간 검증을 통과하도록 여행 시작일로 인쇄 */
     '--------------------------------',
     '카드종류 : 신한카드개인',
@@ -316,6 +316,22 @@ function ft50EvRegionText(r){
   return [r.sgg,r.emd].filter(Boolean).join(' ')||null;
 }
 
+/* ── 결제지역 대조 ───────────────────────────────────────────
+   반값여행은 신청 지자체에서 쓴 돈을 환급하는 사업이라, 결제지역이 신청 지자체와
+   다르면 환급 대상이 아니다. 다만 주소를 못 읽었다고 반려하면 정상 신청까지 막히므로
+   시군구를 실제로 읽어낸 경우에만 판정한다.
+   지자체 목록은 '완도'처럼 접미사 없이 들어 있고 영수증에는 '완도군'으로 찍히므로
+   시·군·구 접미사를 떼고 비교한다.
+   반환: 'match' | 'mismatch' | null(판정 불가 → 담당자 확인) */
+function ft50EvRegionMatch(region, applyRegion){
+  if(!region || !region.sgg || !applyRegion) return null;
+  const base=function(v){ return String(v||'').replace(/\s+/g,'').replace(/(시|군|구)$/,''); };
+  const want=base(applyRegion);
+  if(!want) return null;
+  const hit=String(region.sgg).split(/\s+/).some(function(tk){ return base(tk)===want; });
+  return hit?'match':'mismatch';
+}
+
 /* 첨부 파일 판독 — {mode:'real',text,ex,file} 또는 {mode:'mock',...} 으로 resolve.
    onProgress(문구)로 진행 상황을 알린다. 90초 넘으면 모의 판독으로 폴백 */
 function ft50EvRead(file,a,onProgress){
@@ -380,6 +396,10 @@ function ft50EvVerify(o,a,input){
     if(!ft50EvInPeriod(a,effDate))
       return '❌ <b>결제일이 여행기간 밖입니다.</b> 영수증의 결제일은 <b>'+effDate+'</b>이나, 이 신청 건의 여행기간은 <b>'+
         a.start+' ~ '+a.end+'</b>입니다. 여행기간 중에 결제한 영수증만 환급 대상입니다.';
+    /* 결제지역 대조 — 시군구를 읽어냈는데 신청 지자체와 다르면 반려한다 */
+    if(ft50EvRegionMatch(ex.region,a.region)==='mismatch')
+      return '❌ <b>결제지역이 신청 지자체와 다릅니다.</b> 영수증의 결제지역은 <b>'+ft50EvRegionText(ex.region)+
+        '</b>이나, 이 신청 건의 지자체는 <b>'+a.region+'</b>입니다. 신청하신 지자체에서 결제한 영수증만 환급 대상입니다.';
     return null;
   }
   if(appr!==o.appr||amt!==o.amt||(o.card&&!ft50EvCardMatch(card,o.card))||(o.date&&o.date!==payDate))

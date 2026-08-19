@@ -770,10 +770,13 @@ function t50EvOcrHtml(a){
     const ex=o.ex||{};
     const amtTxt=(ex.amts&&ex.amts.length)?ex.amts.map(function(v){ return fmt(Number(v)); }).join(', ')+'원':null;
     const dateTxt=ex.date?(ex.date+(ft50EvInPeriod(a,ex.date)?' ✅ 여행기간 내':' ⚠️ 여행기간 밖')):null;
+    const rgTxt=ft50EvRegionText(ex.region);
+    const rgm=ft50EvRegionMatch(ex.region,a.region);
+    const rgDisp=rgTxt?(rgTxt+(rgm==='match'?' ✅ 신청 지자체 일치':(rgm==='mismatch'?' ⚠️ 신청 지자체('+a.region+')와 다름':''))):null;
     return '<div class="t50e-ocr"><div class="t">📄 영수증 판독 결과 (실제 OCR) — <b>'+fEsc(o.file)+'</b></div>'+
       warn(ex.nonCard)+
       '<div class="row"><span>가맹점</span><b>'+V(ex.shop)+'</b></div>'+
-      '<div class="row"><span>결제지역</span><b>'+V(ft50EvRegionText(ex.region))+'</b></div>'+
+      '<div class="row"><span>결제지역</span><b>'+V(rgDisp)+'</b></div>'+
       '<div class="row"><span>카드번호</span><b>'+V(ex.card)+'</b></div>'+
       '<div class="row"><span>승인번호</span><b>'+V(ex.appr)+'</b></div>'+
       '<div class="row"><span>결재금액</span><b>'+V(amtTxt)+'</b></div>'+
