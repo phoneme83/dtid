@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
 <title>지역사랑 휴가지원제 — 시안 F(컨설팅 제안)</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="f.css?v=7">
+<link rel="stylesheet" href="f.css?v=8">
 </head>
 <body>
 <div id="shellTop"></div>
@@ -72,12 +72,14 @@
 
 <script src="../site-assets/data.js?v=20260818a"></script>
 <script src="f.js?v=2"></script>
-<script src="f-t50.js?v=2"></script>
+<script src="f-t50.js?v=3"></script>
 <script src="f-t50-evidence.js?v=2"></script>
 <script src="f-t50-corp.js?v=1"></script>
 <script>
 const U=fRequireUser();
-const T50_STEPS=['본인인증','주소지 확인','지역 선택','여행 계획','접수 완료'];
+/* 신청 절차 단계 — 관리자 「화면설계 › 신청 절차 단계」 설정을 읽는다.
+   설정이 없으면 기본값(f-t50.js FT50_STEPS_DEFAULT)이 쓰인다. */
+function t50Steps(){ return ft50ScreenCfg().steps; }
 const T50_MYQ_KEY=FT50_MYQ_PREFIX+(U?U.id:'guest');
 
 /* 위저드 상태 — 본인인증·주소지 확인 결과는 접수 시 신청 건에 기록되고,
@@ -117,7 +119,7 @@ function renderSteps(){
   const show=(t50View>=1&&t50View<=5);
   el.style.display=show?'flex':'none';
   if(!show) return;
-  el.innerHTML=T50_STEPS.map(function(t,i){
+  el.innerHTML=t50Steps().map(function(t,i){
     const n=i+1;
     return '<div class="st'+(n===t50View?' on':(n<t50View?' dn':''))+'">'+
       '<div class="n">'+(n<t50View?'✓':n)+'</div>'+t+'</div>';
@@ -326,19 +328,36 @@ function bodyPlan(){
     '<label class="f-lb">여행 기간 <span style="font-weight:500;color:var(--sub)">(가능기간의 날짜만 선택할 수 있습니다)</span></label>'+
     '<div class="t50w-cal" id="t50Cal"></div>'+
     '<div class="t50w-hint" id="t50DateHint" aria-live="polite"></div>'+
-    '<label class="f-lb">신청 단위</label>'+
+    /* 화면설계 설정 — 표시를 끄면 입력란이 사라지고, 필수면 접수 시 검증한다 */
+    (function(){
+      const F={family:ft50Field('family'), plan:ft50Field('plan'), docs:ft50Field('docs')};
+      const req=function(f){ return f.required?'<span style="color:#b91c1c">(필수)</span>'
+                                             :'<span style="font-weight:500;color:var(--sub)">(선택)</span>'; };
+      let h='';
+      if(F.family.show!==false)
+        h+='<label class="f-lb">'+fEsc(F.family.label)+'</label>'+
     '<div class="t50w-unit">'+
       '<button type="button" class="u'+(t50Unit==='personal'?' on':'')+'" onclick="t50SetUnit(\'personal\')">👤 개인 신청<small>신청자 본인 1명</small></button>'+
       '<button type="button" class="u'+(t50Unit==='family'?' on':'')+'" onclick="t50SetUnit(\'family\')">👨‍👩‍👧 가족 신청<small>본인 포함 최대 '+FT50_FAMILY_MAX+'명</small></button>'+
     '</div>'+
-    '<div id="t50FamBox"></div>'+
-    '<input type="hidden" id="t50People" value="'+t50PeopleCount()+'">'+
-    '<div class="t50w-note" id="t50FamHint" style="display:none">👨‍👩‍👧 3인 이상 가족 신청은 지원금에 <b>10% 추가</b> 혜택이 적용됩니다.</div>'+
-    '<label class="f-lb" for="t50Plan">간단한 여행 계획 <span style="font-weight:500;color:var(--sub)">(선택)</span></label>'+
-    '<textarea class="f-in" id="t50Plan" rows="3" placeholder="예) 1일차 숙소 체크인 후 전통시장, 2일차 해안 산책"></textarea>'+
-    '<label class="f-lb" for="t50Docs">추가 서류 첨부 <span style="font-weight:500;color:var(--sub)">(선택 · 최대 '+FT50_DOC_MAX+'개 · jpg·png·pdf · 각 10MB 이하)</span></label>'+
-    '<input class="f-in" id="t50Docs" type="file" accept="image/*,.pdf" multiple onchange="t50DocAdd(this)">'+
-    '<div id="t50DocList">'+t50DocListHtml(null,'t50DocDel')+'</div>'+
+        '<div id="t50FamBox"></div>'+
+        '<input type="hidden" id="t50People" value="'+t50PeopleCount()+'">'+
+        '<div class="t50w-note" id="t50FamHint" style="display:none">👨‍👩‍👧 3인 이상 가족 신청은 지원금에 <b>10% 추가</b> 혜택이 적용됩니다.</div>';
+      if(F.plan.show!==false)
+        h+='<label class="f-lb" for="t50Plan">'+fEsc(F.plan.label)+' '+req(F.plan)+'</label>'+
+           '<textarea class="f-in" id="t50Plan" rows="3" placeholder="예) 1일차 숙소 체크인 후 전통시장, 2일차 해안 산책"></textarea>';
+      if(F.docs.show!==false)
+        h+='<label class="f-lb" for="t50Docs">'+fEsc(F.docs.label)+' '+req(F.docs)+
+             ' <span style="font-weight:500;color:var(--sub)">최대 '+FT50_DOC_MAX+'개 · jpg·png·pdf · 각 10MB 이하</span></label>'+
+           '<input class="f-in" id="t50Docs" type="file" accept="image/*,.pdf" multiple onchange="t50DocAdd(this)">'+
+           '<div id="t50DocList">'+t50DocListHtml(null,'t50DocDel')+'</div>';
+      /* 담당자가 추가 등록한 안내 항목 */
+      ft50ScreenCfg().fields.forEach(function(f){
+        if(['family','plan','docs'].indexOf(f.id)>=0||f.show===false) return;
+        h+='<div class="t50w-note">📌 '+fEsc(f.label)+(f.required?' <b>(필수 안내)</b>':'')+'</div>';
+      });
+      return h;
+    })()+
     '<div class="t50w-note">입력하신 신청자격·여행 계획·추가 서류는 해당 <b>지자체 담당자</b>에게 전달되어 승인/반려 심사에 사용됩니다.</div>'+
     '<button class="btn blk" style="margin-top:11px" onclick="t50Submit()">신청 접수하기</button>'+
     '<button class="btn gy blk" style="margin-top:7px" onclick="t50Go(3)">‹ 이전으로</button>';
@@ -536,6 +555,15 @@ function t50Submit(){
   if(!t50D1||!t50D2){ toast('캘린더에서 여행 기간을 선택해 주세요'); t50DateHint(); return; }
   const p=t50Period(t50Sel);
   if(t50D1<p.s||t50D2>p.e){ toast('여행 가능기간('+t50Fmt(p.s)+' ~ '+t50Fmt(p.e)+') 안에서 선택해 주세요'); t50DateHint(); return; }
+  /* 화면설계에서 필수로 지정한 항목 검증 */
+  const Fp=ft50Field('plan'), Fd=ft50Field('docs');
+  const planEl=document.getElementById('t50Plan');
+  if(Fp.show!==false&&Fp.required&&!(planEl&&planEl.value.trim())){
+    toast(Fp.label+'은(는) 필수 입력입니다'); if(planEl) planEl.focus(); return;
+  }
+  if(Fd.show!==false&&Fd.required&&!t50DocDraft.length){
+    toast(Fd.label+'은(는) 최소 1건 첨부해야 합니다'); return;
+  }
   const ppl=t50PeopleCount();
   const peopleVal=String(ppl);
   const cfgMax=Math.min(ft50RegionCfg(t50Sel).maxPeople,FT50_FAMILY_MAX);
@@ -546,7 +574,7 @@ function t50Submit(){
   const draft={
     region:t50Sel, sido:r?r.sido:'',
     start:t50D1, end:t50D2, period:p,
-    people:peopleVal, plan:document.getElementById('t50Plan').value.trim(),
+    people:peopleVal, plan:(planEl?planEl.value.trim():''),
     docs:t50DocDraft.slice(),                    /* 추가 서류 (메타데이터) */
     unit:t50Unit,
     members:(t50Unit==='family'?t50Household().filter(function(m){return t50FamPick.indexOf(m.id)>=0;})

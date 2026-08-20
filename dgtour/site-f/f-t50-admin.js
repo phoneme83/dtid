@@ -14,7 +14,8 @@ let t50aStatRegion='';   /* 통계 대상 지자체 */
 const T50A_SUBS=[
   {key:'list',label:'📋 신청관리'},
   {key:'biz', label:'⚙️ 사업설정'},
-  {key:'stat',label:'📊 통계'}
+  {key:'stat',label:'📊 통계'},
+  {key:'screen',label:'🖼 화면설계'}
 ];
 /* 대시보드 타일 ↔ 상태 필터. 승인/환급심사는 복합 상태 */
 const T50A_GROUP={appr2:['approved','notified'],refund2:['refund_req','refund_fix']};
@@ -77,6 +78,7 @@ function t50aRender(){
   t50aSubTabs();
   if(t50aSub==='biz') t50aRenderBiz();
   else if(t50aSub==='stat') t50aRenderStat();
+  else if(t50aSub==='screen') t50aRenderScreen();
   else t50aRenderList();
 }
 
@@ -185,7 +187,9 @@ function t50aCard(x){
     })()+
       '<button class="btn" onclick="t50aRefundOk('+K+')">💰 환급 승인 — '+ft50Won(t50aRefundAmt(a))+' 지급</button>'+
       '<button class="btn o" style="color:#c2410c;border-color:#fed7aa" onclick="t50aReason('+K+',\'refund_fix\',\''+rid+'\')">✏️ 증빙 보완 요청</button>'+
-      '<textarea class="t50a-rsn" id="'+rid+'" placeholder="보완 요청 사유를 입력하세요 (예: 숙박 결제내역 누락)"></textarea>';
+      '<textarea class="t50a-rsn" id="'+rid+'" placeholder="보완 요청 사유를 입력하세요 (예: 숙박 결제내역 누락)"></textarea>'+
+      t50aOcrFixLine(a)+
+      t50aOcrBox(a,K,'t50aOcr_'+ft50Uid(x.k)+'_'+x.i);
   else if(a.status==='refund_fix')
     acts='<span class="wait">신청자 증빙 보완 대기중</span>';
   else if(a.status==='refund_ok')
@@ -296,6 +300,112 @@ function t50aNoteBox(a,K,nid){
     (has?'📝 검토의견 수정':'📝 검토의견 등록')+'</button>';
 }
 
+/* ══ 화면설계 ══════════════════════════════════════════════
+   업무구조도 「반값여행 화면설계」 8개 단위프로세스를 담당자 화면으로 구현한 것이다.
+   여기서 바꾼 단계·항목은 신청 화면(t50.html)이 즉시 읽어 반영한다. */
+function t50aRenderScreen(){
+  const el=document.getElementById('t50aBody');
+  if(!el) return;
+  const c=ft50ScreenCfg();
+  const steps=c.steps.map(function(s,i){
+    return '<div class="t50a-row">'+
+      '<span class="t50a-no">'+(i+1)+'</span>'+
+      '<input class="f-in" id="t50aStep_'+i+'" value="'+fEsc(s)+'" style="flex:1;min-width:0">'+
+      '<button class="btn gy" onclick="t50aStepSave('+i+')">수정</button>'+
+      '<button class="btn gy" onclick="t50aStepDel('+i+')">삭제</button>'+
+      '</div>';
+  }).join('');
+  const fields=c.fields.map(function(f,i){
+    return '<div class="t50a-row">'+
+      '<input class="f-in" id="t50aFld_'+i+'" value="'+fEsc(f.label)+'" style="flex:1;min-width:0"'+
+        (f.lock?' readonly':'')+'>'+
+      '<span class="cap" style="flex:0 0 auto">'+fEsc(f.screen||'-')+'</span>'+
+      '<label class="t50a-ck"><input type="checkbox" id="t50aFldShow_'+i+'"'+(f.show!==false?' checked':'')+'> 표시</label>'+
+      '<label class="t50a-ck"><input type="checkbox" id="t50aFldReq_'+i+'"'+(f.required?' checked':'')+
+        (f.lock?' disabled':'')+'> 필수</label>'+
+      '<button class="btn gy" onclick="t50aFieldSave('+i+')">수정</button>'+
+      (f.lock?'<span class="cap">기본항목</span>'
+             :'<button class="btn gy" onclick="t50aFieldDel('+i+')">삭제</button>')+
+      '</div>';
+  }).join('');
+  el.innerHTML=
+    '<div class="sec">'+
+      '<div class="sec-h"><div class="sec-t">신청 절차 단계 <span class="cap">프로세스 구성 — 등록·수정·삭제·조회</span></div></div>'+
+      '<div class="t50a-note">여기서 바꾼 단계는 신청 화면 상단 진행 표시에 그대로 나타납니다. '+
+        '단계 이름만 관리하며 화면 순서 자체는 서비스 흐름에 고정되어 있습니다.</div>'+
+      steps+
+      '<div class="t50a-row"><input class="f-in" id="t50aStepNew" placeholder="추가할 단계 이름" style="flex:1;min-width:0">'+
+        '<button class="btn" onclick="t50aStepAdd()">＋ 단계 등록</button></div>'+
+    '</div>'+
+    '<div class="sec" style="margin-top:12px">'+
+      '<div class="sec-h"><div class="sec-t">신청 화면 표시 항목 <span class="cap">화면설계 정보 — 등록·수정·삭제·조회</span></div></div>'+
+      '<div class="t50a-note">표시를 끄면 신청 화면에서 해당 입력란이 사라지고, 필수로 두면 값이 없을 때 접수되지 않습니다.</div>'+
+      fields+
+      '<div class="t50a-row"><input class="f-in" id="t50aFldNew" placeholder="추가할 항목 이름 (안내 문구로 노출)" style="flex:1;min-width:0">'+
+        '<button class="btn" onclick="t50aFieldAdd()">＋ 항목 등록</button></div>'+
+      '<button class="btn gy blk" style="margin-top:10px" onclick="t50aScreenReset()">화면설계를 초기값으로 되돌리기</button>'+
+    '</div>';
+}
+function t50aScreenMutate(fn){
+  const c=ft50ScreenCfg();
+  fn(c);
+  ft50SaveScreenCfg(c);
+  t50aRenderScreen();
+}
+/* 프로세스 구성 — 등록 / 수정 / 삭제 */
+function t50aStepAdd(){
+  const el=document.getElementById('t50aStepNew');
+  const v=el?el.value.trim():'';
+  if(!v){ toast('단계 이름을 입력해 주세요'); return; }
+  t50aScreenMutate(function(c){ c.steps.push(v); });
+  toast('단계를 등록했습니다');
+}
+function t50aStepSave(i){
+  const el=document.getElementById('t50aStep_'+i);
+  const v=el?el.value.trim():'';
+  if(!v){ toast('단계 이름을 입력해 주세요'); return; }
+  t50aScreenMutate(function(c){ c.steps[i]=v; });
+  toast('단계를 수정했습니다');
+}
+function t50aStepDel(i){
+  const c=ft50ScreenCfg();
+  if(c.steps.length<=2){ toast('단계는 2개 이상 유지해야 합니다'); return; }
+  t50aScreenMutate(function(x){ x.steps.splice(i,1); });
+  toast('단계를 삭제했습니다');
+}
+/* 화면설계 정보 — 등록 / 수정 / 삭제 */
+function t50aFieldAdd(){
+  const el=document.getElementById('t50aFldNew');
+  const v=el?el.value.trim():'';
+  if(!v){ toast('항목 이름을 입력해 주세요'); return; }
+  t50aScreenMutate(function(c){
+    c.fields.push({id:'x'+Date.now(), label:v, screen:'여행 계획', show:true, required:false, lock:false});
+  });
+  toast('항목을 등록했습니다');
+}
+function t50aFieldSave(i){
+  const lb=document.getElementById('t50aFld_'+i);
+  const sw=document.getElementById('t50aFldShow_'+i);
+  const rq=document.getElementById('t50aFldReq_'+i);
+  t50aScreenMutate(function(c){
+    if(!c.fields[i]) return;
+    if(lb&&lb.value.trim()&&!c.fields[i].lock) c.fields[i].label=lb.value.trim();
+    if(sw) c.fields[i].show=sw.checked;
+    if(rq&&!c.fields[i].lock) c.fields[i].required=rq.checked;
+  });
+  toast('항목을 수정했습니다');
+}
+function t50aFieldDel(i){
+  t50aScreenMutate(function(c){ if(c.fields[i]&&!c.fields[i].lock) c.fields.splice(i,1); });
+  toast('항목을 삭제했습니다');
+}
+function t50aScreenReset(){
+  if(!confirm('화면설계 설정을 초기값으로 되돌릴까요?')) return;
+  ft50ResetScreenCfg();
+  t50aRenderScreen();
+  toast('초기값으로 되돌렸습니다');
+}
+
 /* ── 신청서 검토의견 등록·수정 ────────────────────────────
    승인/반려 판정과 별개로 담당자가 남기는 메모다. 같은 입력창으로 등록·수정을
    겸하고, 변경 이력에도 남긴다. */
@@ -313,6 +423,75 @@ function t50aNote(k,i,nid){
     ft50Hist(rec,rec.status,ft50Persona().name,(had?'검토의견 수정':'검토의견 등록')+': '+v);
   });
   toast(had?'검토의견을 수정했습니다':'검토의견을 등록했습니다');
+}
+
+/* ── OCR 인식결과 보정 ────────────────────────────────────
+   OCR 이 잘못 읽어 정당한 신청이 막히는 것을 담당자가 풀어주는 기능이다.
+   다만 이 시스템의 검증 전제는 '판독값 ≠ 입력값이면 반려'이므로, 판독값을 그냥
+   덮어쓰면 대조가 무력해진다. 그래서 보정은 다음 조건에서만 허용한다.
+     · 무엇을 어떤 값으로 고쳤는지 변경 전·후를 모두 남긴다
+     · 사유를 필수로 받는다
+     · 보정된 건은 「사람이 보정한 건」으로 표시되어 자동 통과 건과 구분된다
+   보정 이력은 evidence.ocrFix 에 누적된다. */
+const T50A_OCR_FIELDS=[
+  {k:'card', lb:'카드번호'}, {k:'appr', lb:'승인번호'},
+  {k:'amt',  lb:'결재금액'}, {k:'date', lb:'결제일'},
+  {k:'shop', lb:'가맹점'},   {k:'region', lb:'결제지역'}
+];
+function t50aOcrBox(a,K,fid){
+  const e=a.evidence||{};
+  const val={card:e.card||'', appr:e.appr||'', amt:(e.amt==null?'':e.amt),
+             date:e.date||'', shop:e.shop||'', region:e.region||''};
+  const rows=T50A_OCR_FIELDS.map(function(f){
+    return '<div class="t50a-row"><span class="cap" style="flex:0 0 68px">'+f.lb+'</span>'+
+      '<input class="f-in" id="'+fid+'_'+f.k+'" value="'+fEsc(String(val[f.k]))+'" style="flex:1;min-width:0"></div>';
+  }).join('');
+  return '<div class="t50a-note">🔧 판독값 보정 — 고친 항목은 변경 전·후가 이력에 남고, 이 건은 '+
+    '「사람이 보정한 건」으로 표시됩니다.</div>'+ rows +
+    '<div class="t50a-row"><input class="f-in" id="'+fid+'_why" placeholder="보정 사유 (필수)" style="flex:1;min-width:0">'+
+    '<button class="btn gy" onclick="t50aOcrFix('+K+',\''+fid+'\')">보정 저장</button></div>';
+}
+function t50aOcrFix(k,i,fid){
+  const g=function(s){ const el=document.getElementById(fid+'_'+s); return el?el.value.trim():''; };
+  const why=g('why');
+  if(!why){ toast('보정 사유를 입력해 주세요'); return; }
+  const cur=ft50LoadKey(k)[i]; if(!cur||!cur.evidence){ toast('증빙이 없습니다'); return; }
+  const before={}, after={};
+  T50A_OCR_FIELDS.forEach(function(f){
+    const nv=g(f.k);
+    const ov=(cur.evidence[f.k]==null?'':String(cur.evidence[f.k]));
+    if(nv!==ov){ before[f.k]=ov; after[f.k]=nv; }
+  });
+  if(!Object.keys(after).length){ toast('바뀐 항목이 없습니다'); return; }
+  t50aMutate(k,i,function(rec){
+    T50A_OCR_FIELDS.forEach(function(f){
+      if(!(f.k in after)) return;
+      rec.evidence[f.k]=(f.k==='amt')?(Math.floor(Number(after[f.k]))||0):after[f.k];
+    });
+    rec.evidence.ocrFix=(rec.evidence.ocrFix||[]).concat([{
+      by:ft50Persona().name, ts:ft50Today(), why:why, before:before, after:after
+    }]);
+    ft50Hist(rec,rec.status,ft50Persona().name,'판독값 보정 ('+
+      Object.keys(after).map(function(x){
+        const lb=(T50A_OCR_FIELDS.find(function(f){ return f.k===x; })||{lb:x}).lb;
+        return lb+' '+(before[x]||'-')+'→'+after[x];
+      }).join(', ')+') 사유: '+why);
+  });
+  toast('판독값을 보정했습니다');
+}
+/* 보정 이력 표기 — 자동 통과 건과 구분되도록 배지와 변경 내역을 함께 보여준다 */
+function t50aOcrFixLine(a){
+  const fx=(a.evidence&&a.evidence.ocrFix)||[];
+  if(!fx.length) return '';
+  return '<div class="t50a-note" style="background:#fff7ed;border-color:#fdba74;color:#9a3412">'+
+    '🔧 <b>사람이 보정한 건</b> — 자동 판독만으로 통과한 건이 아닙니다.'+
+    fx.map(function(f){
+      const chg=Object.keys(f.after).map(function(x){
+        const lb=(T50A_OCR_FIELDS.find(function(q){ return q.k===x; })||{lb:x}).lb;
+        return lb+' 「'+fEsc(String(f.before[x]||'-'))+'」→「'+fEsc(String(f.after[x]))+'」';
+      }).join(', ');
+      return '<br>· '+ft50Dot(f.ts)+' '+fEsc(f.by)+' — '+chg+' / 사유: '+fEsc(f.why);
+    }).join('')+'</div>';
 }
 
 /* ── 지역화폐 환급결과 수신(모의) ─────────────────────────
@@ -384,6 +563,12 @@ function t50aDetail(k,i){
     (a.reviewNote?row('검토의견',fEsc(a.reviewNote)+
       (a.reviewNoteBy?' <span style="color:var(--sub2)">('+fEsc(a.reviewNoteBy)+' · '+ft50Dot(a.reviewNoteTs||'')+')</span>':'')):'')+
     (a.fixDoneTs?row('신청 보완 재제출',ft50Dot(a.fixDoneTs)):'')+
+    ((a.evidence&&a.evidence.ocrFix&&a.evidence.ocrFix.length)
+      ? row('판독값 보정', a.evidence.ocrFix.map(function(f){
+          return ft50Dot(f.ts)+' '+fEsc(f.by)+' — '+Object.keys(f.after).map(function(x){
+            return x+' 「'+fEsc(String(f.before[x]||'-'))+'」→「'+fEsc(String(f.after[x]))+'」';
+          }).join(', ')+' / 사유: '+fEsc(f.why);
+        }).join('<br>')) : '')+
     (a.localPay?row('지역화폐 충전 결과','🪙 '+ft50Won(a.localPay.amount)+' · 거래번호 '+fEsc(a.localPay.txId)+' · '+ft50Dot(a.localPay.ts)):'')+
     '<div class="sec-t" style="margin:14px 0 6px">자격 점검</div>'+
     row('관외거주',(a.addr||'').indexOf(a.sido)===0?'미충족 — 거주지와 동일 시·도':'충족')+

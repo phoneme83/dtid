@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
 <title>마이페이지 — 시안 F(컨설팅 제안)</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="f.css?v=7">
+<link rel="stylesheet" href="f.css?v=8">
 </head>
 <body>
 <div id="shellTop"></div>
@@ -108,6 +108,7 @@
 
 <script src="../site-assets/data.js?v=20260818a"></script>
 <script src="f.js?v=2"></script>
+<script src="f-t50.js?v=3"></script>
 <script>
 const U=fRequireUser();
 const AUTH_LABEL={gov:'행정정보 공동이용',pass:'PASS 통신사 인증',mid:'모바일 신분증',mydata:'마이데이터'};
@@ -205,6 +206,36 @@ if(U){
   renderHist();
   renderFav();
 }
+
+/* ── 반값여행 신청이력 마이페이지 연동 ────────────────────────
+   업무구조도 「반값여행 신청이력 마이페이지 연동」+「마이페이지 신청이력 조회」.
+   신청 화면과 같은 저장소(dtidF_t50Applies_<uid>)를 읽기만 한다. */
+function ft50MyHist(){
+  const host=document.querySelector('main')||document.body;
+  if(!host||typeof U==='undefined'||!U) return;
+  let list=[];
+  try{ list=JSON.parse(localStorage.getItem('dtidF_t50Applies_'+U.id)||'[]'); }catch(e){}
+  const box=document.createElement('section');
+  box.className='sec';
+  box.style.marginTop='12px';
+  box.innerHTML='<div class="sec-h"><div class="sec-t">🧳 반값여행 신청이력'+
+      '<span class="cap">대한민국 반값여행 — 지역사랑 휴가지원</span></div></div>'+
+    (list.length
+      ? list.map(function(a){
+          const st=(typeof FT50_ST!=='undefined'&&FT50_ST[a.status])?FT50_ST[a.status]:{t:a.status,cls:'n',ic:'•'};
+          return '<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer" onclick="location.href=\'t50.html\'">'+
+            '<b style="font-size:13px">'+fEsc(a.region)+'</b>'+
+            '<span style="font-size:11px;color:var(--sub)">'+fEsc(a.no||'')+'</span>'+
+            '<span class="badge '+st.cls+'" style="margin-left:auto">'+st.ic+' '+st.t+'</span></div>'+
+            '<div style="font-size:11.5px;color:var(--sub);margin:-4px 0 6px;line-height:1.7">'+
+            '여행 '+fEsc(a.start||'')+' ~ '+fEsc(a.end||'')+' · '+fEsc(String(a.people||''))+'명'+
+            (a.refundAmount?' · 환급 완료':(typeof a.amount==='number'?' · 승인 지원금 확정':''))+'</div>';
+        }).join('')
+      : '<div style="font-size:12.5px;color:var(--sub);line-height:1.7">반값여행 신청 이력이 없습니다.<br>'+
+        '<a href="t50.html" style="color:var(--pri);font-weight:700">통합신청 화면</a>에서 신청해 보세요.</div>');
+  host.appendChild(box);
+}
+try{ ft50MyHist(); }catch(e){}
 </script>
 </body>
 </html>

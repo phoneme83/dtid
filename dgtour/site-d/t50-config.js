@@ -96,7 +96,92 @@ function t50UsedCount(region){
    다른 신청 건(다른 계정 포함)에 이미 있으면 중복으로 판정한다.
    취소·반려된 건은 환급이 이뤄지지 않았으므로 대상에서 제외한다. */
 const T50_DUP_EXCLUDE=['canceled','rejected'];
-const T50_DUP_ST_LABEL={received:'접수 대기',review:'검토중',approved:'승인',notified:'결과 통보',
+
+/* ── 관내·인접지역 거주자 제외 검증 ──────────────────────────
+   반값여행은 '관외 거주자'가 그 지역에서 쓰는 돈을 지원하는 사업이라, 주소지가
+   신청 지역과 같은 시군구이거나 인접 시군구면 신청할 수 없다.
+   ※ 아래 인접표는 데모용이다. 운영에서는 지자체가 관리하는 행정구역 인접 정보로
+     교체해야 한다(사업 공고마다 인접 판정 범위가 달라질 수 있다). */
+const T50_NEARBY={
+  '영광':['함평','장성','고창','무안'],
+  '해남':['강진','영암','완도','진도','목포'],
+  '완도':['해남','강진','장흥','진도'],
+  '강진':['해남','영암','장흥','완도'],
+  '고창':['영광','정읍','부안','함평','장성'],
+  '거창':['함양','합천','산청','김천','무주'],
+  '하동':['진주','사천','남해','산청','광양','구례'],
+  '횡성':['원주','홍천','평창','영월','춘천'],
+  '고흥':['보성','장흥','여수','순천'],
+  '영암':['해남','강진','나주','목포','무안','장성'],
+  '남해':['하동','사천','통영','여수','광양'],
+  '밀양':['창녕','청도','양산','김해','울주'],
+  '제천':['단양','충주','영월','원주','영주'],
+  '합천':['거창','산청','의령','창녕','고령'],
+  '영월':['정선','평창','제천','태백','횡성'],
+  '평창':['정선','강릉','홍천','횡성','영월']
+};
+function t50NearbyOf(region){ return T50_NEARBY[region]||[]; }
+function t50BareGu(v){ return String(v||'').replace(/\s+/g,'').replace(/(시|군|구)$/,''); }
+/* 반환: 'same'(관내) | 'nearby'(인접) | null(신청 가능) */
+function t50AddrBlock(region,addrSigungu){
+  if(!region||!addrSigungu) return null;
+  const a=t50BareGu(addrSigungu);
+  if(t50BareGu(region)===a) return 'same';
+  return t50NearbyOf(region).some(function(n){ return t50BareGu(n)===a; })?'nearby':null;
+}
+
+/* ── 추가 서류 입력값 검증 ───────────────────────────────────
+   신청서에 붙이는 보조 서류. 데모는 localStorage 라 파일 본문을 보관할 수 없어
+   파일명·크기·형식만 남긴다. */
+const T50_DOC_MAX=5;
+const T50_DOC_MAX_SIZE=10*1024*1024;
+const T50_DOC_EXT=['jpg','jpeg','png','pdf'];
+function t50DocCheck(file,already){
+  if(!file) return '파일을 선택해 주세요';
+  if((already||0)>=T50_DOC_MAX) return '첨부는 최대 '+T50_DOC_MAX+'개까지 가능합니다';
+  const ext=String(file.name||'').split('.').pop().toLowerCase();
+  if(T50_DOC_EXT.indexOf(ext)<0) return '허용되지 않는 형식입니다 ('+T50_DOC_EXT.join('·')+'만 가능)';
+  if(typeof file.size==='number'&&file.size>T50_DOC_MAX_SIZE) return '파일이 너무 큽니다 (각 10MB 이하)';
+  if(typeof file.size==='number'&&file.size===0) return '빈 파일입니다';
+  return null;
+}
+function t50DocSize(n){
+  if(typeof n!=='number') return '';
+  return n>=1048576?(n/1048576).toFixed(1)+'MB':Math.max(1,Math.round(n/1024))+'KB';
+}
+
+/* ── 반값여행 화면설계 (프로세스 구성 · 화면설계 정보) ────────
+   업무구조도 「반값여행 화면설계」 8개 단위프로세스에 대응하는 설정 계층.
+   담당자가 신청 절차 단계와 신청 화면 표시 항목을 관리하고, 신청 화면이 그 값을
+   읽어 렌더링한다. 즉 등록·수정한 내용이 실제 화면에 바로 반영된다. */
+const T50_SCREEN_KEY='dtidD_t50ScreenCfg';
+const T50_STEPS_DEFAULT=['본인인증','주소지 확인','지역 선택','여행 계획','접수 완료'];
+const T50_FIELDS_DEFAULT=[
+  {id:'family',label:'신청 단위(개인·가족)',screen:'여행 계획',show:true,required:false,lock:true},
+  {id:'plan',  label:'간단한 여행 계획',    screen:'여행 계획',show:true,required:false,lock:false},
+  {id:'docs',  label:'추가 서류 첨부',      screen:'여행 계획',show:true,required:false,lock:false}
+];
+function t50ScreenCfg(){
+  let c=null;
+  try{ c=JSON.parse(localStorage.getItem(T50_SCREEN_KEY)||'null'); }catch(e){}
+  if(!c||typeof c!=='object') c={};
+  const steps=Array.isArray(c.steps)&&c.steps.length?c.steps:T50_STEPS_DEFAULT.slice();
+  const saved=Array.isArray(c.fields)?c.fields:[];
+  const fields=T50_FIELDS_DEFAULT.map(function(d){
+    const f=saved.find(function(x){ return x&&x.id===d.id; });
+    return f?Object.assign({},d,f,{lock:d.lock}):Object.assign({},d);
+  });
+  saved.forEach(function(f){ if(f&&f.id&&!fields.some(function(x){ return x.id===f.id; })) fields.push(f); });
+  return {steps:steps,fields:fields};
+}
+function t50SaveScreenCfg(c){ localStorage.setItem(T50_SCREEN_KEY,JSON.stringify(c||{})); }
+function t50ResetScreenCfg(){ localStorage.removeItem(T50_SCREEN_KEY); }
+function t50Field(id){
+  const f=t50ScreenCfg().fields.find(function(x){ return x.id===id; });
+  return f||{id:id,label:id,show:true,required:false};
+}
+
+const T50_DUP_ST_LABEL={received:'접수 대기',review:'검토중',apply_fix:'신청 보완 요청',approved:'승인',notified:'결과 통보',
   refund_req:'환급 심사 대기',refund_fix:'증빙 보완 요청',refund_ok:'환급 완료'};
 function t50NormAppr(v){return String(v||'').replace(/[^0-9]/g,'');}
 function t50EvKeyCombo(e){

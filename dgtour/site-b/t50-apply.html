@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
 <title>디지털관광주민증 - 반값여행 통합신청 · 시안 B</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/common.css?v=20260819c">
+<link rel="stylesheet" href="../assets/common.css?v=20260820a">
 <link rel="stylesheet" href="theme.css?v=4">
 </head>
 <body class="theme-b">
@@ -117,8 +117,11 @@
     <div id="apFamBox"></div>
     <input type="hidden" id="apPeople" value="1">
     <div class="ap-note" id="apFamHint" style="display:none">👨‍👩‍👧 3인 이상 가족 신청은 환급 시 <b>10% 추가 환급</b> 혜택이 적용됩니다.</div>
-    <label class="ap-lb" for="apPlan">간단한 여행 계획 <small>(선택)</small></label>
+    <label class="ap-lb" for="apPlan" id="apPlanLb">간단한 여행 계획 <small>(선택)</small></label>
     <textarea class="ap-in" id="apPlan" rows="3" placeholder="예) 1일차 숙소 체크인 후 시장 구경, 2일차 해변 산책"></textarea>
+    <label class="ap-lb" for="apDocs" id="apDocsLb">추가 서류 첨부 <small>(선택 · 최대 5개 · jpg·png·pdf · 각 10MB 이하)</small></label>
+    <input class="ap-in ap-file" id="apDocs" type="file" accept="image/*,.pdf" multiple onchange="apDocAdd(this)">
+    <div id="apDocList"></div>
     <div class="ap-note">입력하신 신청자격·여행 계획은 해당 <b>지자체(관리시스템)</b>로 전달되어 승인/반려 심사에 사용됩니다.</div>
     <button class="ap-big hero" onclick="apSubmit()">신청 접수하기</button>
     <button class="ap-back" onclick="apGo(3)">‹ 이전으로</button>
@@ -231,7 +234,7 @@
 <div class="toast" id="toastEl"></div>
 
 <script src="../site-assets/data.js?v=20260818a"></script>
-<script src="t50-config.js?v=3"></script>
+<script src="t50-config.js?v=4"></script>
 <script src="t50-corp.js?v=1"></script>
 <script>/* site-b 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidB_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
@@ -275,6 +278,7 @@ function apDays(p){return Math.round((new Date(p.e)-new Date(p.s))/86400000)+1;}
 const AP_ST_LABEL={
   received:{t:'접수 완료',lane:'공사',ic:'📥'},
   review:{t:'지자체 검토중',lane:'지자체',ic:'🔍'},
+  apply_fix:{t:'신청 보완 요청',lane:'지자체',ic:'✏️'},
   approved:{t:'승인',lane:'지자체',ic:'✅'},
   rejected:{t:'반려',lane:'지자체',ic:'⛔'},
   notified:{t:'결과 통보 완료',lane:'공사',ic:'📨'},
@@ -339,12 +343,21 @@ function apSave(list){localStorage.setItem(AP_KEY,JSON.stringify(list));}
 function apGo(n){
   document.querySelectorAll('.ap-view').forEach((v,i)=>v.classList.toggle('on',i===n));
   const steps=document.getElementById('apSteps');
+  /* 진행 단계 라벨 — 관리자 「화면설계 › 신청 절차 단계」 설정을 반영한다 */
+  if(steps&&typeof t50ScreenCfg==='function'){
+    const names=t50ScreenCfg().steps;
+    steps.querySelectorAll('.ap-step').forEach(function(el,i){
+      if(names[i]) el.textContent=names[i];
+      el.style.display=names[i]?'':'none';
+    });
+  }
   steps.style.display=(n>=1&&n<=5)?'flex':'none';
   steps.querySelectorAll('.ap-step').forEach(s=>{
     s.classList.toggle('on',Number(s.dataset.st)<=n);
   });
   if(n===3)apRenderRegions();
   if(n===4)apPeopleHint();
+  if(n===4){ try{ apApplyScreenCfg(); }catch(e){} }
   if(n===6){apRenderMyQ();apRenderList();}
   if(n===7)apQueueRender();
   window.scrollTo(0,0);
@@ -491,16 +504,20 @@ function apRenderRegions(){
   grid.innerHTML=TOUR50_REGIONS.map(r=>{
     const cfg=t50RegionCfg(r.name);
     const same=!!apAddr&&(AP_SI[r.name]||(r.name+'군'))===apAddr.sigungu;   // 주소지와 동일 지자체 = 신청 불가
-    const near=!same&&!!apAddr&&r.sido===apAddr.sido;                       // 거주지 동일 시·도 = 인근 지역 신청 X
+    const nearSido=!same&&!!apAddr&&r.sido===apAddr.sido;                   // 거주지 동일 시·도 = 인근 지역 신청 X
+    /* 시·도가 달라도 경계를 맞댄 시군구면 '인접지역 거주자'로 보아 제외한다
+       (예: 전남 함평 거주 → 전북 고창 신청). 동일 시·도 규칙만으로는 안 걸린다. */
+    const adj=!same&&!nearSido&&!!apAddr&&t50AddrBlock(r.name,apAddr.sigungu)==='nearby';
+    const near=nearSido||adj;
     const notOpen=!cfg.open;                                                // 지자체 사업설정에서 사업 미개설
     const outApply=!notOpen&&!t50InApplyPeriod(cfg);                        // 지자체 사업설정의 신청기간 밖
     const dis=same||near||notOpen||outApply;
-    const why=same?'거주 지자체 — 신청 불가':near?'인근 지역 신청 불가':notOpen?'사업 미개설':
+    const why=same?'거주 지자체 — 신청 불가':adj?'인접 시군구 — 신청 불가':nearSido?'인근 지역 신청 불가':notOpen?'사업 미개설':
       '신청기간 아님 ('+apFmtShort(cfg.applyStart)+'~'+apFmtShort(cfg.applyEnd)+')';
     const used=t50UsedCount(r.name);
     const capTxt=(cfg.capacity<9999)?('<span class="cap">신청 인원 '+used+'/'+cfg.capacity+'명</span>'):'';
     return '<button type="button" class="ap-rg'+(dis?' dis':'')+(apSel===r.name?' sel':'')+'" '+
-      (same?'onclick="apSameRegion()" aria-disabled="true"':dis?'disabled aria-disabled="true"':'onclick="apPick(\''+r.name+'\')"')+'>'+
+      (same?'onclick="apSameRegion(\'same\',\''+r.name+'\')" aria-disabled="true"':dis?'disabled aria-disabled="true"':'onclick="apPick(\''+r.name+'\')"')+'>'+
       '<img src="'+r.image+'" alt="" loading="lazy">'+
       '<span class="nm">'+r.name+(r.star?' ★':'')+'</span>'+
       '<span class="sd">'+r.sido+'</span>'+
@@ -513,8 +530,155 @@ function apRenderRegions(){
 }
 
 /* 주소지와 동일한 지자체 선택 시도 시 안내 */
-function apSameRegion(){
-  alert('주소지와 신청 지역이 동일하여 신청할 수 없습니다.\n(주민등록상 주소지: '+(apAddr?apAddr.full:'')+')');
+
+/* ── 신청 보완 제출 (apply_fix) ──────────────────────────────
+   담당자가 신청 보완을 요청한 건에 대해 신청자가 여행계획을 고치고 추가 서류를
+   보완해 재제출한다. 재제출하면 상태가 검토중으로 돌아간다.
+   업무구조도의 「보완요청 신청서 보완 등록·수정·조회」 구간이다. */
+let apFixIdx=-1;
+let apFixDocs=[];
+function apFixOpen(i){
+  if(apFixIdx===i){apFixIdx=-1;apFixDocs=[];apRenderList();return;}
+  const a=apLoad()[i];if(!a)return;
+  apFixIdx=i;apFixDocs=(a.docs||[]).slice();
+  apRenderList();
+}
+function apFixDocAdd(input){
+  const files=input&&input.files?[].slice.call(input.files):[];
+  let added=0;
+  for(let i=0;i<files.length;i++){
+    const bad=t50DocCheck(files[i],apFixDocs.length);
+    if(bad){toast(files[i].name+' — '+bad);continue;}
+    if(apFixDocs.some(function(d){return d.name===files[i].name&&d.size===files[i].size;})){
+      toast('이미 첨부한 파일입니다');continue;
+    }
+    apFixDocs.push({name:files[i].name,size:files[i].size,type:files[i].type||'',ts:new Date().toISOString().slice(0,10)});
+    added++;
+  }
+  input.value='';
+  const box=document.getElementById('apFixDocList');
+  if(box)box.innerHTML=apDocListHtml(apFixDocs,'apFixDocDel');
+  if(added)toast('서류 '+added+'건을 첨부했습니다');
+}
+function apFixDocDel(i){
+  apFixDocs.splice(i,1);
+  const box=document.getElementById('apFixDocList');
+  if(box)box.innerHTML=apDocListHtml(apFixDocs,'apFixDocDel');
+}
+function apFixSubmit(i){
+  const list=apLoad();const a=list[i];if(!a)return;
+  const ta=document.getElementById('apFixPlan');
+  const plan=ta?ta.value.trim():(a.plan||'');
+  if(!plan&&!apFixDocs.length){toast('여행 계획을 보완하거나 서류를 첨부해 주세요');return;}
+  a.plan=plan;
+  a.docs=apFixDocs.slice();
+  a.fixDoneTs=new Date().toISOString().slice(0,10);
+  a.status='review';
+  if(!a.history)a.history=[];
+  a.history.push({st:'review',ts:new Date().toISOString(),by:a.applicant||'신청자',
+    note:'신청 보완 재제출 (서류 '+a.docs.length+'건)'});
+  apSave(list);
+  apFixIdx=-1;apFixDocs=[];
+  apRenderList();
+  toast('보완 내용을 제출했습니다 — 검토중으로 돌아갔습니다');
+}
+/* 보완 요청 안내 + 보완 입력 폼 */
+function apFixBox(a,i){
+  if(a.status!=='apply_fix')return '';
+  const open=(apFixIdx===i);
+  let h='<div class="ap-note bad">✏️ <b>담당자가 신청 보완을 요청했습니다</b>'+
+    (a.fixReason?'<br>요청 사유: '+a.fixReason:'')+'</div>'+
+    '<button class="ap-sm" onclick="apFixOpen('+i+')">'+(open?'보완 입력 닫기':'📝 신청 보완하기')+'</button>';
+  if(!open)return h;
+  return h+'<div style="border:2px solid #e2e8f0;border-radius:12px;padding:11px 12px;margin-top:8px">'+
+    '<label class="ap-lb" for="apFixPlan">여행 계획 보완</label>'+
+    '<textarea class="ap-in" id="apFixPlan" rows="3">'+(a.plan||'')+'</textarea>'+
+    '<label class="ap-lb" for="apFixDocs">추가 서류 <small>(최대 5개 · jpg·png·pdf · 각 10MB 이하)</small></label>'+
+    '<input class="ap-in ap-file" id="apFixDocs" type="file" accept="image/*,.pdf" multiple onchange="apFixDocAdd(this)">'+
+    '<div id="apFixDocList">'+apDocListHtml(apFixDocs,'apFixDocDel')+'</div>'+
+    '<button class="ap-sm hero" onclick="apFixSubmit('+i+')">보완 내용 제출 — 검토 재요청</button></div>';
+}
+
+/* ── 추가 서류 첨부 ─────────────────────────────────────────
+   신청서에 붙이는 보조 서류(가족관계증명서·숙박 예약확인서 등). 데모는
+   localStorage 라 파일 본문을 보관할 수 없어 파일명·크기·형식만 남긴다.
+   등록·수정(삭제 후 재첨부)·삭제·조회 + 입력값 검증을 이 자리에서 처리한다. */
+let apDocDraft=[];
+function apDocListHtml(list,onDel){
+  const arr=list||apDocDraft;
+  if(!arr.length) return '<div class="ap-note" style="margin-top:6px">첨부한 서류가 없습니다. (선택 항목)</div>';
+  return '<div style="margin-top:6px">'+arr.map(function(d,i){
+    return '<div style="display:flex;align-items:center;gap:7px;padding:6px 0;border-bottom:1px dashed #e2e8f0;font-size:12.5px">'+
+      '<span>📎</span><span style="flex:1;min-width:0;word-break:break-all">'+d.name+'</span>'+
+      '<span style="color:#64748b;font-size:11.5px;flex:0 0 auto">'+t50DocSize(d.size)+'</span>'+
+      (onDel?'<button class="ap-sm" style="flex:0 0 auto;font-size:11px;padding:4px 9px;margin:0" onclick="'+onDel+'('+i+')">삭제</button>':'')+
+      '</div>';
+  }).join('')+'</div>';
+}
+function apDocAdd(input){
+  const files=input&&input.files?[].slice.call(input.files):[];
+  let added=0;
+  for(let i=0;i<files.length;i++){
+    const bad=t50DocCheck(files[i],apDocDraft.length);
+    if(bad){ toast(files[i].name+' — '+bad); continue; }
+    if(apDocDraft.some(function(d){ return d.name===files[i].name&&d.size===files[i].size; })){
+      toast('이미 첨부한 파일입니다'); continue;
+    }
+    apDocDraft.push({name:files[i].name,size:files[i].size,type:files[i].type||'',ts:new Date().toISOString().slice(0,10)});
+    added++;
+  }
+  input.value='';
+  const box=document.getElementById('apDocList');
+  if(box) box.innerHTML=apDocListHtml(null,'apDocDel');
+  if(added) toast('서류 '+added+'건을 첨부했습니다');
+}
+function apDocDel(i){
+  apDocDraft.splice(i,1);
+  const box=document.getElementById('apDocList');
+  if(box) box.innerHTML=apDocListHtml(null,'apDocDel');
+}
+
+/* 관내·인접지역 거주자 제외 — 사유를 구분해 안내한다 */
+function apSameRegion(kind,name){
+  const why=kind==='nearby'
+    ? '신청 지역('+name+')과 인접한 시군구에 거주하고 있어 신청할 수 없습니다.\n(인접지역 거주자 제외)'
+    : '주소지와 신청 지역이 동일하여 신청할 수 없습니다.';
+  alert(why+'\n(주민등록상 주소지: '+(apAddr?apAddr.full:'')+')');
+}
+
+/* 화면설계 설정을 신청 폼에 반영한다 — 표시를 끄면 입력란이 사라지고,
+   필수면 라벨에 (필수)가 붙고 접수 시 검증된다. */
+function apApplyScreenCfg(){
+  if(typeof t50Field!=='function') return;
+  const set=function(id,lbId,f,extra){
+    const el=document.getElementById(id), lb=document.getElementById(lbId);
+    const on=(f.show!==false);
+    if(el) el.style.display=on?'':'none';
+    if(lb){
+      lb.style.display=on?'':'none';
+      lb.innerHTML=f.label+' <small>'+(f.required?'(필수)':'(선택)')+(extra||'')+'</small>';
+    }
+    return on;
+  };
+  const Fp=t50Field('plan'), Fd=t50Field('docs'), Ff=t50Field('family');
+  set('apPlan','apPlanLb',Fp,'');
+  const dOn=set('apDocs','apDocsLb',Fd,' · 최대 5개 · jpg·png·pdf · 각 10MB 이하');
+  const dl=document.getElementById('apDocList');
+  if(dl){ dl.style.display=dOn?'':'none'; dl.innerHTML=apDocListHtml(null,'apDocDel'); }
+  /* 신청 단위(개인·가족) 블록 */
+  const fam=document.getElementById('apUnitBox')||document.getElementById('apFamBox');
+  if(fam) fam.style.display=(Ff.show!==false)?'':'none';
+  /* 담당자가 추가 등록한 안내 항목 */
+  const host=document.getElementById('apDocList');
+  if(host&&typeof t50ScreenCfg==='function'){
+    t50ScreenCfg().fields.forEach(function(f){
+      if(['family','plan','docs'].indexOf(f.id)>=0||f.show===false) return;
+      const d=document.createElement('div');
+      d.className='ap-note';
+      d.innerHTML='📌 '+f.label+(f.required?' <b>(필수 안내)</b>':'');
+      host.appendChild(d);
+    });
+  }
 }
 
 function apPick(name){
@@ -634,6 +798,7 @@ function apSubmit(){
     members:(apUnit==='family'?apHousehold().filter(function(m){return apFamPick.indexOf(m.id)>=0;})
       .map(function(m){return {masked:m.masked,rel:m.rel,birthYear:m.birthYear,age:m.age};}):[]),
     refundCap:ppl*T50_MAX_PER_PERSON,
+    docs:apDocDraft.slice(),
     ts:new Date().toISOString().slice(0,10),tsFull:new Date().toISOString()};
   const dec=apDecideCapacity(apSel,ppl);
   if(dec.mode==='ok'){
@@ -725,9 +890,16 @@ function apRenderList(){
       const lb=(terminal&&k==='approved')?AP_ST_LABEL[a.status]:AP_ST_LABEL[k];
       return '<span class="ap-tl'+(on?' on':'')+((lb===AP_ST_LABEL.rejected||lb===AP_ST_LABEL.canceled)?' bad':'')+'">'+lb.ic+' '+lb.t+'<small>'+lb.lane+'</small></span>';
     }).join('<span class="ap-tl-ar">›</span>');
+    /* 추가 서류·지역화폐 충전 결과 조회 */
+    const extra=((a.docs&&a.docs.length)?'<div class="ap-note">📎 추가 서류 '+a.docs.length+'건 — '+
+        a.docs.map(function(d){return d.name;}).join(', ')+'</div>':'')+
+      (a.localPay?'<div class="ap-note">🪙 지역사랑상품권 충전 완료 '+
+        a.localPay.amount.toLocaleString('ko-KR')+'원 (거래번호 '+a.localPay.txId+')</div>':'');
     let act='';
     if(a.status==='received'||a.status==='review')
       act='<div class="ap-note">🏛 <b>지자체(관리시스템)</b>에서 신청자격·계획을 심사하고 있습니다. 결과가 나오면 이곳에 표시됩니다.</div>';
+    else if(a.status==='apply_fix')
+      act=apFixBox(a,i);
     else if(a.status==='canceled')
       act='<div class="ap-note bad">🚫 신청을 취소했습니다. 다시 신청할 수 있습니다.</div>';
     else if(a.status==='approved')
@@ -770,7 +942,7 @@ function apRenderList(){
         ' · 환급 한도 '+(a.refundCap||t50RefundCap(a)).toLocaleString('ko-KR')+'원</div>':'')+
       '<div class="ap-card-d">'+a.start+' ~ '+a.end+' · '+a.people+'명 · 신청일 '+a.ts+
       (a.period?'<br><small>지역 여행 가능기간: '+apFmt(a.period.s)+' ~ '+apFmt(a.period.e)+'</small>':'')+'</div>'+
-      '<div class="ap-tl-row">'+steps+'</div>'+refund+act+editCancel+hist+'</div>';
+      '<div class="ap-tl-row">'+steps+'</div>'+extra+refund+act+editCancel+hist+'</div>';
   }).join('');
 }
 

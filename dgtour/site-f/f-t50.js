@@ -223,6 +223,41 @@ function ft50Household(uid,selfName,selfAge){
 const FT50_SI={'밀양':'밀양시','제천':'제천시'};   /* 시(市)인 지자체, 나머지는 군 */
 function ft50Sigungu(name){ return FT50_SI[name]||(name+'군'); }
 
+/* ── 반값여행 화면설계 (프로세스 구성 · 화면설계 정보) ────────
+   업무구조도의 「반값여행 화면설계」 8개 단위프로세스에 대응하는 설정 계층이다.
+   신청 절차 단계와 신청 화면 표시 항목을 담당자가 데이터로 관리하고, 신청 화면이
+   그 값을 읽어 렌더링한다. 즉 등록·수정한 내용이 실제 화면에 바로 반영된다.
+     · 프로세스 구성 등록·수정·삭제·조회 → 신청 절차 단계(steps)
+     · 화면설계 정보 등록·수정·삭제·조회 → 신청 화면 표시 항목(fields) */
+const FT50_SCREEN_KEY = 'dtidF_t50ScreenCfg';
+const FT50_STEPS_DEFAULT  = ['본인인증','주소지 확인','지역 선택','여행 계획','접수 완료'];
+const FT50_FIELDS_DEFAULT = [
+  {id:'family', label:'신청 단위(개인·가족)', screen:'여행 계획', show:true,  required:false, lock:true},
+  {id:'plan',   label:'간단한 여행 계획',     screen:'여행 계획', show:true,  required:false, lock:false},
+  {id:'docs',   label:'추가 서류 첨부',       screen:'여행 계획', show:true,  required:false, lock:false}
+];
+function ft50ScreenCfg(){
+  let c=null;
+  try{ c=JSON.parse(localStorage.getItem(FT50_SCREEN_KEY)||'null'); }catch(e){}
+  if(!c||typeof c!=='object') c={};
+  const steps=Array.isArray(c.steps)&&c.steps.length?c.steps:FT50_STEPS_DEFAULT.slice();
+  /* 기본 항목은 항상 존재해야 하므로 저장값을 기본값 위에 덮어쓴다 */
+  const saved=Array.isArray(c.fields)?c.fields:[];
+  const fields=FT50_FIELDS_DEFAULT.map(function(d){
+    const f=saved.find(function(x){ return x&&x.id===d.id; });
+    return f?Object.assign({},d,f,{lock:d.lock}):Object.assign({},d);
+  });
+  saved.forEach(function(f){ if(f&&f.id&&!fields.some(function(x){ return x.id===f.id; })) fields.push(f); });
+  return {steps:steps, fields:fields};
+}
+function ft50SaveScreenCfg(c){ localStorage.setItem(FT50_SCREEN_KEY, JSON.stringify(c||{})); }
+function ft50ResetScreenCfg(){ localStorage.removeItem(FT50_SCREEN_KEY); }
+/* 화면 표시 항목 조회 — 없으면 기본값(표시·선택) */
+function ft50Field(id){
+  const f=ft50ScreenCfg().fields.find(function(x){ return x.id===id; });
+  return f||{id:id,label:id,show:true,required:false};
+}
+
 /* ── 관내·인접지역 거주자 제외 검증 ──────────────────────────
    반값여행은 '관외 거주자'가 그 지역에서 쓰는 돈을 지원하는 사업이라, 주소지가
    신청 지역과 같은 시군구이거나 인접 시군구면 신청할 수 없다.

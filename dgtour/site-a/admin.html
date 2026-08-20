@@ -153,6 +153,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
     <button class="adm-tab on" id="admTabBtn_list" onclick="admTabGo('list')">📋 신청관리</button>
     <button class="adm-tab" id="admTabBtn_biz" onclick="admTabGo('biz')">⚙️ 사업설정</button>
     <button class="adm-tab" id="admTabBtn_stat" onclick="admTabGo('stat')">📊 통계·관리</button>
+    <button class="adm-tab" id="admTabBtn_screen" onclick="admTabGo('screen')">🖼 화면설계</button>
   </div>
 
   <div class="adm-panel" id="admPanelList">
@@ -197,6 +198,9 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
     </div>
     <div id="statBody"></div>
   </div>
+
+  <!-- 화면설계 (프로세스 구성 · 화면설계 정보) -->
+  <div class="adm-panel" id="admPanelScreen" style="display:none"></div>
 </div>
 
 <div class="toastA" id="admToast"></div>
@@ -210,7 +214,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
 </div>
 
 <script src="../site-assets/data.js?v=20260818a"></script>
-<script src="t50-config.js?v=3"></script>
+<script src="t50-config.js?v=4"></script>
 <script src="t50-corp.js?v=1"></script>
 <script>/* site-a 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidA_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
@@ -249,12 +253,14 @@ function admScopeRegion(){return admPersona().region;}
 
 /* ── 탭 전환 ── */
 function admTabGo(name){
-  ['list','biz','stat'].forEach(function(t){
-    document.getElementById('admPanel'+(t==='list'?'List':t==='biz'?'Biz':'Stat')).style.display=(t===name?'':'none');
+  ['list','biz','stat','screen'].forEach(function(t){
+    const el=document.getElementById('admPanel'+(t==='list'?'List':t==='biz'?'Biz':t==='biz'?'Biz':t==='stat'?'Stat':'Screen'));
+    if(el) el.style.display=(t===name?'':'none');
     document.getElementById('admTabBtn_'+t).classList.toggle('on',t===name);
   });
   if(name==='biz')bizRender();
   if(name==='stat')statRender();
+  if(name==='screen')admRenderScreen();
 }
 function admToast(m){
   const t=document.getElementById('admToast');
@@ -384,8 +390,15 @@ function admRender(){
       const bonusTxt=[a.youth?'청년 20% '+admWon(ybonus):'',a.familyEligible?'가족 10% '+admWon(fbonus):''].filter(Boolean).join(' + ');
       acts='<button onclick="admApprove('+K+')">✅ 승인 — 지원금 '+admWon(base+ybonus+fbonus)+(bonusTxt?' (기본 '+admWon(base)+' + '+bonusTxt+')':'')+'</button>'+
         '<button class="bad" onclick="admRsn('+K+',\'rejected\',\''+rid+'\')">⛔ 반려</button>'+
-        '<textarea class="rsn" id="'+rid+'" placeholder="반려 사유를 입력하세요 (예: 신청자격 미충족, 여행 계획 불명확)"></textarea>';
+        '<button class="bad" onclick="admRsn('+K+',\'apply_fix\',\''+rid+'\')">✏️ 신청 보완 요청</button>'+
+        '<textarea class="rsn" id="'+rid+'" placeholder="반려 사유를 입력하세요 (예: 신청자격 미충족, 여행 계획 불명확)"></textarea>'+
+        admNoteBox(a,K,'admNote_'+admUid(k)+'_'+i);
     }
+    else if(a.status==='apply_fix')
+      acts='<div class="plan">✏️ 신청 보완을 요청했습니다 — 신청자가 서류·정보를 보완해 재제출하면 <b>검토중</b>으로 돌아옵니다.'+
+        (a.fixReason?'<br>요청 사유: '+a.fixReason:'')+'</div>'+
+        '<button onclick="admDo('+K+',\'review\')">↩ 보완 없이 검토 재개</button>'+
+        admNoteBox(a,K,'admNote_'+admUid(k)+'_'+i);
     else if(a.status==='approved')
       acts='<button onclick="admDo('+K+',\'notified\')">📨 결과 통보 발송 — CI·승인 금액을 대민시스템/지역화폐로 전달</button>';
     else if(a.status==='notified')
@@ -415,11 +428,16 @@ function admRender(){
         })()+
         '<button onclick="admRefundOk('+K+')">💰 환급 승인 — '+admWon(amt)+' 충전 지시'+((a.youthBonus||a.familyBonus)?' ('+[a.youthBonus?'청년 20%':'',a.familyBonus?'가족 10%':''].filter(Boolean).join('+')+' 포함)':'')+'</button>'+
         '<button class="bad" onclick="admRsn('+K+',\'refund_fix\',\''+rid+'\')">✏️ 증빙 보완 요청</button>'+
-        '<textarea class="rsn" id="'+rid+'" placeholder="보완 요청 사유를 입력하세요 (예: 숙박 결재내역 누락)"></textarea>';
+        '<textarea class="rsn" id="'+rid+'" placeholder="보완 요청 사유를 입력하세요 (예: 숙박 결재내역 누락)"></textarea>'+
+        admOcrFixLine(a)+admOcrBox(a,K,'admOcr_'+admUid(k)+'_'+i);
     else if(a.status==='refund_fix')
       acts='<span class="wait">신청자 증빙 보완 대기중</span>';
     else if(a.status==='refund_ok')
-      acts='<span class="wait">처리 완료 — 환급 금액이 지역화폐(앱)에 충전되었습니다</span>';
+      acts='<span class="wait">처리 완료 — 환급 금액이 지역화폐(앱)에 충전되었습니다</span>'+
+        (a.localPay
+          ? '<div class="plan">🪙 지역화폐 충전 결과 수신 완료 — '+admWon(a.localPay.amount)+
+            ' · 거래번호 '+a.localPay.txId+' · 수신일 '+a.localPay.ts+'</div>'
+          : '<button onclick="admLocalPay('+K+')">🪙 지역화폐 충전 결과 수신(모의)</button>');
     else if(a.status==='rejected')
       acts='<span class="wait">반려 처리 완료</span>';
     else if(a.status==='canceled')
@@ -465,6 +483,186 @@ function admApprove(k,i){
   const bonusTxt=[ybonus?'청년 20%':'',fbonus?'가족 10%':''].filter(Boolean).join('+');
   admToast('승인 — 지원금 '+admWon(l[i].amount)+(bonusTxt?' ('+bonusTxt+' 포함)':''));
 }
+
+/* ── 신청서 검토의견 등록·수정 ──────────────────────────────
+   승인/반려 판정과 별개로 담당자가 남기는 메모. 같은 입력창으로 등록·수정을 겸한다. */
+function admNoteBox(a,K,nid){
+  const has=!!a.reviewNote;
+  return '<textarea class="rsn" id="'+nid+'" placeholder="검토의견을 입력하세요 (승인·반려 판정과 별개로 남는 담당자 메모)">'+
+    (has?a.reviewNote:'')+'</textarea>'+
+    '<button onclick="admNote('+K+',\''+nid+'\')">'+(has?'📝 검토의견 수정':'📝 검토의견 등록')+'</button>';
+}
+function admNote(k,i,nid){
+  const ta=document.getElementById(nid);
+  if(!ta)return;
+  if(!ta.classList.contains('on')){ta.classList.add('on');ta.focus();return;}
+  const v=ta.value.trim();
+  if(!v){admToast('검토의견을 입력해 주세요');ta.focus();return;}
+  const l=admLoadKey(k);if(!l[i])return;
+  const had=!!l[i].reviewNote;
+  l[i].reviewNote=v;
+  l[i].reviewNoteBy=admPersona().name;
+  l[i].reviewNoteTs=new Date().toISOString().slice(0,10);
+  admHist(l[i],l[i].status,(had?'검토의견 수정':'검토의견 등록')+': '+v);
+  admSaveKey(k,l);admRender();
+  admToast(had?'검토의견을 수정했습니다':'검토의견을 등록했습니다');
+}
+
+/* ── 지역화폐 환급결과 수신(모의) ────────────────────────────
+   운영에서는 지역화폐 시스템이 충전 결과를 회신하는 구간이다. */
+function admLocalPay(k,i){
+  const l=admLoadKey(k);if(!l[i])return;
+  const amt=l[i].refundAmount||l[i].amount||0;
+  if(!amt){admToast('환급 승인 후에 수신할 수 있습니다');return;}
+  l[i].localPay={ok:true,amount:amt,
+    txId:'LP-'+String(l[i].no||'').replace(/[^0-9]/g,'').slice(-6)+'-'+String(amt).slice(0,4),
+    ts:new Date().toISOString().slice(0,10)};
+  admHist(l[i],l[i].status,'지역화폐 충전 결과 수신 '+admWon(amt));
+  admSaveKey(k,l);admRender();
+  admToast('지역화폐 충전 결과를 수신했습니다');
+}
+
+/* ── OCR 인식결과 보정 ──────────────────────────────────────
+   OCR 오독으로 정당한 신청이 막히는 것을 담당자가 풀어준다. 다만 이 시스템의 검증
+   전제는 '판독값 ≠ 입력값이면 반려' 이므로, 그냥 덮어쓰면 대조가 무력해진다.
+   그래서 변경 전·후를 남기고 사유를 필수로 받으며, 보정된 건은 「사람이 보정한 건」
+   으로 표시해 자동 통과 건과 구분한다. */
+const ADM_OCR_FIELDS=[
+  {k:'card',lb:'카드번호'},{k:'appr',lb:'승인번호'},{k:'amt',lb:'결재금액'},
+  {k:'date',lb:'결제일'},{k:'shop',lb:'가맹점'},{k:'region',lb:'결제지역'}
+];
+function admOcrBox(a,K,fid){
+  const e=a.evidence||{};
+  const rows=ADM_OCR_FIELDS.map(function(f){
+    const v=(e[f.k]==null?'':String(e[f.k]));
+    return '<div style="display:flex;align-items:center;gap:7px;padding:5px 0">'+
+      '<span style="flex:0 0 68px;font-size:12px;color:#64748b">'+f.lb+'</span>'+
+      '<input class="ap-in" id="'+fid+'_'+f.k+'" value="'+v+'" style="flex:1;min-width:0;margin:0">'+
+      '</div>';
+  }).join('');
+  return '<div class="plan">🔧 <b>판독값 보정</b> — 고친 항목은 변경 전·후가 이력에 남고, 이 건은 '+
+    '「사람이 보정한 건」으로 표시됩니다.'+rows+
+    '<div style="display:flex;align-items:center;gap:7px;padding:5px 0">'+
+      '<input class="ap-in" id="'+fid+'_why" placeholder="보정 사유 (필수)" style="flex:1;min-width:0;margin:0">'+
+      '<button onclick="admOcrFix('+K+',\''+fid+'\')">보정 저장</button></div></div>';
+}
+function admOcrFix(k,i,fid){
+  const g=function(x){const el=document.getElementById(fid+'_'+x);return el?el.value.trim():'';};
+  const why=g('why');
+  if(!why){admToast('보정 사유를 입력해 주세요');return;}
+  const l=admLoadKey(k);
+  if(!l[i]||!l[i].evidence){admToast('증빙이 없습니다');return;}
+  const before={},after={};
+  ADM_OCR_FIELDS.forEach(function(f){
+    const nv=g(f.k), ov=(l[i].evidence[f.k]==null?'':String(l[i].evidence[f.k]));
+    if(nv!==ov){before[f.k]=ov;after[f.k]=nv;}
+  });
+  if(!Object.keys(after).length){admToast('바뀐 항목이 없습니다');return;}
+  ADM_OCR_FIELDS.forEach(function(f){
+    if(!(f.k in after))return;
+    l[i].evidence[f.k]=(f.k==='amt')?(Math.floor(Number(after[f.k]))||0):after[f.k];
+  });
+  l[i].evidence.ocrFix=(l[i].evidence.ocrFix||[]).concat([{
+    by:admPersona().name,ts:new Date().toISOString().slice(0,10),why:why,before:before,after:after}]);
+  admHist(l[i],l[i].status,'판독값 보정 ('+Object.keys(after).map(function(x){
+    const lb=(ADM_OCR_FIELDS.find(function(f){return f.k===x;})||{lb:x}).lb;
+    return lb+' '+(before[x]||'-')+'→'+after[x];
+  }).join(', ')+') 사유: '+why);
+  admSaveKey(k,l);admRender();
+  admToast('판독값을 보정했습니다');
+}
+function admOcrFixLine(a){
+  const fx=(a.evidence&&a.evidence.ocrFix)||[];
+  if(!fx.length)return '';
+  return '<div class="plan" style="background:#fff7ed;border-color:#fdba74;color:#9a3412">'+
+    '🔧 <b>사람이 보정한 건</b> — 자동 판독만으로 통과한 건이 아닙니다.'+
+    fx.map(function(f){
+      const chg=Object.keys(f.after).map(function(x){
+        const lb=(ADM_OCR_FIELDS.find(function(q){return q.k===x;})||{lb:x}).lb;
+        return lb+' 「'+(f.before[x]||'-')+'」→「'+f.after[x]+'」';
+      }).join(', ');
+      return '<br>· '+f.ts+' '+f.by+' — '+chg+' / 사유: '+f.why;
+    }).join('')+'</div>';
+}
+
+/* ── 화면설계 (프로세스 구성 · 화면설계 정보) ─────────────────
+   업무구조도 「반값여행 화면설계」 8개 단위프로세스. 여기서 바꾼 단계·항목은
+   신청 화면이 즉시 읽어 반영한다. */
+function admRenderScreen(){
+  const el=document.getElementById('admPanelScreen');
+  if(!el)return;
+  const c=t50ScreenCfg();
+  const rowStyle='display:flex;align-items:center;gap:7px;padding:7px 0;border-bottom:1px dashed #e2e8f0;flex-wrap:wrap';
+  const steps=c.steps.map(function(s,i){
+    return '<div style="'+rowStyle+'"><span style="flex:0 0 auto;font-weight:800;color:#64748b">'+(i+1)+'</span>'+
+      '<input class="ap-in" id="admStep_'+i+'" value="'+s+'" style="flex:1;min-width:0;margin:0">'+
+      '<button onclick="admStepSave('+i+')">수정</button><button onclick="admStepDel('+i+')">삭제</button></div>';
+  }).join('');
+  const fields=c.fields.map(function(f,i){
+    return '<div style="'+rowStyle+'">'+
+      '<input class="ap-in" id="admFld_'+i+'" value="'+f.label+'" style="flex:1;min-width:0;margin:0"'+(f.lock?' readonly':'')+'>'+
+      '<label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;min-height:44px">'+
+        '<input type="checkbox" id="admFldShow_'+i+'"'+(f.show!==false?' checked':'')+' style="width:18px;height:18px"> 표시</label>'+
+      '<label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;min-height:44px">'+
+        '<input type="checkbox" id="admFldReq_'+i+'"'+(f.required?' checked':'')+(f.lock?' disabled':'')+' style="width:18px;height:18px"> 필수</label>'+
+      '<button onclick="admFieldSave('+i+')">수정</button>'+
+      (f.lock?'<span style="font-size:11.5px;color:#94a3b8">기본항목</span>'
+             :'<button onclick="admFieldDel('+i+')">삭제</button>')+'</div>';
+  }).join('');
+  el.innerHTML=
+    '<h2 class="adm-h2">화면설계<small>반값여행 프로세스 구성 · 화면설계 정보 — 등록·수정·삭제·조회</small></h2>'+
+    '<div class="card"><div class="hd"><b>신청 절차 단계</b></div>'+
+      '<div class="plan">여기서 바꾼 단계는 신청 화면 상단 진행 표시에 그대로 나타납니다.</div>'+
+      steps+
+      '<div style="'+rowStyle+'"><input class="ap-in" id="admStepNew" placeholder="추가할 단계 이름" style="flex:1;min-width:0;margin:0">'+
+        '<button onclick="admStepAdd()">＋ 단계 등록</button></div></div>'+
+    '<div class="card" style="margin-top:12px"><div class="hd"><b>신청 화면 표시 항목</b></div>'+
+      '<div class="plan">표시를 끄면 신청 화면에서 입력란이 사라지고, 필수로 두면 값이 없을 때 접수되지 않습니다.</div>'+
+      fields+
+      '<div style="'+rowStyle+'"><input class="ap-in" id="admFldNew" placeholder="추가할 항목 이름 (안내 문구로 노출)" style="flex:1;min-width:0;margin:0">'+
+        '<button onclick="admFieldAdd()">＋ 항목 등록</button></div>'+
+      '<button onclick="admScreenReset()" style="margin-top:10px">화면설계를 초기값으로 되돌리기</button></div>';
+}
+function admScreenMutate(fn){const c=t50ScreenCfg();fn(c);t50SaveScreenCfg(c);admRenderScreen();}
+function admStepAdd(){
+  const el=document.getElementById('admStepNew'),v=el?el.value.trim():'';
+  if(!v){admToast('단계 이름을 입력해 주세요');return;}
+  admScreenMutate(function(c){c.steps.push(v);});admToast('단계를 등록했습니다');
+}
+function admStepSave(i){
+  const el=document.getElementById('admStep_'+i),v=el?el.value.trim():'';
+  if(!v){admToast('단계 이름을 입력해 주세요');return;}
+  admScreenMutate(function(c){c.steps[i]=v;});admToast('단계를 수정했습니다');
+}
+function admStepDel(i){
+  if(t50ScreenCfg().steps.length<=2){admToast('단계는 2개 이상 유지해야 합니다');return;}
+  admScreenMutate(function(c){c.steps.splice(i,1);});admToast('단계를 삭제했습니다');
+}
+function admFieldAdd(){
+  const el=document.getElementById('admFldNew'),v=el?el.value.trim():'';
+  if(!v){admToast('항목 이름을 입력해 주세요');return;}
+  admScreenMutate(function(c){
+    c.fields.push({id:'x'+Date.now(),label:v,screen:'여행 계획',show:true,required:false,lock:false});
+  });admToast('항목을 등록했습니다');
+}
+function admFieldSave(i){
+  const lb=document.getElementById('admFld_'+i),sw=document.getElementById('admFldShow_'+i),rq=document.getElementById('admFldReq_'+i);
+  admScreenMutate(function(c){
+    if(!c.fields[i])return;
+    if(lb&&lb.value.trim()&&!c.fields[i].lock)c.fields[i].label=lb.value.trim();
+    if(sw)c.fields[i].show=sw.checked;
+    if(rq&&!c.fields[i].lock)c.fields[i].required=rq.checked;
+  });admToast('항목을 수정했습니다');
+}
+function admFieldDel(i){
+  admScreenMutate(function(c){if(c.fields[i]&&!c.fields[i].lock)c.fields.splice(i,1);});
+  admToast('항목을 삭제했습니다');
+}
+function admScreenReset(){
+  if(!confirm('화면설계 설정을 초기값으로 되돌릴까요?'))return;
+  t50ResetScreenCfg();admRenderScreen();admToast('초기값으로 되돌렸습니다');
+}
+
 function admRsn(k,i,st,rid){
   const ta=document.getElementById(rid);
   if(!ta.classList.contains('on')){ta.classList.add('on');ta.focus();return;}
@@ -475,7 +673,7 @@ function admRsn(k,i,st,rid){
   if(st==='rejected')l[i].rejectReason=v;else l[i].fixReason=v;
   admHist(l[i],st,v);
   admSaveKey(k,l);admRender();
-  admToast(st==='rejected'?'반려 처리했습니다':'보완 요청을 보냈습니다');
+  admToast(st==='rejected'?'반려 처리했습니다':(st==='apply_fix'?'신청 보완 요청을 보냈습니다':'증빙 보완 요청을 보냈습니다'));
 }
 function admRefundOk(k,i){
   const l=admLoadKey(k);if(!l[i])return;

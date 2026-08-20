@@ -437,6 +437,14 @@ textarea.f-in{resize:vertical;line-height:1.6}
 .t50a-plan{background:#f8fafc;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:12px;color:var(--ink2);margin-top:8px;line-height:1.7}
 .t50a-acts{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;align-items:center}
 .t50a-acts .wait{font-size:12px;color:var(--sub);font-weight:700}
+/* 화면설계 관리 — 단계·항목 편집 행 */
+.t50a-row{display:flex;align-items:center;gap:7px;padding:6px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap}
+.t50a-row .f-in{margin-top:0}
+.t50a-no{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:var(--pri-l);color:var(--pri-d);
+  display:grid;place-items:center;font-size:11px;font-weight:800}
+.t50a-ck{flex:0 0 auto;display:flex;align-items:center;gap:4px;font-size:12px;color:var(--ink2);
+  font-weight:600;min-height:44px;cursor:pointer}
+.t50a-ck input{width:18px;height:18px}
 .t50a-rsn{width:100%;margin-top:8px;border:1.5px solid var(--line);border-radius:9px;padding:9px 11px;font-size:12.5px;font-family:inherit;min-height:58px;display:none;resize:vertical}
 .t50a-rsn.on{display:block}
 .t50a-log{margin-top:9px;padding-top:7px;border-top:1px dashed var(--line);font-size:11px;color:var(--sub2);line-height:1.7}
