@@ -130,6 +130,7 @@ function t50aRenderList(){
 function t50aCard(x){
   const a=x.a, K="'"+x.k+"',"+x.i;
   const rid='t50aRsn_'+ft50Uid(x.k)+'_'+x.i;
+  const nid='t50aNote_'+ft50Uid(x.k)+'_'+x.i;   /* 검토의견 입력창 */
   const st=FT50_ST[a.status]||{t:a.status,cls:'n',ic:'•'};
   const calc=ft50Calc(a);
   const sameSido=(a.addr||'').indexOf(a.sido)===0;
@@ -149,8 +150,15 @@ function t50aCard(x){
     const bonus=[calc.youth?'청년 20% '+ft50Won(calc.youth):'',calc.family?'가족 10% '+ft50Won(calc.family):''].filter(Boolean).join(' + ');
     acts='<button class="btn" onclick="t50aApprove('+K+')">✅ 승인 — 지원금 '+ft50Won(calc.total)+(bonus?' (기본 '+ft50Won(calc.base)+' + '+bonus+')':'')+'</button>'+
       '<button class="btn o" style="color:#b91c1c;border-color:#fecaca" onclick="t50aReason('+K+',\'rejected\',\''+rid+'\')">⛔ 반려</button>'+
-      '<textarea class="t50a-rsn" id="'+rid+'" placeholder="반려 사유를 입력하세요 (예: 신청자격 미충족, 여행 계획 불명확)"></textarea>';
+      '<button class="btn o" style="color:#c2410c;border-color:#fed7aa" onclick="t50aReason('+K+',\'apply_fix\',\''+rid+'\')">✏️ 신청 보완 요청</button>'+
+      '<textarea class="t50a-rsn" id="'+rid+'" placeholder="반려 사유를 입력하세요 (예: 신청자격 미충족, 여행 계획 불명확)"></textarea>'+
+      t50aNoteBox(a,K,nid);
   }
+  else if(a.status==='apply_fix')
+    acts='<div class="t50a-note">✏️ 신청 보완을 요청했습니다 — 신청자가 서류·정보를 보완해 재제출하면 <b>검토중</b>으로 돌아옵니다.'+
+      (a.fixReason?'<br>요청 사유: '+fEsc(a.fixReason):'')+'</div>'+
+      '<button class="btn gy" onclick="t50aDo('+K+',\'review\')">↩ 보완 없이 검토 재개</button>'+
+      t50aNoteBox(a,K,nid);
   else if(a.status==='approved')
     acts='<button class="btn" onclick="t50aDo('+K+',\'notified\')">📨 결과 통보 발송 — 승인 금액을 신청자·지역화폐로 전달</button>';
   else if(a.status==='notified')
@@ -181,7 +189,11 @@ function t50aCard(x){
   else if(a.status==='refund_fix')
     acts='<span class="wait">신청자 증빙 보완 대기중</span>';
   else if(a.status==='refund_ok')
-    acts='<span class="wait">처리 완료 — 환급금이 지역사랑상품권으로 지급되었습니다</span>';
+    acts='<span class="wait">처리 완료 — 환급금이 지역사랑상품권으로 지급되었습니다</span>'+
+      (a.localPay
+        ? '<div class="t50a-note">🪙 지역화폐 충전 결과 수신 완료 — '+ft50Won(a.localPay.amount)+
+          ' · 거래번호 '+fEsc(a.localPay.txId)+' · 수신일 '+ft50Dot(a.localPay.ts)+'</div>'
+        : '<button class="btn gy" style="margin-top:7px" onclick="t50aLocalPay('+K+')">🪙 지역화폐 충전 결과 수신(모의)</button>');
   else if(a.status==='rejected')
     acts='<span class="wait">반려 처리 완료</span>';
   else if(a.status==='canceled')
@@ -190,6 +202,10 @@ function t50aCard(x){
   let log='';
   if(a.rejectReason) log+='반려 사유: '+fEsc(a.rejectReason)+'<br>';
   if(a.fixReason) log+='보완 요청 사유: '+fEsc(a.fixReason)+'<br>';
+  if(a.reviewNote) log+='검토의견: '+fEsc(a.reviewNote)+
+    (a.reviewNoteBy?' <span style="color:var(--sub2)">('+fEsc(a.reviewNoteBy)+' · '+ft50Dot(a.reviewNoteTs||'')+')</span>':'')+'<br>';
+  if(a.docs&&a.docs.length) log+='추가 서류 '+a.docs.length+'건: '+
+    a.docs.map(function(d){ return fEsc(d.name)+' ('+ft50DocSize(d.size)+')'; }).join(', ')+'<br>';
   if(typeof a.amount==='number') log+='승인 지원금: '+ft50Won(a.amount)+'<br>';
   if(a.history&&a.history.length)
     log+='처리 이력: '+a.history.map(h=>((FT50_ST[h.st]||{t:h.st}).t)+(h.by?'('+fEsc(h.by)+')':'')+' '+ft50Dot(h.ts.slice(0,10))).join(' → ');
@@ -271,6 +287,49 @@ function t50aApprove(k,i){
   });
   if(r) toast('승인 — 지원금 '+ft50Won(r.amount));
 }
+/* 검토의견 입력 박스 — 이미 등록돼 있으면 현재 값을 채워 '수정' 으로 동작한다 */
+function t50aNoteBox(a,K,nid){
+  const has=!!a.reviewNote;
+  return '<textarea class="t50a-rsn" id="'+nid+'" placeholder="검토의견을 입력하세요 (승인·반려 판정과 별개로 남는 담당자 메모)">'+
+    (has?fEsc(a.reviewNote):'')+'</textarea>'+
+    '<button class="btn gy" style="font-size:11.5px;padding:6px 10px" onclick="t50aNote('+K+',\''+nid+'\')">'+
+    (has?'📝 검토의견 수정':'📝 검토의견 등록')+'</button>';
+}
+
+/* ── 신청서 검토의견 등록·수정 ────────────────────────────
+   승인/반려 판정과 별개로 담당자가 남기는 메모다. 같은 입력창으로 등록·수정을
+   겸하고, 변경 이력에도 남긴다. */
+function t50aNote(k,i,nid){
+  const ta=document.getElementById(nid);
+  if(!ta) return;
+  if(!ta.classList.contains('on')){ ta.classList.add('on'); ta.focus(); return; }
+  const v=ta.value.trim();
+  if(!v){ toast('검토의견을 입력해 주세요'); ta.focus(); return; }
+  const had=!!(ft50LoadKey(k)[i]||{}).reviewNote;
+  t50aMutate(k,i,function(rec){
+    rec.reviewNote=v;
+    rec.reviewNoteBy=ft50Persona().name;
+    rec.reviewNoteTs=ft50Today();
+    ft50Hist(rec,rec.status,ft50Persona().name,(had?'검토의견 수정':'검토의견 등록')+': '+v);
+  });
+  toast(had?'검토의견을 수정했습니다':'검토의견을 등록했습니다');
+}
+
+/* ── 지역화폐 환급결과 수신(모의) ─────────────────────────
+   운영에서는 지역화폐 시스템이 충전 결과를 회신하는 구간이다.
+   데모에서는 담당자가 버튼으로 수신 처리해 결과를 확인할 수 있게 한다. */
+function t50aLocalPay(k,i){
+  const a=ft50LoadKey(k)[i]; if(!a) return;
+  if(!a.refundAmount){ toast('환급 승인 후에 수신할 수 있습니다'); return; }
+  t50aMutate(k,i,function(rec){
+    rec.localPay={ok:true, amount:rec.refundAmount,
+      txId:'LP-'+String(rec.no||'').replace(/[^0-9]/g,'').slice(-6)+'-'+String(rec.refundAmount).slice(0,4),
+      ts:ft50Today()};
+    ft50Hist(rec,rec.status,ft50Persona().name,'지역화폐 충전 결과 수신 '+ft50Won(rec.refundAmount));
+  });
+  toast('지역화폐 충전 결과를 수신했습니다');
+}
+
 function t50aReason(k,i,st,rid){
   const ta=document.getElementById(rid);
   if(!ta) return;
@@ -279,10 +338,10 @@ function t50aReason(k,i,st,rid){
   if(!v){ toast('사유를 입력해 주세요'); ta.focus(); return; }
   t50aMutate(k,i,function(rec){
     rec.status=st;
-    if(st==='rejected') rec.rejectReason=v; else rec.fixReason=v;
+    if(st==='rejected') rec.rejectReason=v; else rec.fixReason=v;   /* apply_fix·refund_fix 공용 */
     ft50Hist(rec,st,ft50Persona().name,v);
   });
-  toast(st==='rejected'?'반려 처리했습니다':'보완 요청을 보냈습니다');
+  toast(st==='rejected'?'반려 처리했습니다':(st==='apply_fix'?'신청 보완 요청을 보냈습니다':'증빙 보완 요청을 보냈습니다'));
 }
 function t50aRefundOk(k,i){
   const r=t50aMutate(k,i,function(rec){
@@ -318,6 +377,14 @@ function t50aDetail(k,i){
     row('주민등록상 주소지',fEsc(a.addr||'-'))+
     row('본인인증 수단',fEsc(a.authMeans||'-'))+
     (a.plan?row('여행 계획',fEsc(a.plan)):'')+
+    /* 추가 서류 조회 — 데모는 파일 본문을 보관하지 않아 메타데이터만 보여준다 */
+    row('추가 서류',(a.docs&&a.docs.length)
+      ? a.docs.map(function(d){ return '📎 '+fEsc(d.name)+' ('+ft50DocSize(d.size)+')'; }).join('<br>')
+      : '첨부 없음')+
+    (a.reviewNote?row('검토의견',fEsc(a.reviewNote)+
+      (a.reviewNoteBy?' <span style="color:var(--sub2)">('+fEsc(a.reviewNoteBy)+' · '+ft50Dot(a.reviewNoteTs||'')+')</span>':'')):'')+
+    (a.fixDoneTs?row('신청 보완 재제출',ft50Dot(a.fixDoneTs)):'')+
+    (a.localPay?row('지역화폐 충전 결과','🪙 '+ft50Won(a.localPay.amount)+' · 거래번호 '+fEsc(a.localPay.txId)+' · '+ft50Dot(a.localPay.ts)):'')+
     '<div class="sec-t" style="margin:14px 0 6px">자격 점검</div>'+
     row('관외거주',(a.addr||'').indexOf(a.sido)===0?'미충족 — 거주지와 동일 시·도':'충족')+
     row('청년(만 19~34세)',a.youth?'해당 — 20% 가산 대상 (만 '+a.age+'세)':'해당 없음')+

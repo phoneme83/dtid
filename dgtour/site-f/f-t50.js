@@ -21,6 +21,7 @@ const FT50_FAMILY_MAX = 5;                       /* 가족 단위 신청 시 본
 const FT50_ST = {
   received:  {t:'접수 대기',      lane:'공사',   ic:'📥', cls:'n'},
   review:    {t:'검토중',         lane:'지자체', ic:'🔎', cls:'o'},
+  apply_fix: {t:'신청 보완 요청', lane:'지자체', ic:'✏️', cls:'o'},
   approved:  {t:'승인',           lane:'지자체', ic:'✅', cls:'g'},
   notified:  {t:'결과 통보 완료', lane:'공사',   ic:'📨', cls:'g'},
   refund_req:{t:'환급 심사 대기', lane:'지자체', ic:'🧾', cls:'p'},
@@ -221,6 +222,63 @@ function ft50Household(uid,selfName,selfAge){
    주소지는 반값여행 참여 지자체 중 1곳을 시뮬레이션으로 배정한다. */
 const FT50_SI={'밀양':'밀양시','제천':'제천시'};   /* 시(市)인 지자체, 나머지는 군 */
 function ft50Sigungu(name){ return FT50_SI[name]||(name+'군'); }
+
+/* ── 관내·인접지역 거주자 제외 검증 ──────────────────────────
+   반값여행은 '관외 거주자'가 그 지역에서 쓰는 돈을 지원하는 사업이라, 주소지가
+   신청 지역과 같은 시군구이거나 인접 시군구면 신청할 수 없다.
+   ※ 아래 인접표는 데모용이다. 운영에서는 지자체가 관리하는 행정구역 인접 정보로
+     교체해야 한다(사업 공고마다 인접 판정 범위가 달라질 수 있다). */
+const FT50_NEARBY = {
+  '영광':['함평','장성','고창','무안'],
+  '해남':['강진','영암','완도','진도','목포'],
+  '완도':['해남','강진','장흥','진도'],
+  '강진':['해남','영암','장흥','완도'],
+  '고창':['영광','정읍','부안','함평','장성'],
+  '거창':['함양','합천','산청','김천','무주'],
+  '하동':['진주','사천','남해','산청','광양','구례'],
+  '횡성':['원주','홍천','평창','영월','춘천'],
+  '고흥':['보성','장흥','여수','순천'],
+  '영암':['해남','강진','나주','목포','무안','장성'],
+  '남해':['하동','사천','통영','여수','광양'],
+  '밀양':['창녕','청도','양산','김해','울주'],
+  '제천':['단양','충주','영월','원주','영주'],
+  '합천':['거창','산청','의령','창녕','고령'],
+  '영월':['정선','평창','제천','태백','횡성'],
+  '평창':['정선','강릉','홍천','횡성','영월']
+};
+function ft50NearbyOf(region){ return FT50_NEARBY[region]||[]; }
+/* 접미사(시·군·구)를 떼고 비교한다 — 주소는 '함평군', 인접표는 '함평' 형태 */
+function ft50BareGu(v){ return String(v||'').replace(/\s+/g,'').replace(/(시|군|구)$/,''); }
+/* 반환: 'same'(관내) | 'nearby'(인접) | null(신청 가능) */
+function ft50AddrBlock(region, addrSigungu){
+  if(!region||!addrSigungu) return null;
+  const a = ft50BareGu(addrSigungu);
+  if(ft50BareGu(ft50Sigungu(region))===a || ft50BareGu(region)===a) return 'same';
+  return ft50NearbyOf(region).some(function(n){ return ft50BareGu(n)===a; }) ? 'nearby' : null;
+}
+
+/* ── 추가 서류 입력값 검증 ───────────────────────────────────
+   신청서에 첨부하는 보조 서류(가족관계증명서·숙박 예약확인서 등)를 받는다.
+   데모는 localStorage 라 파일 본문을 보관할 수 없어 메타데이터만 남긴다. */
+const FT50_DOC_MAX      = 5;                 /* 최대 첨부 개수 */
+const FT50_DOC_MAX_SIZE = 10 * 1024 * 1024;  /* 각 10MB */
+const FT50_DOC_EXT      = ['jpg','jpeg','png','pdf'];
+/* 반환: null(통과) 또는 사용자에게 보여줄 사유 문자열 */
+function ft50DocCheck(file, already){
+  if(!file) return '파일을 선택해 주세요';
+  if((already||0) >= FT50_DOC_MAX) return '첨부는 최대 ' + FT50_DOC_MAX + '개까지 가능합니다';
+  const ext = String(file.name||'').split('.').pop().toLowerCase();
+  if(FT50_DOC_EXT.indexOf(ext) < 0)
+    return '허용되지 않는 형식입니다 (' + FT50_DOC_EXT.join('·') + '만 가능)';
+  if(typeof file.size === 'number' && file.size > FT50_DOC_MAX_SIZE)
+    return '파일이 너무 큽니다 (각 10MB 이하)';
+  if(typeof file.size === 'number' && file.size === 0) return '빈 파일입니다';
+  return null;
+}
+function ft50DocSize(n){
+  if(typeof n !== 'number') return '';
+  return n >= 1048576 ? (n/1048576).toFixed(1) + 'MB' : Math.max(1, Math.round(n/1024)) + 'KB';
+}
 function ft50PickAddr(){
   /* 배정하면 모집중 지역이 전부 인근 처리되어 신청 가능 지역이 0이 되는
      시·도는 후보에서 제외한다 (예: 모집중이 모두 전라남도인데 전남 주소지) */
