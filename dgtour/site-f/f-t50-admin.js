@@ -229,12 +229,21 @@ function t50aCard(x){
       ' · 결재금액 '+ft50Won(a.evidence.amt)+(a.evidence.date?' · 결제일 '+fEsc(a.evidence.date):'')+' · 첨부 '+fEsc(a.evidence.file||'-')+
       '<br><b style="color:var(--ok)">✓ '+fEsc(a.evidence.ocr||'판독 결과와 대조 일치')+
       (a.evidence.date?(a.evidence.date<a.start?' · 숙박 선결제 — 여행 시작 전 결제 인정 건':' · 결제일 여행기간('+a.start+'~'+a.end+') 내 확인'):'')+'</b>'+
+      t50aStayLine(a)+
       t50aCorpLine(a)+'</div>':'')+
     '<div class="t50a-acts">'+acts+'</div>'+
     (log?'<div class="t50a-log">'+log+'</div>':'')+
   '</div>';
 }
 
+/* 숙박 증빙 한 줄 — 숙박확인서는 심사에서 원본을 확인해야 하는 항목이라 목록에서도 보이게 한다 */
+function t50aStayLine(a){
+  const e=a.evidence;
+  if(!e||!e.stay) return '';
+  const d=e.stayDoc;
+  return '<br><b style="color:#0369a1">🏨 숙박비 결제 건 — '+FT50_STAY_DOC_LABEL+' '+
+    (d&&d.name?fEsc(d.name)+' ('+ft50DocSize(d.size)+')':'미첨부')+'</b>';
+}
 /* 법인카드 확인 결과 한 줄 — 저장된 판정이 없으면 그 자리에서 다시 판정한다 */
 function t50aCorp(a){
   if(a.corpCheck) return a.corpCheck;
@@ -586,7 +595,12 @@ function t50aDetail(k,i){
       row('승인번호',fEsc(a.evidence.appr||'-'))+
       row('결재금액',ft50Won(a.evidence.amt))+
       (a.evidence.date?row('결제일',fEsc(a.evidence.date)+(a.evidence.date<a.start?' (숙박 선결제 — 여행 시작 전 결제 인정 ✓)':' (여행기간 '+a.start+'~'+a.end+' 내 ✓)')):'')+
-      (a.evidence.prepay?row('숙박 선결제','신청자 신고 — 숙박비 여부를 증빙 원본으로 확인해 주세요'):'')+
+      (a.evidence.stay
+        ?row('숙박 증빙','🏨 숙박비 결제 건 — '+FT50_STAY_DOC_LABEL+' 첨부 '+
+             fEsc((a.evidence.stayDoc&&a.evidence.stayDoc.name)||'-')+
+             ((a.evidence.stayDoc&&a.evidence.stayDoc.size)?' ('+ft50DocSize(a.evidence.stayDoc.size)+')':''))
+        :row('숙박 증빙','숙박비 결제 건 아님 — '+FT50_STAY_DOC_LABEL+' 해당 없음'))+
+      (a.evidence.prepay?row('숙박 선결제','신청자 신고 — 여행 시작 전 결제. 숙박비가 맞는지 '+FT50_STAY_DOC_LABEL+'로 확인해 주세요'):'')+
       row('첨부파일',fEsc(a.evidence.file||'-'))+
       row('OCR 대조','✓ '+fEsc(a.evidence.ocr||'판독 결과와 대조 일치'));
     const _c=t50aCorp(a);

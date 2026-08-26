@@ -72,7 +72,7 @@
 
 <script src="../site-assets/data.js?v=20260818a"></script>
 <script src="f.js?v=2"></script>
-<script src="f-t50.js?v=4"></script>
+<script src="f-t50.js?v=5"></script>
 <script src="f-t50-evidence.js?v=3"></script>
 <script src="f-t50-corp.js?v=1"></script>
 <script>
@@ -100,6 +100,8 @@ let t50DoneNo='',t50DoneSum='',t50OverMsg='';
 let t50EvOpen=false;      /* 증빙 등록 폼 열림 */
 let t50Ocr=null;          /* 영수증 판독 결과 */
 let t50EvPre=false;       /* 증빙 등록 폼의 '숙박 선결제' 체크 상태 */
+let t50EvStay=false;      /* 증빙 등록 폼의 '숙박비 결제 건' 체크 상태 */
+let t50EvStayDoc=null;    /* 첨부한 숙박확인서 {name,size} */
 
 /* ── 신청 데이터 ─────────────────────────────────────────── */
 function t50List(){ return U?ft50My(U.id):[]; }
@@ -880,6 +882,7 @@ function renderRefund(){
           '<div class="row"><span>결재금액</span><b>'+fmt(a.evidence.amt)+'원</b></div>'+
           (a.evidence.date?'<div class="row"><span>결제일</span><b>'+fEsc(a.evidence.date)+(a.evidence.date<a.start?' ✅ 숙박 선결제 인정':' ✅ 여행기간 내')+'</b></div>':'')+
           '<div class="row"><span>첨부파일</span><b>'+fEsc(a.evidence.file||'-')+'</b></div>'+
+          (a.evidence.stay?'<div class="row"><span>숙박 증빙</span><b>🏨 숙박비 결제 건 · '+FT50_STAY_DOC_LABEL+' '+fEsc((a.evidence.stayDoc&&a.evidence.stayDoc.name)||'-')+'</b></div>':'')+
           (a.corpCheck?'<div class="row"><span>법인카드 확인</span><b><span class="badge '+ft50CorpBadgeCls(a.corpCheck)+'">'+
             ft50CorpIcon(a.corpCheck)+' '+a.corpCheck.label+'</span></b></div>':'')+
           '<small>✓ '+fEsc(a.evidence.ocr||'판독 결과와 대조 완료')+' — 담당자 심사 결과를 기다리는 중입니다.</small></div>'
@@ -933,7 +936,7 @@ function t50EvOcrHtml(a){
   if(o.mode==='real'){
     const ex=o.ex||{};
     const amtTxt=(ex.amts&&ex.amts.length)?ex.amts.map(function(v){ return fmt(Number(v)); }).join(', ')+'원':null;
-    const dateTxt=ex.date?(ex.date+ft50EvDateBadge(a,ex.date,t50EvPre)):null;
+    const dateTxt=ex.date?(ex.date+ft50EvDateBadge(a,ex.date,t50EvPrepay())):null;
     const rgTxt=ft50EvRegionText(ex.region);
     const rgm=ft50EvRegionMatch(ex.region,a.region);
     const rgDisp=rgTxt?(rgTxt+(rgm==='match'?' ✅ 신청 지자체 일치':(rgm==='mismatch'?' ⚠️ 신청 지자체('+a.region+')와 다름':''))):null;
@@ -957,7 +960,7 @@ function t50EvOcrHtml(a){
     '<div class="row"><span>카드번호</span><b>'+V(o.card)+'</b></div>'+
     '<div class="row"><span>승인번호</span><b>'+V(o.appr)+'</b></div>'+
     '<div class="row"><span>결재금액</span><b>'+V(o.amt?fmt(o.amt)+'원':null)+'</b></div>'+
-    '<div class="row"><span>결제일</span><b id="t50EvDateB">'+V(o.date?o.date+ft50EvDateBadge(a,o.date,t50EvPre):null)+'</b></div>'+
+    '<div class="row"><span>결제일</span><b id="t50EvDateB">'+V(o.date?o.date+ft50EvDateBadge(a,o.date,t50EvPrepay()):null)+'</b></div>'+
     t50CorpRow(o.card,'')+ okBox +
     '<small>모의 판독이라 결제지역은 확인 불가입니다. 입력하신 승인번호·결재금액·결제일이 판독 결과와 일치해야 제출됩니다.</small></div>';
 }
@@ -983,8 +986,16 @@ function t50EvForm(a){
     '<label class="f-lb" for="t50EvDate">결제일 <span style="font-weight:500;color:var(--sub)">(영수증의 승인·결제 날짜 — 여행기간 '+a.start+' ~ '+a.end+' 내. 숙박 선결제는 여행 시작 전 결제도 인정)</span></label>'+
     '<input class="f-in" id="t50EvDate" type="date">'+
     '<label style="display:flex;align-items:center;gap:7px;margin:8px 0 2px;min-height:44px;font-size:13px;font-weight:600;cursor:pointer">'+
-      '<input type="checkbox" id="t50EvPre"'+(t50EvPre?' checked':'')+' onchange="t50EvPreToggle()" style="width:18px;height:18px"> 숙박 선결제 (여행 전에 미리 결제한 숙박비)</label>'+
-    '<div class="t50w-note">숙박비는 예약할 때 미리 결제하는 경우가 많아 16개 지자체 모두 <b>숙박 선결제를 인정</b>합니다. 체크하면 여행 시작일 이전에 결제한 영수증도 환급 대상이 됩니다(여행 시작일 기준 '+FT50_PREPAY_MAX_DAYS+'일 전까지).</div>'+
+      '<input type="checkbox" id="t50EvStay"'+(t50EvStay?' checked':'')+' onchange="t50EvStayToggle()" style="width:18px;height:18px"> 숙박비 결제 건 ('+FT50_STAY_DOC_LABEL+' 필요)</label>'+
+    '<div class="t50w-note">16개 지자체 모두 숙박 이용 건은 <b>결제영수증과 '+FT50_STAY_DOC_LABEL+'를 함께</b> 받습니다. 숙소에서 발급받은 '+FT50_STAY_DOC_LABEL+'(숙박증명서·투숙확인서 등 명칭이 달라도 됩니다)를 첨부해 주세요.</div>'+
+    '<div id="t50EvStayBox" style="display:'+(t50EvStay?'block':'none')+'">'+
+      '<label class="f-lb" for="t50EvStayFile">'+FT50_STAY_DOC_LABEL+' 첨부 <span style="font-weight:500;color:var(--sub)">('+FT50_DOC_EXT.join('·')+' · 10MB 이하)</span></label>'+
+      '<input class="f-in" id="t50EvStayFile" type="file" accept="image/*,.pdf" onchange="t50EvStayPick(this)">'+
+      '<div class="t50w-note" id="t50EvStayInfo">'+t50EvStayInfoHtml()+'</div>'+
+      '<label style="display:flex;align-items:center;gap:7px;margin:8px 0 2px;min-height:44px;font-size:13px;font-weight:600;cursor:pointer">'+
+        '<input type="checkbox" id="t50EvPre"'+(t50EvPre?' checked':'')+' onchange="t50EvPreToggle()" style="width:18px;height:18px"> 숙박 선결제 (여행 전에 미리 결제)</label>'+
+      '<div class="t50w-note">숙박비는 예약할 때 미리 결제하는 경우가 많아 16개 지자체 모두 <b>숙박 선결제를 인정</b>합니다. 체크하면 여행 시작일 이전에 결제한 영수증도 환급 대상이 됩니다(여행 시작일 기준 '+FT50_PREPAY_MAX_DAYS+'일 전까지).</div>'+
+    '</div>'+
     '<label class="f-lb" for="t50EvFile">영수증 등 증빙파일 첨부</label>'+
     '<input class="f-in" id="t50EvFile" type="file" accept="image/*,.pdf" onchange="t50EvRead(this)">'+
     t50EvOcrHtml(a)+
@@ -993,15 +1004,50 @@ function t50EvForm(a){
     '<button class="btn gy blk" style="margin-top:7px" onclick="t50EvToggle(true)">닫기</button>'+
   '</div>';
 }
-/* 숙박 선결제 체크 변경 — 폼을 다시 그리면 입력값이 지워지므로 결제일 판정 줄만 바꾼다 */
-function t50EvPreToggle(){
-  const cb=document.getElementById('t50EvPre');
-  t50EvPre=!!(cb&&cb.checked);
+/* 선결제 인정은 숙박 건에만 적용된다 — 두 체크가 모두 켜져야 유효하다 */
+function t50EvPrepay(){ return !!(t50EvStay&&t50EvPre); }
+/* 결제일 판정 줄만 다시 그린다 — 폼을 통째로 렌더링하면 입력값이 지워진다 */
+function t50EvDateRefresh(){
   const act=t50Active(), el=document.getElementById('t50EvDateB');
   if(!act||!t50Ocr||!el) return;
   const d=(t50Ocr.mode==='real')?((t50Ocr.ex||{}).date):t50Ocr.date;
   if(!d) return;
-  el.innerHTML=fEsc(d)+ft50EvDateBadge(act.a,d,t50EvPre);
+  el.innerHTML=fEsc(d)+ft50EvDateBadge(act.a,d,t50EvPrepay());
+}
+function t50EvPreToggle(){
+  const cb=document.getElementById('t50EvPre');
+  t50EvPre=!!(cb&&cb.checked);
+  t50EvDateRefresh();
+}
+/* 숙박비 결제 건 체크 변경 — 숙박확인서 첨부·선결제 선택지를 열고 닫는다 */
+function t50EvStayToggle(){
+  const cb=document.getElementById('t50EvStay');
+  t50EvStay=!!(cb&&cb.checked);
+  const box=document.getElementById('t50EvStayBox');
+  if(box) box.style.display=t50EvStay?'block':'none';
+  if(!t50EvStay){                        /* 숙박 건이 아니면 선결제 신고도 함께 내린다 */
+    t50EvPre=false; t50EvStayDoc=null;
+    const pre=document.getElementById('t50EvPre'); if(pre) pre.checked=false;
+    const fi=document.getElementById('t50EvStayFile'); if(fi) fi.value='';
+  }
+  const info=document.getElementById('t50EvStayInfo');
+  if(info) info.innerHTML=t50EvStayInfoHtml();
+  t50EvDateRefresh();
+}
+/* 첨부한 숙박확인서 상태 한 줄 — 데모는 파일 본문을 보관하지 않아 이름·크기만 남긴다 */
+function t50EvStayInfoHtml(){
+  return t50EvStayDoc
+    ? ('📄 첨부됨 — <b>'+fEsc(t50EvStayDoc.name)+'</b> ('+ft50DocSize(t50EvStayDoc.size)+')')
+    : (FT50_STAY_DOC_LABEL+'를 첨부해 주세요. 첨부해야 환급 신청이 제출됩니다.');
+}
+function t50EvStayPick(input){
+  const el=document.getElementById('t50EvStayInfo');
+  const f=input.files&&input.files[0];
+  if(!f){ t50EvStayDoc=null; if(el) el.innerHTML=t50EvStayInfoHtml(); return; }
+  const bad=ft50DocCheck(f,0);
+  if(bad){ t50EvStayDoc=null; input.value=''; if(el) el.innerHTML='⚠️ '+fEsc(bad); return; }
+  t50EvStayDoc={name:f.name,size:f.size};
+  if(el) el.innerHTML=t50EvStayInfoHtml();
 }
 function t50EvRead(input){
   if(!input.files||!input.files.length) return;
@@ -1035,8 +1081,11 @@ function t50EvSubmit(){
   const appr=document.getElementById('t50EvAppr').value.trim();
   const amt=Math.floor(Number(document.getElementById('t50EvAmt').value)||0);
   const payDate=document.getElementById('t50EvDate').value;
-  /* 숙박 선결제 — 여행 시작 전에 결제한 숙박비도 환급 대상(16개 지자체 공통 기준) */
-  const prepay=!!(document.getElementById('t50EvPre')||{}).checked;
+  /* 숙박 증빙 — 숙박비 결제 건은 결제영수증과 숙박확인서를 함께 받는다(16곳 공통).
+     선결제 인정도 숙박 건에만 적용되므로 두 값을 함께 읽는다 */
+  const stay=!!(document.getElementById('t50EvStay')||{}).checked;
+  const stayDoc=stay?t50EvStayDoc:null;
+  const prepay=stay&&!!(document.getElementById('t50EvPre')||{}).checked;
   if(card.length<15){ err.textContent='카드번호를 확인해 주세요 (15~16자리 숫자)'; return; }
   if(!appr){ err.textContent='승인번호를 입력해 주세요'; return; }
   if(amt<=0){ err.textContent='결재금액을 입력해 주세요'; return; }
@@ -1045,6 +1094,8 @@ function t50EvSubmit(){
   /* 판독 결과를 사용자가 확인한 뒤에만 제출된다 */
   const okBox=document.getElementById('t50EvOk');
   if(!okBox||!okBox.checked){ err.textContent='판독 결과를 확인하신 뒤 「위 판독 내용을 확인했습니다」에 체크해 주세요'; return; }
+  const schk=ft50EvStayCheck(stay,stayDoc);
+  if(schk){ err.innerHTML=schk.msg; return; }
   const fail=ft50EvVerify(t50Ocr,act.a,{card:card,appr:appr,amt:amt,date:payDate,prepay:prepay});
   if(fail){ err.innerHTML=fail; return; }
   /* 중복 제출 차단 — 같은 영수증이 다른 신청 건에 이미 쓰였는지 확인 */
@@ -1065,6 +1116,7 @@ function t50EvSubmit(){
     date:(t50Ocr.mode==='real'&&t50Ocr.ex&&t50Ocr.ex.date)?t50Ocr.ex.date:payDate,
     file:t50Ocr.file,
     prepay:prepay,   /* 숙박 선결제 신고 여부 — 담당자가 숙박비인지 원본으로 확인한다 */
+    stay:stay, stayDoc:stayDoc,   /* 숙박비 결제 건 여부와 첨부한 숙박확인서 */
     ocr:(t50Ocr.mode==='real'?'영수증 OCR 판독 결과와 대조 일치':'모의 판독 결과와 대조 일치'),
     ts:ft50Today()
   };
@@ -1075,7 +1127,7 @@ function t50EvSubmit(){
   delete a.fixReason;
   ft50Hist(a,'refund_req',U.name,'증빙 제출 — 결재금액 '+ft50Won(amt));
   t50Save(list);
-  t50EvOpen=false; t50Ocr=null; t50EvPre=false;
+  t50EvOpen=false; t50Ocr=null; t50EvPre=false; t50EvStay=false; t50EvStayDoc=null;
   toast('증빙 대조 완료 — 환급 신청이 제출되었습니다');
   renderAll();
 }

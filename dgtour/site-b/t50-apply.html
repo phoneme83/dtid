@@ -234,7 +234,7 @@
 <div class="toast" id="toastEl"></div>
 
 <script src="../site-assets/data.js?v=20260818a"></script>
-<script src="t50-config.js?v=5"></script>
+<script src="t50-config.js?v=6"></script>
 <script src="t50-corp.js?v=1"></script>
 <script>/* site-b 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidB_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
@@ -298,6 +298,8 @@ let apFamPick=[];        // 선택한 가족(등본 구성원 id)
 let apHome=null;         // 주민등록등본 조회 결과
 let apHomeOpen=false;    // 등본을 조회했는지
 let apEvPre={};          // 증빙 등록 폼의 '숙박 선결제' 체크 상태 (신청 건 index별)
+let apEvStay={};         // 증빙 등록 폼의 '숙박비 결제 건' 체크 상태
+let apEvStayDoc={};      // 첨부한 숙박확인서 {name,size}
 
 /* 주민등록번호로 만 나이 계산 (뒷자리 첫 숫자로 세기 판별). 형식 오류면 null */
 function apAgeFromRrn(r1,r2){
@@ -999,7 +1001,7 @@ function apEvForm(a,i){
   if(o&&o.mode==='real'){
     const ex=o.ex||{};
     const amtTxt=(ex.amts&&ex.amts.length)?ex.amts.map(function(v){ return Number(v).toLocaleString('ko-KR'); }).join(', ')+'원':null;
-    const dateTxt=ex.date?(ex.date+t50EvDateBadge(a,ex.date,!!apEvPre[i])):null;
+    const dateTxt=ex.date?(ex.date+t50EvDateBadge(a,ex.date,apEvPrepay(i))):null;
     const rgTxt=apOcrRegionText(ex.region);
     const rgm=apOcrRegionMatch(ex.region,a.region);
     const rgDisp=rgTxt?(rgTxt+(rgm==='match'?' ✅ 신청 지자체 일치':(rgm==='mismatch'?' ⚠️ 신청 지자체('+a.region+')와 다름':''))):null;
@@ -1024,7 +1026,7 @@ function apEvForm(a,i){
       '<div class="row"><span>카드번호</span><b>'+V(o.card)+'</b></div>'+
       '<div class="row"><span>승인번호</span><b>'+V(o.appr)+'</b></div>'+
       '<div class="row"><span>결재금액</span><b>'+V(o.amt?o.amt.toLocaleString('ko-KR')+'원':null)+'</b></div>'+
-      '<div class="row"><span>결제일</span><b id="apEvDateB'+i+'">'+V(o.date?o.date+t50EvDateBadge(a,o.date,!!apEvPre[i]):null)+'</b></div>'+
+      '<div class="row"><span>결제일</span><b id="apEvDateB'+i+'">'+V(o.date?o.date+t50EvDateBadge(a,o.date,apEvPrepay(i)):null)+'</b></div>'+
       apCorpRow(o.card,'')+ okBox +
       '<small>모의 판독이라 결제지역은 확인 불가입니다. 입력하신 승인번호·결재금액·결제일이 판독 결과와 일치해야 제출됩니다.</small></div>';
   }else{
@@ -1043,8 +1045,16 @@ function apEvForm(a,i){
     '<label class="ap-lb">결제일 <small>(영수증의 승인·결제 날짜 — 여행기간 '+a.start+' ~ '+a.end+' 내. 숙박 선결제는 여행 시작 전 결제도 인정)</small></label>'+
     '<input class="ap-in" id="apEvDate'+i+'" type="date">'+
     '<label style="display:flex;align-items:center;gap:7px;margin:8px 0 2px;min-height:44px;font-size:13px;font-weight:600;cursor:pointer">'+
-      '<input type="checkbox" id="apEvPre'+i+'"'+(apEvPre[i]?' checked':'')+' onchange="apEvPreToggle('+i+')" style="width:18px;height:18px"> 숙박 선결제 (여행 전에 미리 결제한 숙박비)</label>'+
-    '<div class="ap-note">숙박비는 예약할 때 미리 결제하는 경우가 많아 16개 지자체 모두 <b>숙박 선결제를 인정</b>합니다. 체크하면 여행 시작일 이전에 결제한 영수증도 환급 대상이 됩니다(여행 시작일 기준 '+T50_PREPAY_MAX_DAYS+'일 전까지).</div>'+
+      '<input type="checkbox" id="apEvStay'+i+'"'+(apEvStay[i]?' checked':'')+' onchange="apEvStayToggle('+i+')" style="width:18px;height:18px"> 숙박비 결제 건 ('+T50_STAY_DOC_LABEL+' 필요)</label>'+
+    '<div class="ap-note">16개 지자체 모두 숙박 이용 건은 <b>결제영수증과 '+T50_STAY_DOC_LABEL+'를 함께</b> 받습니다. 숙소에서 발급받은 '+T50_STAY_DOC_LABEL+'(숙박증명서·투숙확인서 등 명칭이 달라도 됩니다)를 첨부해 주세요.</div>'+
+    '<div id="apEvStayBox'+i+'" style="display:'+(apEvStay[i]?'block':'none')+'">'+
+      '<label class="ap-lb">'+T50_STAY_DOC_LABEL+' 첨부 <small>('+T50_DOC_EXT.join('·')+' · 10MB 이하)</small></label>'+
+      '<input class="ap-in ap-file" id="apEvStayFile'+i+'" type="file" accept="image/*,.pdf" onchange="apEvStayPick('+i+',this)">'+
+      '<div class="ap-note" id="apEvStayInfo'+i+'">'+apEvStayInfoHtml(i)+'</div>'+
+      '<label style="display:flex;align-items:center;gap:7px;margin:8px 0 2px;min-height:44px;font-size:13px;font-weight:600;cursor:pointer">'+
+        '<input type="checkbox" id="apEvPre'+i+'"'+(apEvPre[i]?' checked':'')+' onchange="apEvPreToggle('+i+')" style="width:18px;height:18px"> 숙박 선결제 (여행 전에 미리 결제)</label>'+
+      '<div class="ap-note">숙박비는 예약할 때 미리 결제하는 경우가 많아 16개 지자체 모두 <b>숙박 선결제를 인정</b>합니다. 체크하면 여행 시작일 이전에 결제한 영수증도 환급 대상이 됩니다(여행 시작일 기준 '+T50_PREPAY_MAX_DAYS+'일 전까지).</div>'+
+    '</div>'+
     '<label class="ap-lb">영수증 등 증빙파일 첨부</label>'+
     '<input class="ap-in ap-file" id="apEvFile'+i+'" type="file" accept="image/*,.pdf" onchange="apOcrRead('+i+',this)">'+
     ocr+
@@ -1052,15 +1062,50 @@ function apEvForm(a,i){
     '<button class="ap-sm hero" onclick="apEvSubmit('+i+')">환급 신청 제출</button>'+
     '<button class="ap-sm" onclick="apEvToggle('+i+',true)">닫기</button></div>';
 }
-/* 숙박 선결제 체크 변경 — 폼을 다시 그리면 입력값이 지워지므로 결제일 판정 줄만 바꾼다 */
-function apEvPreToggle(i){
-  const cb=document.getElementById('apEvPre'+i);
-  apEvPre[i]=!!(cb&&cb.checked);
+/* 선결제 인정은 숙박 건에만 적용된다 — 두 체크가 모두 켜져야 유효하다 */
+function apEvPrepay(i){return !!(apEvStay[i]&&apEvPre[i]);}
+/* 결제일 판정 줄만 다시 그린다 — 폼을 통째로 렌더링하면 입력값이 지워진다 */
+function apEvDateRefresh(i){
   const o=apOcr[i],a=apLoad()[i],el=document.getElementById('apEvDateB'+i);
   if(!o||!a||!el)return;
   const d=(o.mode==='real')?((o.ex||{}).date):o.date;
   if(!d)return;
-  el.innerHTML=d+t50EvDateBadge(a,d,apEvPre[i]);
+  el.innerHTML=d+t50EvDateBadge(a,d,apEvPrepay(i));
+}
+function apEvPreToggle(i){
+  const cb=document.getElementById('apEvPre'+i);
+  apEvPre[i]=!!(cb&&cb.checked);
+  apEvDateRefresh(i);
+}
+/* 숙박비 결제 건 체크 변경 — 숙박확인서 첨부·선결제 선택지를 열고 닫는다 */
+function apEvStayToggle(i){
+  const cb=document.getElementById('apEvStay'+i);
+  apEvStay[i]=!!(cb&&cb.checked);
+  const box=document.getElementById('apEvStayBox'+i);
+  if(box)box.style.display=apEvStay[i]?'block':'none';
+  if(!apEvStay[i]){                       /* 숙박 건이 아니면 선결제 신고도 함께 내린다 */
+    apEvPre[i]=false;apEvStayDoc[i]=null;
+    const pre=document.getElementById('apEvPre'+i);if(pre)pre.checked=false;
+    const fi=document.getElementById('apEvStayFile'+i);if(fi)fi.value='';
+  }
+  const info=document.getElementById('apEvStayInfo'+i);
+  if(info)info.innerHTML=apEvStayInfoHtml(i);
+  apEvDateRefresh(i);
+}
+/* 첨부한 숙박확인서 상태 한 줄 — 데모는 파일 본문을 보관하지 않아 이름·크기만 남긴다 */
+function apEvStayInfoHtml(i){
+  const d=apEvStayDoc[i];
+  return d?('📄 첨부됨 — <b>'+d.name+'</b> ('+t50DocSize(d.size)+')')
+          :(T50_STAY_DOC_LABEL+'를 첨부해 주세요. 첨부해야 환급 신청이 제출됩니다.');
+}
+function apEvStayPick(i,input){
+  const el=document.getElementById('apEvStayInfo'+i);
+  const f=input.files&&input.files[0];
+  if(!f){apEvStayDoc[i]=null;if(el)el.innerHTML=apEvStayInfoHtml(i);return;}
+  const bad=t50DocCheck(f,0);
+  if(bad){apEvStayDoc[i]=null;input.value='';if(el)el.innerHTML='⚠️ '+bad;return;}
+  apEvStayDoc[i]={name:f.name,size:f.size};
+  if(el)el.innerHTML=apEvStayInfoHtml(i);
 }
 /* 법인카드 확인 — 카드번호(BIN)와 영수증 표기로 판정한 결과를 보여준다.
    법인카드 결제는 업무 목적 지출로 보아 환급 대상이 아니다 */
@@ -1079,13 +1124,14 @@ function apEvDone(a){
     '<div class="row"><span>결재금액</span><b>'+e.amt.toLocaleString('ko-KR')+'원</b></div>'+
     (e.date?'<div class="row"><span>결제일</span><b>'+e.date+(e.date<a.start?' ✅ 숙박 선결제 인정':' ✅ 여행기간 내')+'</b></div>':'')+
     '<div class="row"><span>첨부파일</span><b>'+e.file+'</b></div>'+
+    (e.stay?'<div class="row"><span>숙박 증빙</span><b>🏨 숙박비 결제 건 · '+T50_STAY_DOC_LABEL+' '+((e.stayDoc&&e.stayDoc.name)||'-')+'</b></div>':'')+
     (a.corpCheck?'<div class="row"><span>법인카드 확인</span><b style="color:'+t50CorpColor(a.corpCheck)+'">'+
       t50CorpIcon(a.corpCheck)+' '+a.corpCheck.label+'</b></div>':'')+
     '<small>✓ 영수증 OCR 판독 결과와 대조 완료 (결제일-여행기간 검증 포함'+(e.prepay?' · 숙박 선결제 신고 건':'')+')</small></div>';
 }
 function apEvToggle(i,close){
   apEvOpen[i]=close?false:!apEvOpen[i];
-  if(!apEvOpen[i]){delete apOcr[i];delete apEvPre[i];}
+  if(!apEvOpen[i]){delete apOcr[i];delete apEvPre[i];delete apEvStay[i];delete apEvStayDoc[i];}
   apRenderList();
 }
 /* 데모 영수증 이미지 생성·다운로드 — 지역화폐 결제내역(없으면 기본값) 기준 승인번호·금액 인쇄 */
@@ -1460,8 +1506,11 @@ function apEvSubmit(i){
   const appr=document.getElementById('apEvAppr'+i).value.trim();
   const amt=Math.floor(Number(document.getElementById('apEvAmt'+i).value)||0);
   const payDate=document.getElementById('apEvDate'+i).value;
-  /* 숙박 선결제 — 여행 시작 전에 결제한 숙박비도 환급 대상(16개 지자체 공통 기준) */
-  const prepay=!!(document.getElementById('apEvPre'+i)||{}).checked;
+  /* 숙박 증빙 — 숙박비 결제 건은 결제영수증과 숙박확인서를 함께 받는다(16곳 공통).
+     선결제 인정도 숙박 건에만 적용되므로 두 값을 함께 읽는다 */
+  const stay=!!(document.getElementById('apEvStay'+i)||{}).checked;
+  const stayDoc=stay?(apEvStayDoc[i]||null):null;
+  const prepay=stay&&!!(document.getElementById('apEvPre'+i)||{}).checked;
   if(card.length<15){err.textContent='카드번호를 확인해 주세요 (15~16자리 숫자)';return;}
   if(!appr){err.textContent='승인번호를 입력해 주세요';return;}
   if(amt<=0){err.textContent='결재금액을 입력해 주세요';return;}
@@ -1472,6 +1521,8 @@ function apEvSubmit(i){
   /* 판독 결과를 사용자가 확인한 뒤에만 제출된다 */
   const okBox=document.getElementById('apEvOk'+i);
   if(!okBox||!okBox.checked){err.textContent='판독 결과를 확인하신 뒤 「위 판독 내용을 확인했습니다」에 체크해 주세요';return;}
+  const schk=t50EvStayCheck(stay,stayDoc);
+  if(schk){err.innerHTML=schk.msg;return;}
   const a0=apLoad()[i];if(!a0)return;
   /* OCR 대조: 영수증에서 추출한 카드번호·승인번호·금액·결제일 필드와 입력값을 각각 비교 */
   if(o.mode==='real'){
@@ -1524,12 +1575,12 @@ function apEvSubmit(i){
   }
   const list=apLoad();if(!list[i])return;
   list[i].status='refund_req';
-  list[i].evidence={card:card.slice(0,4)+'-'+card.slice(4,6)+'**-****-'+card.slice(-4),appr:appr,amt:amt,date:(o.mode==='real'&&o.ex&&o.ex.date)?o.ex.date:payDate,file:o.file,prepay:prepay};
+  list[i].evidence={card:card.slice(0,4)+'-'+card.slice(4,6)+'**-****-'+card.slice(-4),appr:appr,amt:amt,date:(o.mode==='real'&&o.ex&&o.ex.date)?o.ex.date:payDate,file:o.file,prepay:prepay,stay:stay,stayDoc:stayDoc};
   /* 법인카드 판정 결과를 신청 건에 남기고, 영수증 표기로 확인된 건은 BIN 판정표에 학습시킨다 */
   list[i].corpCheck=t50CorpCheck((o.mode==='real'&&o.ex&&o.ex.card)?o.ex.card:card,o.mode==='real'?o.text:'',true);
   delete list[i].fixReason;
   apSave(list);
-  apEvOpen[i]=false;delete apOcr[i];delete apEvPre[i];
+  apEvOpen[i]=false;delete apOcr[i];delete apEvPre[i];delete apEvStay[i];delete apEvStayDoc[i];
   apRenderList();
   toast('증빙 대조 완료 — 환급 신청이 제출되었습니다');
 }

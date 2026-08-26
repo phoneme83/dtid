@@ -106,6 +106,25 @@ function ft50UsedCount(region){
     .reduce((s,x)=>s+ft50PeopleNum(x.a),0);
 }
 
+/* ── 숙박 증빙서류 ───────────────────────────────────────────
+   16개 지자체가 모두 "숙박확인서 + 결제영수증"을 숙박 증빙의 골격으로 두고
+   있고 명칭만 숙박확인서·숙박증명서·투숙확인서 등으로 갈린다(1차 분석안 6p).
+   통합 적용값은 「숙박확인서」로 명칭을 통일한다(16p).
+   결제영수증만으로는 실제 투숙 여부를 알 수 없어 숙소가 발급한 확인서를 함께
+   받아야 정산이 성립한다. 숙박 선결제 인정도 숙박 건에만 적용되므로, 선결제
+   신고는 숙박비 결제 건으로 표시한 경우에만 유효하다. */
+const FT50_STAY_DOC_LABEL = '숙박확인서';
+/* 숙박 증빙 판정 — 통과하면 null, 아니면 {code, msg}
+   stay: 숙박비 결제 건인지, doc: 첨부한 숙박확인서 {name,size} (없으면 null) */
+function ft50EvStayCheck(stay, doc){
+  if(!stay) return null;
+  if(!doc || !doc.name) return {code:'nodoc',
+    msg:'❌ <b>' + FT50_STAY_DOC_LABEL + '가 첨부되지 않았습니다.</b> 숙박비를 결제한 건은 결제영수증과 ' +
+        FT50_STAY_DOC_LABEL + '를 함께 제출해야 합니다. 숙소에서 발급받은 ' + FT50_STAY_DOC_LABEL +
+        '(숙박증명서·투숙확인서 등 명칭이 달라도 됩니다)를 첨부해 주세요.'};
+  return null;
+}
+
 /* ── 숙박 선결제 인정 ────────────────────────────────────────
    숙박비는 예약할 때 미리 결제하는 것이 보통이라 16개 지자체가 모두 "숙박 선결제
    인정"을 공통 기준으로 두고 있다(반값여행 통합 플랫폼 1차 분석안 6p·16p).
@@ -130,7 +149,8 @@ function ft50EvDateCheck(a, date, prepay){
   if(date >= a.start) return null;
   if(!prepay) return {code:'before',
     msg:'❌ <b>여행 시작 전에 결제한 영수증입니다.</b> 결제일은 <b>' + date + '</b>이나, 이 신청 건의 여행 시작일은 <b>' +
-        a.start + '</b>입니다. 예약할 때 미리 결제한 <b>숙박비</b>라면 「숙박 선결제」에 체크한 뒤 다시 제출해 주세요. ' +
+        a.start + '</b>입니다. 예약할 때 미리 결제한 <b>숙박비</b>라면 「숙박비 결제 건」과 「숙박 선결제」에 체크하고 ' +
+        FT50_STAY_DOC_LABEL + '를 첨부한 뒤 다시 제출해 주세요. ' +
         '숙박 외 항목은 여행기간 중에 결제한 영수증만 환급 대상입니다.'};
   const d = ft50DayDiff(date, a.start);
   if(isNaN(d) || d > FT50_PREPAY_MAX_DAYS) return {code:'toofar',
