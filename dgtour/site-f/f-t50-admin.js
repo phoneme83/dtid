@@ -601,7 +601,8 @@ function t50aDetail(k,i){
     row('적용 기준',ft50GrantOf(a).label+' · 환급률 '+ft50GrantRate(a)+'%')+
     row('인정 소비액',(a.refundSpend||t50aSpend(a))?ft50Won(a.refundSpend||t50aSpend(a)):'-')+
     row('승인 지원 한도',typeof a.amount==='number'?ft50Won(a.amount):'-')+
-    row('환급 금액',a.refundAmount?ft50Won(a.refundAmount):'-');
+    row('환급 금액',a.refundAmount?ft50Won(a.refundAmount):'-')+
+    row('상품권 사용기한',ft50UseEnd().replace(/-/g,'.')+' ('+ft50UseEndInfo().msg.replace(/<[^>]+>/g,'')+')');
   if(a.evidence){
     h+='<div class="sec-t" style="margin:14px 0 6px">제출 증빙</div>'+
       row('카드번호',fEsc(a.evidence.card||'-'))+
@@ -668,7 +669,10 @@ function t50aGrantHtml(name,cfg){
         '지원 한도는 신청 유형(개인·팀·청년·청년팀·가족형)에 따라 정해지고, 환급액은 '+
         '<b>소비액 × 환급률</b>을 지원 한도로 자른 값입니다.</div>'+
       lock+rows+
-      (hq?'<button class="btn blk" style="margin-top:12px" onclick="t50aGrantSave()">💾 지원금액 · 환급률 저장</button>'+
+      '<label class="f-lb">상품권 사용기한 <span style="font-weight:500;color:var(--sub)">16곳 동일 · 기한이 지나면 잔액을 사용할 수 없습니다</span></label>'+
+      '<input class="f-in" type="date" id="t50aG_useEnd" value="'+ft50UseEnd()+'"'+ro+'>'+
+      '<div class="t50a-note" style="color:'+ft50UseEndColor(ft50UseEndInfo())+'">'+ft50UseEndInfo().msg+'</div>'+
+      (hq?'<button class="btn blk" style="margin-top:12px" onclick="t50aGrantSave()">💾 지원금액 · 환급률 · 사용기한 저장</button>'+
           '<button class="btn gy blk" style="margin-top:7px" onclick="t50aGrantReset()">통합 기준값으로 되돌리기</button>':'')+
     '</div>'+
     '<div class="t50a-card">'+
@@ -692,8 +696,11 @@ function t50aGrantSave(){
     c[f.k]=v;
   });
   if(bad){ toast(bad+' 값을 확인해 주세요'); return; }
+  const ue=document.getElementById('t50aG_useEnd').value;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(ue)){ toast('상품권 사용기한을 확인해 주세요'); return; }
+  c.useEnd=ue;
   ft50SaveGrantCfg(c); t50aRender();
-  toast('지원금액·환급률을 저장했습니다');
+  toast('지원금액·환급률·사용기한을 저장했습니다');
 }
 function t50aGrantReset(){
   if(!ft50IsHQ()){ toast('공사 총괄 관리자만 변경할 수 있습니다'); return; }

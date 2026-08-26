@@ -142,6 +142,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#334
 </div>
 
 <script src="../site-assets/data.js?v=20260818a"></script>
+<script src="t50-config.js?v=9"></script>
 <script>/* site-b 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidB_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script>
@@ -180,11 +181,18 @@ const MERCHANTS=[
   {ic:'🏬',nm:'서울 백화점',amt:52000,inArea:false},
   {ic:'🛒',nm:'인접지역 마트',amt:12000,inArea:false}
 ];
-/* 결제 가능 여부 — 관외 가맹점이면 사유를 돌려준다 */
+/* 결제 가능 여부 — 사용기한이 지났거나 관외 가맹점이면 사유를 돌려준다 */
 function payUseBlock(m,bal){
+  if(t50UseExpired())return '사용기한('+t50UseEnd().replace(/-/g,'.')+')이 지나 사용할 수 없습니다';
   if(!m.inArea)return '관외 가맹점 — '+T50_USE_SCOPE_LABEL+'에서만 사용할 수 있습니다';
   if(bal<m.amt)return '잔액이 부족합니다';
   return null;
+}
+/* 사용기한 카운트다운 한 줄 — 템플릿 구성(17p) "사용기한 카운트 다운 표시" */
+function payUseEndLine(){
+  const info=t50UseEndInfo();
+  if(!info.msg)return '';
+  return '<div class="note" style="color:'+t50UseEndColor(info)+'">'+info.msg+'</div>';
 }
 function payMerchantBtns(bal,onclickFor){
   return MERCHANTS.map(function(m,mi){
@@ -263,7 +271,9 @@ function payRender(){
     if(!w.recovered){
       if(!w.purchased){
         bd='<div class="note">🎫 지자체 승인에 따라 <b>CI·승인 금액('+pWon(amt)+')</b> 기준 개인 상품권이 발행되었습니다. 자부담 '+pWon(amt)+'을 더해 <b>'+pWon(amt*2)+'</b>어치를 반값에 구입하세요.</div>'+
-          '<button class="buy" onclick="payBuy('+i+')">상품권 반값 구입 · 충전하기<small>자부담 '+pWon(amt)+' 결제 → '+pWon(amt*2)+' 충전 (지원금 '+pWon(amt)+')</small></button>';
+          (t50UseExpired()
+            ? '<div class="note warn">사용기한('+t50UseEnd().replace(/-/g,'.')+')이 지나 상품권을 구입할 수 없습니다.</div>'
+            : '<button class="buy" onclick="payBuy('+i+')">상품권 반값 구입 · 충전하기<small>자부담 '+pWon(amt)+' 결제 → '+pWon(amt*2)+' 충전 (지원금 '+pWon(amt)+')</small></button>');
       }else{
         bd='<div class="use-t">'+T50_USE_SCOPE_LABEL+'에서 사용하기 (결재내역에 기록됩니다)</div>'+
           '<div class="note">🏪 환급금은 <b>'+a.region+' '+T50_USE_SCOPE_LABEL+'</b>에서만 사용할 수 있습니다. 관외 가맹점은 결제가 승인되지 않습니다.</div>'+
@@ -278,6 +288,7 @@ function payRender(){
         bd+='<div class="note" style="margin-top:10px">🧾 환급 심사가 진행 중입니다. 승인되면 이곳에서 충전받을 수 있습니다.</div>';
       if(w.purchased||w.refundCharged)
         bd+='<button class="recover" onclick="payRecover('+i+')">지원 기간 종료 · 잔액 회수 (시뮬레이션)</button>';
+      bd+=payUseEndLine();
     }else{
       bd='<div class="note warn">지원 기간이 종료되어 잔여 상품권이 회수되었습니다. 이용해 주셔서 감사합니다.</div>'+
         (w.surveyed?'<div class="note">📋 설문조사 참여 완료 (만족도 '+'⭐'.repeat(w.surveyScore||0)+')</div>'
@@ -295,6 +306,7 @@ function payRender(){
 }
 
 function payBuy(i){
+  if(t50UseExpired()){pToast('사용기한('+t50UseEnd().replace(/-/g,'.')+')이 지나 구입할 수 없습니다');return;}
   const l=pLoad();const a=l[i];if(!a)return;
   const w=pWallet(a),amt=a.amount||0;
   w.purchased=true;w.bal+=amt*2;
@@ -392,7 +404,7 @@ function renderCv(){
       '<div class="meta">관광주민증 포인트 1:1 전환 지역화폐</div></div>'+
       '<div class="bd"><div class="use-t">'+T50_USE_SCOPE_LABEL+'에서 사용하기</div><div class="use-row">'+
       payMerchantBtns(c.bal,function(mi){return 'cvUse(\''+nm+'\','+mi+')';})+
-      '</div>'+tx+'</div></div>';
+      '</div>'+payUseEndLine()+tx+'</div></div>';
   }).join('');
 }
 

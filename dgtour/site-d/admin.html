@@ -214,7 +214,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
 </div>
 
 <script src="../site-assets/data.js?v=20260818a"></script>
-<script src="t50-config.js?v=8"></script>
+<script src="t50-config.js?v=9"></script>
 <script src="t50-corp.js?v=1"></script>
 <script>/* site-d 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidD_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
@@ -733,7 +733,8 @@ function admDetail(k,i){
     row('적용 기준',t50GrantOf(a).label+' · 환급률 '+t50GrantRate(a)+'%')+
     row('승인 지원 한도',won(a.amount))+
     row('인정 소비액',won(a.refundSpend||admSpend(a)))+
-    row('환급 금액',won(a.refundAmount));
+    row('환급 금액',won(a.refundAmount))+
+    row('상품권 사용기한',t50UseEnd().replace(/-/g,'.')+' ('+t50UseEndInfo().msg.replace(/<[^>]+>/g,'')+')');
   if(a.history&&a.history.length){
     h+='<div class="dsec">처리 이력</div>'+a.history.map(function(hi){
       return row((ADM_ST[hi.st]||hi.st),hi.ts.slice(0,16).replace('T',' ')+(hi.by?' · '+hi.by:'')+(hi.note?' · '+hi.note:''));
@@ -817,7 +818,11 @@ function bizGrantHtml(name,cfg){
       '<b>소비액 × 환급률</b>을 지원 한도로 자른 값입니다.</div>'+
     lock+
     '<div class="biz-row">'+rows+'</div>'+
-    (hq?'<button class="biz-save" onclick="bizGrantSave()">💾 지원금액 · 환급률 저장</button>'+
+    '<label>상품권 사용기한 <small>16곳 동일 · 기한이 지나면 잔액을 사용할 수 없습니다</small></label>'+
+    '<input type="date" id="bzG_useEnd" value="'+t50UseEnd()+'"'+ro+'>'+
+    '<div class="empty" style="text-align:left;padding:8px 12px;margin:6px 0;color:'+t50UseEndColor(t50UseEndInfo())+'">'+
+      t50UseEndInfo().msg+'</div>'+
+    (hq?'<button class="biz-save" onclick="bizGrantSave()">💾 지원금액 · 환급률 · 사용기한 저장</button>'+
         '<button class="csv-btn" style="margin-top:10px" onclick="bizGrantReset()">통합 기준값으로 되돌리기</button>':'')+
     '<div style="margin-top:26px;font-size:14px;font-weight:800;color:#0f172a">'+name+' 예산 총액 '+
       '<small style="font-weight:600;color:#64748b;font-size:12.5px">마감 기준 「예산 소진」 판정용</small></div>'+
@@ -841,8 +846,11 @@ function bizGrantSave(){
     c[f.k]=v;
   });
   if(bad){admToast(bad+' 값을 확인해 주세요');return;}
+  const ue=document.getElementById('bzG_useEnd').value;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(ue)){admToast('상품권 사용기한을 확인해 주세요');return;}
+  c.useEnd=ue;
   t50SaveGrantCfg(c);bizRender();admRender();
-  admToast('지원금액·환급률을 저장했습니다');
+  admToast('지원금액·환급률·사용기한을 저장했습니다');
 }
 function bizGrantReset(){
   if(!admIsHQ()){admToast('공사 총괄 관리자만 변경할 수 있습니다');return;}

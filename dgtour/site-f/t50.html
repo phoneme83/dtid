@@ -72,7 +72,7 @@
 
 <script src="../site-assets/data.js?v=20260818a"></script>
 <script src="f.js?v=2"></script>
-<script src="f-t50.js?v=7"></script>
+<script src="f-t50.js?v=8"></script>
 <script src="f-t50-evidence.js?v=4"></script>
 <script src="f-t50-corp.js?v=1"></script>
 <script>
@@ -899,7 +899,8 @@ function renderRefund(){
       : '')+
     (a.status==='refund_ok'
       ? '<div style="font-size:11.5px;color:var(--ok);font-weight:700;line-height:1.7;margin-top:11px">💰 환급 '+fmt(a.refundAmount||0)+'원이 지역사랑상품권으로 지급되었습니다.'+
-          '<br><span style="color:var(--sub);font-weight:500">🏪 사용처는 <b>'+fEsc(a.region)+' '+FT50_USE_SCOPE_LABEL+'</b>입니다. 관외 가맹점에서는 결제가 승인되지 않습니다.</span></div>'
+          '<br><span style="color:var(--sub);font-weight:500">🏪 사용처는 <b>'+fEsc(a.region)+' '+FT50_USE_SCOPE_LABEL+'</b>입니다. 관외 가맹점에서는 결제가 승인되지 않습니다.</span>'+
+          '<br><span style="color:'+ft50UseEndColor(ft50UseEndInfo())+';font-weight:500">'+ft50UseEndInfo().msg+' 기한이 지나면 잔액은 회수됩니다.</span></div>'
       : '')+
     '<div style="font-size:11px;color:var(--sub);margin-top:9px;line-height:1.7">'+
       'AI OCR이 영수증의 관광목적 지출 여부를 1차 자동 판독하고, <b>최종 승인은 관리자 페이지에서 지자체 담당자가</b> 수행합니다.</div>';

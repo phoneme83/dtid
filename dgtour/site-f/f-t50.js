@@ -20,7 +20,7 @@ const FT50_ID_PREFIX  = 'dtidF_t50Identity_';   /* 본인인증(PASS·행정정�
    환급액은 "소비액 × 환급률"을 지원 한도로 자른 값이다. */
 const FT50_GRANT_KEY = 'dtidF_t50GrantCfg';
 const FT50_GRANT_DEFAULT = {solo:100000, team:200000, youthSolo:140000, youthTeam:280000,
-                            family:500000, rate:50, youthRate:50};
+                            family:500000, rate:50, youthRate:50, useEnd:'2026-12-31'};
 const FT50_GRANT_FIELDS = [
   {k:'solo',      lb:'개인 1인',       un:'원'},
   {k:'team',      lb:'팀 2인 이상',     un:'원'},
@@ -57,6 +57,36 @@ function ft50GrantRate(a){ const g=ft50GrantCfg(); return a.youth?g.youthRate:g.
 function ft50RefundOf(a, spend){
   return Math.min(Math.floor((Number(spend)||0)*ft50GrantRate(a)/100), ft50GrantCap(a));
 }
+/* ── 상품권 사용기한 ─────────────────────────────────────────
+   16곳 모두 2026.12.31.로 이미 같은 항목이라(1차 분석안 6p) 통합 적용값도 그대로
+   쓴다(16p). 해가 바뀌면 날짜만 바뀌는 값이라 설정값으로 빼되, 16곳 공통 항목이라
+   지자체가 아니라 공사 총괄 관리자가 관리한다.
+   기한이 지나면 잔액을 쓸 수 없고 회수 대상이 된다. 사용자 화면에는 템플릿
+   구성(17p)의 "사용기한 카운트 다운"으로 남은 일수를 보여준다. */
+function ft50UseEnd(){ return ft50GrantCfg().useEnd||FT50_GRANT_DEFAULT.useEnd; }
+function ft50UseDaysLeft(today){
+  return ft50DayDiff(today||ft50Today(), ft50UseEnd());
+}
+function ft50UseExpired(today){
+  const d=ft50UseDaysLeft(today);
+  return !isNaN(d)&&d<0;
+}
+/* 사용기한 안내 — 남은 일수에 따라 단계를 나눠 문구·색을 다르게 준다 */
+function ft50UseEndInfo(today){
+  const d=ft50UseDaysLeft(today), e=ft50UseEnd().replace(/-/g,'.');
+  if(isNaN(d)) return {state:'none', days:NaN, date:e, msg:''};
+  if(d<0)   return {state:'expired', days:d, date:e, msg:'⛔ 사용기한 만료 ('+e+') — 잔액을 사용할 수 없습니다'};
+  if(d===0) return {state:'today',   days:d, date:e, msg:'⏰ 오늘이 사용기한 마지막 날입니다 ('+e+')'};
+  if(d<=30) return {state:'soon',    days:d, date:e, msg:'⏰ 사용기한 '+e+' — <b>'+d+'일</b> 남았습니다'};
+  return      {state:'ok',      days:d, date:e, msg:'🗓 사용기한 '+e+' — '+d+'일 남음'};
+}
+function ft50UseEndColor(info){
+  if(!info) return 'var(--sub)';
+  if(info.state==='expired') return '#b91c1c';
+  if(info.state==='today'||info.state==='soon') return '#b45309';
+  return 'var(--sub)';
+}
+
 /* 지자체 예산 총액 집행분 — "마감 기준 = 예산 소진" 판정용. 0이면 미설정 */
 function ft50BudgetUsed(region){
   return ft50All().filter(function(x){ return x.a.region===region&&x.a.status==='refund_ok'; })
