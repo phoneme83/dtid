@@ -90,6 +90,47 @@ function t50UsedCount(region){
     .reduce((s,x)=>s+t50PeopleNum(x.a),0);
 }
 
+/* ── 숙박 선결제 인정 ────────────────────────────────────────
+   숙박비는 예약할 때 미리 결제하는 것이 보통이라 16개 지자체가 모두 "숙박 선결제
+   인정"을 공통 기준으로 두고 있다(반값여행 통합 플랫폼 1차 분석안 6p·16p).
+   그런데 결제일을 여행기간과만 대조하면 여행 전에 결제한 숙박비가 전부 반려된다.
+   그래서 신청자가 "숙박 선결제"로 신고한 건은 여행 시작 전 결제도 인정하되,
+   여행과 무관한 오래된 결제까지 들어오지 않도록 인정 기간을 둔다.
+   ※ 인정 기간은 통합 플랫폼에서 지자체 설정값으로 빼야 할 항목이다. 여기서는
+     16곳 공통 기준만 두고, 담당자가 심사에서 숙박 여부를 최종 확인한다. */
+const T50_PREPAY_MAX_DAYS=180;
+/* 'YYYY-MM-DD' 두 날짜의 일수 차 (to - from). 파싱 실패 시 NaN */
+function t50DayDiff(from,to){
+  const a=Date.parse(from+'T00:00:00'),b=Date.parse(to+'T00:00:00');
+  return (isNaN(a)||isNaN(b))?NaN:Math.round((b-a)/86400000);
+}
+/* 결제일 판정 — 통과하면 null, 아니면 {code, msg}
+   after  : 여행 종료 후 결제        before : 여행 시작 전 결제인데 선결제 미신고
+   toofar : 선결제 신고했으나 인정 기간(T50_PREPAY_MAX_DAYS)을 넘김 */
+function t50EvDateCheck(a,date,prepay){
+  if(!date)return {code:'empty',msg:'결제일(영수증의 승인·결제 날짜)을 입력해 주세요'};
+  if(date>a.end)return {code:'after',
+    msg:'❌ <b>결제일이 여행기간 밖입니다.</b> 결제일은 <b>'+date+'</b>이나, 이 신청 건의 여행기간은 <b>'+
+        a.start+' ~ '+a.end+'</b>입니다. 여행이 끝난 뒤 결제한 영수증은 환급 대상이 아닙니다.'};
+  if(date>=a.start)return null;
+  if(!prepay)return {code:'before',
+    msg:'❌ <b>여행 시작 전에 결제한 영수증입니다.</b> 결제일은 <b>'+date+'</b>이나, 이 신청 건의 여행 시작일은 <b>'+
+        a.start+'</b>입니다. 예약할 때 미리 결제한 <b>숙박비</b>라면 「숙박 선결제」에 체크한 뒤 다시 제출해 주세요. '+
+        '숙박 외 항목은 여행기간 중에 결제한 영수증만 환급 대상입니다.'};
+  const d=t50DayDiff(date,a.start);
+  if(isNaN(d)||d>T50_PREPAY_MAX_DAYS)return {code:'toofar',
+    msg:'❌ <b>숙박 선결제 인정 기간을 벗어났습니다.</b> 결제일 <b>'+date+'</b>은 여행 시작일('+a.start+') 기준 '+
+        (isNaN(d)?'확인 불가':d+'일 전')+'으로, 인정 기간 '+T50_PREPAY_MAX_DAYS+'일을 넘습니다.'};
+  return null;
+}
+/* 판독 결과 화면에 붙이는 결제일 표시 문구 */
+function t50EvDateBadge(a,date,prepay){
+  const r=t50EvDateCheck(a,date,prepay);
+  if(!r)return (date<a.start)?' ✅ 숙박 선결제 인정':' ✅ 여행기간 내';
+  if(r.code==='before')return ' ⚠️ 여행 시작 전 결제 — 숙박 선결제 확인 필요';
+  return ' ⚠️ 여행기간 밖';
+}
+
 /* ── 증빙 중복 제출 차단 ─────────────────────────────────────
    같은 영수증을 다시 제출하는 것이 가장 흔한 부정수급 유형이다.
    ① 승인번호가 같은 건, 또는 ② 카드 앞자리·결재금액·결제일이 모두 같은 건이

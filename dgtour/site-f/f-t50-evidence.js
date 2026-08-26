@@ -21,9 +21,6 @@ function ft50EvSource(a){
   const p=(a&&a.payments&&a.payments.length)?a.payments[a.payments.length-1]:null;
   return p?{merchant:p.merchant,amt:p.amt}:{merchant:'🏨 바다뷰 펜션',amt:45000};
 }
-/* 결제일이 신청 건의 여행기간(start~end) 안인지 */
-function ft50EvInPeriod(a,d){ return !!d&&d>=a.start&&d<=a.end; }
-
 /* 숫자 정규화: 천단위 구분자를 쉼표로 읽든 마침표로 읽든 붙여준다 (122,900 / 122.900 → 122900) */
 function ft50EvNorm(s){
   let t=s;
@@ -391,11 +388,11 @@ function ft50EvVerify(o,a,input){
     if(fails.length)
       return '❌ <b>정보가 잘못 입력되었습니다.</b> 영수증(OCR) 판독 결과와 다음 항목이 일치하지 않습니다: <b>'+
         fails.join(', ')+'</b>. 영수증의 표기와 동일하게 입력해 주세요.';
-    /* 결제일-여행기간 대조: 영수증 판독일(검출 시) 기준, 미검출 시 입력값 기준 */
+    /* 결제일-여행기간 대조: 영수증 판독일(검출 시) 기준, 미검출 시 입력값 기준.
+       숙박 선결제로 신고한 건은 여행 시작 전 결제도 인정한다(16곳 공통 기준) */
     const effDate=ex.date||payDate;
-    if(!ft50EvInPeriod(a,effDate))
-      return '❌ <b>결제일이 여행기간 밖입니다.</b> 영수증의 결제일은 <b>'+effDate+'</b>이나, 이 신청 건의 여행기간은 <b>'+
-        a.start+' ~ '+a.end+'</b>입니다. 여행기간 중에 결제한 영수증만 환급 대상입니다.';
+    const dchk=ft50EvDateCheck(a,effDate,!!input.prepay);
+    if(dchk) return dchk.msg;
     /* 결제지역 대조 — 시군구를 읽어냈는데 신청 지자체와 다르면 반려한다 */
     if(ft50EvRegionMatch(ex.region,a.region)==='mismatch')
       return '❌ <b>결제지역이 신청 지자체와 다릅니다.</b> 영수증의 결제지역은 <b>'+ft50EvRegionText(ex.region)+
@@ -404,8 +401,7 @@ function ft50EvVerify(o,a,input){
   }
   if(appr!==o.appr||amt!==o.amt||(o.card&&!ft50EvCardMatch(card,o.card))||(o.date&&o.date!==payDate))
     return '❌ <b>정보가 잘못 입력되었습니다.</b> 영수증 판독 결과와 카드번호·승인번호·결재금액·결제일 중 일치하지 않는 항목이 있습니다. 다시 확인해 주세요.';
-  if(!ft50EvInPeriod(a,payDate))
-    return '❌ <b>결제일이 여행기간 밖입니다.</b> 결제일은 <b>'+payDate+'</b>이나, 이 신청 건의 여행기간은 <b>'+
-      a.start+' ~ '+a.end+'</b>입니다. 여행기간 중에 결제한 영수증만 환급 대상입니다.';
+  const dchk=ft50EvDateCheck(a,payDate,!!input.prepay);
+  if(dchk) return dchk.msg;
   return null;
 }

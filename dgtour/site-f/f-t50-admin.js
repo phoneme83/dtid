@@ -228,7 +228,7 @@ function t50aCard(x){
     (a.evidence?'<div class="t50a-plan">🧾 제출 증빙 — 카드번호 '+fEsc(a.evidence.card||'-')+' · 승인번호 '+fEsc(a.evidence.appr||'-')+
       ' · 결재금액 '+ft50Won(a.evidence.amt)+(a.evidence.date?' · 결제일 '+fEsc(a.evidence.date):'')+' · 첨부 '+fEsc(a.evidence.file||'-')+
       '<br><b style="color:var(--ok)">✓ '+fEsc(a.evidence.ocr||'판독 결과와 대조 일치')+
-      (a.evidence.date?' · 결제일 여행기간('+a.start+'~'+a.end+') 내 확인':'')+'</b>'+
+      (a.evidence.date?(a.evidence.date<a.start?' · 숙박 선결제 — 여행 시작 전 결제 인정 건':' · 결제일 여행기간('+a.start+'~'+a.end+') 내 확인'):'')+'</b>'+
       t50aCorpLine(a)+'</div>':'')+
     '<div class="t50a-acts">'+acts+'</div>'+
     (log?'<div class="t50a-log">'+log+'</div>':'')+
@@ -585,7 +585,8 @@ function t50aDetail(k,i){
       row('카드번호',fEsc(a.evidence.card||'-'))+
       row('승인번호',fEsc(a.evidence.appr||'-'))+
       row('결재금액',ft50Won(a.evidence.amt))+
-      (a.evidence.date?row('결제일',fEsc(a.evidence.date)+' (여행기간 '+a.start+'~'+a.end+' 내 ✓)'):'')+
+      (a.evidence.date?row('결제일',fEsc(a.evidence.date)+(a.evidence.date<a.start?' (숙박 선결제 — 여행 시작 전 결제 인정 ✓)':' (여행기간 '+a.start+'~'+a.end+' 내 ✓)')):'')+
+      (a.evidence.prepay?row('숙박 선결제','신청자 신고 — 숙박비 여부를 증빙 원본으로 확인해 주세요'):'')+
       row('첨부파일',fEsc(a.evidence.file||'-'))+
       row('OCR 대조','✓ '+fEsc(a.evidence.ocr||'판독 결과와 대조 일치'));
     const _c=t50aCorp(a);
