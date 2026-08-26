@@ -214,7 +214,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
 </div>
 
 <script src="../site-assets/data.js?v=20260818a"></script>
-<script src="t50-config.js?v=9"></script>
+<script src="t50-config.js?v=11"></script>
 <script src="t50-corp.js?v=1"></script>
 <script>/* site-c 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidC_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
@@ -756,6 +756,12 @@ function admDetail(k,i){
         :row('숙박 증빙','숙박비 결제 건 아님 — '+T50_STAY_DOC_LABEL+' 해당 없음'))+
       (a.evidence.prepay?row('숙박 선결제','신청자 신고 — 여행 시작 전 결제. 숙박비가 맞는지 '+T50_STAY_DOC_LABEL+'로 확인해 주세요'):'')+
       row('첨부파일',a.evidence.file)+
+      (a.evidence.payMethod?row('결제수단',a.evidence.payMethod+' (지자체 설정값)'):'')+
+      (a.evidence.subDocs?Object.keys(a.evidence.subDocs).map(function(kd){
+          const lb={card:'카드영수증',cash:'현금영수증'}[kd]||kd;
+          return row(lb,a.evidence.subDocs[kd].name+' ('+t50DocSize(a.evidence.subDocs[kd].size)+')');
+        }).join(''):'')+
+      row('정산 신청 기한',t50SettleDue(a)+' (여행 종료 후 '+t50CfgText(a.region,'settleDeadline')+')')+
       row('OCR 대조','✓ 영수증 판독 결과와 일치 (공사 대민시스템 검증)');
     const _c=admCorp(a);
     if(_c)h+=row('법인카드 확인','<b style="color:'+t50CorpColor(_c)+'">'+t50CorpIcon(_c)+' '+_c.label+'</b>')+
@@ -793,6 +799,83 @@ function bizRegionOpts(){
   const names=bizRegionList();
   sel.innerHTML=names.map(n=>'<option value="'+n+'"'+(n===cur?' selected':'')+'>'+n+'</option>').join('');
   if(names.indexOf(cur)<0)sel.value=names[0]||'';
+}
+/* ── 지자체 설정값 (54개 항목 스키마) ────────────────────────
+   t50-config.js 의 T50_CFG_SCHEMA 정의를 읽어 그린다. 항목을 화면에 하드코딩하지
+   않으므로 스키마에 항목을 추가하면 관리자 화면과 신청 화면에 함께 반영된다.
+   성격(고정·통합·옵션)에 따라 입력 가능 여부가 갈리고, 통합 항목은 공사 총괄
+   관리자만 바꿀 수 있다. */
+function bizSchemaCtl(region,it,eid){
+  const v=t50CfgVal(region,it.k);
+  const dis=t50CfgEditable(it)?'':' disabled';
+  if(it.scope==='fixed')
+    return '<b style="font-size:12.5px;color:#0f172a">'+t50CfgText(region,it.k)+'</b>';
+  if(it.type==='toggle')
+    return '<label style="display:flex;align-items:center;gap:6px;min-height:44px;font-size:12.5px;font-weight:700;cursor:pointer">'+
+      '<input type="checkbox" id="'+eid+'"'+(v?' checked':'')+dis+' style="width:18px;height:18px"> '+
+      (v?it.on:it.off)+'</label>';
+  if(it.type==='number')
+    return '<input type="number" min="0" id="'+eid+'" value="'+(Number(v)||0)+'"'+dis+'>';
+  return '<select id="'+eid+'"'+dis+'>'+
+    it.opts.map(function(o){
+      return '<option value="'+o+'"'+(String(o)===String(v)?' selected':'')+'>'+o+(it.un||'')+'</option>';
+    }).join('')+'</select>';
+}
+function bizSchemaHtml(region){
+  const hq=admIsHQ();
+  const lock=hq?''
+    :'<div class="empty" style="text-align:left;padding:10px 12px;margin:8px 0">🔒 '+
+     '<b>통합</b> 항목은 16개 지자체 공통값이라 지자체 담당자 화면에서는 변경할 수 없습니다. '+
+     '<b>옵션</b> 항목만 지자체가 선택하며, <b>고정</b> 항목은 누구도 변경할 수 없습니다.</div>';
+  const groups=T50_CFG_SCHEMA.map(function(g,gi){
+    const rows=g.items.map(function(it,ii){
+      const eid='bzS_'+it.k;
+      const badge='<span style="flex:0 0 auto;font-size:11px;font-weight:800;color:'+T50_CFG_SCOPE_COLOR[it.scope]+'">'+
+        T50_CFG_SCOPE_LABEL[it.scope]+'</span>';
+      return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed #e2e8f0;flex-wrap:wrap">'+
+          badge+
+          '<span style="flex:0 0 148px;font-size:12.5px;font-weight:700;color:#0f172a">'+it.lb+'</span>'+
+          '<span style="flex:1 1 180px;min-width:0">'+bizSchemaCtl(region,it,eid)+'</span>'+
+        '</div>'+
+        '<div style="font-size:11.5px;color:#94a3b8;line-height:1.6;margin:-2px 0 4px 34px">'+it.note+'</div>';
+    }).join('');
+    return '<div style="margin-top:18px;font-size:13px;font-weight:800;color:#0f172a">'+g.group+'</div>'+rows+
+      '<button class="biz-save" onclick="bizSchemaSave('+gi+')">💾 '+g.group+' 저장</button>';
+  }).join('');
+  return '<div style="margin-top:26px;font-size:14px;font-weight:800;color:#0f172a">지자체 설정값 '+
+      '<small style="font-weight:600;color:#64748b;font-size:12.5px">54개 항목 · '+
+      '<span style="color:'+T50_CFG_SCOPE_COLOR.fixed+'">고정</span>은 변경 불가 / '+
+      '<span style="color:'+T50_CFG_SCOPE_COLOR.unified+'">통합</span>은 공사 전용 / '+
+      '<span style="color:'+T50_CFG_SCOPE_COLOR.option+'">옵션</span>은 지자체 선택</small></div>'+
+    '<div style="font-size:12.5px;color:#64748b;line-height:1.7;margin:4px 0 8px">'+
+      '여기서 바꾼 값은 해당 지자체의 신청·정산 화면에 그대로 반영됩니다. 지역별 개별 화면을 '+
+      '따로 만들지 않고 설정값으로만 차이를 흡수하는 것이 A안의 전제입니다.</div>'+
+    lock+groups+
+    (hq?'<button class="csv-btn" style="margin-top:12px" onclick="bizSchemaReset()">통합 항목을 기준값으로 되돌리기</button>':'');
+}
+function bizSchemaSave(gi){
+  const g=T50_CFG_SCHEMA[gi];
+  if(!g)return;
+  const region=document.getElementById('bizRegion').value;
+  let saved=0,blocked=0;
+  g.items.forEach(function(it){
+    if(!t50CfgEditable(it)){ if(it.scope==='unified')blocked++; return; }
+    const el=document.getElementById('bzS_'+it.k);
+    if(!el)return;
+    let v;
+    if(it.type==='toggle')v=!!el.checked;
+    else if(it.type==='number'){v=Math.floor(Number(el.value));if(!(v>=0))return;}
+    else v=el.value;
+    if(it.scope==='unified')t50SetUnified(it.k,v); else t50SetOption(region,it.k,v);
+    saved++;
+  });
+  bizRender();admRender();
+  admToast(g.group+' '+saved+'개 항목을 저장했습니다'+(blocked?' (통합 '+blocked+'개는 공사 전용)':''));
+}
+function bizSchemaReset(){
+  if(!admIsHQ()){admToast('공사 총괄 관리자만 변경할 수 있습니다');return;}
+  t50ResetUnifiedCfg();bizRender();admRender();
+  admToast('통합 항목을 기준값으로 되돌렸습니다');
 }
 /* ── 예산 설정 (공사 총괄 관리자 전용) ───────────────────────
    지원금액·환급률은 54개 항목표에서 전부 "통합"으로 분류된 항목이고, 지자체 예산
@@ -893,6 +976,7 @@ function bizRender(){
     '</div>'+
     '<button class="biz-save" onclick="bizSave()">💾 사업설정 저장</button>'+
     bizGrantHtml(name,cfg)+
+    bizSchemaHtml(name)+
     '<div style="margin-top:22px;font-size:14px;font-weight:800;color:#0f172a">카드 BIN 판정표 <small style="font-weight:600;color:#64748b;font-size:12.5px">카드번호로 법인카드 여부 예측</small></div>'+
     '<div style="font-size:12.5px;color:#64748b;line-height:1.7;margin:4px 0 8px">'+
       '영수증은 카드번호를 마스킹해도 앞자리는 노출되므로(1234-56** 등), <b>앞 6~8자리</b>로 카드 상품을 식별해 '+

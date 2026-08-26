@@ -620,6 +620,12 @@ function t50aDetail(k,i){
         :row('숙박 증빙','숙박비 결제 건 아님 — '+FT50_STAY_DOC_LABEL+' 해당 없음'))+
       (a.evidence.prepay?row('숙박 선결제','신청자 신고 — 여행 시작 전 결제. 숙박비가 맞는지 '+FT50_STAY_DOC_LABEL+'로 확인해 주세요'):'')+
       row('첨부파일',fEsc(a.evidence.file||'-'))+
+      (a.evidence.payMethod?row('결제수단',fEsc(a.evidence.payMethod)+' (지자체 설정값)'):'')+
+      (a.evidence.subDocs?Object.keys(a.evidence.subDocs).map(function(kd){
+          const lb={card:'카드영수증',cash:'현금영수증'}[kd]||kd;
+          return row(lb,fEsc(a.evidence.subDocs[kd].name)+' ('+ft50DocSize(a.evidence.subDocs[kd].size)+')');
+        }).join(''):'')+
+      row('정산 신청 기한',ft50SettleDue(a)+' (여행 종료 후 '+ft50CfgText(a.region,'settleDeadline')+')')+
       row('OCR 대조','✓ '+fEsc(a.evidence.ocr||'판독 결과와 대조 일치'));
     const _c=t50aCorp(a);
     if(_c) h+=row('법인카드 확인','<span class="badge '+ft50CorpBadgeCls(_c)+'">'+ft50CorpIcon(_c)+' '+ _c.label+'</span>')+
@@ -648,6 +654,78 @@ function t50aBizNames(){
   return scope?[scope]:ft50Regions().map(r=>r.name);
 }
 function t50aSetBizRegion(v){ t50aBizRegion=v; t50aRenderBiz(); }
+/* ── 지자체 설정값 (54개 항목 스키마) ────────────────────────
+   f-t50.js 의 FT50_CFG_SCHEMA 정의를 읽어 그린다. 항목을 화면에 하드코딩하지 않으므로
+   스키마에 항목을 추가하면 관리자 화면과 신청 화면에 함께 반영된다.
+   성격(고정·통합·옵션)에 따라 입력 가능 여부가 갈리고, 통합 항목은 공사 총괄
+   관리자만 바꿀 수 있다. */
+function t50aSchemaCtl(region,it,eid){
+  const v=ft50CfgVal(region,it.k);
+  const dis=ft50CfgEditable(it)?'':' disabled';
+  if(it.scope==='fixed')
+    return '<b style="font-size:12px;color:var(--ink2)">'+fEsc(ft50CfgText(region,it.k))+'</b>';
+  if(it.type==='toggle')
+    return '<label style="display:flex;align-items:center;gap:6px;min-height:44px;font-size:12px;font-weight:700;cursor:pointer">'+
+      '<input type="checkbox" id="'+eid+'"'+(v?' checked':'')+dis+' style="width:18px;height:18px"> '+
+      fEsc(v?it.on:it.off)+'</label>';
+  if(it.type==='number')
+    return '<input class="f-in" style="margin:0" type="number" min="0" id="'+eid+'" value="'+(Number(v)||0)+'"'+dis+'>';
+  return '<select class="f-in" style="margin:0" id="'+eid+'"'+dis+'>'+
+    it.opts.map(function(o){
+      return '<option value="'+fEsc(String(o))+'"'+(String(o)===String(v)?' selected':'')+'>'+fEsc(String(o)+(it.un||''))+'</option>';
+    }).join('')+'</select>';
+}
+function t50aSchemaHtml(region){
+  const hq=ft50IsHQ();
+  const lock=hq?''
+    :'<div class="t50a-note">🔒 <b>통합</b> 항목은 16개 지자체 공통값이라 지자체 담당자 화면에서는 변경할 수 없습니다. '+
+     '<b>옵션</b> 항목만 지자체가 선택하며, <b>고정</b> 항목은 누구도 변경할 수 없습니다.</div>';
+  return FT50_CFG_SCHEMA.map(function(g,gi){
+    const rows=g.items.map(function(it){
+      const eid='t50aS_'+it.k;
+      return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap">'+
+          '<span style="flex:0 0 auto;font-size:10.5px;font-weight:800;color:'+FT50_CFG_SCOPE_COLOR[it.scope]+'">'+
+            FT50_CFG_SCOPE_LABEL[it.scope]+'</span>'+
+          '<span style="flex:0 0 128px;font-size:12px;font-weight:700;color:var(--ink2)">'+fEsc(it.lb)+'</span>'+
+          '<span style="flex:1 1 160px;min-width:0">'+t50aSchemaCtl(region,it,eid)+'</span>'+
+        '</div>'+
+        '<div style="font-size:11px;color:var(--sub2);line-height:1.6;margin:-2px 0 4px 30px">'+fEsc(it.note)+'</div>';
+    }).join('');
+    return '<div class="t50a-card">'+
+      '<div class="sec-t">'+fEsc(g.group)+'</div>'+
+      (gi===0?'<div style="font-size:11.5px;color:var(--sub);line-height:1.7;margin:4px 0 8px">'+
+        '여기서 바꾼 값은 해당 지자체의 신청·정산 화면에 그대로 반영됩니다. 지역별 개별 화면을 따로 만들지 않고 '+
+        '설정값으로만 차이를 흡수하는 것이 A안의 전제입니다.</div>'+lock:'')+
+      rows+
+      '<button class="btn blk" style="margin-top:10px" onclick="t50aSchemaSave('+gi+')">💾 '+fEsc(g.group)+' 저장</button>'+
+      (gi===FT50_CFG_SCHEMA.length-1&&hq
+        ?'<button class="btn gy blk" style="margin-top:7px" onclick="t50aSchemaReset()">통합 항목을 기준값으로 되돌리기</button>':'')+
+    '</div>';
+  }).join('');
+}
+function t50aSchemaSave(gi){
+  const g=FT50_CFG_SCHEMA[gi];
+  if(!g) return;
+  let saved=0, blocked=0;
+  g.items.forEach(function(it){
+    if(!ft50CfgEditable(it)){ if(it.scope==='unified') blocked++; return; }
+    const el=document.getElementById('t50aS_'+it.k);
+    if(!el) return;
+    let v;
+    if(it.type==='toggle') v=!!el.checked;
+    else if(it.type==='number'){ v=Math.floor(Number(el.value)); if(!(v>=0)) return; }
+    else v=el.value;
+    if(it.scope==='unified') ft50SetUnified(it.k,v); else ft50SetOption(t50aBizRegion,it.k,v);
+    saved++;
+  });
+  t50aRender();
+  toast(g.group+' '+saved+'개 항목을 저장했습니다'+(blocked?' (통합 '+blocked+'개는 공사 전용)':''));
+}
+function t50aSchemaReset(){
+  if(!ft50IsHQ()){ toast('공사 총괄 관리자만 변경할 수 있습니다'); return; }
+  ft50ResetUnifiedCfg(); t50aRender();
+  toast('통합 항목을 기준값으로 되돌렸습니다');
+}
 /* ── 예산 설정 (공사 총괄 관리자 전용) ───────────────────────
    지원금액·환급률은 54개 항목표에서 전부 "통합"으로 분류된 항목이고, 지자체 예산
    총액도 지자체가 스스로 늘릴 수 있는 값이 아니다. 그래서 두 가지 모두 공사 총괄
@@ -743,6 +821,7 @@ function t50aRenderBiz(){
       '<button class="btn blk" style="margin-top:12px" onclick="t50aBizSave()">💾 사업설정 저장</button>'+
     '</div>'+
     t50aGrantHtml(name,cfg)+
+    t50aSchemaHtml(name)+
     '<div class="t50a-card">'+
       '<div class="sec-t">카드 BIN 판정표<span class="cap" style="font-weight:500;color:var(--sub);font-size:11.5px"> 카드번호로 법인카드 여부 예측</span></div>'+
       '<div style="font-size:11.5px;color:var(--sub);line-height:1.7;margin:4px 0 8px">'+

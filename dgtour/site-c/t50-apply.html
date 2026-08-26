@@ -234,7 +234,7 @@
 <div class="toast" id="toastEl"></div>
 
 <script src="../site-assets/data.js?v=20260818a"></script>
-<script src="t50-config.js?v=9"></script>
+<script src="t50-config.js?v=11"></script>
 <script src="t50-corp.js?v=1"></script>
 <script>/* site-c 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidC_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
@@ -300,6 +300,7 @@ let apHomeOpen=false;    // 등본을 조회했는지
 let apEvPre={};          // 증빙 등록 폼의 '숙박 선결제' 체크 상태 (신청 건 index별)
 let apEvStay={};         // 증빙 등록 폼의 '숙박비 결제 건' 체크 상태
 let apEvStayDoc={};      // 첨부한 숙박확인서 {name,size}
+let apEvSubDoc={};       // 보조 증빙(카드·현금영수증) {신청index:{card:{},cash:{}}}
 
 /* 주민등록번호로 만 나이 계산 (뒷자리 첫 숫자로 세기 판별). 형식 오류면 null */
 function apAgeFromRrn(r1,r2){
@@ -1069,8 +1070,12 @@ function apEvForm(a,i){
         '<input type="checkbox" id="apEvPre'+i+'"'+(apEvPre[i]?' checked':'')+' onchange="apEvPreToggle('+i+')" style="width:18px;height:18px"> 숙박 선결제 (여행 전에 미리 결제)</label>'+
       '<div class="ap-note">숙박비는 예약할 때 미리 결제하는 경우가 많아 16개 지자체 모두 <b>숙박 선결제를 인정</b>합니다. 체크하면 여행 시작일 이전에 결제한 영수증도 환급 대상이 됩니다(여행 시작일 기준 '+T50_PREPAY_MAX_DAYS+'일 전까지).</div>'+
     '</div>'+
-    '<label class="ap-lb">영수증 등 증빙파일 첨부</label>'+
+    '<div class="ap-note">① <b>결제수단 확인</b> — '+t50CfgText(a.region,'payMethod')+' 결제내역만 소비로 인정됩니다. <small>(지자체 설정값)</small></div>'+
+    '<label class="ap-lb">② '+t50CfgText(a.region,'payMethod')+' 결제내역 첨부 <small>(필수 · 판독 대조 대상)</small></label>'+
     '<input class="ap-in ap-file" id="apEvFile'+i+'" type="file" accept="image/*,.pdf" onchange="apOcrRead('+i+',this)">'+
+    apEvSubRow(a,i,'card')+apEvSubRow(a,i,'cash')+
+    '<div class="ap-note">· 간이영수증·계좌이체 확인증과 법인·타인 명의 영수증은 인정되지 않습니다 <small>(16곳 공통)</small></div>'+
+    '<div class="ap-note">🗓 '+t50SettleDueText(a)+'</div>'+
     ocr+
     '<div class="ap-err" id="apEvErr'+i+'" aria-live="polite"></div>'+
     '<button class="ap-sm hero" onclick="apEvSubmit('+i+')">환급 신청 제출</button>'+
@@ -1121,6 +1126,31 @@ function apEvStayPick(i,input){
   apEvStayDoc[i]={name:f.name,size:f.size};
   if(el)el.innerHTML=apEvStayInfoHtml(i);
 }
+/* 보조 증빙 슬롯 — 카드영수증·현금영수증은 지자체 설정으로 허용/차단된다(13p).
+   차단이면 입력란 자체를 만들지 않아 화면에 나타나지 않는다. */
+const AP_SUB_DOCS={card:{cfg:'cardReceipt',lb:'카드영수증'},cash:{cfg:'cashReceipt',lb:'현금영수증'}};
+function apEvSubRow(a,i,kind){
+  const d=AP_SUB_DOCS[kind];
+  if(!t50CfgVal(a.region,d.cfg))return '';        /* 관리자 설정 차단 — 화면에 표시하지 않는다 */
+  return '<label class="ap-lb">'+d.lb+' 첨부 <small>(선택 · '+T50_DOC_EXT.join('·')+' · 10MB 이하)</small></label>'+
+    '<input class="ap-in ap-file" id="apEvSub'+kind+i+'" type="file" accept="image/*,.pdf" onchange="apEvSubPick('+i+',&quot;'+kind+'&quot;,this)">'+
+    '<div class="ap-note" id="apEvSubInfo'+kind+i+'">'+apEvSubInfoHtml(i,kind)+'</div>';
+}
+function apEvSubInfoHtml(i,kind){
+  const f=(apEvSubDoc[i]||{})[kind];
+  return f?('📄 첨부됨 — <b>'+f.name+'</b> ('+t50DocSize(f.size)+')')
+          :'첨부하지 않아도 제출할 수 있습니다.';
+}
+function apEvSubPick(i,kind,input){
+  const el=document.getElementById('apEvSubInfo'+kind+i);
+  if(!apEvSubDoc[i])apEvSubDoc[i]={};
+  const f=input.files&&input.files[0];
+  if(!f){delete apEvSubDoc[i][kind];if(el)el.innerHTML=apEvSubInfoHtml(i,kind);return;}
+  const bad=t50DocCheck(f,0);
+  if(bad){delete apEvSubDoc[i][kind];input.value='';if(el)el.innerHTML='⚠️ '+bad;return;}
+  apEvSubDoc[i][kind]={name:f.name,size:f.size};
+  if(el)el.innerHTML=apEvSubInfoHtml(i,kind);
+}
 /* 인정 소비범위 확인 — 가맹점 상호로 인정 항목·제외 업종을 판정한 결과를 보여준다 */
 function apBizRow(shop){
   const c=t50BizCheck(shop);
@@ -1147,6 +1177,10 @@ function apEvDone(a){
     '<div class="row"><span>첨부파일</span><b>'+e.file+'</b></div>'+
     (e.shop?'<div class="row"><span>가맹점</span><b>'+e.shop+'</b></div>':'')+
     (e.biz?'<div class="row"><span>소비 인정</span><b style="color:'+t50BizColor(e.biz)+'">'+t50BizIcon(e.biz)+' '+e.biz.label+'</b></div>':'')+
+    (e.payMethod?'<div class="row"><span>결제수단</span><b>'+e.payMethod+'</b></div>':'')+
+    (e.subDocs?Object.keys(e.subDocs).map(function(kd){
+        return '<div class="row"><span>'+((AP_SUB_DOCS[kd]||{lb:kd}).lb)+'</span><b>'+e.subDocs[kd].name+'</b></div>';
+      }).join(''):'')+
     (e.stay?'<div class="row"><span>숙박 증빙</span><b>🏨 숙박비 결제 건 · '+T50_STAY_DOC_LABEL+' '+((e.stayDoc&&e.stayDoc.name)||'-')+'</b></div>':'')+
     (a.corpCheck?'<div class="row"><span>법인카드 확인</span><b style="color:'+t50CorpColor(a.corpCheck)+'">'+
       t50CorpIcon(a.corpCheck)+' '+a.corpCheck.label+'</b></div>':'')+
@@ -1154,7 +1188,7 @@ function apEvDone(a){
 }
 function apEvToggle(i,close){
   apEvOpen[i]=close?false:!apEvOpen[i];
-  if(!apEvOpen[i]){delete apOcr[i];delete apEvPre[i];delete apEvStay[i];delete apEvStayDoc[i];}
+  if(!apEvOpen[i]){delete apOcr[i];delete apEvPre[i];delete apEvStay[i];delete apEvStayDoc[i];delete apEvSubDoc[i];}
   apRenderList();
 }
 /* 데모 영수증 이미지 생성·다운로드 — 지역화폐 결제내역(없으면 기본값) 기준 승인번호·금액 인쇄 */
@@ -1552,6 +1586,9 @@ function apEvSubmit(i){
   const schk=t50EvStayCheck(stay,stayDoc);
   if(schk){err.innerHTML=schk.msg;return;}
   const a0=apLoad()[i];if(!a0)return;
+  /* 정산 신청 기한 — 설정값(여행 종료 후 N일)을 지나면 접수되지 않는다 */
+  const lchk=t50SettleCheck(a0);
+  if(lchk){err.innerHTML=lchk.msg;return;}
   /* 인정 소비범위 — 가맹점 상호가 제외 업종으로 판독되면 반려한다.
      상호를 못 읽은 건은 막지 않고 담당자 확인 대상으로 넘긴다 */
   const evShop=(o.mode==='real')?((o.ex||{}).shop||''):(o.merchant||'');
@@ -1609,12 +1646,13 @@ function apEvSubmit(i){
   const list=apLoad();if(!list[i])return;
   list[i].status='refund_req';
   list[i].evidence={card:card.slice(0,4)+'-'+card.slice(4,6)+'**-****-'+card.slice(-4),appr:appr,amt:amt,date:(o.mode==='real'&&o.ex&&o.ex.date)?o.ex.date:payDate,file:o.file,prepay:prepay,stay:stay,stayDoc:stayDoc,
-    shop:evShop,region:(o.mode==='real'?(apOcrRegionText((o.ex||{}).region)||''):''),biz:evBiz};
+    shop:evShop,region:(o.mode==='real'?(apOcrRegionText((o.ex||{}).region)||''):''),biz:evBiz,
+    subDocs:apEvSubDoc[i]||null,payMethod:t50CfgText(a0.region,'payMethod')};
   /* 법인카드 판정 결과를 신청 건에 남기고, 영수증 표기로 확인된 건은 BIN 판정표에 학습시킨다 */
   list[i].corpCheck=t50CorpCheck((o.mode==='real'&&o.ex&&o.ex.card)?o.ex.card:card,o.mode==='real'?o.text:'',true);
   delete list[i].fixReason;
   apSave(list);
-  apEvOpen[i]=false;delete apOcr[i];delete apEvPre[i];delete apEvStay[i];delete apEvStayDoc[i];
+  apEvOpen[i]=false;delete apOcr[i];delete apEvPre[i];delete apEvStay[i];delete apEvStayDoc[i];delete apEvSubDoc[i];
   apRenderList();
   toast('증빙 대조 완료 — 환급 신청이 제출되었습니다');
 }

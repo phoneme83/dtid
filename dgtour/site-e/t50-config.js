@@ -450,6 +450,194 @@ function t50RefundOf(a,spend){
 /* 신청 건에 저장된 한도가 있으면 그 값을 쓴다 — 승인 당시의 기준을 보존하기 위함 */
 function t50RefundCap(a){return a.refundCap||t50GrantCap(a);}
 
+/* ── 지자체 설정값 스키마 (54개 항목) ────────────────────────
+   1차 분석안 12p「관리자 화면 설정값 예시」와 「54항목 통합/옵션 분류」를 그대로
+   스키마로 옮긴다. A안(단일 템플릿 + 설정값)의 핵심이 이 계층이라, 항목을 코드에
+   흩뿌리지 않고 한 곳에 정의해 두고 화면이 이 정의를 읽어 렌더링한다.
+   항목마다 성격이 셋이고, 성격에 따라 저장 위치와 수정 권한이 갈린다.
+     fixed   16곳 이미 동일 — 변경 불가. 값만 보여준다(저장하지 않는다)
+     unified 통합 — 최다값으로 통일한 전국 공통값. 공사 총괄 관리자만 수정
+     option  옵션 — 지자체 사정(예산·인력·상권)에 종속. 지자체 담당자가 선택
+   type: select(드롭다운) · toggle(ON/OFF) · number(숫자)
+   ※ 여기 담긴 값은 지자체 협의 전 제안값이다(16p 단서와 동일). 협의 결과가
+     나오면 def 값을 고치거나 관리자 화면에서 조정한다. */
+const T50_CFG_SCHEMA=[
+ {group:'대상 · 신청 조건',items:[
+  {k:'foreigner',   lb:'외국인 여부',      scope:'unified',type:'select',opts:['제외','허용'],def:'제외',
+   note:'명시 제외 5곳 기준'},
+  {k:'applyPerYear',lb:'연간 신청횟수',    scope:'unified',type:'select',opts:['연 1회','연 2회'],def:'연 1회',
+   note:'연 1회 7곳 최다'},
+  {k:'repAgeMin',   lb:'여행대표자 나이제한',scope:'unified',type:'number',def:18,un:'세 이상',
+   note:'만 18세 이상 — 명시 3곳 중 2곳'},
+  {k:'applyDeadline',lb:'신청 마감',       scope:'unified',type:'select',opts:['여행 1일 전','여행 2일 전','여행 5일 전'],def:'여행 1일 전',
+   note:'여행 1일 전 9곳 최다'},
+  {k:'officeHours', lb:'운영시간 제한',    scope:'option', type:'select',opts:['10~17시','09~18시','제한 없음'],def:'10~17시',
+   note:'행정인력 여건에 종속 — 09~18시 7곳 협의 필요'},
+  {k:'approveNotice',lb:'승인 안내 수단',  scope:'option', type:'select',opts:['알림톡','문자','발송 없음'],def:'알림톡',
+   note:'알림톡 6곳 최다 · 문자 발송 지자체 협의 필요'},
+  {k:'closeRule',   lb:'마감 기준',        scope:'option', type:'select',opts:['예산 소진','선착순'],def:'예산 소진',
+   note:'예산 소진 9곳 최다'},
+  {k:'youthQuota',  lb:'청년 선착순 제한', scope:'option', type:'toggle',on:'운영',off:'미운영',def:false,
+   note:'예산 규모·인구에 종속 — 13곳 미표기'},
+  {k:'dtidRequired',lb:'디지털관광주민증',  scope:'unified',type:'toggle',on:'필수',off:'선택',def:true,
+   note:'현재는 제천만 필수 → 전체 필수로 변경 예정'}
+ ]},
+ {group:'정산 · 지급',items:[
+  {k:'settleDeadline',lb:'정산 신청 기한', scope:'unified',type:'select',opts:[5,7,10,14,15],def:10,un:'일',
+   note:'여행 종료 후 10일 — 6곳 최다'},
+  {k:'settleCount', lb:'정산 신청 횟수',   scope:'unified',type:'select',opts:['1회','2회'],def:'1회',
+   note:'1회 8곳 최다'},
+  {k:'settleUnit',  lb:'정산 단위',        scope:'option', type:'select',opts:['단위 없음','5천원','1만원'],def:'단위 없음',
+   note:'13곳 미표기 · 고창·완도·남해 협의'},
+  {k:'payoutDays',  lb:'지급 소요기간',    scope:'unified',type:'select',opts:[7,10,14,30],def:14,un:'일 이내',
+   note:'14일 7곳 최다'}
+ ]},
+ {group:'결제 · 영수증 증빙',items:[
+  {k:'payMethod',   lb:'주요 결제수단',    scope:'option', type:'select',
+   opts:['Chak 앱','제로페이','코나아이 실물카드','비플페이','그리고 앱','월출페이','지역사랑카드'],def:'Chak 앱',
+   note:'기존 결제인프라 계약에 종속 — Chak 6 · 제로페이 5'},
+  {k:'payoutMethod',lb:'지급 수단',        scope:'option', type:'select',
+   opts:['모바일 지역상품권','제로페이 PIN','코나아이 실물카드','비플페이 PIN','그리고 앱','월출페이 앱'],def:'모바일 지역상품권',
+   note:'결제수단에 종속'},
+  {k:'cardReceipt', lb:'카드영수증 업로드',scope:'option', type:'toggle',on:'허용',off:'차단',def:true,
+   note:'인정 9곳 최다 · 불인정 지자체 협의 필요'},
+  {k:'cashReceipt', lb:'현금영수증 업로드',scope:'option', type:'toggle',on:'허용',off:'차단',def:false,
+   note:'불인정 11곳 최다 · 인정 지자체 협의 필요'},
+  {k:'simpleReceipt',lb:'간이영수증 · 계좌이체',scope:'fixed',type:'select',def:'불인정',
+   note:'16곳 동일 — 변경 불가'},
+  {k:'corpReceipt', lb:'법인 · 타인명의 영수증',scope:'fixed',type:'select',def:'불인정',
+   note:'16곳 동일 — 변경 불가'},
+  {k:'stayPrepay',  lb:'숙박 선결제 증빙', scope:'fixed', type:'select',def:'인정',
+   note:'16곳 동일 — 변경 불가'},
+  {k:'stayDocRule', lb:'숙박 증빙서류',    scope:'fixed', type:'select',def:'숙박확인서 + 결제영수증',
+   note:'골격 16곳 공통 — 명칭 통일'}
+ ]},
+ {group:'인정 소비범위 · 사용처',items:[
+  {k:'spendItems',  lb:'인정 항목',        scope:'fixed', type:'select',def:'숙박 · 음식 · 관광 · 체험 · 쇼핑',
+   note:'골격 16곳 공통 — 표현 통일'},
+  {k:'excludeBiz',  lb:'인정제외 업종',    scope:'fixed', type:'select',def:'주유소 · 금은방 · 유흥 · 학원 · 카센터',
+   note:'핵심 5종 15곳 공통'},
+  {k:'revenueLimit',lb:'연매출 기준제외',  scope:'unified',type:'select',opts:['30억 초과 제외','미적용'],def:'30억 초과 제외',
+   note:'30억 기준 8곳 명시'},
+  {k:'excludeStay', lb:'인정제외 숙박',    scope:'option', type:'toggle',on:'별도 표기',off:'미적용',def:false,
+   note:'5곳 명시(횡성·강진·고흥·하동·남해)'},
+  {k:'livingExclude',lb:'생활소비 · 특정서비스 제외',scope:'option',type:'toggle',on:'별도 표기',off:'미적용',def:false,
+   note:'6곳 명시'},
+  {k:'facilityExcept',lb:'특정시설 예외인정',scope:'option',type:'toggle',on:'인정',off:'예외 없음',def:false,
+   note:'하동·남해 2곳만'},
+  {k:'useScope',    lb:'현장 사용처',      scope:'fixed', type:'select',def:'관내 가맹점',
+   note:'골격 16곳 공통 — 명칭 통일'},
+  {k:'onlineShop',  lb:'온라인 사용처',    scope:'option', type:'toggle',on:'지역쇼핑몰 허용',off:'없음',def:true,
+   note:'지역쇼핑몰 9곳 최다'},
+  {k:'deliveryApp', lb:'배달앱 사용',      scope:'option', type:'toggle',on:'허용',off:'불허',def:false,
+   note:'밀양만 가능 — 협의 필요'},
+  {k:'giftRefund',  lb:'상품권 환불규정',  scope:'unified',type:'toggle',on:'명문화',off:'미표기',def:true,
+   note:'명시 6곳 기준'}
+ ]},
+ {group:'관광지 방문 인증',items:[
+  {k:'visitCount',  lb:'방문 필수 개소수', scope:'option', type:'select',opts:['1개소','2개소 이상'],def:'2개소 이상',
+   note:'지역 관광자원 밀도 차이 — 2개소 이상 10곳 최다'},
+  {k:'spotRule',    lb:'관광지 기준',      scope:'unified',type:'select',opts:['지정관광지','숙박시설'],def:'지정관광지',
+   note:'지정관광지 15곳 최다'},
+  {k:'photoRule',   lb:'사진 조건',        scope:'fixed', type:'select',def:'얼굴 포함 인증사진',
+   note:'16곳 공통'},
+  {k:'metaCheck',   lb:'메타데이터 확인',  scope:'option', type:'toggle',on:'적용',off:'미적용',def:false,
+   note:'기술역량 종속 — 밀양 1곳만'},
+  {k:'merchantLimit',lb:'가맹점당 소비한도',scope:'option',type:'number',def:0,un:'원',zero:'한도 없음',
+   note:'지역 상권규모 종속 — 평창·제천만 한도 존재'},
+  {k:'revisitBonus',lb:'재방문 추가혜택',  scope:'option', type:'toggle',on:'운영',off:'미운영',def:false,
+   note:'지역 전략적 인센티브 — 영암만 운영'}
+ ]}
+];
+const T50_CFG_SCOPE_LABEL={fixed:'고정',unified:'통합',option:'옵션'};
+const T50_CFG_SCOPE_COLOR={fixed:'#64748b',unified:'#1d4ed8',option:'#047857'};
+
+/* 통합(unified) 값은 전국 공통이라 지역별 사업설정과 분리해 따로 저장한다 */
+const T50_UNIFIED_KEY='dtidA_t50UnifiedCfg';
+function t50UnifiedCfg(){
+  try{const c=JSON.parse(localStorage.getItem(T50_UNIFIED_KEY)||'null');return (c&&typeof c==='object')?c:{};}
+  catch(e){return {};}
+}
+function t50SaveUnifiedCfg(c){localStorage.setItem(T50_UNIFIED_KEY,JSON.stringify(c||{}));}
+function t50ResetUnifiedCfg(){localStorage.removeItem(T50_UNIFIED_KEY);}
+
+function t50CfgItems(){
+  return T50_CFG_SCHEMA.reduce(function(a,g){return a.concat(g.items);},[]);
+}
+function t50CfgItem(k){
+  return t50CfgItems().filter(function(i){return i.k===k;})[0]||null;
+}
+/* 설정값 읽기 — fixed는 정의값, unified는 전국 공통, option은 지자체별 */
+function t50CfgVal(region,k){
+  const it=t50CfgItem(k);
+  if(!it)return null;
+  if(it.scope==='fixed')return it.def;
+  if(it.scope==='unified'){
+    const c=t50UnifiedCfg();
+    return (k in c)?c[k]:it.def;
+  }
+  const o=t50RegionCfg(region).opt||{};
+  return (k in o)?o[k]:it.def;
+}
+/* 화면에 그대로 쓸 수 있는 문구 */
+function t50CfgText(region,k){
+  const it=t50CfgItem(k);
+  if(!it)return '';
+  const v=t50CfgVal(region,k);
+  if(it.type==='toggle')return v?it.on:it.off;
+  if(it.type==='number'){
+    if(it.zero&&!Number(v))return it.zero;
+    return Number(v).toLocaleString('ko-KR')+(it.un||'');
+  }
+  return String(v)+(it.un||'');
+}
+function t50SetUnified(k,v){
+  const c=t50UnifiedCfg();c[k]=v;t50SaveUnifiedCfg(c);
+}
+function t50SetOption(region,k,v){
+  const o=Object.assign({},t50RegionCfg(region).opt||{});
+  o[k]=v;
+  t50SetRegionCfg(region,{opt:o});
+}
+/* 지자체 담당자가 만질 수 있는 항목인가 — option만 가능하고 unified는 공사 전용 */
+function t50CfgEditable(it){
+  if(!it||it.scope==='fixed')return false;
+  return it.scope==='option'?true:admIsHQ();
+}
+
+/* ── 정산 신청 기한 판정 ─────────────────────────────────────
+   설정값 settleDeadline(여행 종료 후 N일) 안에 제출해야 정산이 접수된다.
+   기한은 통합 항목이라 전국 공통값이지만, 신청 화면은 지자체 설정을 그대로 읽는
+   구조를 지켜 region 을 받아 판정한다(옵션으로 바뀌어도 화면은 그대로 동작한다). */
+function t50SettleDue(a){
+  const days=Number(t50CfgVal(a.region,'settleDeadline'))||0;
+  /* 날짜 계산은 UTC 기준으로 한다 — 로컬 시각으로 파싱하면 toISOString 에서
+     시차만큼 밀려 마감일이 하루 앞당겨진다(KST 기준 -1일) */
+  const end=Date.parse(a.end+'T00:00:00Z');
+  if(isNaN(end))return null;
+  return new Date(end+days*86400000).toISOString().slice(0,10);
+}
+/* 통과하면 null, 기한이 지났으면 {code:'late', due, msg} */
+function t50SettleCheck(a,today){
+  const due=t50SettleDue(a);
+  if(!due)return null;
+  today=today||new Date().toISOString().slice(0,10);
+  if(today<=due)return null;
+  return {code:'late',due:due,
+    msg:'\u274c <b>정산 신청 기한이 지났습니다.</b> 이 신청 건의 정산 기한은 여행 종료('+a.end+') 후 '+
+        t50CfgText(a.region,'settleDeadline')+'인 <b>'+due+'</b>까지입니다. 기한이 지난 건은 담당 지자체에 문의해 주세요.'};
+}
+/* 남은 기한 안내 문구 */
+function t50SettleDueText(a,today){
+  const due=t50SettleDue(a);
+  if(!due)return '';
+  today=today||new Date().toISOString().slice(0,10);
+  const d=t50DayDiff(today,due);
+  if(isNaN(d))return '';
+  if(d<0)return '정산 신청 기한 경과 — 기한 '+due;
+  return '정산 신청 기한 · 여행 종료 후 '+t50CfgText(a.region,'settleDeadline')+' \u2014 '+due+'까지 ('+d+'일 남음)';
+}
+
 /* ── 상품권 사용기한 ─────────────────────────────────────────
    16곳 모두 2026.12.31.로 이미 같은 항목이라(1차 분석안 6p) 통합 적용값도 그대로
    쓴다(16p). 다만 해가 바뀌면 날짜만 바뀌는 값이므로 설정값으로 빼되, 16곳 공통
