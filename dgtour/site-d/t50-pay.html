@@ -166,11 +166,34 @@ try{
     localStorage.removeItem('dtidD_pointWallets');
   }
 }catch(e){}
+/* ── 현장 사용처 — 「관내 가맹점」 ────────────────────────────
+   16곳 모두 "관내 가맹점"으로 골격이 같고 명칭만 다르다(1차 분석안 6p).
+   통합 적용값은 「관내 가맹점」으로 명칭을 통일한다(16p).
+   환급금(지역사랑상품권)은 신청 지자체 안에 등록된 가맹점에서만 쓸 수 있어
+   관외 가맹점 결제는 승인되지 않는다. 아래 목록의 inArea:false 는 그 규칙을
+   화면에서 확인하기 위한 관외 가맹점이다. */
+const T50_USE_SCOPE_LABEL='관내 가맹점';
 const MERCHANTS=[
-  {ic:'🏨',nm:'바다뷰 펜션',amt:45000},
-  {ic:'🍽',nm:'현지 맛집',amt:28000},
-  {ic:'☕',nm:'로컬 카페',amt:7500}
+  {ic:'🏨',nm:'바다뷰 펜션',amt:45000,inArea:true},
+  {ic:'🍽',nm:'현지 맛집',amt:28000,inArea:true},
+  {ic:'☕',nm:'로컬 카페',amt:7500,inArea:true},
+  {ic:'🏬',nm:'서울 백화점',amt:52000,inArea:false},
+  {ic:'🛒',nm:'인접지역 마트',amt:12000,inArea:false}
 ];
+/* 결제 가능 여부 — 관외 가맹점이면 사유를 돌려준다 */
+function payUseBlock(m,bal){
+  if(!m.inArea)return '관외 가맹점 — '+T50_USE_SCOPE_LABEL+'에서만 사용할 수 있습니다';
+  if(bal<m.amt)return '잔액이 부족합니다';
+  return null;
+}
+function payMerchantBtns(bal,onclickFor){
+  return MERCHANTS.map(function(m,mi){
+    const blocked=payUseBlock(m,bal);
+    return '<button '+(blocked?'disabled ':'')+'onclick="'+onclickFor(mi)+'" '+
+      'title="'+(blocked||'')+'">'+m.ic+' '+m.nm+(m.inArea?'':' <em style="font-style:normal;color:#b91c1c">관외</em>')+
+      '<b>'+pWon(m.amt)+'</b></button>';
+  }).join('');
+}
 let payToastTimer=null;
 let svyIdx=-1,svyScore=0;
 
@@ -191,12 +214,12 @@ function pWallet(a){
 function pTx(w,label,amt){
   w.tx.unshift({label:label,amt:amt,ts:new Date().toISOString().slice(5,10).replace('-','.')});
 }
-/* 청년·가족할인 가산 안내 문구 (지자체가 승인 시 계산한 youthBonus/familyBonus 기준) */
+/* 적용된 지원 기준 문구 (지자체가 승인 시 확정한 유형·환급률) */
 function pBonusTxt(a){
   const parts=[];
-  if(a.youthBonus)parts.push('🎉 청년 20%');
-  if(a.familyBonus)parts.push('👨‍👩‍👧 가족 10%');
-  return parts.length?' ('+parts.join('+')+' 포함)':'';
+  if(a.grantLabel)parts.push(a.grantLabel);
+  if(a.grantRate)parts.push('환급률 '+a.grantRate+'%');
+  return parts.length?' ('+parts.join(' · ')+')':'';
 }
 
 /* TOUR ONEPASS 통합 로그인 — 관광주민증(index.html)과 동일한 계정·저장키(dgtour_user_id)를 사용 */
@@ -242,8 +265,9 @@ function payRender(){
         bd='<div class="note">🎫 지자체 승인에 따라 <b>CI·승인 금액('+pWon(amt)+')</b> 기준 개인 상품권이 발행되었습니다. 자부담 '+pWon(amt)+'을 더해 <b>'+pWon(amt*2)+'</b>어치를 반값에 구입하세요.</div>'+
           '<button class="buy" onclick="payBuy('+i+')">상품권 반값 구입 · 충전하기<small>자부담 '+pWon(amt)+' 결제 → '+pWon(amt*2)+' 충전 (지원금 '+pWon(amt)+')</small></button>';
       }else{
-        bd='<div class="use-t">가맹점에서 사용하기 (결재내역에 기록됩니다)</div><div class="use-row">'+
-          MERCHANTS.map((m,mi)=>'<button '+(w.bal<m.amt?'disabled':'')+' onclick="payUse('+i+','+mi+')">'+m.ic+' '+m.nm+'<b>'+pWon(m.amt)+'</b></button>').join('')+'</div>';
+        bd='<div class="use-t">'+T50_USE_SCOPE_LABEL+'에서 사용하기 (결재내역에 기록됩니다)</div>'+
+          '<div class="note">🏪 환급금은 <b>'+a.region+' '+T50_USE_SCOPE_LABEL+'</b>에서만 사용할 수 있습니다. 관외 가맹점은 결제가 승인되지 않습니다.</div>'+
+          '<div class="use-row">'+payMerchantBtns(w.bal,function(mi){return 'payUse('+i+','+mi+')';})+'</div>';
       }
       /* 환급 충전은 상품권 구입 여부와 무관하게 환급 승인 즉시 표시 */
       if(a.status==='refund_ok'&&!w.refundCharged)
@@ -281,7 +305,8 @@ function payBuy(i){
 function payUse(i,mi){
   const l=pLoad();const a=l[i];if(!a)return;
   const w=pWallet(a),m=MERCHANTS[mi];
-  if(w.bal<m.amt){pToast('잔액이 부족합니다');return;}
+  const blocked=payUseBlock(m,w.bal);
+  if(blocked){pToast(blocked);return;}
   w.bal-=m.amt;
   pTx(w,m.ic+' '+m.nm+' 결제',-m.amt);
   pSave(l);payRender();
@@ -365,8 +390,8 @@ function renderCv(){
     return '<div class="vcard"><div class="head cv"><div class="rg">'+nm+' 지역화폐</div><span class="st">포인트 전환</span>'+
       '<div class="bal">'+pWon(c.bal)+'<small> 잔액</small></div>'+
       '<div class="meta">관광주민증 포인트 1:1 전환 지역화폐</div></div>'+
-      '<div class="bd"><div class="use-t">가맹점에서 사용하기</div><div class="use-row">'+
-      MERCHANTS.map((m,mi)=>'<button '+(c.bal<m.amt?'disabled':'')+' onclick="cvUse(\''+nm+'\','+mi+')">'+m.ic+' '+m.nm+'<b>'+pWon(m.amt)+'</b></button>').join('')+
+      '<div class="bd"><div class="use-t">'+T50_USE_SCOPE_LABEL+'에서 사용하기</div><div class="use-row">'+
+      payMerchantBtns(c.bal,function(mi){return 'cvUse(\''+nm+'\','+mi+')';})+
       '</div>'+tx+'</div></div>';
   }).join('');
 }
@@ -417,7 +442,9 @@ function cvDo(){
 function cvUse(nm,mi){
   const w=cvLoad();const c=w[nm];if(!c)return;
   const m=MERCHANTS[mi];
-  if(c.bal<m.amt){pToast('잔액이 부족합니다');return;}
+  /* 포인트 전환 지역화폐도 같은 현장 사용처 규칙을 따른다 */
+  const blocked=payUseBlock(m,c.bal);
+  if(blocked){pToast(blocked);return;}
   c.bal-=m.amt;
   c.tx.unshift({label:m.ic+' '+m.nm+' 결제',amt:-m.amt,ts:new Date().toISOString().slice(5,10).replace('-','.')});
   cvSave(w);renderCv();

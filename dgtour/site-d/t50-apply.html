@@ -116,7 +116,7 @@
     </div>
     <div id="apFamBox"></div>
     <input type="hidden" id="apPeople" value="1">
-    <div class="ap-note" id="apFamHint" style="display:none">👨‍👩‍👧 3인 이상 가족 신청은 환급 시 <b>10% 추가 환급</b> 혜택이 적용됩니다.</div>
+    <div class="ap-note" id="apFamHint" style="display:none"></div>
     <label class="ap-lb" for="apPlan" id="apPlanLb">간단한 여행 계획 <small>(선택)</small></label>
     <textarea class="ap-in" id="apPlan" rows="3" placeholder="예) 1일차 숙소 체크인 후 시장 구경, 2일차 해변 산책"></textarea>
     <label class="ap-lb" for="apDocs" id="apDocsLb">추가 서류 첨부 <small>(선택 · 최대 5개 · jpg·png·pdf · 각 10MB 이하)</small></label>
@@ -187,7 +187,7 @@
     <div class="ap-modal-ic">✓</div>
     <div class="ap-modal-msg" id="apModalMsg">입력 후 주소지 확인이 완료되었습니다.</div>
     <div class="ap-modal-addr" id="apModalAddr"></div>
-    <div class="ap-youth" id="apModalYouth" style="display:none">🎉 청년(만 19~34세) 확인 — 환급 시 <b>20% 추가 환급</b> 혜택이 적용됩니다!</div>
+    <div class="ap-youth" id="apModalYouth" style="display:none"></div>
     <button class="ap-big hero" onclick="apAddrSave()">확인 (주소지 저장)</button>
   </div>
 </div>
@@ -234,7 +234,7 @@
 <div class="toast" id="toastEl"></div>
 
 <script src="../site-assets/data.js?v=20260818a"></script>
-<script src="t50-config.js?v=7"></script>
+<script src="t50-config.js?v=8"></script>
 <script src="t50-corp.js?v=1"></script>
 <script>/* site-d 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidD_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
@@ -290,7 +290,7 @@ const AP_ST_LABEL={
 const AP_FLOW=['received','review','approved','notified','refund_req','refund_ok'];
 let apSel=null;          // 선택한 지역명
 let apAddrOk=false;      // 주소지 확인 여부
-let apYouth=false;       // 청년(만 19~34세) 여부 — 환급 시 20% 추가
+let apYouth=false;       // 청년(만 19~34세) 여부 — 지원 한도가 청년 기준으로 적용된다
 let apAge=null;          // 주민등록번호로 확인한 만 나이 (통계·관리의 연령대별 통계에 사용)
 let apBirth=null;        // 본인인증으로 회신받은 생년월일 (주민등록번호 앞자리 대조 기준)
 let apUnit='personal';   // 신청 단위: personal | family
@@ -401,10 +401,15 @@ function apRenderFam(){
   const n=apPeopleCount();
   const hid=document.getElementById('apPeople');
   if(hid)hid.value=String(n);
-  const cap='<div class="ap-note">신청 인원 <b>'+n+'명</b> · 환급 한도 <b>'+(n*T50_MAX_PER_PERSON).toLocaleString('ko-KR')+
-    '원</b> <small>(신청자 1명당 최대 '+T50_MAX_PER_PERSON.toLocaleString('ko-KR')+'원)</small></div>';
+  /* 지원 한도는 신청 유형(개인·팀·청년·청년팀·가족형)별 통합 기준값을 따른다 */
+  const gr=t50GrantOf({unit:apUnit,people:String(n),youth:apYouth});
+  const cap='<div class="ap-note">신청 인원 <b>'+n+'명</b> · 지원 한도 <b>'+gr.cap.toLocaleString('ko-KR')+
+    '원</b> <small>('+gr.label+' 기준 · 환급률 '+t50GrantRate({youth:apYouth})+'%)</small></div>';
   const fh=document.getElementById('apFamHint');
-  if(fh)fh.style.display=(n>=3)?'block':'none';
+  if(fh){
+    fh.style.display=(n>=3&&apUnit==='family')?'block':'none';
+    fh.innerHTML='👨‍👩‍👧 가족형(3~5인) 신청은 지원 한도가 <b>'+t50GrantCfg().family.toLocaleString('ko-KR')+'원</b>으로 적용됩니다.';
+  }
   if(apUnit==='personal'){el.innerHTML=cap;return;}
   if(!apHomeOpen){
     el.innerHTML='<div class="ap-note">가족과 함께 신청하려면 주민등록등본으로 세대원을 확인해야 합니다. 조회된 세대원 중 <b>배우자·직계 존비속</b>만 선택할 수 있습니다.</div>'+
@@ -481,10 +486,15 @@ function apAddrCheck(){
     return;
   }
   apAge=age;
-  /* 청년(만 19~34세) 20% 추가 환급 대상 */
+  /* 청년(만 19~34세)은 지원 한도가 청년 기준(1인 14만원 · 2인 이상 28만원)으로 적용된다 */
   apYouth=(age>=19&&age<35);
-  if(apYouth)alert('🎉 청년 신청으로 확인되었습니다. (만 '+age+'세)\n청년(만 19~34세)은 환급 시 20% 추가 환급 혜택이 적용됩니다.');
-  document.getElementById('apModalYouth').style.display=apYouth?'block':'none';
+  const _g=t50GrantCfg();
+  if(apYouth)alert('🎉 청년 신청으로 확인되었습니다. (만 '+age+'세)\n청년(만 19~34세)은 지원 한도가 1인 '+
+    _g.youthSolo.toLocaleString('ko-KR')+'원 · 2인 이상 '+_g.youthTeam.toLocaleString('ko-KR')+'원으로 적용됩니다.');
+  const _ym=document.getElementById('apModalYouth');
+  _ym.innerHTML='🎉 청년(만 19~34세) 확인 — 지원 한도 <b>1인 '+_g.youthSolo.toLocaleString('ko-KR')+'원</b> · '+
+    '2인 이상 <b>'+_g.youthTeam.toLocaleString('ko-KR')+'원</b> 기준이 적용됩니다!';
+  _ym.style.display=apYouth?'block':'none';
   apAddr=apPickAddr();
   document.getElementById('apModalAddr').innerHTML=apAddr.full+' · <b>만 '+age+'세 확인</b><br><small>* 개인정보 최소화를 위해 시·군·구 단위까지만 저장됩니다</small>';
   document.getElementById('apModal').classList.add('on');
@@ -798,7 +808,9 @@ function apSubmit(){
     unit:apUnit,
     members:(apUnit==='family'?apHousehold().filter(function(m){return apFamPick.indexOf(m.id)>=0;})
       .map(function(m){return {masked:m.masked,rel:m.rel,birthYear:m.birthYear,age:m.age};}):[]),
-    refundCap:ppl*T50_MAX_PER_PERSON,
+    refundCap:t50GrantCap({unit:apUnit,people:String(ppl),youth:apYouth}),
+    grantLabel:t50GrantOf({unit:apUnit,people:String(ppl),youth:apYouth}).label,
+    grantRate:t50GrantRate({youth:apYouth}),
     docs:apDocDraft.slice(),
     ts:new Date().toISOString().slice(0,10),tsFull:new Date().toISOString()};
   const dec=apDecideCapacity(apSel,ppl);
@@ -868,14 +880,12 @@ function apQueueCancel(){
   apGo(0);
 }
 
-/* 청년·가족할인 가산 내역 문구 (승인 시점에 이미 가산된 금액) */
+/* 적용된 지원 기준 문구 — 승인 시점의 유형·환급률을 그대로 보여준다 */
 function apBonusTxt(a){
-  if(!a.baseAmount)return '';
   const parts=[];
-  if(a.youthBonus)parts.push('🎉 청년 20% '+a.youthBonus.toLocaleString('ko-KR')+'원');
-  if(a.familyBonus)parts.push('👨‍👩‍👧 가족(3인 이상) 10% '+a.familyBonus.toLocaleString('ko-KR')+'원');
-  if(!parts.length)return '';
-  return ' (기본 '+a.baseAmount.toLocaleString('ko-KR')+'원 + '+parts.join(' + ')+')';
+  if(a.grantLabel)parts.push(a.grantLabel+' 기준');
+  if(a.grantRate)parts.push('환급률 '+a.grantRate+'%');
+  return parts.length?' ('+parts.join(' · ')+')':'';
 }
 
 /* ── 나의 신청 내역 ── */
@@ -935,12 +945,12 @@ function apRenderList(){
       return '📨 '+(lb?lb.ic+' '+lb.t:h.st)+' '+apFmtShort(h.ts.slice(0,10))+(h.note?'('+h.note+')':'')+(h.by?' — '+h.by:'');
     }).join(' · ')+'</div>':'';
     return '<div class="ap-card"><div class="ap-card-h"><b>'+a.region+'</b> <span>'+a.sido+'</span>'+
-      (a.youth?'<span class="ap-chip-youth">🎉 청년 +20% 환급</span>':'')+
-      (a.familyEligible?'<span class="ap-chip-youth">👨‍👩‍👧 가족 3인+ 10% 환급</span>':'')+
+      (a.youth?'<span class="ap-chip-youth">🎉 청년 기준</span>':'')+
+      (a.grantLabel?'<span class="ap-chip-youth">'+a.grantLabel+' '+(a.refundCap||t50RefundCap(a)).toLocaleString('ko-KR')+'원</span>':'')+
       '<span class="ap-chip-youth">'+(a.unit==='family'?'👨‍👩‍👧 가족 신청':'👤 개인 신청')+' '+a.people+'명</span>'+
       '<em>'+a.no+'</em></div>'+
       ((a.members&&a.members.length)?'<div class="ap-fam-sum">동반 가족 '+a.members.map(function(m){return m.masked+'('+m.rel+')';}).join(', ')+
-        ' · 환급 한도 '+(a.refundCap||t50RefundCap(a)).toLocaleString('ko-KR')+'원</div>':'')+
+        ' · 지원 한도 '+(a.refundCap||t50RefundCap(a)).toLocaleString('ko-KR')+'원</div>':'')+
       '<div class="ap-card-d">'+a.start+' ~ '+a.end+' · '+a.people+'명 · 신청일 '+a.ts+
       (a.period?'<br><small>지역 여행 가능기간: '+apFmt(a.period.s)+' ~ '+apFmt(a.period.e)+'</small>':'')+'</div>'+
       '<div class="ap-tl-row">'+steps+'</div>'+extra+refund+act+editCancel+hist+'</div>';

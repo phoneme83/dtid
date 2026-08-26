@@ -63,7 +63,7 @@
   <div class="pn">
     <div class="hd"><div class="t" id="t50AddrMsg">입력 후 주소지 확인이 완료되었습니다.</div></div>
     <div class="t50w-addr" id="t50AddrDetail"></div>
-    <div class="t50w-note" id="t50AddrYouth" style="display:none">🎉 청년(만 19~34세) 확인 — 환급 시 <b>20% 추가 환급</b> 혜택이 적용됩니다!</div>
+    <div class="t50w-note" id="t50AddrYouth" style="display:none"></div>
     <button class="btn blk" style="margin-top:11px" onclick="t50AddrSave()">확인 (주소지 저장)</button>
   </div>
 </div>
@@ -72,7 +72,7 @@
 
 <script src="../site-assets/data.js?v=20260818a"></script>
 <script src="f.js?v=2"></script>
-<script src="f-t50.js?v=6"></script>
+<script src="f-t50.js?v=7"></script>
 <script src="f-t50-evidence.js?v=4"></script>
 <script src="f-t50-corp.js?v=1"></script>
 <script>
@@ -230,7 +230,12 @@ function t50AddrCheck(){
   }
   t50Age=age;
   t50Youth=(age>=19&&age<35);
-  if(t50Youth) alert('🎉 청년 신청으로 확인되었습니다. (만 '+age+'세)\n청년(만 19~34세)은 환급 시 20% 추가 환급 혜택이 적용됩니다.');
+  const _g=ft50GrantCfg();
+  const _ym=document.getElementById('t50AddrYouth');
+  if(_ym) _ym.innerHTML='🎉 청년(만 19~34세) 확인 — 지원 한도 <b>1인 '+ft50Won(_g.youthSolo)+'</b> · '+
+    '2인 이상 <b>'+ft50Won(_g.youthTeam)+'</b> 기준이 적용됩니다!';
+  if(t50Youth) alert('🎉 청년 신청으로 확인되었습니다. (만 '+age+'세)\n청년(만 19~34세)은 지원 한도가 1인 '+
+    ft50Won(_g.youthSolo)+' · 2인 이상 '+ft50Won(_g.youthTeam)+'으로 적용됩니다.');
   t50Addr=ft50PickAddr();
   document.getElementById('t50AddrYouth').style.display=t50Youth?'block':'none';
   document.getElementById('t50AddrDetail').innerHTML=
@@ -345,7 +350,7 @@ function bodyPlan(){
     '</div>'+
         '<div id="t50FamBox"></div>'+
         '<input type="hidden" id="t50People" value="'+t50PeopleCount()+'">'+
-        '<div class="t50w-note" id="t50FamHint" style="display:none">👨‍👩‍👧 3인 이상 가족 신청은 지원금에 <b>10% 추가</b> 혜택이 적용됩니다.</div>';
+        '<div class="t50w-note" id="t50FamHint" style="display:none">👨‍👩‍👧 가족형(3~5인) 신청은 지원 한도가 <b>'+ft50Won(ft50GrantCfg().family)+'</b>으로 적용됩니다.</div>';
       if(F.plan.show!==false)
         h+='<label class="f-lb" for="t50Plan">'+fEsc(F.plan.label)+' '+req(F.plan)+'</label>'+
            '<textarea class="f-in" id="t50Plan" rows="3" placeholder="예) 1일차 숙소 체크인 후 전통시장, 2일차 해안 산책"></textarea>';
@@ -452,8 +457,10 @@ function t50RenderFam(){
     us[1].classList.toggle('on',t50Unit==='family');
   }
   const n=t50PeopleCount();
-  const cap='<div class="t50w-note">신청 인원 <b>'+n+'명</b> · 환급 한도 <b>'+ft50Won(n*FT50_MAX_PER_PERSON)+'</b> '+
-    '<span style="color:var(--sub)">(신청자 1명당 최대 '+ft50Won(FT50_MAX_PER_PERSON)+')</span></div>';
+  /* 지원 한도는 신청 유형(개인·팀·청년·청년팀·가족형)별 통합 기준값을 따른다 */
+  const gr=ft50GrantOf({unit:t50Unit,people:String(n),youth:t50Youth});
+  const cap='<div class="t50w-note">신청 인원 <b>'+n+'명</b> · 지원 한도 <b>'+ft50Won(gr.cap)+'</b> '+
+    '<span style="color:var(--sub)">('+gr.label+' 기준 · 환급률 '+ft50GrantRate({youth:t50Youth})+'%)</span></div>';
   if(t50Unit==='personal'){
     el.innerHTML=cap;
     const h=document.getElementById('t50People'); if(h) h.value=String(n);
@@ -582,7 +589,9 @@ function t50Submit(){
     unit:t50Unit,
     members:(t50Unit==='family'?t50Household().filter(function(m){return t50FamPick.indexOf(m.id)>=0;})
       .map(function(m){return {masked:m.masked,rel:m.rel,birthYear:m.birthYear,age:m.age};}):[]),
-    refundCap:ppl*FT50_MAX_PER_PERSON,
+    refundCap:ft50GrantCap({unit:t50Unit,people:String(ppl),youth:t50Youth}),
+    grantLabel:ft50GrantOf({unit:t50Unit,people:String(ppl),youth:t50Youth}).label,
+    grantRate:ft50GrantRate({youth:t50Youth}),
     applicant:t50Auth1?t50Auth1.name:(U?U.name:''), uid:U?U.id:'',
     youth:t50Youth, age:t50Age, familyEligible:ppl>=3,
     addr:t50Addr?t50Addr.full:'', authMeans:t50Auth1?t50Auth1.means:'',
@@ -815,7 +824,7 @@ function renderStatus(){
   }
   el.innerHTML=list.map(function(a,i){
     const st=FT50_ST[a.status]||{t:a.status,cls:'n',ic:'•'};
-    const c=ft50Calc(a);
+    const gr=ft50GrantOf(a);
     const grant=(typeof a.amount==='number')?a.amount:null;
     return '<div style="border-bottom:1px solid var(--line);padding:9px 0">'+
       '<div style="display:flex;align-items:center;gap:7px">'+
@@ -825,10 +834,9 @@ function renderStatus(){
       '<div style="font-size:11.5px;color:var(--sub);margin-top:4px;line-height:1.7">'+
         '여행 '+t50Fmt(a.start)+' ~ '+t50Fmt(a.end)+' · '+(a.unit==='family'?'가족':'개인')+' '+fEsc(a.people)+'명 · 접수 '+t50Fmt(a.ts)+
         ((a.members&&a.members.length)?'<br>동반 가족 '+a.members.map(function(m){return fEsc(m.masked)+'('+fEsc(m.rel)+')';}).join(', '):'')+
-        '<br>환급 한도 '+ft50Won(a.refundCap||ft50RefundCap(a))+' (1명당 '+ft50Won(FT50_MAX_PER_PERSON)+')'+
-        (grant!==null?'<br>승인 지원금 <b style="color:var(--pri)">'+ft50Won(grant)+'</b>'+
-          ((a.youthBonus||a.familyBonus)?' (청년·가족 가산 포함)':''):
-          '<br>예상 지원금 '+ft50Won(c.total)+' (심사 후 확정)')+
+        '<br>지원 한도 '+ft50Won(a.refundCap||ft50RefundCap(a))+' ('+gr.label+' · 환급률 '+ft50GrantRate(a)+'%)'+
+        (grant!==null?'<br>승인 지원 한도 <b style="color:var(--pri)">'+ft50Won(grant)+'</b>'
+                     :'<br>예상 지원 한도 '+ft50Won(gr.cap)+' (심사 후 확정)')+
         (a.refundAmount?'<br>환급 완료 '+ft50Won(a.refundAmount):'')+
         /* 지역화폐 충전 결과 조회 — 연계 결과가 수신되면 신청자도 확인할 수 있다 */
         (a.localPay?'<br>🪙 지역사랑상품권 충전 완료 '+ft50Won(a.localPay.amount)+
@@ -861,11 +869,11 @@ function renderRefund(){
   const a=act.a;
   const spend=a.spend||0;
   const cap=a.refundCap||ft50RefundCap(a);
-  const expect=Math.min(Math.round(spend/2),cap,(typeof a.amount==='number')?a.amount:cap);
+  const expect=Math.min(ft50RefundOf(a,spend),cap,(typeof a.amount==='number')?a.amount:cap);
   el.innerHTML=
     '<div class="kv"><span class="k">환급 대상 결제금액</span><span class="v">'+fmt(spend)+' 원</span></div>'+
-    '<div class="kv"><span class="k">환급 예정액(50%)</span><span class="v pri">'+fmt(expect)+' 원</span></div>'+
-    '<div class="kv"><span class="k">환급 한도('+fEsc(a.people)+'명 × '+fmt(FT50_MAX_PER_PERSON)+'원)</span><span class="v">'+fmt(cap)+' 원</span></div>'+
+    '<div class="kv"><span class="k">환급 예정액(환급률 '+ft50GrantRate(a)+'%)</span><span class="v pri">'+fmt(expect)+' 원</span></div>'+
+    '<div class="kv"><span class="k">지원 한도('+fEsc(ft50GrantOf(a).label)+')</span><span class="v">'+fmt(cap)+' 원</span></div>'+
     base+
     (a.status==='notified'||a.status==='refund_fix'
       ? '<div style="display:flex;gap:8px;margin-top:11px">'+
@@ -890,7 +898,8 @@ function renderRefund(){
           '<small>✓ '+fEsc(a.evidence.ocr||'판독 결과와 대조 완료')+' — 담당자 심사 결과를 기다리는 중입니다.</small></div>'
       : '')+
     (a.status==='refund_ok'
-      ? '<div style="font-size:11.5px;color:var(--ok);font-weight:700;line-height:1.7;margin-top:11px">💰 환급 '+fmt(a.refundAmount||0)+'원이 지역사랑상품권으로 지급되었습니다.</div>'
+      ? '<div style="font-size:11.5px;color:var(--ok);font-weight:700;line-height:1.7;margin-top:11px">💰 환급 '+fmt(a.refundAmount||0)+'원이 지역사랑상품권으로 지급되었습니다.'+
+          '<br><span style="color:var(--sub);font-weight:500">🏪 사용처는 <b>'+fEsc(a.region)+' '+FT50_USE_SCOPE_LABEL+'</b>입니다. 관외 가맹점에서는 결제가 승인되지 않습니다.</span></div>'
       : '')+
     '<div style="font-size:11px;color:var(--sub);margin-top:9px;line-height:1.7">'+
       'AI OCR이 영수증의 관광목적 지출 여부를 1차 자동 판독하고, <b>최종 승인은 관리자 페이지에서 지자체 담당자가</b> 수행합니다.</div>';

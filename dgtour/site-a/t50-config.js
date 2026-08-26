@@ -27,7 +27,7 @@ function t50DefaultRegionCfg(name){
     open:r?r.status==='open':true,
     applyStart:'2020-01-01',applyEnd:'2030-12-31',
     travelStart:p?p.s:'2026-01-01',travelEnd:p?p.e:'2026-12-31',
-    capacity:9999,minPeople:1,maxPeople:6,
+    capacity:9999,minPeople:1,maxPeople:6,budget:0,
     notices:[]
   };
 }
@@ -59,6 +59,9 @@ function admPersona(){
   return ADMIN_ACCOUNTS.find(a=>a.id===id)||ADMIN_ACCOUNTS[0];
 }
 function admSetPersona(id){localStorage.setItem(T50_PERSONA_KEY,id);}
+/* 통합 기준값(지원금액·환급률·예산)은 공사 총괄 관리자만 바꿀 수 있다 — 지자체 담당자는 조회만 */
+function admIsHQ(){return !admPersona().region;}
+
 
 /* ── 전 계정 신청 데이터 집계 (계정별 키 dtidA_t50Applies_<uid>로 분리 저장됨) ── */
 const T50_AP_PREFIX='dtidA_t50Applies_';
@@ -397,11 +400,66 @@ function t50LockBump(region){
   return v;
 }
 
-/* ── 신청 단위(개인/가족) · 환급 한도 ────────────────────────
-   신청자 1명당 최대 환급액은 10만원, 가족 신청은 본인 포함 5명까지다. */
-const T50_MAX_PER_PERSON=100000;
+/* ── 신청 단위(개인/가족) ────────────────────────────────────
+   가족 신청은 본인 포함 5명까지다(가족형 3~5인 기준).
+   환급 한도는 인원 정액이 아니라 신청 유형별 통합 기준값을 따른다 → t50GrantOf */
 const T50_FAMILY_MAX=5;
-function t50RefundCap(a){return t50PeopleNum(a)*T50_MAX_PER_PERSON;}
+
+/* ── 지원금액 · 환급률 (통합 기준값, 전국 공통) ────────────────
+   개인 1인 10만원 / 팀 2인 이상 20만원 / 청년 1인 14만원 / 청년팀 2인 이상 28만원 /
+   가족형 3~5인 50만원, 기본·청년 환급률 50% — 1차 분석안 16p 통합 적용값이다.
+   54개 항목표에서 지원금액·환급률은 전부 "통합"으로 분류된 항목이라 지자체가
+   개별로 바꿀 수 없다. 그래서 지역별 사업설정(T50_BIZCFG_KEY)과 분리해 전국 공통
+   키에 두고, 관리시스템에서도 공사 총괄 관리자만 입력·수정할 수 있게 한다.
+   환급액은 "소비액 × 환급률"을 지원 한도로 자른 값이다. 승인 시점에는 소비액을
+   알 수 없으므로 지원 한도를 통보하고, 정산 때 실제 소비액으로 확정한다. */
+const T50_GRANT_KEY='dtidA_t50GrantCfg';
+const T50_GRANT_DEFAULT={solo:100000,team:200000,youthSolo:140000,youthTeam:280000,
+                         family:500000,rate:50,youthRate:50};
+const T50_GRANT_FIELDS=[
+  {k:'solo',     lb:'개인 1인',        un:'원'},
+  {k:'team',     lb:'팀 2인 이상',      un:'원'},
+  {k:'youthSolo',lb:'청년 1인',        un:'원'},
+  {k:'youthTeam',lb:'청년팀 2인 이상',  un:'원'},
+  {k:'family',   lb:'가족형 3~5인',     un:'원'},
+  {k:'rate',     lb:'기본 환급률',      un:'%'},
+  {k:'youthRate',lb:'청년 환급률',      un:'%'}
+];
+function t50GrantCfg(){
+  let c=null;
+  try{c=JSON.parse(localStorage.getItem(T50_GRANT_KEY)||'null');}catch(e){}
+  return Object.assign({},T50_GRANT_DEFAULT,(c&&typeof c==='object')?c:{});
+}
+function t50SaveGrantCfg(c){localStorage.setItem(T50_GRANT_KEY,JSON.stringify(c||{}));}
+function t50ResetGrantCfg(){localStorage.removeItem(T50_GRANT_KEY);}
+/* 신청 건에 적용되는 지원 기준 — {key, label, cap} */
+function t50GrantOf(a){
+  const g=t50GrantCfg(),n=t50PeopleNum(a);
+  if(a.unit==='family'&&n>=3)return {key:'family',label:'가족형 3~5인',cap:g.family};
+  if(n>=2)return a.youth?{key:'youthTeam',label:'청년팀 2인 이상',cap:g.youthTeam}
+                        :{key:'team',label:'팀 2인 이상',cap:g.team};
+  return a.youth?{key:'youthSolo',label:'청년 1인',cap:g.youthSolo}
+                :{key:'solo',label:'개인 1인',cap:g.solo};
+}
+function t50GrantCap(a){return t50GrantOf(a).cap;}
+function t50GrantRate(a){const g=t50GrantCfg();return a.youth?g.youthRate:g.rate;}
+/* 소비액 기준 환급액 — 환급률을 적용한 뒤 지원 한도로 자른다 */
+function t50RefundOf(a,spend){
+  return Math.min(Math.floor((Number(spend)||0)*t50GrantRate(a)/100),t50GrantCap(a));
+}
+/* 신청 건에 저장된 한도가 있으면 그 값을 쓴다 — 승인 당시의 기준을 보존하기 위함 */
+function t50RefundCap(a){return a.refundCap||t50GrantCap(a);}
+
+/* ── 지자체 예산 총액 ────────────────────────────────────────
+   "마감 기준 = 예산 소진"이 9곳으로 최다인 항목이라(1차 분석안 6p·16p) 지자체별
+   예산 총액이 있어야 소진 여부를 판단할 수 있다. 예산은 지자체가 스스로 늘릴 수
+   있는 값이 아니므로 사업설정 안에 두되 공사 총괄 관리자만 입력한다.
+   0이면 미설정(한도 없음)으로 본다. */
+function t50BudgetUsed(region){
+  return t50AllApplications()
+    .filter(function(x){return x.a.region===region&&x.a.status==='refund_ok';})
+    .reduce(function(s,x){return s+(x.a.refundAmount||0);},0);
+}
 
 /* ── 주민등록등본 조회(모의) ──────────────────────────────────
    실제 서비스는 행정정보 공동이용망으로 세대원을 회신받는다. 프로토타입에서는

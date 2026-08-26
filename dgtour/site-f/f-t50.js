@@ -11,12 +11,57 @@ const FT50_CFG_KEY    = 'dtidF_t50BizCfg';
 const FT50_PERSONA_KEY= 'dtidF_admPersona';
 const FT50_ID_PREFIX  = 'dtidF_t50Identity_';   /* 본인인증(PASS·행정정보 공동이용) 결과 */
 
-/* 1인당 기본 지원금 · 가산율 · 한도 */
-const FT50_PER_PERSON = 50000;
-const FT50_YOUTH_RATE = 0.2;                     /* 청년(만 19~34세) */
-const FT50_FAMILY_RATE= 0.1;                     /* 가족(3인 이상) */
-const FT50_MAX_PER_PERSON = 100000;              /* 신청자 1명당 최대 환급액 */
+/* ── 지원금액 · 환급률 (통합 기준값, 전국 공통) ────────────────
+   개인 1인 10만원 / 팀 2인 이상 20만원 / 청년 1인 14만원 / 청년팀 2인 이상 28만원 /
+   가족형 3~5인 50만원, 기본·청년 환급률 50% — 1차 분석안 16p 통합 적용값이다.
+   54개 항목표에서 지원금액·환급률은 전부 "통합"으로 분류된 항목이라 지자체가
+   개별로 바꿀 수 없다. 그래서 지역별 사업설정과 분리해 전국 공통 키에 두고,
+   관리시스템에서도 공사 총괄 관리자만 입력·수정할 수 있게 한다.
+   환급액은 "소비액 × 환급률"을 지원 한도로 자른 값이다. */
+const FT50_GRANT_KEY = 'dtidF_t50GrantCfg';
+const FT50_GRANT_DEFAULT = {solo:100000, team:200000, youthSolo:140000, youthTeam:280000,
+                            family:500000, rate:50, youthRate:50};
+const FT50_GRANT_FIELDS = [
+  {k:'solo',      lb:'개인 1인',       un:'원'},
+  {k:'team',      lb:'팀 2인 이상',     un:'원'},
+  {k:'youthSolo', lb:'청년 1인',       un:'원'},
+  {k:'youthTeam', lb:'청년팀 2인 이상', un:'원'},
+  {k:'family',    lb:'가족형 3~5인',    un:'원'},
+  {k:'rate',      lb:'기본 환급률',     un:'%'},
+  {k:'youthRate', lb:'청년 환급률',     un:'%'}
+];
 const FT50_FAMILY_MAX = 5;                       /* 가족 단위 신청 시 본인 포함 최대 인원 */
+/* ── 현장 사용처 — 「관내 가맹점」 ────────────────────────────
+   16곳 모두 "관내 가맹점"으로 골격이 같고 명칭만 다르다(1차 분석안 6p).
+   통합 적용값은 「관내 가맹점」으로 명칭을 통일한다(16p). */
+const FT50_USE_SCOPE_LABEL = '관내 가맹점';
+function ft50GrantCfg(){
+  let c=null;
+  try{ c=JSON.parse(localStorage.getItem(FT50_GRANT_KEY)||'null'); }catch(e){}
+  return Object.assign({}, FT50_GRANT_DEFAULT, (c&&typeof c==='object')?c:{});
+}
+function ft50SaveGrantCfg(c){ localStorage.setItem(FT50_GRANT_KEY, JSON.stringify(c||{})); }
+function ft50ResetGrantCfg(){ localStorage.removeItem(FT50_GRANT_KEY); }
+/* 신청 건에 적용되는 지원 기준 — {key, label, cap} */
+function ft50GrantOf(a){
+  const g=ft50GrantCfg(), n=ft50PeopleNum(a);
+  if(a.unit==='family'&&n>=3) return {key:'family', label:'가족형 3~5인', cap:g.family};
+  if(n>=2) return a.youth?{key:'youthTeam', label:'청년팀 2인 이상', cap:g.youthTeam}
+                         :{key:'team', label:'팀 2인 이상', cap:g.team};
+  return a.youth?{key:'youthSolo', label:'청년 1인', cap:g.youthSolo}
+                :{key:'solo', label:'개인 1인', cap:g.solo};
+}
+function ft50GrantCap(a){ return ft50GrantOf(a).cap; }
+function ft50GrantRate(a){ const g=ft50GrantCfg(); return a.youth?g.youthRate:g.rate; }
+/* 소비액 기준 환급액 — 환급률을 적용한 뒤 지원 한도로 자른다 */
+function ft50RefundOf(a, spend){
+  return Math.min(Math.floor((Number(spend)||0)*ft50GrantRate(a)/100), ft50GrantCap(a));
+}
+/* 지자체 예산 총액 집행분 — "마감 기준 = 예산 소진" 판정용. 0이면 미설정 */
+function ft50BudgetUsed(region){
+  return ft50All().filter(function(x){ return x.a.region===region&&x.a.status==='refund_ok'; })
+    .reduce(function(s,x){ return s+(x.a.refundAmount||0); }, 0);
+}
 
 const FT50_ST = {
   received:  {t:'접수 대기',      lane:'공사',   ic:'📥', cls:'n'},
@@ -60,7 +105,7 @@ function ft50DefaultCfg(name){
     open:r?r.status==='open':true,
     applyStart:'2020-01-01', applyEnd:'2030-12-31',
     travelStart:p?p.s:'2026-01-01', travelEnd:p?p.e:'2026-12-31',
-    capacity:200, minPeople:1, maxPeople:6,
+    capacity:200, minPeople:1, maxPeople:6, budget:0,
     notices:[]
   };
 }
@@ -288,19 +333,8 @@ function ft50Hist(rec,st,by,note){
   rec.history.push({st:st,ts:new Date().toISOString(),by:by||'',note:note||''});
 }
 
-/* 지원금 산정 — 기본(인원×5만) + 청년 20% + 가족(3인 이상) 10%.
-   단 신청자 1명당 최대 환급액(10만원)을 넘지 못한다 */
-function ft50Calc(a){
-  const n=ft50PeopleNum(a);
-  const base=n*FT50_PER_PERSON;
-  const youth=a.youth?Math.round(base*FT50_YOUTH_RATE):0;
-  const family=(n>=3)?Math.round(base*FT50_FAMILY_RATE):0;
-  const cap=ft50RefundCap(a);
-  const sum=base+youth+family;
-  return {base:base,youth:youth,family:family,cap:cap,capped:sum>cap,total:Math.min(sum,cap)};
-}
-/* 환급 한도 = 인원 × 1인당 최대 환급액 */
-function ft50RefundCap(a){ return ft50PeopleNum(a)*FT50_MAX_PER_PERSON; }
+/* 신청 건에 저장된 한도가 있으면 그 값을 쓴다 — 승인 당시의 기준을 보존하기 위함 */
+function ft50RefundCap(a){ return a.refundCap||ft50GrantCap(a); }
 
 /* ── 주민등록등본 조회(모의) ────────────────────────────────
    실제 서비스는 행정정보 공동이용망으로 세대원을 회신받는다. 프로토타입에서는
@@ -543,3 +577,5 @@ function ft50Persona(){
   return FT50_ADMIN_ACCOUNTS.find(a=>a.id===id)||FT50_ADMIN_ACCOUNTS[0];
 }
 function ft50SetPersona(id){ localStorage.setItem(FT50_PERSONA_KEY,id); }
+/* 통합 기준값(지원금액·환급률·예산)은 공사 총괄 관리자만 바꿀 수 있다 — 지자체 담당자는 조회만 */
+function ft50IsHQ(){ return !ft50Persona().region; }

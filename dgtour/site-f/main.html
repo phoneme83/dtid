@@ -128,7 +128,7 @@
 
 <script src="../site-assets/data.js?v=20260818a"></script>
 <script src="f.js?v=2"></script>
-<script src="f-t50.js?v=6"></script>
+<script src="f-t50.js?v=7"></script>
 <script>
 const U=fRequireUser();
 const VENUES=fVenues();
@@ -196,10 +196,10 @@ function renderT50(){
   const open=TOUR50_REGIONS.filter(r=>r.status==='open').length;
   let html;
   if(st&&st.region){
-    const grant=(typeof st.amount==='number')?st.amount:ft50Calc(st).total;
+    const grant=(typeof st.amount==='number')?st.amount:ft50GrantCap(st);
     html='<div class="kv"><span class="k">신청 지역</span><span class="v">'+fEsc(st.region)+'</span></div>'+
       '<div class="kv"><span class="k">진행 상태</span><span class="v pri">'+FT50_ST[st.status].t+'</span></div>'+
-      '<div class="kv"><span class="k">지원금액'+((typeof st.amount==='number')?'':'(예상)')+'</span><span class="v">'+fmt(grant)+' 원</span></div>'+
+      '<div class="kv"><span class="k">지원 한도'+((typeof st.amount==='number')?'':'(예상)')+'</span><span class="v">'+fmt(grant)+' 원</span></div>'+
       '<div class="kv"><span class="k">사용금액</span><span class="v">'+fmt(st.spend||0)+' 원</span></div>'+
       '<div style="margin-top:11px"><a class="btn blk" href="t50.html">신청현황 보기</a></div>';
   }else{
