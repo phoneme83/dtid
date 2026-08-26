@@ -72,8 +72,8 @@
 
 <script src="../site-assets/data.js?v=20260818a"></script>
 <script src="f.js?v=2"></script>
-<script src="f-t50.js?v=5"></script>
-<script src="f-t50-evidence.js?v=3"></script>
+<script src="f-t50.js?v=6"></script>
+<script src="f-t50-evidence.js?v=4"></script>
 <script src="f-t50-corp.js?v=1"></script>
 <script>
 const U=fRequireUser();
@@ -882,6 +882,8 @@ function renderRefund(){
           '<div class="row"><span>결재금액</span><b>'+fmt(a.evidence.amt)+'원</b></div>'+
           (a.evidence.date?'<div class="row"><span>결제일</span><b>'+fEsc(a.evidence.date)+(a.evidence.date<a.start?' ✅ 숙박 선결제 인정':' ✅ 여행기간 내')+'</b></div>':'')+
           '<div class="row"><span>첨부파일</span><b>'+fEsc(a.evidence.file||'-')+'</b></div>'+
+          (a.evidence.shop?'<div class="row"><span>가맹점</span><b>'+fEsc(a.evidence.shop)+'</b></div>':'')+
+          (a.evidence.biz?'<div class="row"><span>소비 인정</span><b><span class="badge '+ft50BizBadgeCls(a.evidence.biz)+'">'+ft50BizIcon(a.evidence.biz)+' '+fEsc(a.evidence.biz.label)+'</span></b></div>':'')+
           (a.evidence.stay?'<div class="row"><span>숙박 증빙</span><b>🏨 숙박비 결제 건 · '+FT50_STAY_DOC_LABEL+' '+fEsc((a.evidence.stayDoc&&a.evidence.stayDoc.name)||'-')+'</b></div>':'')+
           (a.corpCheck?'<div class="row"><span>법인카드 확인</span><b><span class="badge '+ft50CorpBadgeCls(a.corpCheck)+'">'+
             ft50CorpIcon(a.corpCheck)+' '+a.corpCheck.label+'</span></b></div>':'')+
@@ -930,7 +932,7 @@ function t50EvOcrHtml(a){
   const warn=function(reason){
     return reason?('<div style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:9px 11px;margin:8px 0;font-size:12.5px;color:#9a3412;line-height:1.6">⚠️ <b>카드 결제 증빙이 아닙니다 — '+fEsc(reason)+'</b><br>'+
       '카드번호 자리에 인쇄된 번호가 결제카드 번호가 아니어서 대조할 수 없습니다. '+
-      '신용카드 매출전표(카드번호·승인번호가 인쇄된 영수증)를 첨부해 주세요.</div>'):'';
+      '신용카드 매출전표(카드번호·승인번호가 인쇄된 영수증)를 첨부해 주세요.'+ft50NonCardNote(reason)+'</div>'):'';
   };
   const okBox='<label style="display:flex;align-items:center;gap:7px;margin:10px 0 2px;font-size:13px;font-weight:600;cursor:pointer"><input type="checkbox" id="t50EvOk"> 위 판독 내용을 확인했습니다</label>';
   if(o.mode==='real'){
@@ -943,6 +945,7 @@ function t50EvOcrHtml(a){
     return '<div class="t50e-ocr"><div class="t">📄 영수증 판독 결과 (실제 OCR) — <b>'+fEsc(o.file)+'</b></div>'+
       warn(ex.nonCard)+
       '<div class="row"><span>가맹점</span><b>'+V(ex.shop)+'</b></div>'+
+      t50BizRow(ex.shop)+
       '<div class="row"><span>결제지역</span><b>'+V(rgDisp)+'</b></div>'+
       '<div class="row"><span>카드번호</span><b>'+V(ex.card)+'</b></div>'+
       '<div class="row"><span>승인번호</span><b>'+V(ex.appr)+'</b></div>'+
@@ -956,6 +959,7 @@ function t50EvOcrHtml(a){
   }
   return '<div class="t50e-ocr"><div class="t">📄 영수증 판독 결과 (모의 — OCR 엔진 로드 실패) — <b>'+fEsc(o.file)+'</b></div>'+
     '<div class="row"><span>가맹점</span><b>'+V(o.merchant)+'</b></div>'+
+    t50BizRow(o.merchant)+
     '<div class="row"><span>결제지역</span><b>'+'<span style="color:#b45309;font-weight:700">확인 불가</span>'+'</b></div>'+
     '<div class="row"><span>카드번호</span><b>'+V(o.card)+'</b></div>'+
     '<div class="row"><span>승인번호</span><b>'+V(o.appr)+'</b></div>'+
@@ -963,6 +967,14 @@ function t50EvOcrHtml(a){
     '<div class="row"><span>결제일</span><b id="t50EvDateB">'+V(o.date?o.date+ft50EvDateBadge(a,o.date,t50EvPrepay()):null)+'</b></div>'+
     t50CorpRow(o.card,'')+ okBox +
     '<small>모의 판독이라 결제지역은 확인 불가입니다. 입력하신 승인번호·결재금액·결제일이 판독 결과와 일치해야 제출됩니다.</small></div>';
+}
+/* 인정 소비범위 확인 — 가맹점 상호로 인정 항목·제외 업종을 판정한 결과를 보여준다 */
+function t50BizRow(shop){
+  const c = ft50BizCheck(shop);
+  return '<div class="row"><span>소비 인정</span>'+
+    '<b><span class="badge '+ft50BizBadgeCls(c)+'">'+ft50BizIcon(c)+' '+c.label+'</span></b></div>'+
+    '<div class="row" style="border-bottom:0"><span></span>'+
+    '<b style="font-weight:500;color:var(--sub);font-size:11px">'+fEsc(c.detail)+'</b></div>';
 }
 /* 법인카드 확인 — 판독된 카드번호와 원문으로 3단 판정한 결과를 한 줄로 보여준다 */
 function t50CorpRow(card, text){
@@ -1117,6 +1129,9 @@ function t50EvSubmit(){
     file:t50Ocr.file,
     prepay:prepay,   /* 숙박 선결제 신고 여부 — 담당자가 숙박비인지 원본으로 확인한다 */
     stay:stay, stayDoc:stayDoc,   /* 숙박비 결제 건 여부와 첨부한 숙박확인서 */
+    shop:((t50Ocr.mode==='real'&&t50Ocr.ex)?(t50Ocr.ex.shop||''):(t50Ocr.merchant||'')),
+    region:((t50Ocr.mode==='real'&&t50Ocr.ex)?(ft50EvRegionText(t50Ocr.ex.region)||''):''),
+    biz:ft50BizCheck((t50Ocr.mode==='real'&&t50Ocr.ex)?t50Ocr.ex.shop:t50Ocr.merchant),
     ocr:(t50Ocr.mode==='real'?'영수증 OCR 판독 결과와 대조 일치':'모의 판독 결과와 대조 일치'),
     ts:ft50Today()
   };

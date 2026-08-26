@@ -215,6 +215,11 @@ function ft50EvSampleImage(a){
 function ft50EvNonCard(raw){
   const t=String(raw||'');
   const credit=/신용\s*카드|신용\s*거래|신용\s*승인|신용\s*재승인|카드\s*결제|매\s*입\s*사/.test(t);
+  /* 간이영수증·계좌이체 확인증은 16곳 전부 불인정이라, 카드 승인 표기가 함께 있어도
+     정산 증빙이 되지 않는다. 그래서 카드 판별보다 먼저 거른다.
+     '간이과세자'가 인쇄된 정상 매출전표까지 걸리지 않도록 '간이+영수증'이 붙은 형태만 본다 */
+  if(/간\s*이\s*영\s*수\s*증|간이\s*과세\s*영수증/.test(t)) return '간이영수증';
+  if(/이\s*체\s*확\s*인\s*증|무통장\s*입금|입금\s*확인증|계\s*좌\s*이\s*체/.test(t)) return '계좌이체 확인증';
   if(!credit&&/멤버\s*[십쉽][^\n]{0,12}매\s*출\s*전\s*표/.test(t)) return '멤버십 전표';
   if(credit) return null;
   if(/현금\s*영수증|현금\s*[（(]\s*소득공제|자진\s*발급/.test(t)) return '현금영수증';
@@ -374,7 +379,11 @@ function ft50EvVerify(o,a,input){
     if(ex.nonCard)
       return '❌ <b>카드 결제 증빙이 아닙니다.</b> 첨부하신 파일은 <b>'+ex.nonCard+
         '</b>으로 판독되었습니다. 카드번호 자리에 인쇄된 번호는 결제카드 번호가 아니므로 대조할 수 없습니다. '+
-        '신용카드 매출전표(카드번호·승인번호가 인쇄된 영수증)를 첨부해 주세요.';
+        '신용카드 매출전표(카드번호·승인번호가 인쇄된 영수증)를 첨부해 주세요.'+ft50NonCardNote(ex.nonCard);
+    /* 인정 소비범위 — 가맹점 상호가 제외 업종으로 판독되면 반려한다.
+       상호를 못 읽은 건은 막지 않고 담당자 확인 대상으로 넘긴다 */
+    const bz=ft50BizCheck(ex.shop);
+    if(bz.result==='excluded') return ft50BizRejectMsg(bz,ex.shop);
     const fails=[];
     if(ex.appr){ if(ex.appr!==appr) fails.push('승인번호(영수증: '+ex.appr+')'); }
     else if(o.text.indexOf(appr)<0) fails.push('승인번호(영수증에서 확인 불가)');
@@ -399,6 +408,8 @@ function ft50EvVerify(o,a,input){
         '</b>이나, 이 신청 건의 지자체는 <b>'+a.region+'</b>입니다. 신청하신 지자체에서 결제한 영수증만 환급 대상입니다.';
     return null;
   }
+  const mbz=ft50BizCheck(o.merchant);
+  if(mbz.result==='excluded') return ft50BizRejectMsg(mbz,o.merchant);
   if(appr!==o.appr||amt!==o.amt||(o.card&&!ft50EvCardMatch(card,o.card))||(o.date&&o.date!==payDate))
     return '❌ <b>정보가 잘못 입력되었습니다.</b> 영수증 판독 결과와 카드번호·승인번호·결재금액·결제일 중 일치하지 않는 항목이 있습니다. 다시 확인해 주세요.';
   const dchk=ft50EvDateCheck(a,payDate,!!input.prepay);

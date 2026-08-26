@@ -229,6 +229,7 @@ function t50aCard(x){
       ' · 결재금액 '+ft50Won(a.evidence.amt)+(a.evidence.date?' · 결제일 '+fEsc(a.evidence.date):'')+' · 첨부 '+fEsc(a.evidence.file||'-')+
       '<br><b style="color:var(--ok)">✓ '+fEsc(a.evidence.ocr||'판독 결과와 대조 일치')+
       (a.evidence.date?(a.evidence.date<a.start?' · 숙박 선결제 — 여행 시작 전 결제 인정 건':' · 결제일 여행기간('+a.start+'~'+a.end+') 내 확인'):'')+'</b>'+
+      t50aBizLine(a)+
       t50aStayLine(a)+
       t50aCorpLine(a)+'</div>':'')+
     '<div class="t50a-acts">'+acts+'</div>'+
@@ -236,6 +237,15 @@ function t50aCard(x){
   '</div>';
 }
 
+/* 인정 소비범위 한 줄 — 저장된 상호로 매번 다시 판정한다. 담당자가 판독값 보정으로
+   가맹점명을 고치면 그 값으로 재판정된 결과가 바로 보인다 */
+function t50aBizLine(a){
+  const e=a.evidence;
+  if(!e) return '';
+  const c=ft50BizCheck(e.shop);
+  return '<br><b><span class="badge '+ft50BizBadgeCls(c)+'">'+ft50BizIcon(c)+' '+c.label+'</span>'+
+    (e.shop?' <span class="cap">(가맹점 '+fEsc(e.shop)+')</span>':'')+'</b>';
+}
 /* 숙박 증빙 한 줄 — 숙박확인서는 심사에서 원본을 확인해야 하는 항목이라 목록에서도 보이게 한다 */
 function t50aStayLine(a){
   const e=a.evidence;
@@ -594,6 +604,10 @@ function t50aDetail(k,i){
       row('카드번호',fEsc(a.evidence.card||'-'))+
       row('승인번호',fEsc(a.evidence.appr||'-'))+
       row('결재금액',ft50Won(a.evidence.amt))+
+      row('가맹점',fEsc(a.evidence.shop||'-'))+
+      (function(){const c=ft50BizCheck(a.evidence.shop);
+        return row('소비 인정','<span class="badge '+ft50BizBadgeCls(c)+'">'+ft50BizIcon(c)+' '+c.label+'</span>')+
+               row('판정 근거',fEsc(c.detail));})()+
       (a.evidence.date?row('결제일',fEsc(a.evidence.date)+(a.evidence.date<a.start?' (숙박 선결제 — 여행 시작 전 결제 인정 ✓)':' (여행기간 '+a.start+'~'+a.end+' 내 ✓)')):'')+
       (a.evidence.stay
         ?row('숙박 증빙','🏨 숙박비 결제 건 — '+FT50_STAY_DOC_LABEL+' 첨부 '+

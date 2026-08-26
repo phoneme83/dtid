@@ -234,7 +234,7 @@
 <div class="toast" id="toastEl"></div>
 
 <script src="../site-assets/data.js?v=20260818a"></script>
-<script src="t50-config.js?v=6"></script>
+<script src="t50-config.js?v=7"></script>
 <script src="t50-corp.js?v=1"></script>
 <script>/* site-d 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidD_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
@@ -1007,9 +1007,10 @@ function apEvForm(a,i){
     const rgDisp=rgTxt?(rgTxt+(rgm==='match'?' ✅ 신청 지자체 일치':(rgm==='mismatch'?' ⚠️ 신청 지자체('+a.region+')와 다름':''))):null;
     const warn=ex.nonCard?('<div style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:9px 11px;margin:8px 0;font-size:12.5px;color:#9a3412;line-height:1.6">⚠️ <b>카드 결제 증빙이 아닙니다 — '+ex.nonCard+'</b><br>'+
       '카드번호 자리에 인쇄된 번호가 결제카드 번호가 아니어서 대조할 수 없습니다. '+
-      '신용카드 매출전표(카드번호·승인번호가 인쇄된 영수증)를 첨부해 주세요.</div>'):'';
+      '신용카드 매출전표(카드번호·승인번호가 인쇄된 영수증)를 첨부해 주세요.'+t50NonCardNote(ex.nonCard)+'</div>'):'';
     ocr='<div class="ap-ocr"><div class="t">📄 영수증 판독 결과 (실제 OCR) — <b>'+o.file+'</b></div>'+ warn +
       '<div class="row"><span>가맹점</span><b>'+V(ex.shop)+'</b></div>'+
+      apBizRow(ex.shop)+
       '<div class="row"><span>결제지역</span><b>'+V(rgDisp)+'</b></div>'+
       '<div class="row"><span>카드번호</span><b>'+V(ex.card)+'</b></div>'+
       '<div class="row"><span>승인번호</span><b>'+V(ex.appr)+'</b></div>'+
@@ -1022,6 +1023,7 @@ function apEvForm(a,i){
   }else if(o){
     ocr='<div class="ap-ocr"><div class="t">📄 영수증 판독 결과 (모의 — OCR 엔진 로드 실패) — <b>'+o.file+'</b></div>'+
       '<div class="row"><span>가맹점</span><b>'+V(o.merchant)+'</b></div>'+
+      apBizRow(o.merchant)+
       '<div class="row"><span>결제지역</span><b>'+'<span style="color:#b45309;font-weight:700">확인 불가</span>'+'</b></div>'+
       '<div class="row"><span>카드번호</span><b>'+V(o.card)+'</b></div>'+
       '<div class="row"><span>승인번호</span><b>'+V(o.appr)+'</b></div>'+
@@ -1107,6 +1109,13 @@ function apEvStayPick(i,input){
   apEvStayDoc[i]={name:f.name,size:f.size};
   if(el)el.innerHTML=apEvStayInfoHtml(i);
 }
+/* 인정 소비범위 확인 — 가맹점 상호로 인정 항목·제외 업종을 판정한 결과를 보여준다 */
+function apBizRow(shop){
+  const c=t50BizCheck(shop);
+  return '<div class="row"><span>소비 인정</span><b style="color:'+t50BizColor(c)+'">'+
+      t50BizIcon(c)+' '+c.label+'</b></div>'+
+    '<div class="row"><span></span><b style="font-weight:400;color:#94a3b8;font-size:12px">'+c.detail+'</b></div>';
+}
 /* 법인카드 확인 — 카드번호(BIN)와 영수증 표기로 판정한 결과를 보여준다.
    법인카드 결제는 업무 목적 지출로 보아 환급 대상이 아니다 */
 function apCorpRow(card,text){
@@ -1124,6 +1133,8 @@ function apEvDone(a){
     '<div class="row"><span>결재금액</span><b>'+e.amt.toLocaleString('ko-KR')+'원</b></div>'+
     (e.date?'<div class="row"><span>결제일</span><b>'+e.date+(e.date<a.start?' ✅ 숙박 선결제 인정':' ✅ 여행기간 내')+'</b></div>':'')+
     '<div class="row"><span>첨부파일</span><b>'+e.file+'</b></div>'+
+    (e.shop?'<div class="row"><span>가맹점</span><b>'+e.shop+'</b></div>':'')+
+    (e.biz?'<div class="row"><span>소비 인정</span><b style="color:'+t50BizColor(e.biz)+'">'+t50BizIcon(e.biz)+' '+e.biz.label+'</b></div>':'')+
     (e.stay?'<div class="row"><span>숙박 증빙</span><b>🏨 숙박비 결제 건 · '+T50_STAY_DOC_LABEL+' '+((e.stayDoc&&e.stayDoc.name)||'-')+'</b></div>':'')+
     (a.corpCheck?'<div class="row"><span>법인카드 확인</span><b style="color:'+t50CorpColor(a.corpCheck)+'">'+
       t50CorpIcon(a.corpCheck)+' '+a.corpCheck.label+'</b></div>':'')+
@@ -1213,6 +1224,11 @@ function apOcrDate(raw){
 function apOcrNonCard(raw){
   const t=String(raw||'');
   const credit=/신용\s*카드|신용\s*거래|신용\s*승인|신용\s*재승인|카드\s*결제|매\s*입\s*사/.test(t);
+  /* 간이영수증·계좌이체 확인증은 16곳 전부 불인정이라, 카드 승인 표기가 함께 있어도
+     정산 증빙이 되지 않는다. 그래서 카드 판별보다 먼저 거른다.
+     '간이과세자'가 인쇄된 정상 매출전표까지 걸리지 않도록 '간이+영수증'이 붙은 형태만 본다 */
+  if(/간\s*이\s*영\s*수\s*증|간이\s*과세\s*영수증/.test(t)) return '간이영수증';
+  if(/이\s*체\s*확\s*인\s*증|무통장\s*입금|입금\s*확인증|계\s*좌\s*이\s*체/.test(t)) return '계좌이체 확인증';
   if(!credit&&/멤버\s*[십쉽][^\n]{0,12}매\s*출\s*전\s*표/.test(t)) return '멤버십 전표';
   if(credit) return null;
   if(/현금\s*영수증|현금\s*[（(]\s*소득공제|자진\s*발급/.test(t)) return '현금영수증';
@@ -1524,12 +1540,17 @@ function apEvSubmit(i){
   const schk=t50EvStayCheck(stay,stayDoc);
   if(schk){err.innerHTML=schk.msg;return;}
   const a0=apLoad()[i];if(!a0)return;
+  /* 인정 소비범위 — 가맹점 상호가 제외 업종으로 판독되면 반려한다.
+     상호를 못 읽은 건은 막지 않고 담당자 확인 대상으로 넘긴다 */
+  const evShop=(o.mode==='real')?((o.ex||{}).shop||''):(o.merchant||'');
+  const evBiz=t50BizCheck(evShop);
+  if(evBiz.result==='excluded'){err.innerHTML=t50BizRejectMsg(evBiz,evShop);return;}
   /* OCR 대조: 영수증에서 추출한 카드번호·승인번호·금액·결제일 필드와 입력값을 각각 비교 */
   if(o.mode==='real'){
     const ex=o.ex||{};
     /* 카드 결제 증빙이 아니면 대조 자체가 성립하지 않는다 */
     if(ex.nonCard){
-      err.innerHTML='❌ <b>카드 결제 증빙이 아닙니다.</b> 첨부하신 파일은 <b>'+ex.nonCard+'</b>으로 판독되었습니다. 카드번호 자리에 인쇄된 번호는 결제카드 번호가 아니므로 대조할 수 없습니다. 신용카드 매출전표(카드번호·승인번호가 인쇄된 영수증)를 첨부해 주세요.';
+      err.innerHTML='❌ <b>카드 결제 증빙이 아닙니다.</b> 첨부하신 파일은 <b>'+ex.nonCard+'</b>으로 판독되었습니다. 카드번호 자리에 인쇄된 번호는 결제카드 번호가 아니므로 대조할 수 없습니다. 신용카드 매출전표(카드번호·승인번호가 인쇄된 영수증)를 첨부해 주세요.'+t50NonCardNote(ex.nonCard);
       return;
     }
     const fails=[];
@@ -1575,7 +1596,8 @@ function apEvSubmit(i){
   }
   const list=apLoad();if(!list[i])return;
   list[i].status='refund_req';
-  list[i].evidence={card:card.slice(0,4)+'-'+card.slice(4,6)+'**-****-'+card.slice(-4),appr:appr,amt:amt,date:(o.mode==='real'&&o.ex&&o.ex.date)?o.ex.date:payDate,file:o.file,prepay:prepay,stay:stay,stayDoc:stayDoc};
+  list[i].evidence={card:card.slice(0,4)+'-'+card.slice(4,6)+'**-****-'+card.slice(-4),appr:appr,amt:amt,date:(o.mode==='real'&&o.ex&&o.ex.date)?o.ex.date:payDate,file:o.file,prepay:prepay,stay:stay,stayDoc:stayDoc,
+    shop:evShop,region:(o.mode==='real'?(apOcrRegionText((o.ex||{}).region)||''):''),biz:evBiz};
   /* 법인카드 판정 결과를 신청 건에 남기고, 영수증 표기로 확인된 건은 BIN 판정표에 학습시킨다 */
   list[i].corpCheck=t50CorpCheck((o.mode==='real'&&o.ex&&o.ex.card)?o.ex.card:card,o.mode==='real'?o.text:'',true);
   delete list[i].fixReason;
