@@ -7,8 +7,8 @@
    ============================================================ */
 
 const FT50_AP_PREFIX  = 'dtidF_t50Applies_';
-const FT50_CFG_KEY    = 'dtidF_t50BizCfg';
-const FT50_PERSONA_KEY= 'dtidF_admPersona';
+const FT50_CFG_KEY    = 'dtid_t50BizCfg';   /* 시안 공통 — 관리자 한 벌이 다룬다 */
+const FT50_PERSONA_KEY= 'dtid_admPersona';   /* 시안 공통 — 관리자 한 벌이 다룬다 */
 const FT50_ID_PREFIX  = 'dtidF_t50Identity_';   /* 본인인증(PASS·행정정보 공동이용) 결과 */
 
 /* ── 지원금액 · 환급률 (통합 기준값, 전국 공통) ────────────────
@@ -40,6 +40,9 @@ function ft50AdoptLegacy(shared,legacy){
 }
 ft50AdoptLegacy(FT50_GRANT_KEY,'dtidF_t50GrantCfg');
 ft50AdoptLegacy(FT50_UNIFIED_KEY,'dtidF_t50UnifiedCfg');
+ft50AdoptLegacy('dtid_t50BizCfg','dtidF_t50BizCfg');
+ft50AdoptLegacy('dtid_admPersona','dtidF_admPersona');
+ft50AdoptLegacy('dtid_t50ScreenCfg','dtidF_t50ScreenCfg');
 const FT50_GRANT_DEFAULT = {solo:100000, team:200000, youthSolo:140000, youthTeam:280000,
                             family:500000, rate:50, youthRate:50, useEnd:'2026-12-31'};
 const FT50_GRANT_FIELDS = [
@@ -476,11 +479,17 @@ function ft50LoadKey(k){ try{ return JSON.parse(localStorage.getItem(k)||'[]'); 
 function ft50SaveKey(k,list){ localStorage.setItem(k,JSON.stringify(list)); }
 function ft50My(uid){ return ft50LoadKey(ft50Key(uid)); }
 function ft50SaveMy(uid,list){ ft50SaveKey(ft50Key(uid),list); }
+/* 관리자는 시안 A~F 어디에서 접수된 건이든 함께 본다 — 저장키로 시안을 구분한다 */
+const FT50_SITES = ['A','B','C','D','E','F'];
+function ft50SiteOf(key){
+  const m=/^dtid([A-F])_/.exec(key||'');
+  return m?m[1]:'-';
+}
 function ft50AppKeys(){
   const ks=[];
   for(let i=0;i<localStorage.length;i++){
     const k=localStorage.key(i);
-    if(k&&k.indexOf(FT50_AP_PREFIX)===0) ks.push(k);
+    if(k&&/^dtid[A-F]_t50Applies(_|$)/.test(k)) ks.push(k);
   }
   return ks;
 }
@@ -492,7 +501,7 @@ function ft50All(){
   });
   return out;
 }
-function ft50Uid(k){ return k.slice(FT50_AP_PREFIX.length); }
+function ft50Uid(k){ return k.replace(/^dtid[A-F]_t50Applies_?/,'')||'(공용)'; }
 /* 지역별 접수 인원(취소·반려 제외) — 사업설정 capacity와 비교 */
 function ft50UsedCount(region){
   return ft50All().filter(x=>x.a.region===region&&FT50_INACTIVE.indexOf(x.a.status)<0)
@@ -744,7 +753,7 @@ function ft50Sigungu(name){ return FT50_SI[name]||(name+'군'); }
    그 값을 읽어 렌더링한다. 즉 등록·수정한 내용이 실제 화면에 바로 반영된다.
      · 프로세스 구성 등록·수정·삭제·조회 → 신청 절차 단계(steps)
      · 화면설계 정보 등록·수정·삭제·조회 → 신청 화면 표시 항목(fields) */
-const FT50_SCREEN_KEY = 'dtidF_t50ScreenCfg';
+const FT50_SCREEN_KEY = 'dtid_t50ScreenCfg';   /* 시안 공통 — 관리자 한 벌이 다룬다 */
 const FT50_STEPS_DEFAULT  = ['본인인증','주소지 확인','지역 선택','여행 계획','접수 완료'];
 const FT50_FIELDS_DEFAULT = [
   {id:'family', label:'신청 단위(개인·가족)', screen:'여행 계획', show:true,  required:false, lock:true},

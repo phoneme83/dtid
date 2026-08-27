@@ -62,7 +62,7 @@
     </div>
     <button class="ap-big hero" onclick="apStart()">🧳 반값여행 신청 시작하기</button>
     <button class="ap-big" id="apMyBtn" onclick="apGo(6)">📄 나의 신청 내역 보기</button>
-    <a class="ap-adm-link" href="admin.html">🖥 관리자 페이지 › 지역사랑 휴가지원 (담당자용) 열기 ›</a>
+    <a class="ap-adm-link" href="../admin.html">🖥 관리자 페이지 › 지역사랑 휴가지원 (담당자용) 열기 ›</a>
     <a class="ap-adm-link" href="t50-pay.html">🪙 지역화폐(앱) 프로토타입 열기 ›</a>
   </section>
 
@@ -235,8 +235,8 @@
 <div class="toast" id="toastEl"></div>
 
 <script src="../site-assets/data.js?v=20260818a"></script>
-<script src="t50-config.js?v=16"></script>
-<script src="t50-corp.js?v=1"></script>
+<script src="t50-config.js?v=17"></script>
+<script src="t50-corp.js?v=2"></script>
 <script>/* site-d 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidD_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script src="../assets/common.js?v=20260707f"></script>

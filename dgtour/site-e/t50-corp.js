@@ -22,7 +22,7 @@
      basis: bin | receipt | manual | none
    ============================================================ */
 
-const T50_BIN_KEY = 'dtidE_t50CardBins';   /* 카드 BIN 판정표 (관리자 관리 + 자동 학습) */
+const T50_BIN_KEY = 'dtid_t50CardBins';   /* 카드 BIN 판정표 (관리자 관리 + 자동 학습) */
 
 /* 영수증 카드종류 줄에서 쓰이는 표기 */
 const T50_CORP_WORDS     = ['법인'];

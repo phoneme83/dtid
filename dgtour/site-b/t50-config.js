@@ -18,7 +18,7 @@ function t50Regions(){return (typeof TOUR50_REGIONS!=='undefined')?TOUR50_REGION
 function t50PeopleNum(a){return a.people==='6'?6:(Number(a.people)||1);}
 
 /* ── 지자체 사업설정(사업개설·신청기간·여행기간·신청인원조건·공지사항) ── */
-const T50_BIZCFG_KEY='dtidB_t50BizCfg';
+const T50_BIZCFG_KEY='dtid_t50BizCfg';   /* 시안 공통 — 관리자 한 벌이 다룬다 */
 
 function t50DefaultRegionCfg(name){
   const r=t50Regions().find(x=>x.name===name);
@@ -53,7 +53,7 @@ function t50InApplyPeriod(cfg,today){
 const ADMIN_ACCOUNTS=[{id:'kto',name:'공사 총괄 관리자',region:null}].concat(
   t50Regions().map(r=>({id:'gov_'+r.name,name:r.sido+' '+r.name+' 담당자',region:r.name}))
 );
-const T50_PERSONA_KEY='dtidB_admPersona';
+const T50_PERSONA_KEY='dtid_admPersona';   /* 시안 공통 — 관리자 한 벌이 다룬다 */
 function admPersona(){
   const id=localStorage.getItem(T50_PERSONA_KEY)||'kto';
   return ADMIN_ACCOUNTS.find(a=>a.id===id)||ADMIN_ACCOUNTS[0];
@@ -67,11 +67,22 @@ function admIsHQ(){return !admPersona().region;}
 const T50_AP_PREFIX='dtidB_t50Applies_';
 /* 대기열 진입 중인 내 신청 티켓(지역+id) — apply.html이 참조하는 계정별 키 접두사 */
 const T50_MYQ_PREFIX='dtidB_t50MyQueue_';
+/* ── 통합 관리자 — 전 시안 신청 데이터 조회 ───────────────────
+   관리자 페이지는 한 벌이고, 시안 A~F 어디에서 접수된 건이든 함께 심사한다.
+   신청 데이터만 시안별로 분리 저장하므로(dtidA_~dtidF_) 전 시안 접두사를 훑어
+   모으고, 어느 시안에서 들어온 건인지는 저장키로 안다.
+   정원·예산 소진 판정과 증빙 중복 검사도 이 집계를 쓰므로 전 시안 합산이 된다
+   — 운영에서는 시스템이 한 벌이므로 그쪽이 실제 구조에 가깝다. */
+const T50_SITES=['A','B','C','D','E','F'];
+function t50SiteOf(key){
+  const m=/^dtid([A-F])_/.exec(key||'');
+  return m?m[1]:'-';
+}
 function t50AppKeys(){
   const ks=[];
   for(let i=0;i<localStorage.length;i++){
     const k=localStorage.key(i);
-    if(k&&(k.indexOf(T50_AP_PREFIX)===0||k==='dtidB_t50Applies'))ks.push(k);
+    if(k&&/^dtid[A-F]_t50Applies(_|$)/.test(k))ks.push(k);
   }
   return ks;
 }
@@ -297,7 +308,7 @@ function t50DocSize(n){
    업무구조도 「반값여행 화면설계」 8개 단위프로세스에 대응하는 설정 계층.
    담당자가 신청 절차 단계와 신청 화면 표시 항목을 관리하고, 신청 화면이 그 값을
    읽어 렌더링한다. 즉 등록·수정한 내용이 실제 화면에 바로 반영된다. */
-const T50_SCREEN_KEY='dtidB_t50ScreenCfg';
+const T50_SCREEN_KEY='dtid_t50ScreenCfg';   /* 시안 공통 — 관리자 한 벌이 다룬다 */
 const T50_STEPS_DEFAULT=['본인인증','주소지 확인','지역 선택','여행 계획','접수 완료'];
 const T50_FIELDS_DEFAULT=[
   {id:'family',label:'신청 단위(개인·가족)',screen:'여행 계획',show:true,required:false,lock:true},
@@ -441,6 +452,9 @@ function t50AdoptLegacy(shared,legacy){
 }
 t50AdoptLegacy(T50_GRANT_KEY,'dtidB_t50GrantCfg');
 t50AdoptLegacy(T50_UNIFIED_KEY,'dtidB_t50UnifiedCfg');
+t50AdoptLegacy('dtid_t50BizCfg','dtidB_t50BizCfg');
+t50AdoptLegacy('dtid_admPersona','dtidB_admPersona');
+t50AdoptLegacy('dtid_t50ScreenCfg','dtidB_t50ScreenCfg');
 
 const T50_GRANT_DEFAULT={solo:100000,team:200000,youthSolo:140000,youthTeam:280000,
                          family:500000,rate:50,youthRate:50,useEnd:'2026-12-31'};
