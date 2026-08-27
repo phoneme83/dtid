@@ -106,6 +106,7 @@
   <section class="ap-view" id="apV4">
     <h2 class="ap-q"><span id="apPlanRegion"></span> 여행 계획을 알려주세요</h2>
     <div class="ap-period" id="apPeriodBox"></div>
+    <div id="apGuideBox"></div>
     <label class="ap-lb">여행 기간 <small>(여행 가능기간의 날짜만 선택할 수 있습니다)</small></label>
     <div class="ap-cal" id="apCal"></div>
     <div class="ap-date-hint" id="apDateHint" aria-live="polite"></div>
@@ -234,7 +235,7 @@
 <div class="toast" id="toastEl"></div>
 
 <script src="../site-assets/data.js?v=20260818a"></script>
-<script src="t50-config.js?v=12"></script>
+<script src="t50-config.js?v=13"></script>
 <script src="t50-corp.js?v=1"></script>
 <script>/* site-d 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidD_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
@@ -701,6 +702,9 @@ function apPick(name){
   document.getElementById('apPlanRegion').textContent=r?(r.name+'('+r.sido+')'):name;
   document.getElementById('apRegionNext').disabled=false;
   /* 선택 지역의 여행 가능기간을 계획 화면에 반영 (가능기간 전용 캘린더 + 안내 배너) */
+  /* 지자체 설정값을 안내 문구로 풀어 보여준다 — 지역별 화면을 따로 만들지 않는다 */
+  const gb=document.getElementById('apGuideBox');
+  if(gb)gb.innerHTML=t50GuideHtml(name,['intro','apply'],'ap-note','📋 '+name+' 사업 안내');
   const p=apPeriod(name);
   const cfg=t50RegionCfg(name);
   const notice=(cfg.notices&&cfg.notices.length)?cfg.notices[0]:null;
@@ -918,6 +922,7 @@ function apRenderList(){
       act='<div class="ap-note">✅ 지자체 승인이 완료되었습니다'+(a.amount?' (지원금 '+a.amount.toLocaleString('ko-KR')+'원'+apBonusTxt(a)+')':'')+'. 곧 결과 통보가 도착합니다.</div>';
     else if(a.status==='notified')
       act='<div class="ap-note">📨 승인 결과가 통보되었습니다'+(a.amount?' — 지원금 <b>'+a.amount.toLocaleString('ko-KR')+'원</b>'+apBonusTxt(a):'')+'. 상품권 구입·충전은 <b>지역화폐 앱</b>에서 진행되며, 여행 후 증빙을 등록해 환급을 신청하세요.</div>'+
+      t50GuideHtml(a.region,'refund','ap-note','💰 환급 안내')+
       '<button class="ap-sm" onclick="location.href=\'t50-pay.html\'">🪙 지역화폐 앱 — 상품권 구입·충전</button>'+
       '<button class="ap-sm" onclick="apEvToggle('+i+')">🧾 증빙자료 등록 · 환급 신청</button>'+apEvForm(a,i);
     else if(a.status==='refund_req')
@@ -1076,6 +1081,7 @@ function apEvForm(a,i){
     apEvSubRow(a,i,'card')+apEvSubRow(a,i,'cash')+
     '<div class="ap-note">· 간이영수증·계좌이체 확인증과 법인·타인 명의 영수증은 인정되지 않습니다 <small>(16곳 공통)</small></div>'+
     '<div class="ap-note">🗓 '+t50SettleDueText(a)+'</div>'+
+    t50GuideHtml(a.region,'settle','ap-note')+
     ocr+
     '<div class="ap-err" id="apEvErr'+i+'" aria-live="polite"></div>'+
     '<button class="ap-sm hero" onclick="apEvSubmit('+i+')">환급 신청 제출</button>'+

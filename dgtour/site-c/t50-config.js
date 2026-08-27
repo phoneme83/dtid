@@ -621,6 +621,52 @@ function t50CfgEditable(it){
   return it.scope==='option'?true:admIsHQ();
 }
 
+/* ── 설정값 안내 문구 ────────────────────────────────────────
+   1차 분석안 8p — 유형A(안내 누락)·유형B(선택지 분리) 항목은 "개발 영역이 아님,
+   문구 작성 영역"으로 분류돼 있다. 지역별 화면을 따로 만들지 않고 설정값을 문구로
+   풀어 보여주는 것이 A안(단일 템플릿)의 요체라, 어느 단계에서 무엇을 보여줄지도
+   화면 코드가 아니라 이 표에 둔다. 스키마에 항목이 늘면 여기 한 줄만 더하면 된다.
+   stage: intro(사업안내) · apply(신청) · settle(정산) · refund(환급)
+   fmt 가 빈 문자열을 돌려주면 그 줄은 표시하지 않는다(해당 없음). */
+const T50_GUIDE=[
+  {stage:'intro', k:'foreigner',     fmt:function(v){return v==='제외'?'외국인은 신청할 수 없습니다.':'외국인도 신청할 수 있습니다.';}},
+  {stage:'intro', k:'applyPerYear',  fmt:function(v){return '1인당 '+v+' 신청할 수 있습니다.';}},
+  {stage:'intro', k:'repAgeMin',     fmt:function(v){return '여행 대표자는 만 '+Number(v)+'세 이상이어야 합니다.';}},
+  {stage:'intro', k:'officeHours',   fmt:function(v){return v==='제한 없음'?'접수 운영시간 제한이 없습니다.':'접수·상담 운영시간은 '+v+'입니다.';}},
+  {stage:'intro', k:'spotRule',      fmt:function(v){return '방문 인증은 '+v+' 기준입니다.';}},
+  {stage:'intro', k:'revenueLimit',  fmt:function(v){return v==='미적용'?'':'연매출 30억원을 초과하는 가맹점 결제는 인정되지 않습니다.';}},
+  {stage:'intro', k:'excludeStay',   fmt:function(v){return v?'일부 숙박업소는 인정 대상에서 제외됩니다(지자체 별도 안내).':'';}},
+  {stage:'intro', k:'livingExclude', fmt:function(v){return v?'생활소비·특정 서비스 결제는 인정되지 않습니다(지자체 별도 안내).':'';}},
+  {stage:'intro', k:'facilityExcept',fmt:function(v){return v?'일부 시설은 예외로 인정됩니다(지자체 별도 안내).':'';}},
+  {stage:'apply', k:'applyDeadline', fmt:function(v){return '신청 마감은 '+v+'입니다.';}},
+  {stage:'apply', k:'approveNotice', fmt:function(v){return v==='발송 없음'?'승인 결과는 마이페이지에서 확인해 주세요.':'승인 결과 통보: '+v;}},
+  {stage:'settle',k:'settleCount',   fmt:function(v){return '정산은 신청 건당 '+v+'만 신청할 수 있습니다.';}},
+  {stage:'settle',k:'settleUnit',    fmt:function(v){return v==='단위 없음'?'':'정산 금액은 '+v+' 단위로 계산됩니다.';}},
+  {stage:'refund',k:'payoutDays',    fmt:function(v){return '환급금은 정산 승인 후 '+Number(v)+'일 이내 지급됩니다.';}},
+  {stage:'refund',k:'payoutMethod',  fmt:function(v){return '환급금 지급수단: '+v;}},
+  {stage:'refund',k:'onlineShop',    fmt:function(v){return v?'환급금은 지역쇼핑몰에서도 사용할 수 있습니다.':'환급금은 온라인에서는 사용할 수 없습니다.';}},
+  {stage:'refund',k:'deliveryApp',   fmt:function(v){return v?'배달앱 결제에도 사용할 수 있습니다.':'배달앱 결제에는 사용할 수 없습니다.';}},
+  {stage:'refund',k:'giftRefund',    fmt:function(v){return v?'상품권 환불은 지자체 환불규정에 따릅니다.':'';}}
+];
+/* 해당 단계의 안내 문구 목록 — 설정값이 바뀌면 문구도 함께 바뀐다 */
+function t50GuideLines(region,stages){
+  const want=[].concat(stages);
+  return T50_GUIDE.filter(function(g){return want.indexOf(g.stage)>=0;})
+    .map(function(g){
+      const it=t50CfgItem(g.k);
+      if(!it)return '';
+      try{return g.fmt(t50CfgVal(region,g.k))||'';}catch(e){return '';}
+    })
+    .filter(function(s){return !!s;});
+}
+/* 화면에 그대로 넣을 수 있는 안내 블록. cls 는 시안별 노트 클래스명 */
+function t50GuideHtml(region,stages,cls,title){
+  const lines=t50GuideLines(region,stages);
+  if(!lines.length)return '';
+  return '<div class="'+(cls||'')+'">'+(title?'<b>'+title+'</b><br>':'')+
+    lines.map(function(l){return '· '+l;}).join('<br>')+'</div>';
+}
+
 /* ── 정산 신청 기한 판정 ─────────────────────────────────────
    설정값 settleDeadline(여행 종료 후 N일) 안에 제출해야 정산이 접수된다.
    기한은 통합 항목이라 전국 공통값이지만, 신청 화면은 지자체 설정을 그대로 읽는

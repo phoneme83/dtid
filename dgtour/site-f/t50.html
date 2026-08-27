@@ -72,7 +72,7 @@
 
 <script src="../site-assets/data.js?v=20260818a"></script>
 <script src="f.js?v=2"></script>
-<script src="f-t50.js?v=11"></script>
+<script src="f-t50.js?v=12"></script>
 <script src="f-t50-evidence.js?v=4"></script>
 <script src="f-t50-corp.js?v=1"></script>
 <script>
@@ -367,6 +367,8 @@ function bodyPlan(){
       });
       return h;
     })()+
+    /* 지자체 설정값을 안내 문구로 풀어 보여준다 — 지역별 화면을 따로 만들지 않는다 */
+    ft50GuideHtml(t50Sel,['intro','apply'],'t50w-note','📋 '+t50Sel+' 사업 안내')+
     '<div class="t50w-note">입력하신 신청자격·여행 계획·추가 서류는 해당 <b>지자체 담당자</b>에게 전달되어 승인/반려 심사에 사용됩니다.</div>'+
     '<button class="btn blk" style="margin-top:11px" onclick="t50Submit()">신청 접수하기</button>'+
     '<button class="btn gy blk" style="margin-top:7px" onclick="t50Go(3)">‹ 이전으로</button>';
@@ -905,7 +907,8 @@ function renderRefund(){
     (a.status==='refund_ok'
       ? '<div style="font-size:11.5px;color:var(--ok);font-weight:700;line-height:1.7;margin-top:11px">💰 환급 '+fmt(a.refundAmount||0)+'원이 지역사랑상품권으로 지급되었습니다.'+
           '<br><span style="color:var(--sub);font-weight:500">🏪 사용처는 <b>'+fEsc(a.region)+' '+FT50_USE_SCOPE_LABEL+'</b>입니다. 관외 가맹점에서는 결제가 승인되지 않습니다.</span>'+
-          '<br><span style="color:'+ft50UseEndColor(ft50UseEndInfo())+';font-weight:500">'+ft50UseEndInfo().msg+' 기한이 지나면 잔액은 회수됩니다.</span></div>'
+          '<br><span style="color:'+ft50UseEndColor(ft50UseEndInfo())+';font-weight:500">'+ft50UseEndInfo().msg+' 기한이 지나면 잔액은 회수됩니다.</span></div>'+
+        ft50GuideHtml(a.region,'refund','t50w-note','💰 환급 안내')
       : '')+
     '<div style="font-size:11px;color:var(--sub);margin-top:9px;line-height:1.7">'+
       'AI OCR이 영수증의 관광목적 지출 여부를 1차 자동 판독하고, <b>최종 승인은 관리자 페이지에서 지자체 담당자가</b> 수행합니다.</div>';
@@ -1054,6 +1057,7 @@ function t50EvForm(a){
     t50EvSubRow(a,'card')+t50EvSubRow(a,'cash')+
     '<div class="t50w-note">· 간이영수증·계좌이체 확인증과 법인·타인 명의 영수증은 인정되지 않습니다 (16곳 공통)</div>'+
     '<div class="t50w-note">🗓 '+fEsc(ft50SettleDueText(a))+'</div>'+
+    ft50GuideHtml(a.region,'settle','t50w-note')+
     t50EvOcrHtml(a)+
     '<div class="t50e-err" id="t50EvErr" aria-live="polite"></div>'+
     '<button class="btn blk" style="margin-top:10px" onclick="t50EvSubmit()">환급 신청 제출</button>'+
