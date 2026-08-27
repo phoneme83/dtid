@@ -419,7 +419,29 @@ const T50_FAMILY_MAX=5;
    키에 두고, 관리시스템에서도 공사 총괄 관리자만 입력·수정할 수 있게 한다.
    환급액은 "소비액 × 환급률"을 지원 한도로 자른 값이다. 승인 시점에는 소비액을
    알 수 없으므로 지원 한도를 통보하고, 정산 때 실제 소비액으로 확정한다. */
-const T50_GRANT_KEY='dtidC_t50GrantCfg';
+/* ── 시안 공통 정책 저장소 ────────────────────────────────────
+   시안 A~F 는 같은 서비스의 화면 대안이고, 지원금액·환급률·사용기한과 54개 항목
+   설정값은 화면 디자인과 무관한 사업 정책이다. 시안마다 따로 두면 시연 때 같은
+   설정을 여섯 번 해야 하고 실제 구조와도 다르므로, 정책 3종만 접두사 없는 공통
+   키에 둔다. 어느 시안 관리자에서 바꿔도 6개 시안에 함께 반영된다.
+   신청 내역·대기열·포인트·화면설계처럼 시안별로 달라야 하는 값은 종전대로
+   시안 접두사(dtidC_)를 유지한다. */
+const T50_GRANT_KEY='dtid_t50GrantCfg';       /* 지원금액·환급률·사용기한 */
+const T50_UNIFIED_KEY='dtid_t50UnifiedCfg';   /* 54개 항목 중 '통합' 항목 */
+const T50_OPT_KEY='dtid_t50OptCfg';           /* 54개 항목 중 '옵션' 항목 (지역별) */
+/* 공통 키로 옮기기 전에 이 시안에 저장해 둔 값이 있으면 한 번만 가져온다.
+   먼저 열린 시안의 값이 채택되며, 이후에는 공통 키만 쓴다. */
+function t50AdoptLegacy(shared,legacy){
+  try{
+    if(localStorage.getItem(shared)===null){
+      const old=localStorage.getItem(legacy);
+      if(old!==null)localStorage.setItem(shared,old);
+    }
+  }catch(e){}
+}
+t50AdoptLegacy(T50_GRANT_KEY,'dtidC_t50GrantCfg');
+t50AdoptLegacy(T50_UNIFIED_KEY,'dtidC_t50UnifiedCfg');
+
 const T50_GRANT_DEFAULT={solo:100000,team:200000,youthSolo:140000,youthTeam:280000,
                          family:500000,rate:50,youthRate:50,useEnd:'2026-12-31'};
 const T50_GRANT_FIELDS=[
@@ -564,14 +586,30 @@ const T50_CFG_SCHEMA=[
 const T50_CFG_SCOPE_LABEL={fixed:'고정',unified:'통합',option:'옵션'};
 const T50_CFG_SCOPE_COLOR={fixed:'#64748b',unified:'#1d4ed8',option:'#047857'};
 
-/* 통합(unified) 값은 전국 공통이라 지역별 사업설정과 분리해 따로 저장한다 */
-const T50_UNIFIED_KEY='dtidC_t50UnifiedCfg';
+/* 통합(unified)·옵션(option) 값의 저장 키는 위 「시안 공통 정책 저장소」에 있다 */
 function t50UnifiedCfg(){
   try{const c=JSON.parse(localStorage.getItem(T50_UNIFIED_KEY)||'null');return (c&&typeof c==='object')?c:{};}
   catch(e){return {};}
 }
 function t50SaveUnifiedCfg(c){localStorage.setItem(T50_UNIFIED_KEY,JSON.stringify(c||{}));}
 function t50ResetUnifiedCfg(){localStorage.removeItem(T50_UNIFIED_KEY);}
+/* 옵션(option) 값도 정책이라 시안 공통으로 둔다. 예전에는 지역별 사업설정
+   (BizCfg) 안의 opt 에 있었으므로, 공통 키가 비어 있으면 한 번만 옮겨 온다. */
+function t50OptCfg(){
+  try{const c=JSON.parse(localStorage.getItem(T50_OPT_KEY)||'null');return (c&&typeof c==='object')?c:{};}
+  catch(e){return {};}
+}
+function t50SaveOptCfg(c){localStorage.setItem(T50_OPT_KEY,JSON.stringify(c||{}));}
+function t50AdoptLegacyOpt(){
+  try{
+    if(localStorage.getItem(T50_OPT_KEY)!==null)return;
+    const all=t50Cfg(),out={};
+    Object.keys(all).forEach(function(n){ if(all[n]&&all[n].opt)out[n]=all[n].opt; });
+    if(Object.keys(out).length)t50SaveOptCfg(out);
+  }catch(e){}
+}
+t50AdoptLegacyOpt();
+
 
 function t50CfgItems(){
   return T50_CFG_SCHEMA.reduce(function(a,g){return a.concat(g.items);},[]);
@@ -592,7 +630,7 @@ function t50CfgVal(region,k){
     const c=t50UnifiedCfg();
     return (k in c)?c[k]:t50CfgDef(it);
   }
-  const o=t50RegionCfg(region).opt||{};
+  const o=t50OptCfg()[region]||{};
   return (k in o)?o[k]:t50CfgDef(it);
 }
 /* 화면에 그대로 쓸 수 있는 문구 */
@@ -611,9 +649,10 @@ function t50SetUnified(k,v){
   const c=t50UnifiedCfg();c[k]=v;t50SaveUnifiedCfg(c);
 }
 function t50SetOption(region,k,v){
-  const o=Object.assign({},t50RegionCfg(region).opt||{});
-  o[k]=v;
-  t50SetRegionCfg(region,{opt:o});
+  const all=t50OptCfg();
+  all[region]=Object.assign({},all[region]||{});
+  all[region][k]=v;
+  t50SaveOptCfg(all);
 }
 /* 지자체 담당자가 만질 수 있는 항목인가 — option만 가능하고 unified는 공사 전용 */
 function t50CfgEditable(it){
