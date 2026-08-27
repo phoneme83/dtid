@@ -419,7 +419,7 @@ const T50_FAMILY_MAX=5;
    키에 두고, 관리시스템에서도 공사 총괄 관리자만 입력·수정할 수 있게 한다.
    환급액은 "소비액 × 환급률"을 지원 한도로 자른 값이다. 승인 시점에는 소비액을
    알 수 없으므로 지원 한도를 통보하고, 정산 때 실제 소비액으로 확정한다. */
-const T50_GRANT_KEY='dtidA_t50GrantCfg';
+const T50_GRANT_KEY='dtidE_t50GrantCfg';
 const T50_GRANT_DEFAULT={solo:100000,team:200000,youthSolo:140000,youthTeam:280000,
                          family:500000,rate:50,youthRate:50,useEnd:'2026-12-31'};
 const T50_GRANT_FIELDS=[
@@ -565,7 +565,7 @@ const T50_CFG_SCOPE_LABEL={fixed:'고정',unified:'통합',option:'옵션'};
 const T50_CFG_SCOPE_COLOR={fixed:'#64748b',unified:'#1d4ed8',option:'#047857'};
 
 /* 통합(unified) 값은 전국 공통이라 지역별 사업설정과 분리해 따로 저장한다 */
-const T50_UNIFIED_KEY='dtidA_t50UnifiedCfg';
+const T50_UNIFIED_KEY='dtidE_t50UnifiedCfg';
 function t50UnifiedCfg(){
   try{const c=JSON.parse(localStorage.getItem(T50_UNIFIED_KEY)||'null');return (c&&typeof c==='object')?c:{};}
   catch(e){return {};}
