@@ -142,7 +142,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#334
 </div>
 
 <script src="../site-assets/data.js?v=20260818a"></script>
-<script src="t50-config.js?v=11"></script>
+<script src="t50-config.js?v=12"></script>
 <script>/* site-b 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidB_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script>
@@ -168,12 +168,11 @@ try{
   }
 }catch(e){}
 /* ── 현장 사용처 — 「관내 가맹점」 ────────────────────────────
-   16곳 모두 "관내 가맹점"으로 골격이 같고 명칭만 다르다(1차 분석안 6p).
-   통합 적용값은 「관내 가맹점」으로 명칭을 통일한다(16p).
+   명칭(T50_USE_SCOPE_LABEL)은 t50-config.js 의 공용 설정에서 읽는다 — 화면마다 따로
+   적어두면 관리자 설정값과 어긋나기 때문이다.
    환급금(지역사랑상품권)은 신청 지자체 안에 등록된 가맹점에서만 쓸 수 있어
    관외 가맹점 결제는 승인되지 않는다. 아래 목록의 inArea:false 는 그 규칙을
    화면에서 확인하기 위한 관외 가맹점이다. */
-const T50_USE_SCOPE_LABEL='관내 가맹점';
 const MERCHANTS=[
   {ic:'🏨',nm:'바다뷰 펜션',amt:45000,inArea:true},
   {ic:'🍽',nm:'현지 맛집',amt:28000,inArea:true},

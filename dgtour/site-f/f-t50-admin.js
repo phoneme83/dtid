@@ -689,7 +689,8 @@ function t50aSchemaHtml(region){
           '<span style="flex:0 0 128px;font-size:12px;font-weight:700;color:var(--ink2)">'+fEsc(it.lb)+'</span>'+
           '<span style="flex:1 1 160px;min-width:0">'+t50aSchemaCtl(region,it,eid)+'</span>'+
         '</div>'+
-        '<div style="font-size:11px;color:var(--sub2);line-height:1.6;margin:-2px 0 4px 30px">'+fEsc(it.note)+'</div>';
+        '<div style="font-size:11px;color:var(--sub2);line-height:1.6;margin:-2px 0 4px 30px">'+fEsc(it.note)+
+          (it.by?' <span style="opacity:.65">· 적용 '+fEsc(it.by)+'()</span>':'')+'</div>';
     }).join('');
     return '<div class="t50a-card">'+
       '<div class="sec-t">'+fEsc(g.group)+'</div>'+

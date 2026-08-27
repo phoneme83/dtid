@@ -166,6 +166,12 @@ function t50NonCardNote(reason){
     : '';
 }
 
+/* ── 현장 사용처 — 「관내 가맹점」 ────────────────────────────
+   16곳 모두 골격이 같고 명칭만 다르다(1차 분석안 6p). 통합 적용값은 명칭 통일(16p).
+   그동안 지역화폐 앱(t50-pay.html) 안에만 있어 설정값 스키마와 값이 이원화돼 있었다.
+   화면이 아니라 공용 설정에 두고, 스키마(useScope)가 이 상수를 그대로 읽는다. */
+const T50_USE_SCOPE_LABEL='관내 가맹점';
+
 /* ── 숙박 증빙서류 ───────────────────────────────────────────
    16개 지자체가 모두 "숙박확인서 + 결제영수증"을 숙박 증빙의 골격으로 두고
    있고 명칭만 숙박확인서·숙박증명서·투숙확인서 등으로 갈린다(1차 분석안 6p).
@@ -503,19 +509,24 @@ const T50_CFG_SCHEMA=[
    note:'인정 9곳 최다 · 불인정 지자체 협의 필요'},
   {k:'cashReceipt', lb:'현금영수증 업로드',scope:'option', type:'toggle',on:'허용',off:'차단',def:false,
    note:'불인정 11곳 최다 · 인정 지자체 협의 필요'},
-  {k:'simpleReceipt',lb:'간이영수증 · 계좌이체',scope:'fixed',type:'select',def:'불인정',
+  {k:'simpleReceipt',lb:'간이영수증 · 계좌이체',scope:'fixed',type:'select',
+   def:function(){return T50_ALWAYS_REJECT.join(' · ')+' 불인정';},by:'apOcrNonCard',
    note:'16곳 동일 — 변경 불가'},
-  {k:'corpReceipt', lb:'법인 · 타인명의 영수증',scope:'fixed',type:'select',def:'불인정',
+  {k:'corpReceipt', lb:'법인 · 타인명의 영수증',scope:'fixed',type:'select',def:'불인정',by:'t50CorpCheck',
    note:'16곳 동일 — 변경 불가'},
-  {k:'stayPrepay',  lb:'숙박 선결제 증빙', scope:'fixed', type:'select',def:'인정',
+  {k:'stayPrepay',  lb:'숙박 선결제 증빙', scope:'fixed', type:'select',
+   def:function(){return '인정 (여행 시작일 기준 '+T50_PREPAY_MAX_DAYS+'일 전까지)';},by:'t50EvDateCheck',
    note:'16곳 동일 — 변경 불가'},
-  {k:'stayDocRule', lb:'숙박 증빙서류',    scope:'fixed', type:'select',def:'숙박확인서 + 결제영수증',
+  {k:'stayDocRule', lb:'숙박 증빙서류',    scope:'fixed', type:'select',
+   def:function(){return T50_STAY_DOC_LABEL+' + 결제영수증';},by:'t50EvStayCheck',
    note:'골격 16곳 공통 — 명칭 통일'}
  ]},
  {group:'인정 소비범위 · 사용처',items:[
-  {k:'spendItems',  lb:'인정 항목',        scope:'fixed', type:'select',def:'숙박 · 음식 · 관광 · 체험 · 쇼핑',
+  {k:'spendItems',  lb:'인정 항목',        scope:'fixed', type:'select',
+   def:function(){return T50_SPEND_CATS.map(function(c){return c.cat;}).join(' · ');},by:'t50BizCheck',
    note:'골격 16곳 공통 — 표현 통일'},
-  {k:'excludeBiz',  lb:'인정제외 업종',    scope:'fixed', type:'select',def:'주유소 · 금은방 · 유흥 · 학원 · 카센터',
+  {k:'excludeBiz',  lb:'인정제외 업종',    scope:'fixed', type:'select',
+   def:function(){return T50_EXCLUDED_BIZ.map(function(b){return b.biz;}).join(' · ');},by:'t50BizCheck',
    note:'핵심 5종 15곳 공통'},
   {k:'revenueLimit',lb:'연매출 기준제외',  scope:'unified',type:'select',opts:['30억 초과 제외','미적용'],def:'30억 초과 제외',
    note:'30억 기준 8곳 명시'},
@@ -525,7 +536,8 @@ const T50_CFG_SCHEMA=[
    note:'6곳 명시'},
   {k:'facilityExcept',lb:'특정시설 예외인정',scope:'option',type:'toggle',on:'인정',off:'예외 없음',def:false,
    note:'하동·남해 2곳만'},
-  {k:'useScope',    lb:'현장 사용처',      scope:'fixed', type:'select',def:'관내 가맹점',
+  {k:'useScope',    lb:'현장 사용처',      scope:'fixed', type:'select',
+   def:function(){return T50_USE_SCOPE_LABEL;},by:'payUseBlock',
    note:'골격 16곳 공통 — 명칭 통일'},
   {k:'onlineShop',  lb:'온라인 사용처',    scope:'option', type:'toggle',on:'지역쇼핑몰 허용',off:'없음',def:true,
    note:'지역쇼핑몰 9곳 최다'},
@@ -540,7 +552,7 @@ const T50_CFG_SCHEMA=[
   {k:'spotRule',    lb:'관광지 기준',      scope:'unified',type:'select',opts:['지정관광지','숙박시설'],def:'지정관광지',
    note:'지정관광지 15곳 최다'},
   {k:'photoRule',   lb:'사진 조건',        scope:'fixed', type:'select',def:'얼굴 포함 인증사진',
-   note:'16곳 공통'},
+   note:'16곳 공통 — 방문 인증 절차 미구현으로 현재는 표기용'},
   {k:'metaCheck',   lb:'메타데이터 확인',  scope:'option', type:'toggle',on:'적용',off:'미적용',def:false,
    note:'기술역량 종속 — 밀양 1곳만'},
   {k:'merchantLimit',lb:'가맹점당 소비한도',scope:'option',type:'number',def:0,un:'원',zero:'한도 없음',
@@ -567,17 +579,21 @@ function t50CfgItems(){
 function t50CfgItem(k){
   return t50CfgItems().filter(function(i){return i.k===k;})[0]||null;
 }
+/* 기본값 — 함수로 정의된 항목은 그때 평가한다.
+   고정 항목의 값을 화면용으로 따로 적어두면 실제 동작과 어긋나므로,
+   판정에 쓰는 상수(T50_EXCLUDED_BIZ 등)를 스키마가 직접 읽게 하기 위한 장치다. */
+function t50CfgDef(it){return (typeof it.def==='function')?it.def():it.def;}
 /* 설정값 읽기 — fixed는 정의값, unified는 전국 공통, option은 지자체별 */
 function t50CfgVal(region,k){
   const it=t50CfgItem(k);
   if(!it)return null;
-  if(it.scope==='fixed')return it.def;
+  if(it.scope==='fixed')return t50CfgDef(it);
   if(it.scope==='unified'){
     const c=t50UnifiedCfg();
-    return (k in c)?c[k]:it.def;
+    return (k in c)?c[k]:t50CfgDef(it);
   }
   const o=t50RegionCfg(region).opt||{};
-  return (k in o)?o[k]:it.def;
+  return (k in o)?o[k]:t50CfgDef(it);
 }
 /* 화면에 그대로 쓸 수 있는 문구 */
 function t50CfgText(region,k){
