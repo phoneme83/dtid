@@ -83,11 +83,11 @@ const FT50_CFG_SCHEMA=[
   {k:'approveNotice',lb:'승인 안내 수단',  scope:'option', type:'select',opts:['알림톡','문자','발송 없음'],def:'알림톡',
    note:'알림톡 6곳 최다 · 문자 발송 지자체 협의 필요'},
   {k:'closeRule',   lb:'마감 기준',        scope:'option', type:'select',opts:['예산 소진','선착순'],def:'예산 소진',
-   note:'예산 소진 9곳 최다'},
+   by:'ft50CloseState',note:'예산 소진 9곳 최다 · 확정 방침 「예산 기준」 — 예산 총액 도달 시 접수 마감'},
   {k:'youthQuota',  lb:'청년 선착순 제한', scope:'option', type:'toggle',on:'운영',off:'미운영',def:false,
-   note:'예산 규모·인구에 종속 — 13곳 미표기'},
+   note:'예산 규모·인구에 종속 — 13곳 미표기 · 확정 방침 「별도 관리 불필요」로 정원 로직 미연결'},
   {k:'dtidRequired',lb:'디지털관광주민증',  scope:'unified',type:'toggle',on:'필수',off:'선택',def:true,
-   note:'현재는 제천만 필수 → 전체 필수로 변경 예정'}
+   by:'ft50DtidCheck',note:'확정 방침 — 주민증 서비스 가입자만 신청 가능(비로그인 접수 차단)'}
  ]},
  {group:'정산 · 지급',items:[
   {k:'settleDeadline',lb:'정산 신청 기한', scope:'unified',type:'select',opts:[5,7,10,14,15],def:10,un:'일',
@@ -157,9 +157,9 @@ const FT50_CFG_SCHEMA=[
   {k:'metaCheck',   lb:'메타데이터 확인',  scope:'option', type:'toggle',on:'적용',off:'미적용',def:false,
    note:'기술역량 종속 — 밀양 1곳만'},
   {k:'merchantLimit',lb:'가맹점당 소비한도',scope:'option',type:'number',def:0,un:'원',zero:'한도 없음',
-   note:'지역 상권규모 종속 — 평창·제천만 한도 존재'},
+   note:'평창·제천만 한도 존재 · 확정 방침 「누적액 상한 불필요」로 검증 미연결'},
   {k:'revisitBonus',lb:'재방문 추가혜택',  scope:'option', type:'toggle',on:'운영',off:'미운영',def:false,
-   note:'지역 전략적 인센티브 — 영암만 운영'}
+   note:'영암만 운영 — 추후 논의 대상(환급 가산 로직 미연결)'}
  ]}
 ];
 const FT50_CFG_SCOPE_LABEL={fixed:'고정',unified:'통합',option:'옵션'};
@@ -223,6 +223,41 @@ function ft50CfgEditable(it){
   return it.scope==='option'?true:ft50IsHQ();
 }
 
+/* ── 접수 마감 판정 ──────────────────────────────────────────
+   마감 기준(closeRule)은 지자체 선택 항목이고, 확정 방침은 「예산 기준」이다.
+     예산 소진  지자체 예산 총액을 환급 집행액이 채우면 마감 (9곳 최다 · 기본값)
+     선착순    사업설정의 정원(capacity)을 신청 인원이 채우면 마감
+   예산 총액이 0(미설정)이면 예산 소진 판정을 하지 않는다 — 총액을 넣지 않은
+   지자체의 접수가 통째로 막히면 안 되기 때문이다. */
+function ft50CloseState(region){
+  const cfg = ft50RegionCfg(region);
+  const rule = ft50CfgVal(region, 'closeRule');
+  if(rule === '선착순'){
+    const used = ft50UsedCount(region);
+    return {rule:rule, closed:used >= cfg.capacity, used:used, cap:cfg.capacity,
+      msg:'선착순 — 정원 ' + cfg.capacity + '명 중 ' + used + '명 접수'};
+  }
+  const bud = Number(cfg.budget) || 0, spent = ft50BudgetUsed(region);
+  if(!bud) return {rule:rule, closed:false, used:spent, cap:0,
+    msg:'예산 총액 미설정 — 예산 소진 판정 없음'};
+  const pct = Math.min(100, Math.round(spent / bud * 1000) / 10);
+  return {rule:rule, closed:spent >= bud, used:spent, cap:bud, pct:pct,
+    msg:'예산 소진율 ' + pct + '% (' + spent.toLocaleString('ko-KR') + ' / ' + bud.toLocaleString('ko-KR') + '원)'};
+}
+
+/* ── 디지털관광주민증 필수화 ─────────────────────────────────
+   '27년 전체 필수 전환 방침에 따라, 필수로 설정된 지자체는 주민증 서비스
+   가입자만 신청할 수 있다. 이 프로토타입에서 가입 여부는 로그인 계정 보유로
+   판단한다(비로그인 = guest). 통과하면 null, 아니면 {code, msg}. */
+function ft50DtidCheck(region, uid){
+  if(!ft50CfgVal(region, 'dtidRequired')) return null;
+  if(uid && uid !== 'guest') return null;
+  return {code:'nodtid',
+    msg:'\u274c <b>디지털관광주민증 가입자만 신청할 수 있습니다.</b> ' +
+        '이 지자체는 주민증 발급(서비스 가입)을 신청 조건으로 두고 있습니다. ' +
+        '로그인 후 다시 신청해 주세요.'};
+}
+
 /* ── 설정값 안내 문구 ────────────────────────────────────────
    1차 분석안 8p — 유형A(안내 누락)·유형B(선택지 분리) 항목은 "개발 영역이 아님,
    문구 작성 영역"으로 분류돼 있다. 지역별 화면을 따로 만들지 않고 설정값을 문구로
@@ -240,6 +275,8 @@ const FT50_GUIDE = [
   {stage:'intro', k:'excludeStay',   fmt:function(v){return v?'일부 숙박업소는 인정 대상에서 제외됩니다(지자체 별도 안내).':'';}},
   {stage:'intro', k:'livingExclude', fmt:function(v){return v?'생활소비·특정 서비스 결제는 인정되지 않습니다(지자체 별도 안내).':'';}},
   {stage:'intro', k:'facilityExcept',fmt:function(v){return v?'일부 시설은 예외로 인정됩니다(지자체 별도 안내).':'';}},
+  {stage:'apply', k:'dtidRequired',  fmt:function(v){return v?'디지털관광주민증 가입자만 신청할 수 있습니다.':'';}},
+  {stage:'apply', k:'closeRule',     fmt:function(v){return v==='선착순'?'정원이 차면 접수가 마감됩니다.':'예산이 소진되면 접수가 마감됩니다.';}},
   {stage:'apply', k:'applyDeadline', fmt:function(v){return '신청 마감은 '+v+'입니다.';}},
   {stage:'apply', k:'approveNotice', fmt:function(v){return v==='발송 없음'?'승인 결과는 마이페이지에서 확인해 주세요.':'승인 결과 통보: '+v;}},
   {stage:'settle',k:'settleCount',   fmt:function(v){return '정산은 신청 건당 '+v+'만 신청할 수 있습니다.';}},

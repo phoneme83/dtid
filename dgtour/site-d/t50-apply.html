@@ -235,7 +235,7 @@
 <div class="toast" id="toastEl"></div>
 
 <script src="../site-assets/data.js?v=20260818a"></script>
-<script src="t50-config.js?v=13"></script>
+<script src="t50-config.js?v=14"></script>
 <script src="t50-corp.js?v=1"></script>
 <script>/* site-d 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidD_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
@@ -524,8 +524,12 @@ function apRenderRegions(){
     const near=nearSido||adj;
     const notOpen=!cfg.open;                                                // 지자체 사업설정에서 사업 미개설
     const outApply=!notOpen&&!t50InApplyPeriod(cfg);                        // 지자체 사업설정의 신청기간 밖
-    const dis=same||near||notOpen||outApply;
+    /* 마감 기준(예산 소진/선착순)에 따른 접수 마감 */
+    const cl=t50CloseState(r.name);
+    const closed=!notOpen&&!outApply&&cl.closed;
+    const dis=same||near||notOpen||outApply||closed;
     const why=same?'거주 지자체 — 신청 불가':adj?'인접 시군구 — 신청 불가':nearSido?'인근 지역 신청 불가':notOpen?'사업 미개설':
+      closed?(cl.rule==='선착순'?'선착순 마감':'예산 소진 마감'):
       '신청기간 아님 ('+apFmtShort(cfg.applyStart)+'~'+apFmtShort(cfg.applyEnd)+')';
     const used=t50UsedCount(r.name);
     const capTxt=(cfg.capacity<9999)?('<span class="cap">신청 인원 '+used+'/'+cfg.capacity+'명</span>'):'';
@@ -792,6 +796,12 @@ function apDecideCapacity(region,ppl){
 function apSubmit(){
   if(!apAddrOk){toast('주소지 확인을 먼저 진행해 주세요');apGo(2);return;}
   if(!apSel){toast('지역을 선택해 주세요');apGo(3);return;}
+  /* 디민증 필수화 — 주민증 서비스 가입자(로그인 계정)만 접수한다 */
+  const dchk=t50DtidCheck(apSel,user?user.id:'guest');
+  if(dchk){alert(dchk.msg.replace(/<[^>]+>/g,''));return;}
+  /* 마감 기준(예산 소진/선착순) 도달 여부를 접수 직전에 다시 본다 */
+  const cl=t50CloseState(apSel);
+  if(cl.closed){toast((cl.rule==='선착순'?'선착순':'예산 소진')+'으로 접수가 마감되었습니다');apRenderRegions();apGo(3);return;}
   const d1=apD1,d2=apD2;
   if(!d1||!d2){toast('캘린더에서 여행 기간을 선택해 주세요');return;}
   if(d2<d1){toast('종료일이 시작일보다 빠릅니다');return;}
