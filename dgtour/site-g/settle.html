@@ -1,0 +1,581 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>정산신청 — 대한민국 반값여행 · 시안 G</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="g.css?v=1">
+<style>
+/* 정산신청 전용 (.st-) */
+.st-band{background:linear-gradient(120deg,var(--rc) 0%,#0f172a 140%);color:#fff}
+.st-band .g-in{padding:26px 20px 24px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:flex-end;justify-content:space-between}
+.st-band h1{margin:0;font-size:26px;letter-spacing:-.5px}
+.st-band p{margin:4px 0 0;opacity:.88;font-size:14px}
+.st-wrap{max-width:980px}
+.st-h{margin:0 0 4px;font-size:21px;letter-spacing:-.3px}
+.st-sub{margin:0 0 16px;color:var(--sub);font-size:14px}
+.st-app{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:10px;background:#fff}
+.st-app.on{border-color:var(--pri);background:var(--pri-l)}
+.st-app.dis{background:#f8fafc}
+.st-app b{font-size:16px}
+.st-app .meta{font-size:13.5px;color:var(--sub);margin-top:2px}
+.st-app .why{font-size:13px;font-weight:700;color:var(--bad);margin-top:4px}
+.st-app .due{font-size:13px;font-weight:700;color:var(--ok);margin-top:4px}
+.st-nav{display:flex;gap:10px;justify-content:space-between;margin-top:22px;flex-wrap:wrap}
+.st-nav .btn.pri{min-width:180px}
+.st-rule{background:#fffdf5;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;font-size:13.5px;margin:12px 0}
+.st-rule b{color:#92400e}
+.st-rule ul{margin:6px 0 0;padding-left:18px}
+.st-box{border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:14px;background:#fff}
+.st-box h3{margin:0 0 4px;font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.st-load{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;margin-top:10px;font-size:14px}
+.st-tbl table{min-width:680px}
+.st-spin{width:18px;height:18px;border:3px solid #cbd5e1;border-top-color:var(--blue);border-radius:50%;animation:stSpin .8s linear infinite;flex:none}
+@keyframes stSpin{to{transform:rotate(360deg)}}
+.st-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px}
+.st-ok{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:800;background:#e7f7f3;color:var(--ok);white-space:nowrap}
+.st-no{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:800;background:#fdecef;color:var(--bad);white-space:nowrap}
+.st-src{font-size:11.5px;font-weight:800;color:var(--sub);background:#f1f5f9;border-radius:6px;padding:2px 6px;white-space:nowrap}
+.st-tbl td.num,.st-tbl th.num{text-align:right;white-space:nowrap}
+.st-tbl tr.bad td{background:#fffafa}
+.st-tbl small{display:block;color:var(--sub);font-size:12px}
+.st-tbl button{border:0;background:none;color:var(--bad);cursor:pointer;font-weight:700;font-size:12.5px}
+.st-sumbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+.st-sumbar div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.st-sumbar span{display:block;font-size:12.5px;color:var(--sub)}
+.st-sumbar b{font-size:18px}
+.st-sumbar .hl{border-color:var(--pri);background:var(--pri-l)} .st-sumbar .hl b{color:var(--pri)}
+.st-ocr{margin-top:12px;border:1px solid var(--line);border-radius:12px;background:#f8fafc;padding:12px 14px;font-size:13.5px}
+.st-ocr .t{font-weight:800;margin-bottom:6px}
+.st-ocr .r{display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px;padding:3px 0;border-bottom:1px dashed #e2e8f0}
+.st-ocr .r span{color:var(--sub)}
+.st-ocr .unk{color:#b45309;font-weight:700}
+.st-err{color:var(--bad);font-size:13.5px;font-weight:600;margin-top:8px;min-height:18px}
+.st-ex{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0}
+.st-ex div{border:1px solid var(--line);border-radius:12px;background:#fff;text-align:center;padding:14px 8px;font-size:13px}
+.st-ex i{display:block;font-style:normal;font-size:34px}
+.st-vis{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:11px;margin-top:8px;background:#fff;font-size:14px;flex-wrap:wrap}
+.st-vis button{border:0;background:none;color:var(--bad);cursor:pointer;font-weight:700}
+.st-cnt{font-size:15px;font-weight:800;margin-top:12px}
+.st-sum{border:1px solid var(--line);border-radius:14px;background:#fff;margin-top:12px;overflow:hidden}
+.st-sum h4{margin:0;padding:12px 16px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.st-sum dl{margin:0;padding:6px 16px 12px;display:grid;grid-template-columns:130px minmax(0,1fr);gap:6px 12px;font-size:14px}
+.st-sum dt{color:var(--sub)} .st-sum dd{margin:0;font-weight:600}
+.st-big{text-align:center;padding:34px 20px}
+.st-big .ic{font-size:46px}
+.st-big h2{margin:8px 0 6px;font-size:24px}
+.st-big p{margin:4px 0;color:var(--sub)}
+.st-no-big{display:inline-block;margin:14px 0;font-size:26px;font-weight:900;letter-spacing:1px;color:var(--navy);background:#f1f5f9;border-radius:12px;padding:8px 18px}
+.st-demo{margin-top:16px;border:1px dashed #cbd5e1;border-radius:11px;padding:10px 14px;font-size:12.5px;color:var(--sub)}
+.st-demo .btn{margin:6px 6px 0 0}
+.st-fix{border-left:4px solid var(--pri)}
+.st-files{margin:8px 0 0;padding:0;list-style:none;font-size:13px}
+.st-files li{display:flex;justify-content:space-between;gap:8px;padding:6px 10px;background:#f8fafc;border-radius:8px;margin-top:4px}
+.st-files button{border:0;background:none;color:var(--bad);cursor:pointer;font-weight:700}
+.st-login{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:20px 0}
+.st-login div{background:#f8fafc;border-radius:12px;padding:14px;font-size:13.5px}
+.st-login b{display:block;font-size:15px;margin-bottom:2px}
+.st-terms{border:1px solid var(--line);border-radius:11px;background:#fff;margin:8px 0}
+.st-terms summary{cursor:pointer;padding:10px 14px;font-size:13px;color:var(--blue);font-weight:700}
+.st-terms div{padding:0 14px 12px;font-size:13px;color:#475569}
+@media (max-width:760px){
+  .st-sumbar{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .st-login{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:600px){
+  .st-row{grid-template-columns:minmax(0,1fr)}
+  .st-ex{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .st-sum dl{grid-template-columns:96px minmax(0,1fr)}
+  .st-ocr .r{grid-template-columns:86px minmax(0,1fr)}
+  .st-band h1{font-size:22px}
+  .st-nav .btn{flex:1}
+}
+</style>
+</head><body>
+<main>
+  <section class="st-band" id="stBand"></section>
+  <div class="wrap st-wrap">
+    <ol class="steps" id="stSteps" style="display:none"></ol>
+    <div id="stView"></div>
+  </div>
+</main>
+<script src="../site-assets/data.js?v=20260818a"></script>
+<script src="g.js?v=1"></script>
+<script src="g-corp.js?v=1"></script>
+<script src="g-ocr.js?v=1"></script>
+<script>
+const ST_SLUG=(gQS('r')&&gRegion(gQS('r')))?gQS('r'):'pyeongchang';
+gShell({mode:'region',slug:ST_SLUG,active:'settle'});
+
+/* ═══ 정산신청 5단계 (착수보고 p19) — ①신청 내역 조회 → ②결제 증빙 → ③관광지 인증 → ④최종 확인 → ⑤완료
+   고도화 유지(시안 D): 영수증 OCR 판독·판독값↔입력값 대조(g-ocr.js), 법인카드 BIN 판정(g-corp.js),
+   결제일·결제지역·숙박 선결제 검사, 전 계정 정산 증빙 중복 제출 탐지 */
+const ST=(function(){
+  const R=gRegion(ST_SLUG), U=gUser();
+  const C1=gStdNum('C1')||10, U1=gStdNum('U1')||14, P5=gStdNum('P5')||180;
+  const V4=gStd('V4',ST_SLUG).val, NEED=parseInt(String(V4).replace(/[^0-9]/g,''),10)||2;
+  const PAYAPP=gStd('P7',ST_SLUG).val;
+  const STEP_NM=['신청 내역 조회','결제 증빙','관광지 인증','최종 확인','완료'];
+  const T={app:null,items:[],fetched:false,fetching:false,lodging:{file:null},visits:[],fraud:false,terms:false,sign:'',dirty:false};
+  let FIX=null, fixFiles=[], OCR=null, ocrBusy=false, upOpen=false, stay=false, prepay=false, lastDemo=null, view='';
+  const $=id=>document.getElementById(id);
+  const dueOf=a=>gYmd(gAdd(a.end,C1));
+
+  function band(){
+    $('stBand').style.setProperty('--rc',R.color);
+    $('stBand').innerHTML='<div class="g-in"><div><h1>'+gEsc(R.full)+' 정산신청</h1><p>여행 종료 후 '+C1+'일 이내 · 심사 후 '+U1+'일 이내 모바일 '+gEsc(R.voucher)+' 지급</p></div>'+
+      '<p>결제수단 '+gEsc(PAYAPP)+' · 지정관광지 '+gEsc(V4)+' 인증</p></div>';
+  }
+  function steps(k){
+    const el=$('stSteps'); if(!k){ el.style.display='none'; return; }
+    el.style.display=''; el.innerHTML=STEP_NM.map((n,i)=>'<li class="'+(i+1<k?'done':(i+1===k?'on':''))+'">'+n+'</li>').join('');
+  }
+  function show(html,k){ steps(k); $('stView').innerHTML=html; window.scrollTo(0,0); }
+  function go(k){ view='s'+k; if(k===1) s1(); else if(k===2) s2(); else if(k===3) s3(); else if(k===4) s4(); }
+
+  function boot(){
+    band();
+    if(!U){
+      return show('<div class="card"><h2 class="st-h">로그인 안내</h2><p class="st-sub">정산신청은 <b>디지털 관광주민증 로그인</b> 후 승인된 신청 건을 자동으로 불러와 진행합니다.</p>'+
+        '<div class="st-login"><div><b>📋 신청 이력 자동 확인</b>승인 완료된 반값여행 신청 건을 자동으로 조회합니다.</div>'+
+        '<div><b>💳 결제내역 자동 불러오기</b>'+gEsc(PAYAPP)+' 결제내역을 불러와 인정·불인정을 바로 분류합니다.</div>'+
+        '<div><b>📍 관광지 인증 자동 반영</b>여행 중 QR로 인증한 지정관광지가 자동으로 입력됩니다.</div></div>'+
+        '<div class="st-nav" style="justify-content:center"><a class="btn pri lg" href="'+gEsc(gLoginUrl())+'">디지털 관광주민증 로그인</a></div></div>',0);
+    }
+    const fx=gQS('fix');
+    if(fx){
+      const a=gApp(fx);
+      if(!a||a.uid!==U.id) return blockView('❓','보완할 정산 건을 찾을 수 없어요','<p>본인 신청 건만 보완할 수 있습니다.</p>');
+      if(a.status!=='settle_fix') return blockView('ℹ️','정산 보완 요청 상태가 아니에요','<p>현재 상태: '+gBadge(a.status)+'</p>','<a class="btn pri" href="mypage.html?app='+encodeURIComponent(a.id)+'">신청 상세 보기</a>');
+      if(a.region!==ST_SLUG){ location.replace('settle.html?r='+encodeURIComponent(a.region)+'&fix='+encodeURIComponent(a.id)); return; }
+      FIX=a; T.app=a;
+      const s=a.settle||{};
+      T.items=(s.items||[]).map(x=>{ const y=Object.assign({},x); delete y.ok; delete y.reason; return y; });
+      T.fetched=T.items.some(x=>x.src==='localpay');
+      T.lodging={file:s.lodging&&s.lodging.file||null};
+      T.visits=(s.visits||a.visits||[]).slice();
+      return go(4);
+    }
+    go(1);
+  }
+  function blockView(ic,title,desc,acts){
+    show('<div class="card st-big"><div class="ic">'+ic+'</div><h2>'+title+'</h2>'+desc+'<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px">'+(acts||'<a class="btn pri" href="mypage.html">마이페이지</a>')+'</div></div>',0);
+  }
+
+  /* ═══ ① 신청 내역 조회 ═══ */
+  function appState(a){
+    const T0=gYmd(gToday());
+    if(a.status==='approved'){
+      if(T0<=a.end) return {ok:false,why:'여행 후 정산 가능 — '+gDot(gAdd(a.end,1))+'부터 신청할 수 있어요',trip:true};
+      if(T0>dueOf(a)) return {ok:false,why:'정산 기한 경과 ('+gDot(dueOf(a))+'까지였습니다) — 담당 지자체에 문의해 주세요'};
+      return {ok:true,due:'정산 기한 '+gDot(dueOf(a))+'까지 (D-'+gDiff(T0,dueOf(a))+')'};
+    }
+    if(a.status==='settle_fix') return {ok:false,fix:true,why:'정산 보완이 필요합니다'};
+    if(['settle_review','refund_ok','refunded'].indexOf(a.status)>=0) return {ok:false,done:true,why:'정산 접수 완료'};
+    if(['received','review','change_review','fix'].indexOf(a.status)>=0) return {ok:false,wait:true,why:'승인 후 정산할 수 있어요'};
+    return {ok:false,why:'정산 대상이 아닙니다'};
+  }
+  function s1(){
+    const list=gMyApps().filter(a=>a.region===ST_SLUG&&a.status!=='canceled'&&a.status!=='rejected');
+    const okList=list.filter(a=>appState(a).ok);
+    if(!T.app&&okList.length===1) T.app=okList[0];
+    if(T.app&&!okList.some(a=>a.id===T.app.id)) T.app=null;
+    const off=Number(gGet('dayOffset',0))||0;
+    const cards=list.map(a=>{
+      const st=appState(a), on=T.app&&T.app.id===a.id, g=a.grant||gGrant(a.type,a.people);
+      let act='';
+      if(st.ok) act='<button class="btn '+(on?'pri':'')+'" onclick="ST.pick(\''+a.id+'\')">'+(on?'✓ 선택됨':'이 건으로 정산')+'</button>';
+      else if(st.fix) act='<a class="btn pri" href="settle.html?r='+ST_SLUG+'&fix='+encodeURIComponent(a.id)+'">보완하러 가기</a>';
+      else if(st.done) act='<a class="btn" href="mypage.html?app='+encodeURIComponent(a.id)+'">진행 상황 보기</a>';
+      else if(st.trip) act='<button class="btn sm ghost" onclick="ST.demoMove(\''+a.id+'\')" title="시연용">데모: 날짜 이동</button>';
+      else if(st.wait) act='<button class="btn sm ghost" onclick="ST.demoApprove(\''+a.id+'\')" title="시연용">데모: 승인 처리</button>';
+      return '<div class="st-app'+(on?' on':'')+(st.ok?'':' dis')+'"><div><b>'+gEsc(R.full)+' '+a.round+'회차 · '+gEsc(g.label)+' '+a.people.length+'명</b> '+gBadge(a.status)+
+        '<div class="meta">신청번호 '+gEsc(a.id)+' · 여행 '+gDot(a.start)+' ~ '+gDot(a.end)+' · 최대 지원 '+gWon(g.cap)+'</div>'+
+        (st.ok?'<div class="due">'+st.due+'</div>':'<div class="why">'+st.why+'</div>')+'</div><div>'+act+'</div></div>';
+    }).join('');
+    show('<div class="card"><h2 class="st-h">① 정산할 신청 건을 선택해 주세요</h2>'+
+      '<p class="st-sub">디지털 관광주민증 로그인 정보로 '+gEsc(R.full)+' 신청 이력을 자동으로 확인했습니다. 승인 완료된 건만 정산할 수 있어요.</p>'+
+      (list.length?cards:'<div class="note">'+gEsc(R.full)+'에 승인된 반값여행 신청이 없습니다. <a href="apply.html?r='+ST_SLUG+'" style="color:var(--blue);font-weight:700">사전신청하러 가기 ›</a></div>')+
+      '<div class="st-demo"><b>시연 도구</b> — 데모 날짜 이동 '+(off?'<b>'+(off>0?'+':'')+off+'일</b> (오늘 = '+gDot(gToday())+') <button class="btn sm" onclick="ST.demoOff()">되돌리기</button>':'없음 (오늘 = '+gDot(gToday())+')')+
+        (list.length?'':'<br><button class="btn sm" onclick="ST.demoMake()">데모: 여행을 마친 승인 건 만들기</button>')+
+        '<div class="small">여행 전인 건은 [데모: 날짜 이동]으로 여행 종료 다음 날로 이동합니다. 날짜 이동은 모든 시안 G 화면에 적용됩니다.</div></div>'+
+      '<div class="st-nav"><a class="btn" href="region.html?r='+ST_SLUG+'">취소</a><button class="btn pri" id="stNext1" onclick="ST.next1()"'+(T.app?'':' disabled')+'>다음 — 결제 증빙</button></div></div>',1);
+  }
+  function pick(id){
+    const a=gApp(id); if(!a||!appState(a).ok) return;
+    if(!T.app||T.app.id!==id){ T.app=a; T.items=[]; T.fetched=false; T.lodging={file:null}; T.visits=(a.visits||[]).slice(); OCR=null; }
+    s1();
+  }
+  function next1(){ if(!T.app){ gToast('정산할 신청 건을 선택해 주세요','bad'); return; } if(!T.visits.length&&T.app.visits) T.visits=T.app.visits.slice(); go(2); }
+  function demoMove(id){
+    const a=gApp(id); if(!a) return;
+    const off=(Number(gGet('dayOffset',0))||0)+gDiff(gToday(),a.end)+1;
+    gSet('dayOffset',off); location.reload();
+  }
+  function demoOff(){ gSet('dayOffset',0); location.reload(); }
+  function demoApprove(id){ gSetStatus(id,'approved',{by:'demo',memo:'시연용 승인 처리'}); gToast('시연용으로 승인 처리했어요','ok'); s1(); }
+  function demoMake(){
+    const id=gNewAppId(), at=gNow().toISOString(), me={name:U.name,birth:U.birth,rel:'본인',verified:'dju'};
+    const rd=R.rounds[0];
+    gPutApp({id,uid:U.id,userName:U.name,region:ST_SLUG,round:rd.n,type:'solo',people:[me],start:gYmd(gAdd(gToday(),-3)),end:gYmd(gAdd(gToday(),-1)),plan:'',docs:[],
+      agree:{check:true,privacy:true,third:true},status:'approved',grant:gGrant('solo',[me]),createdAt:at,
+      history:[{at,st:'received',by:'demo',memo:'시연용 신청'},{at,st:'approved',by:'demo',memo:'시연용 승인'}]});
+    gToast('시연용 승인 건을 만들었어요','ok'); s1();
+  }
+
+  /* ═══ ② 결제 증빙 ═══ */
+  function normAppr(v){ return String(v||'').replace(/[^0-9]/g,''); }
+  function comboKey(e){
+    const lead=String(e.card||'').replace(/[\s\-]/g,'').replace(/[^0-9]/g,'*').match(/^\d+/);
+    if(!lead||lead[0].length<6||!e.amount||!e.at) return null;
+    return lead[0].slice(0,6)+'|'+e.amount+'|'+String(e.at).slice(0,10);
+  }
+  /* 중복 제출 탐지 — 전 계정 정산 증빙(취소·반려 제외) + 지금 목록. 승인번호 또는 카드 앞6+금액+결제일 */
+  function findDup(it,selfIdx){
+    const ap=normAppr(it.approval), ck=comboKey(it);
+    const hit=e=>(ap.length>=6&&normAppr(e.approval)===ap)?'appr':(ck&&comboKey(e)===ck?'combo':null);
+    for(const a of gApps()){
+      if(a.id===T.app.id||['canceled','rejected'].indexOf(a.status)>=0) continue;
+      for(const e of ((a.settle&&a.settle.items)||[])){ const r=hit(e); if(r) return {reason:r,app:a.id,uid:a.uid,region:a.region,status:a.status,approval:e.approval||'',amount:e.amount}; }
+    }
+    for(let i=0;i<T.items.length;i++){ if(i===selfIdx) continue; const r=hit(T.items[i]); if(r) return {reason:r,app:T.app.id,uid:U.id,region:T.app.region,status:'(이번 정산)',approval:T.items[i].approval||'',amount:T.items[i].amount}; }
+    return null;
+  }
+  function dupMsg(d){
+    const why=d.reason==='appr'?'승인번호 '+d.approval+'이(가) 이미 제출되었습니다':'카드 앞자리·금액·결제일이 모두 같은 증빙이 이미 제출되었습니다';
+    const rr=gRegion(d.region);
+    return why+' (신청번호 '+d.app+' · '+(rr?rr.full:d.region)+' · 계정 '+d.uid+' · '+(G_ST[d.status]?G_ST[d.status].nm:d.status)+')';
+  }
+  /* 분류 = gClassify(제외 업종·여행기간·숙박 선결제·업로드 숙박만·가맹점 한도) + 이 화면의 추가 판정(법인카드·결제지역·중복) */
+  function classified(){
+    const cls=gClassify(T.items,T.app);
+    cls.forEach((x,i)=>{ const f=T.items[i].flag; if(x.ok&&f){ x.ok=false; x.reason=f; } });
+    return cls;
+  }
+  function totals(){
+    const cls=classified();
+    const rec=cls.filter(x=>x.ok).reduce((s,x)=>s+x.amount,0), rej=cls.filter(x=>!x.ok).reduce((s,x)=>s+x.amount,0);
+    return {cls,rec,rej,ref:gRefundOf(T.app,rec)};
+  }
+  function hasStay(){ return T.items.some(x=>x.cat==='숙박'); }
+  function s2ok(){ const t=totals(); return t.rec>0&&(!hasStay()||!!T.lodging.file); }
+  function s2(){
+    const a=T.app;
+    show('<div class="card"><h2 class="st-h">② 결제 증빙</h2>'+
+      '<p class="st-sub">'+gEsc(R.full)+' '+a.round+'회차 · 여행 '+gDot(a.start)+' ~ '+gDot(a.end)+' · '+gEsc((a.grant||{}).label||gTypeName(a.type))+' '+a.people.length+'명</p>'+
+      '<div class="st-rule"><b>📌 이렇게 인정돼요</b><ul><li>여행 기간 중 <b>'+gEsc(R.full)+' 관내 가맹점에서 지역화폐('+gEsc(PAYAPP)+')로 결제</b>한 금액만 인정됩니다.</li>'+
+        '<li>카드·현금영수증은 <b>숙박만</b> 인정(날인 숙박확인서 필수, 여행 전 '+P5+'일 이내 선결제 인정). 간이영수증·계좌이체·법인·타인 명의 결제는 불인정.</li>'+
+        '<li>제외 업종: 주유소·카센터·금은방·학원·유흥업소'+(R.extraExcl?'·'+gEsc(R.extraExcl):'')+' · 연매출 30억원 초과 업소.</li></ul></div>'+
+      '<div class="st-box"><h3>💳 지역화폐 결제내역 <span class="small muted">'+gEsc(PAYAPP)+' 운영사 연동</span></h3>'+
+        '<p class="small muted" style="margin:2px 0 0">여행 기간('+gMD(a.start)+'~'+gMD(a.end)+') 동안 '+gEsc(R.full)+'에서 결제한 내역을 자동으로 불러옵니다.</p>'+
+        '<div id="stLp">'+lpHtml()+'</div></div>'+
+      '<div class="st-box"><h3>🧾 영수증 직접 첨부 <span class="small muted">숙박 카드·현금영수증</span></h3>'+
+        '<p class="small muted" style="margin:2px 0 0">지역화폐 외 결제는 숙박비만 인정됩니다. 영수증을 첨부하면 자동으로 판독해 입력값과 대조합니다.</p>'+
+        (upOpen?upHtml():'<button class="btn sm" style="margin-top:8px" onclick="ST.upToggle(true)">+ 영수증 첨부하기</button>')+'</div>'+
+      '<div id="stTbl">'+tblHtml()+'</div>'+
+      '<div class="st-nav"><button class="btn" onclick="ST.go('+(FIX?4:1)+')">'+(FIX?'최종 확인으로':'이전')+'</button><button class="btn pri" id="stNext2" onclick="ST.next2()">다음 — 관광지 인증</button></div></div>',2);
+    upd2();
+  }
+  function lpHtml(){
+    if(T.fetching) return '<div class="st-load"><span class="st-spin"></span>지역화폐 운영사 API에서 결제내역을 조회하고 있어요…</div>';
+    const n=T.items.filter(x=>x.src==='localpay').length;
+    if(!T.fetched) return '<button class="btn blue" style="margin-top:10px" onclick="ST.fetchLp()">지역화폐 결제내역 불러오기</button>';
+    if(n) return '<div class="st-load"><span>✅ 결제내역 <b>'+n+'건</b>을 불러왔어요.</span><button class="btn sm" onclick="ST.fetchLp()">다시 불러오기</button></div>';
+    return '<div class="note warn" style="margin-top:10px">여행 기간 중 '+gEsc(R.full)+' 지역화폐 결제내역이 없습니다.</div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><a class="btn sm" href="pay.html?r='+ST_SLUG+'">지역화폐 앱(모의)에서 결제하기</a>'+
+      '<button class="btn sm ghost" onclick="ST.demoPay()" title="시연용">데모 결제내역 생성</button><button class="btn sm" onclick="ST.fetchLp()">다시 불러오기</button></div>';
+  }
+  function fetchLp(){
+    T.fetching=true; $('stLp').innerHTML=lpHtml();
+    setTimeout(()=>{
+      T.fetching=false; T.fetched=true; T.dirty=true;
+      const got=gFetchLocalPay(T.app);
+      T.items=T.items.filter(x=>x.src!=='localpay');
+      got.forEach(p=>{
+        const it={src:'localpay',payId:p.id,merchant:p.merchant,cat:p.cat,biz:p.biz||'',excluded:!!p.excluded,amount:Number(p.amount)||0,at:p.at,approval:p.approval||''};
+        const d=findDup(it,-1);
+        if(d){ it.flag='중복 제출'; it.dup=d; }
+        else if(it.cat==='숙박'&&String(it.at).slice(0,10)>T.app.end) it.flag='여행기간 외 결제';
+        T.items.push(it);
+      });
+      if($('stLp')) $('stLp').innerHTML=lpHtml();
+      reTbl();
+      gToast(got.length?'결제내역 '+got.length+'건을 불러왔어요':'불러올 결제내역이 없어요',got.length?'ok':'');
+    },1000);
+  }
+  function demoPay(){
+    const a=T.app, ms=gMerchants(ST_SLUG);
+    /* 업소 목록이 14곳으로 잘리면서 숙박 업소가 빠지는 지역이 있어 숙박은 대체 업소를 둔다 */
+    const by=c=>{ const l=ms.filter(m=>m.cat===c); return l.length||c!=='숙박'?l:[{id:ST_SLUG+'-stay',name:R.name+' 힐링펜션',cat:'숙박'}]; };
+    const days=Math.max(0,gDiff(a.start,a.end));
+    const at=(k,h)=>gYmd(gAdd(a.start,Math.min(days,k)))+'T'+h+':00';
+    const plan=[[by('음식')[0],38000,at(0,'12:10')],[by('관광')[0],24000,at(0,'15:30')],[by('숙박')[0],120000,at(0,'18:00')],
+      [by('음식')[1]||by('음식')[0],52000,at(1,'09:20')],[by('쇼핑')[0],46000,at(1,'11:40')],[by('제외')[0],50000,at(1,'13:05')]];
+    plan.forEach(p=>{ const m=p[0]; if(!m) return; gAddPayment({region:ST_SLUG,merchantId:m.id,merchant:m.name,cat:m.cat,biz:m.biz||'',excluded:!!m.excluded,amount:p[1],at:new Date(p[2]).toISOString()},a.uid); });
+    gToast('시연용 지역화폐 결제 '+plan.length+'건을 만들었어요 (제외 업종 1건 포함)','ok');
+    fetchLp();
+  }
+  function tblHtml(){
+    if(!T.items.length) return '<div class="note" style="margin-top:14px">아직 등록된 결제 증빙이 없습니다. 지역화폐 결제내역을 불러오거나 숙박 영수증을 첨부해 주세요.</div>';
+    const t=totals();
+    const rows=t.cls.map((x,i)=>{
+      const it=T.items[i];
+      return '<tr class="'+(x.ok?'':'bad')+'"><td><span class="st-src">'+(it.src==='upload'?'영수증':'지역화폐')+'</span></td><td>'+gEsc(gDT(it.at).slice(5))+'</td>'+
+        '<td><b>'+gEsc(it.merchant||'-')+'</b>'+(it.corpCheck?'<small style="color:'+gCorpColor(it.corpCheck)+'">'+gCorpIcon(it.corpCheck)+' '+gEsc(it.corpCheck.label)+'</small>':'')+(it.dup?'<small style="color:var(--bad)">'+gEsc(dupMsg(it.dup))+'</small>':'')+'</td>'+
+        '<td>'+gEsc(it.cat==='제외'?(it.biz||'제외'):it.cat)+(it.prepay?'<small>선결제</small>':'')+'</td><td class="num">'+gWon(it.amount)+'</td>'+
+        '<td>'+(x.ok?'<span class="st-ok">인정</span>':'<span class="st-no">불인정</span><small>'+gEsc(x.reason)+'</small>')+'</td>'+
+        '<td>'+(it.src==='upload'?'<button onclick="ST.delItem('+i+')">삭제</button>':'')+'</td></tr>';
+    }).join('');
+    const g=T.app.grant||gGrant(T.app.type,T.app.people);
+    return '<div class="tbl-wrap st-tbl" style="margin-top:14px"><table class="tbl"><thead><tr><th>출처</th><th>결제일시</th><th>가맹점</th><th>업종</th><th class="num">금액</th><th>판정</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+      '<div class="st-sumbar"><div><span>인정 금액</span><b>'+gWon(t.rec)+'</b></div><div><span>불인정 금액</span><b>'+gWon(t.rej)+'</b></div>'+
+      '<div><span>환급률 · 지원 한도</span><b>'+t.ref.rate+'% · '+gMan(t.ref.cap)+'</b></div><div class="hl"><span>예상 환급액</span><b>'+gWon(t.ref.meetsMin?t.ref.amount:0)+'</b></div></div>'+
+      (t.ref.meetsMin?'':'<div class="note warn" style="margin-top:10px">⚠ 인정 금액이 최소 소비액 <b>'+gWon(g.minSpend)+'</b>('+g.people+'명 × 1인 '+gMan(gStdNum('M8'))+')에 못 미쳐 이대로면 환급되지 않습니다. 결제내역을 더 추가해 주세요.</div>')+
+      (hasStay()?lodgingHtml():'');
+  }
+  function lodgingHtml(){
+    return '<div class="st-box" style="border-color:'+(T.lodging.file?'#a7e3d6':'#fdba74')+'"><h3>🏨 숙박 증빙 <span class="g-st" style="--c:#b45309">필수</span></h3>'+
+      '<p class="small" style="margin:2px 0 6px">숙박 결제 건이 있어 숙소에서 발급한 <b>날인 숙박확인서</b>(숙박증명서·투숙확인서 등)를 첨부해야 합니다 (운영기준 P6).</p>'+
+      '<input class="inp" type="file" accept="image/*,.pdf" onchange="ST.lodgeFile(this)">'+
+      (T.lodging.file?'<div class="small" style="margin-top:6px">📄 첨부됨 — <b>'+gEsc(T.lodging.file.name)+'</b></div>':'<div class="st-err">숙박확인서를 첨부해야 다음 단계로 넘어갈 수 있어요.</div>')+'</div>';
+  }
+  function lodgeFile(inp){
+    const f=inp.files&&inp.files[0]; if(!f) return;
+    if(!/\.(jpe?g|png|pdf)$/i.test(f.name)||f.size>10*1024*1024){ gToast('jpg·png·pdf, 10MB 이하 파일만 첨부할 수 있어요','bad'); inp.value=''; return; }
+    T.lodging.file={name:f.name,size:f.size}; T.dirty=true; reTbl();
+  }
+  function reTbl(){ const el=$('stTbl'); if(el) el.innerHTML=tblHtml(); upd2(); }
+  function upd2(){ const b=$('stNext2'); if(b) b.disabled=!s2ok(); }
+  function delItem(i){ T.items.splice(i,1); T.dirty=true; reTbl(); }
+
+  /* ── 영수증 직접 첨부 + OCR ── */
+  function upToggle(on){ upOpen=on; if(!on){ OCR=null; stay=false; prepay=false; } s2(); }
+  function upHtml(){
+    const a=T.app;
+    return '<div style="margin-top:10px">'+
+      '<div class="note small">판독 결과와 입력값(카드번호·승인번호·금액·결제일)이 다르면 추가되지 않습니다. 테스트용 영수증이 필요하면 아래 버튼으로 만들 수 있어요.</div>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0"><button class="btn sm" onclick="ST.demoReceipt(\'personal\')">📄 데모 영수증 생성(개인카드 숙박)</button>'+
+      '<button class="btn sm" onclick="ST.demoReceipt(\'corp\')">🏢 데모 영수증 생성(법인카드)</button><span id="stDemoDl" class="small"></span></div>'+
+      '<label class="f">영수증 이미지 <small class="muted">(첨부하면 자동 판독)</small></label><input class="inp" type="file" id="stUpFile" accept="image/*,.pdf" onchange="ST.ocrFile(this)">'+
+      '<div id="stOcr">'+ocrHtml()+'</div>'+
+      '<div class="st-row"><div><label class="f" for="stCard">카드번호</label><input class="inp" id="stCard" inputmode="numeric" maxlength="19" placeholder="0000-0000-0000-0000"></div>'+
+      '<div><label class="f" for="stAppr">승인번호</label><input class="inp" id="stAppr" inputmode="numeric" maxlength="9" placeholder="영수증의 승인번호"></div>'+
+      '<div><label class="f" for="stAmt">결제금액(원)</label><input class="inp" id="stAmt" type="number" min="0" inputmode="numeric"></div>'+
+      '<div><label class="f" for="stDate">결제일</label><input class="inp" id="stDate" type="date"></div></div>'+
+      '<label class="check"><input type="checkbox" id="stStay" '+(stay?'checked ':'')+'onchange="ST.setStay(this.checked)"><span><b>숙박비 결제 건</b> — 카드·현금영수증은 숙박만 인정됩니다 (숙박확인서 필요)</span></label>'+
+      '<label class="check" id="stPreL" style="'+(stay?'':'display:none')+'"><input type="checkbox" id="stPre" '+(prepay?'checked ':'')+'onchange="ST.setPre(this.checked)"><span><b>숙박 선결제</b> — 예약 때 미리 결제했어요 (여행 시작일 기준 '+P5+'일 전까지 인정)</span></label>'+
+      '<label class="check"><input type="checkbox" id="stOk"><span>위 판독 내용을 확인했습니다</span></label>'+
+      '<div class="st-err" id="stErr" aria-live="polite"></div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn navy" onclick="ST.addUpload()">이 영수증 추가</button><button class="btn" onclick="ST.upToggle(false)">닫기</button></div></div>';
+  }
+  function V(v){ return v?gEsc(v):'<span class="unk">확인 불가</span>'; }
+  function ocrHtml(){
+    if(ocrBusy) return '<div class="st-ocr"><div class="st-load" style="margin:0"><span class="st-spin"></span><span id="stOcrMsg">영수증 판독 중… (실제 OCR — 처음에는 엔진을 내려받느라 수 초 걸립니다)</span></div></div>';
+    if(!OCR) return '';
+    const a=T.app, ex=OCR.ex||{};
+    const amt=(ex.amts&&ex.amts.length)?ex.amts.map(v=>Number(v).toLocaleString('ko-KR')).join(', ')+'원':null;
+    const rgT=gOcrRegionText(ex.region), rgm=gOcrRegionMatch(ex.region,R.name);
+    const biz=gBizCheck(ex.shop), corp=gCorpCheck(ex.card,OCR.rawText||OCR.text,false);
+    const dateTxt=ex.date?ex.date+(ex.date>a.end?' ⚠️ 여행기간 밖':(ex.date<a.start?' ⚠️ 여행 시작 전 — 숙박 선결제만 인정':' ✅ 여행기간 내')):null;
+    const bc=biz.result==='excluded'?'#b91c1c':biz.result==='included'?'#0f766e':'#b45309';
+    return '<div class="st-ocr"><div class="t">📄 영수증 판독 결과 '+(OCR.mode==='real'?'(실제 OCR'+(OCR.confidence!=null?' · 신뢰도 '+OCR.confidence+'%':'')+')':'(모의 판독 — OCR 엔진을 불러오지 못함)')+' — '+gEsc(OCR.file)+'</div>'+
+      (ex.nonCard?'<div class="note warn small" style="margin:6px 0">⚠ 카드 매출전표가 아닙니다 — <b>'+gEsc(ex.nonCard)+'</b>'+(ex.nonCard==='현금영수증'?' (현금영수증은 숙박비만 인정됩니다)':' — 정산 증빙으로 인정되지 않습니다(운영기준 P3)')+'</div>':'')+
+      '<div class="r"><span>가맹점</span><b>'+V(ex.shop)+'</b></div>'+
+      '<div class="r"><span>소비 인정</span><b style="color:'+bc+'">'+gEsc(biz.label)+'</b></div>'+
+      '<div class="r"><span>결제지역</span><b>'+(rgT?gEsc(rgT)+(rgm==='match'?' ✅ '+gEsc(R.full)+' 일치':rgm==='mismatch'?' ⚠️ '+gEsc(R.full)+gJosa(R.full,'과와')+' 다름':''):V(null))+'</b></div>'+
+      '<div class="r"><span>카드번호</span><b>'+V(ex.card)+'</b></div>'+
+      '<div class="r"><span>승인번호</span><b>'+V(ex.appr)+'</b></div>'+
+      '<div class="r"><span>결제금액</span><b>'+V(amt)+'</b></div>'+
+      '<div class="r"><span>결제일</span><b>'+V(dateTxt)+'</b></div>'+
+      '<div class="r"><span>법인카드 확인</span><b style="color:'+gCorpColor(corp)+'">'+gCorpIcon(corp)+' '+gEsc(corp.label)+'<small style="display:block;font-weight:400;color:var(--sub)">'+gEsc(corp.detail)+'</small></b></div>'+
+      '<p class="small muted" style="margin:6px 0 0">확인 불가 항목은 대조하지 못해 담당자가 원본을 확인합니다. 결제일은 여행기간('+gMD(a.start)+'~'+gMD(a.end)+') 안이어야 하며, 숙박 선결제는 여행 전 '+P5+'일까지 인정됩니다.</p></div>';
+  }
+  function ocrFile(inp){
+    const f=inp.files&&inp.files[0]; OCR=null;
+    if(!f){ $('stOcr').innerHTML=''; return; }
+    ocrBusy=true; $('stOcr').innerHTML=ocrHtml();
+    gOcrRun(f,m=>{ const el=$('stOcrMsg'); if(el) el.textContent=m; })
+      .then(o=>{ OCR=o; gToast('영수증 판독이 완료되었어요 (실제 OCR)','ok'); })
+      .catch(()=>{ OCR=gOcrMock(f,demoData('personal')); gToast('OCR 엔진을 불러오지 못해 모의 판독으로 대체했어요'); })
+      .then(()=>{ ocrBusy=false; const el=$('stOcr'); if(el) el.innerHTML=ocrHtml(); });
+  }
+  function demoData(kind){
+    const a=T.app, stayM=gMerchants(ST_SLUG).find(m=>m.cat==='숙박')||{name:R.name+' 힐링펜션'};
+    const amount=kind==='corp'?150000:90000;
+    return {merchant:stayM.name,addr:R.sido+' '+R.full+' 중앙로 1',date:a.start,
+      card:kind==='corp'?'5432-10XX-XXXX-7788':'1234-56XX-XXXX-3456',cardType:kind==='corp'?'신한카드법인':'신한카드개인',
+      amount,approval:String(10000000+gHash(a.id+kind+amount)%89999999)};
+  }
+  function demoReceipt(kind){
+    const d=demoData(kind), r=gOcrDemoReceipt(d);
+    lastDemo=d;
+    const inp=$('stUpFile');
+    try{ const dt=new DataTransfer(); dt.items.add(r.file); inp.files=dt.files; }catch(e){}
+    $('stDemoDl').innerHTML='<a href="'+r.dataUrl+'" download="'+gEsc(r.name)+'" style="color:var(--blue);font-weight:700">이미지 저장</a> · 입력값: 카드 '+gEsc(d.card.replace(/X/g,'○'))+'(○는 아무 숫자) · 승인 '+d.approval+' · '+gWon(d.amount)+' · '+d.date;
+    if(inp.files&&inp.files.length) ocrFile(inp);
+    if(!stay){ stay=true; const c=$('stStay'); if(c) c.checked=true; const l=$('stPreL'); if(l) l.style.display=''; }
+    gToast('데모 영수증을 첨부했어요 — 영수증에 인쇄된 값을 입력해 주세요');
+  }
+  function setStay(v){ stay=v; if(!v){ prepay=false; const p=$('stPre'); if(p) p.checked=false; } const l=$('stPreL'); if(l) l.style.display=v?'':'none'; }
+  function setPre(v){ prepay=v; }
+  function addUpload(){
+    const err=$('stErr'); err.innerHTML='';
+    const fail=m=>{ err.innerHTML=m; return false; };
+    const card=$('stCard').value.replace(/[^0-9]/g,''), appr=$('stAppr').value.trim(), amt=Math.floor(Number($('stAmt').value)||0), date=$('stDate').value;
+    if(!OCR) return fail('영수증 이미지를 첨부해 주세요. 첨부하면 자동으로 판독합니다.');
+    const ex=OCR.ex||{};
+    const cash=ex.nonCard==='현금영수증';
+    if(ex.nonCard&&!cash) return fail('❌ <b>'+gEsc(ex.nonCard)+'</b>은(는) 정산 증빙으로 인정되지 않습니다(간이영수증·계좌이체·멤버십 전표 불인정, 운영기준 P3). 카드 매출전표나 현금영수증을 첨부해 주세요.');
+    if(!cash&&card.length<15) return fail('카드번호를 확인해 주세요 (15~16자리 숫자, 가려진 자리는 아무 숫자)');
+    if(!/^\d{6,9}$/.test(appr)) return fail('승인번호를 확인해 주세요 (숫자 6~9자리)');
+    if(amt<=0) return fail('결제금액을 입력해 주세요');
+    if(!date) return fail('결제일을 입력해 주세요');
+    if(!$('stOk').checked) return fail('판독 결과를 확인한 뒤 「위 판독 내용을 확인했습니다」에 체크해 주세요');
+    /* 판독값 ↔ 입력값 대조 */
+    const fails=[];
+    if(ex.appr){ if(ex.appr!==appr) fails.push('승인번호(영수증: '+ex.appr+')'); } else if(OCR.mode==='real'&&String(OCR.text).indexOf(appr)<0) fails.push('승인번호(영수증에서 확인 불가)');
+    if(ex.amts&&ex.amts.length){ if(ex.amts.indexOf(String(amt))<0) fails.push('결제금액(영수증: '+ex.amts.map(v=>Number(v).toLocaleString('ko-KR')).join('/')+'원)'); }
+    else if(OCR.mode==='real'&&String(OCR.text).indexOf(String(amt))<0) fails.push('결제금액(영수증에서 확인 불가)');
+    if(!cash&&ex.card&&!gOcrCardMatch(card,ex.card)) fails.push('카드번호(영수증: '+ex.card+')');
+    if(ex.date&&ex.date!==date) fails.push('결제일(영수증: '+ex.date+')');
+    if(fails.length) return fail('❌ <b>입력값이 영수증 판독 결과와 다릅니다:</b> '+gEsc(fails.join(', '))+'. 영수증 표기와 같게 입력해 주세요.');
+    const shop=ex.shop||'(상호 확인 불가)', biz=gBizCheck(ex.shop);
+    const it={src:'upload',merchant:shop,cat:stay?'숙박':(biz.cat||'기타'),biz:biz.result==='excluded'?biz.biz:'',excluded:biz.result==='excluded',
+      amount:amt,at:(ex.date||date)+'T12:00:00',approval:appr,card:cash?'':gCardMask(card),prepay:stay&&prepay,stay,
+      ocr:{mode:OCR.mode,file:OCR.file,shop:ex.shop||null,card:ex.card||null,appr:ex.appr||null,amts:ex.amts||[],date:ex.date||null,region:gOcrRegionText(ex.region),nonCard:ex.nonCard||null,confidence:OCR.confidence},
+      corp:null};
+    const dup=findDup(it,-1);
+    if(dup) return fail('❌ <b>이미 사용된 증빙입니다.</b> '+gEsc(dupMsg(dup))+'<br>같은 결제내역으로는 한 번만 환급받을 수 있습니다.');
+    if(!cash){ const cc=gCorpCheck(ex.card||card,OCR.rawText||OCR.text,true); it.corpCheck=cc; it.corp=cc.result==='unknown'?null:cc.result; if(cc.result==='corp') it.flag='법인카드 결제(업무 목적 지출)'; }
+    const d0=ex.date||date;
+    if(!it.flag&&gOcrRegionMatch(ex.region,R.name)==='mismatch') it.flag='결제지역 불일치('+gOcrRegionText(ex.region)+')';
+    if(!it.flag&&d0>T.app.end) it.flag='여행기간 외 결제';
+    if(!it.flag&&d0<T.app.start&&!(stay&&prepay)) it.flag=stay?'여행 전 결제(숙박 선결제 미신고)':'여행기간 외 결제';
+    T.items.push(it); T.dirty=true;
+    OCR=null; upOpen=false; stay=false; prepay=false;
+    s2();
+    const c=classified()[T.items.length-1];
+    gToast(c.ok?'영수증을 추가했어요 — 인정':'영수증을 추가했어요 — 불인정: '+c.reason,c.ok?'ok':'bad');
+  }
+  function next2(){
+    if(!T.items.length){ gToast('결제 증빙을 등록해 주세요','bad'); return; }
+    if(!totals().rec){ gToast('인정되는 결제가 없습니다. 지역화폐 결제내역을 확인해 주세요','bad'); return; }
+    if(hasStay()&&!T.lodging.file){ gToast('숙박확인서를 첨부해 주세요','bad'); return; }
+    go(3);
+  }
+
+  /* ═══ ③ 관광지 인증 ═══ */
+  function spotsDone(){ return Array.from(new Set(T.visits.map(v=>v.spot))); }
+  function s3(){
+    const a=T.app, done=spotsDone();
+    const vis=T.visits.map((v,i)=>'<div class="st-vis"><span><b>'+gEsc(v.spot)+'</b> · '+gEsc(gDot(v.date))+' · '+(v.method==='qr'?'📱 QR 인증'+(v.gps?' (GPS 확인)':''):'📷 사진 인증'+(v.photo?' — '+gEsc(v.photo):''))+'</span>'+
+      (v.method==='qr'?'<span class="small muted">마이페이지 QR 인증 자동 반영</span>':'<button onclick="ST.delVisit('+i+')">삭제</button>')+'</div>').join('');
+    const opts=R.attractions.map(s=>'<option'+(done.indexOf(s)>=0?' disabled':'')+'>'+gEsc(s)+'</option>').join('');
+    show('<div class="card"><h2 class="st-h">③ 관광지 방문 인증</h2>'+
+      '<p class="st-sub">'+gEsc(R.full)+gJosa(R.full,'은는')+' 지정관광지 <b>'+gEsc(V4)+'</b> 방문 인증이 필요합니다. 여행 중 마이페이지에서 QR로 인증한 곳은 자동으로 반영돼요.</p>'+
+      '<div class="st-cnt">인증 '+done.length+' / 필수 '+NEED+'곳 '+(done.length>=NEED?'<span class="st-ok">충족</span>':'<span class="st-no">'+(NEED-done.length)+'곳 부족</span>')+'</div>'+
+      (vis||'<div class="note" style="margin-top:8px">아직 인증 내역이 없습니다. 아래에서 사진으로 인증해 주세요.</div>')+
+      '<div class="st-box"><h3>📷 사진으로 인증 추가</h3>'+
+        '<p class="small" style="margin:2px 0 0">인증사진 예시 — '+gEsc(R.photoRule)+' 촬영해 주세요 (운영기준 V1 얼굴 포함).</p>'+
+        '<div class="st-ex"><div><i>🙂</i><b>얼굴</b><br>본인 얼굴이 보이게</div><div><i>🏯</i><b>랜드마크</b><br>관광지 대표 풍경</div><div><i>🪧</i><b>간판</b><br>관광지 안내판·간판</div></div>'+
+        '<div class="st-row"><div><label class="f" for="stSpot">지정관광지</label><select class="inp" id="stSpot">'+opts+'</select></div>'+
+        '<div><label class="f" for="stVDate">방문일 <small class="muted">(여행기간 안)</small></label><input class="inp" type="date" id="stVDate" min="'+a.start+'" max="'+a.end+'" value="'+a.start+'"></div></div>'+
+        '<label class="f" for="stPhoto">인증사진</label><input class="inp" type="file" id="stPhoto" accept="image/*">'+
+        '<label class="check"><input type="checkbox" id="stFace"><span>얼굴이 보이게 촬영했습니다</span></label>'+
+        '<div class="st-err" id="stVErr"></div><button class="btn navy" onclick="ST.addVisit()">인증 추가</button></div>'+
+      '<div class="st-nav"><button class="btn" onclick="ST.go(2)">이전</button><button class="btn pri" id="stNext3" onclick="ST.next3()"'+(done.length>=NEED?'':' disabled')+'>다음 — 최종 확인</button></div></div>',3);
+  }
+  function addVisit(){
+    const e=$('stVErr'), sp=$('stSpot').value, d=$('stVDate').value, f=$('stPhoto').files[0];
+    if(!sp) return e.textContent='관광지를 선택해 주세요';
+    if(spotsDone().indexOf(sp)>=0) return e.textContent='이미 인증한 관광지입니다';
+    if(!d||d<T.app.start||d>T.app.end) return e.textContent='방문일은 여행기간('+gMD(T.app.start)+'~'+gMD(T.app.end)+') 안이어야 합니다';
+    if(!f) return e.textContent='인증사진을 첨부해 주세요';
+    if(!/^image\//.test(f.type)&&!/\.(jpe?g|png|heic|webp)$/i.test(f.name)) return e.textContent='이미지 파일만 첨부할 수 있어요';
+    if(!$('stFace').checked) return e.textContent='얼굴이 보이게 촬영했는지 확인해 주세요';
+    T.visits.push({spot:sp,date:d,method:'photo',gps:false,photo:f.name,at:gNow().toISOString()}); T.dirty=true;
+    gToast(sp+' 인증을 추가했어요','ok'); s3();
+  }
+  function delVisit(i){ T.visits.splice(i,1); T.dirty=true; s3(); }
+  function next3(){ if(spotsDone().length<NEED){ gToast('지정관광지 '+NEED+'곳 이상 인증해 주세요','bad'); return; } go(4); }
+
+  /* ═══ ④ 최종 확인 ═══ */
+  function s4(){
+    const a=T.app, t=totals(), g=a.grant||gGrant(a.type,a.people), done=spotsDone();
+    const okN=t.cls.filter(x=>x.ok).length, noN=t.cls.length-okN;
+    const reasons={}; t.cls.filter(x=>!x.ok).forEach(x=>reasons[x.reason]=(reasons[x.reason]||0)+x.amount);
+    const fx=FIX?'<div class="card st-fix" style="margin-bottom:14px"><h2 class="st-h">⚠ 정산 보완이 필요합니다</h2>'+
+      '<p style="margin:6px 0"><b>사유</b> · '+gEsc(FIX.fix&&FIX.fix.reason||'-')+'</p><p style="margin:6px 0"><b>기한</b> · '+(FIX.fix&&FIX.fix.due?gDot(FIX.fix.due)+'까지':'-')+'</p>'+
+      '<label class="f">보완 서류 첨부 <small class="muted">(jpg·png·pdf · 10MB 이하)</small></label><input class="inp" type="file" accept="image/*,.pdf" onchange="ST.fixFile(this)"><ul class="st-files" id="stFixFiles">'+fixFilesHtml()+'</ul>'+
+      '<p class="small muted">결제 증빙·관광지 인증도 아래 [수정하기]로 고칠 수 있습니다.</p></div>':'';
+    show(fx+'<div class="card"><h2 class="st-h">④ 정산 내용을 확인해 주세요</h2><p class="st-sub">접수 후 담당자가 심사하고, 승인되면 '+U1+'일 이내 모바일 '+gEsc(R.voucher)+'으로 지급됩니다.</p>'+
+      '<div class="st-sumbar"><div><span>인정 금액 ('+okN+'건)</span><b>'+gWon(t.rec)+'</b></div><div><span>불인정 ('+noN+'건)</span><b>'+gWon(t.rej)+'</b></div>'+
+        '<div><span>환급률 · 지원 한도</span><b>'+t.ref.rate+'% · '+gMan(t.ref.cap)+'</b></div><div class="hl"><span>예상 환급액</span><b>'+gWon(t.ref.meetsMin?t.ref.amount:0)+'</b></div></div>'+
+      (t.ref.meetsMin?'':'<div class="note warn" style="margin-top:10px">⚠ 최소 소비액 '+gWon(g.minSpend)+'에 못 미쳐 환급 대상이 아닙니다.</div>')+
+      '<div class="st-sum"><h4>신청 건<span></span></h4><dl><dt>신청번호</dt><dd>'+gEsc(a.id)+'</dd><dt>지역·회차</dt><dd>'+gEsc(R.full)+' '+a.round+'회차 · '+gEsc(g.label)+' '+a.people.length+'명</dd><dt>여행 일정</dt><dd>'+gDot(a.start)+' ~ '+gDot(a.end)+'</dd></dl></div>'+
+      '<div class="st-sum"><h4>결제 증빙<button class="btn sm" onclick="ST.go(2)">수정하기</button></h4><dl><dt>인정</dt><dd>'+okN+'건 · '+gWon(t.rec)+'</dd><dt>불인정</dt><dd>'+(noN?Object.keys(reasons).map(k=>gEsc(k)+' '+gWon(reasons[k])).join(' · '):'없음')+'</dd>'+
+        (hasStay()?'<dt>숙박확인서</dt><dd>'+(T.lodging.file?gEsc(T.lodging.file.name):'<span style="color:var(--bad)">미첨부</span>')+'</dd>':'')+'</dl></div>'+
+      '<div class="st-sum"><h4>관광지 인증<button class="btn sm" onclick="ST.go(3)">수정하기</button></h4><dl><dt>인증</dt><dd>'+done.length+' / 필수 '+NEED+'곳</dd><dt>내역</dt><dd>'+(T.visits.map(v=>gEsc(v.spot)+' ('+gMD(v.date)+' · '+(v.method==='qr'?'QR':'사진')+')').join('<br>')||'-')+'</dd></dl></div>'+
+      '<h3 style="margin:22px 0 4px;font-size:16px">확인·동의</h3>'+
+      '<label class="check"><input type="checkbox" id="stFraud" '+(T.fraud?'checked ':'')+'onchange="ST.setA(\'fraud\',this.checked)"><span><b>[필수] 부정 수급 유의사항을 확인했습니다</b><br><span class="small muted">허위 증빙·중복 제출·타인 명의 결제·결제 후 취소 등 부정 수급이 확인되면 지원금 전액 환수 및 향후 참여가 제한되며, 관련 법령에 따라 처벌받을 수 있습니다.</span></span></label>'+
+      '<label class="check"><input type="checkbox" id="stTerms" '+(T.terms?'checked ':'')+'onchange="ST.setA(\'terms\',this.checked)"><span><b>[필수] 정산·환급 약관 및 결제내역 조회에 동의합니다</b></span></label>'+
+      '<details class="st-terms"><summary>약관 본문 보기</summary><div>지역화폐 운영사('+gEsc(PAYAPP)+')로부터 여행 기간 결제내역을 조회하고, 제출한 영수증·인증사진을 심사에 이용합니다. 환급금은 모바일 '+gEsc(R.voucher)+'(핀번호)로 지급되며 본인 명의 앱에만 등록할 수 있고 재발급되지 않습니다. 사용 기한은 '+gEsc(gStd('U3').val)+'입니다.</div></details>'+
+      '<label class="f" for="stSign">전자서명 — 신청자 이름을 입력해 주세요</label><input class="inp" id="stSign" maxlength="20" placeholder="'+gEsc(U.name)+'" value="'+gEsc(T.sign)+'" oninput="ST.setSign(this.value)" style="max-width:320px">'+
+      '<div class="st-err" id="stSignMsg"></div>'+
+      '<div class="st-nav"><button class="btn" onclick="ST.go(3)">이전</button><button class="btn pri lg" id="stSubmit" onclick="ST.submit()">'+(FIX?'보완 재접수':'정산 접수')+'</button></div></div>',4);
+    upd4();
+  }
+  function fixFilesHtml(){ return fixFiles.map((f,i)=>'<li><span>📄 '+gEsc(f.name)+'</span><button onclick="ST.fixDel('+i+')">삭제</button></li>').join(''); }
+  function fixFile(inp){
+    const f=inp.files&&inp.files[0]; if(!f) return;
+    if(!/\.(jpe?g|png|pdf)$/i.test(f.name)||f.size>10*1024*1024){ gToast('jpg·png·pdf, 10MB 이하 파일만 첨부할 수 있어요','bad'); inp.value=''; return; }
+    fixFiles.push({name:f.name,size:f.size}); inp.value=''; $('stFixFiles').innerHTML=fixFilesHtml();
+  }
+  function fixDel(i){ fixFiles.splice(i,1); $('stFixFiles').innerHTML=fixFilesHtml(); }
+  function setA(k,v){ T[k]=v; upd4(); }
+  function setSign(v){ T.sign=v; upd4(); }
+  function s4ok(){ return T.fraud&&T.terms&&T.sign.trim()===U.name&&s2ok()&&spotsDone().length>=NEED; }
+  function upd4(){
+    const m=$('stSignMsg'); if(m){ const s=T.sign.trim(); m.textContent=s&&s!==U.name?'신청자 이름('+U.name+')과 일치하지 않습니다':''; }
+    const b=$('stSubmit'); if(b) b.disabled=!s4ok();
+  }
+  function submit(){
+    if(!s2ok()) return go(2);
+    if(spotsDone().length<NEED) return go(3);
+    if(!s4ok()){ gToast('유의사항·약관 동의와 전자서명을 확인해 주세요','bad'); return; }
+    const a=gApp(T.app.id);
+    if(!FIX){
+      const st=appState(a);
+      if(!st.ok){ gToast(st.why,'bad'); return go(1); }
+    }else if(a.status!=='settle_fix'){ gToast('이미 처리된 보완 요청입니다','bad'); return; }
+    if(FIX&&!fixFiles.length&&!T.dirty){ gToast('보완 서류를 첨부하거나 증빙·인증 내용을 수정해 주세요','bad'); return; }
+    const t=totals();
+    const items=t.cls.map(x=>{ const y=Object.assign({},x); return y; });
+    const prev=a.settle||{};
+    const settle={id:prev.id||('S'+gSeq()),at:gNow().toISOString(),items,visits:T.visits.slice(),
+      lodging:{file:T.lodging.file,prepay:T.items.some(x=>x.cat==='숙박'&&x.prepay)},
+      recognized:t.rec,rejectedAmt:t.rej,expected:t.ref.meetsMin?t.ref.amount:0,agree:{fraud:true,terms:true},sign:T.sign.trim(),
+      dup:T.items.filter(x=>x.dup).map(x=>Object.assign({approval:x.approval},x.dup))};
+    if(FIX){ settle.fixFiles=fixFiles.slice(); settle.resubmitted=(prev.resubmitted||0)+1; }
+    const patch={settle,visits:T.visits.slice()};
+    if(FIX) patch.fix=Object.assign({},a.fix||{},{files:fixFiles.slice(),submittedAt:gNow().toISOString()});
+    const r=gSetStatus(a.id,'settle_review',{by:'user',memo:FIX?'정산 보완 재접수':'정산 접수',patch});
+    doneView(r);
+  }
+
+  /* ═══ ⑤ 완료 ═══ */
+  function doneView(a){
+    view='s5';
+    const s=a.settle;
+    show('<div class="card st-big"><div class="ic">'+(FIX?'📨':'🎉')+'</div><h2>'+(FIX?'정산 보완이 재접수되었어요':'정산 접수가 완료되었어요')+'</h2>'+
+      '<div class="st-no-big">정산번호 '+gEsc(s.id)+'</div>'+
+      '<p><b>'+gEsc(R.full)+' '+a.round+'회차</b> · 신청번호 '+gEsc(a.id)+'</p>'+
+      '<p>인정 금액 <b>'+gWon(s.recognized)+'</b> · 예상 환급액 <b style="color:var(--pri)">'+gWon(s.expected)+'</b></p>'+
+      '<div class="note" style="text-align:left;max-width:540px;margin:18px auto 0">💬 담당자 심사 후 <b>'+U1+'일 이내 모바일 '+gEsc(R.voucher)+'</b>(지역상품권)으로 지급됩니다. 심사·지급 결과는 알림톡으로 알려드려요. 지급 예정일: '+gDot(gAdd(gToday(),U1))+' 무렵</div>'+
+      '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:20px"><a class="btn pri lg" href="mypage.html?app='+encodeURIComponent(a.id)+'">마이페이지에서 확인</a><a class="btn lg" href="region.html?r='+ST_SLUG+'">지역 홈</a></div></div>',5);
+  }
+
+  return {boot,go,pick,next1,demoMove,demoOff,demoApprove,demoMake,fetchLp,demoPay,lodgeFile,delItem,upToggle,ocrFile,demoReceipt,setStay,setPre,addUpload,next2,
+    addVisit,delVisit,next3,fixFile,fixDel,setA,setSign,submit,_T:T,view:()=>view,ocr:()=>OCR};
+})();
+ST.boot();
+</script>
+</body></html>

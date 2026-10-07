@@ -1,0 +1,1143 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>관리자 — 대한민국 반값여행 · 시안 G</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="g.css?v=1">
+<style>
+/* 관리자 전용 레이아웃 (admin.bangap.or.kr) — 접두사 .ad- */
+body{background:#eef1f5}
+.ad-top{position:sticky;top:0;z-index:60;background:#0b1325;color:#fff;display:flex;align-items:center;gap:14px;padding:0 18px;min-height:58px;flex-wrap:wrap}
+.ad-top .ad-logo{font-weight:900;font-size:16px;white-space:nowrap}
+.ad-top .ad-logo small{font-weight:600;color:#94a3b8;font-size:12.5px;margin-left:6px}
+.ad-top .ad-tr{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0}
+.ad-top select{min-height:38px;border-radius:9px;border:1px solid #334155;background:#111c33;color:#e2e8f0;font-weight:700;padding:4px 10px;max-width:260px}
+.ad-top a{color:#cbd5e1;font-size:13px;text-decoration:underline}
+.ad-body{display:grid;grid-template-columns:210px minmax(0,1fr);min-height:calc(100vh - 58px)}
+.ad-side{background:#fff;border-right:1px solid var(--line);padding:16px 10px}
+.ad-side .ad-who{font-size:12px;color:var(--sub);padding:0 10px 12px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.ad-side .ad-who b{display:block;color:var(--ink);font-size:13.5px}
+.ad-side button{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;text-align:left;padding:11px 12px;border-radius:10px;font-weight:700;color:#334155;cursor:pointer;font-size:14.5px;margin-bottom:2px}
+.ad-side button:hover{background:#f1f5f9}
+.ad-side button.on{background:var(--blue);color:#fff}
+.ad-side button .n{margin-left:auto;background:var(--pri);color:#fff;border-radius:9px;font-size:11px;padding:1px 7px}
+.ad-main{padding:20px 24px 70px;min-width:0}
+.ad-crumb{background:#0f1b3d;color:#fff;border-radius:10px;padding:12px 16px;font-weight:800;margin-bottom:16px;font-size:14.5px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ad-crumb span{color:#94a3b8;font-weight:600}
+.ad-crumb small{margin-left:auto;font-weight:600;color:#cbd5e1;font-size:12.5px}
+.ad-h{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.ad-h h2{margin:0;font-size:20px}
+.ad-h p{margin:0;color:var(--sub);font-size:13.5px}
+.ad-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.ad-bar .inp{width:auto;min-width:0;padding:8px 10px;font-size:14px}
+.ad-bar .sp{flex:1}
+.ad-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;margin-bottom:14px}
+.ad-tile{background:#fff;border:1px solid var(--line);border-left:4px solid var(--c);border-radius:11px;padding:9px 11px;cursor:pointer;text-align:left;font:inherit}
+.ad-tile b{display:block;font-size:21px;line-height:1.2}
+.ad-tile span{font-size:12px;color:var(--sub);font-weight:700}
+.ad-tile.on{background:#fff7ed;box-shadow:0 0 0 2px var(--c) inset}
+.ad-tbl td,.ad-tbl th{padding:9px 10px;font-size:13.5px}
+.ad-tbl tbody tr{cursor:pointer}
+.ad-tbl input[type=checkbox]{width:17px;height:17px}
+.ad-sub{font-size:11.5px;color:var(--mute)}
+.ad-empty{padding:36px;text-align:center;color:var(--sub);background:#fff;border:1px dashed #cbd5e1;border-radius:12px}
+.ad-tag{display:inline-block;font-size:11px;font-weight:800;border-radius:7px;padding:2px 7px;white-space:nowrap;vertical-align:middle}
+.ad-tag.lock{background:#e5e7eb;color:#6b7280}
+.ad-tag.opt{background:#fff1ee;color:var(--pri);border:1px solid #fecaca}
+.ad-tag.core{background:#eef4ff;color:var(--blue)}
+.ad-tag.chk{background:#fef2f2;color:#b91c1c}
+.ad-tag.human{background:#fff7ed;color:#9a3412;border:1px solid #fdba74}
+.ad-tag.bad{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
+.ad-tag.ok{background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}
+.ad-tag.mute{background:#f1f5f9;color:#64748b}
+
+/* 상세 모달 */
+.ad-sec{margin-top:18px}
+.ad-sec>h4{margin:0 0 8px;font-size:14.5px;color:var(--navy);border-bottom:2px solid var(--navy);padding-bottom:5px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ad-kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px}
+.ad-kv div{display:flex;gap:10px;padding:6px 0;border-bottom:1px dashed #eef0f3;font-size:13.5px;min-width:0}
+.ad-kv span{flex:0 0 92px;color:var(--sub)}
+.ad-kv b{font-weight:700;min-width:0;word-break:break-all}
+.ad-chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.ad-chip{font-size:12px;font-weight:700;border-radius:8px;padding:4px 9px;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.ad-chip.bad{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+.ad-chip.warn{background:#fff7ed;color:#9a3412;border-color:#fed7aa}
+.ad-tl{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid #e2e8f0}
+.ad-tl li{position:relative;padding:4px 0 8px 10px;font-size:13px}
+.ad-tl li::before{content:'';position:absolute;left:-20px;top:9px;width:10px;height:10px;border-radius:50%;background:var(--c,#94a3b8);border:2px solid #fff}
+.ad-tl small{color:var(--mute)}
+.ad-acts{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:18px}
+.ad-acts .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ad-acts textarea.inp{min-height:64px;margin-top:8px;font-size:14px}
+.ad-acts .inp{font-size:14px}
+.btn.bad{border-color:#b91c1c;color:#b91c1c;background:#fff}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.ad-box{border:1px solid var(--line);border-radius:11px;padding:11px 13px;font-size:13.5px;margin:8px 0;background:#fff}
+.ad-box.warn{background:#fff7ed;border-color:#fdba74;color:#7c2d12}
+.ad-box.bad{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+.ad-box.ok{background:#f0fdf4;border-color:#bbf7d0;color:#14532d}
+.ad-box.info{background:#eff6ff;border-color:#bfdbfe;color:#1e3a8a}
+.ad-it td{vertical-align:top}
+.ad-it td.amt,.ad-it td:nth-child(5){white-space:nowrap}
+.ad-it .btn.sm{white-space:nowrap;padding:6px 9px;font-size:12.5px;margin:0 0 4px}
+.ad-it td:last-child{white-space:nowrap}
+.ad-it .off td{background:#fafafa;color:#6b7280}
+.ad-it .off td.amt{text-decoration:line-through}
+.ad-it .sub td{background:#fffbeb;cursor:default}
+.ad-mini{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:6px 0}
+.ad-mini label{font-size:12px;color:var(--sub);font-weight:700}
+.ad-mini .inp{padding:7px 9px;font-size:13.5px;margin-top:3px}
+.ad-sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+.ad-sum div{background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px 12px}
+.ad-sum b{display:block;font-size:18px}
+.ad-sum span{font-size:12px;color:var(--sub);font-weight:700}
+.ad-sum .hl{border-color:var(--ok);background:#effbf8}
+.ad-sum .hl b{color:var(--ok)}
+
+/* 운영 기준 설정 (p28) */
+.ad-std{display:grid;grid-template-columns:180px minmax(0,1fr);gap:14px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
+.ad-cats{background:#f8fafc;border-radius:11px;padding:8px}
+.ad-cats button{display:flex;justify-content:space-between;width:100%;border:0;background:none;text-align:left;padding:11px 12px;border-radius:9px;font-weight:700;cursor:pointer;color:#334155;font-size:14.5px}
+.ad-cats button.on{background:var(--blue);color:#fff}
+.ad-cats button small{font-weight:600;opacity:.75}
+.ad-stdbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.ad-stdbar select{min-width:150px;width:auto}
+.ad-sr{display:grid;grid-template-columns:200px minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:10px 14px;margin-bottom:7px;background:#fff}
+.ad-sr.lock{background:#f3f4f6;color:#9aa1ac}
+.ad-sr.lock .nm{color:#9aa1ac}
+.ad-sr .nm{font-weight:800;font-size:14px}
+.ad-sr .nm small{display:block;font-weight:600;font-size:11.5px;color:var(--mute)}
+.ad-sr .vl{font-size:14px;min-width:0}
+.ad-sr .vl .inp{max-width:300px;padding:8px 10px;font-size:14px}
+.ad-sr .rt{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.ad-sr.dirty{border-color:var(--pri);box-shadow:0 0 0 1px var(--pri) inset}
+.ad-scroll{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff;max-height:520px}
+.ad-scroll table{border-collapse:collapse;font-size:12.5px;min-width:100%}
+.ad-scroll th,.ad-scroll td{padding:7px 9px;border-bottom:1px solid #f1f5f9;white-space:nowrap;text-align:left}
+.ad-scroll th{background:#f8fafc;position:sticky;top:0;z-index:1}
+.ad-scroll td.df{background:#fff1ee;color:var(--pri);font-weight:700}
+
+/* 지역 콘텐츠 (p21) */
+.ad-ct{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+.ad-fr{display:grid;grid-template-columns:170px minmax(0,1fr) 92px;gap:12px;align-items:start;padding:12px 0;border-bottom:1px solid #f1f5f9}
+.ad-fr>b{font-size:14px;padding-top:9px}
+.ad-fr.wide{grid-template-columns:minmax(0,1fr)}
+.ad-fr.wide>b{padding-top:0}
+.ad-fr>i{font-style:italic;font-size:12px;color:var(--mute);border:1px dashed #cbd5e1;border-radius:8px;padding:6px 8px;text-align:center;margin-top:4px}
+.ad-fr .inp{font-size:14px;padding:9px 11px}
+.ad-rtbl input{width:100%;min-width:118px;padding:6px 7px;border:1px solid #d6dae1;border-radius:8px;font-size:13px}
+.ad-rtbl input.q{min-width:64px}
+.ad-rtbl td,.ad-rtbl th{padding:6px 6px;font-size:13px}
+.ad-rtbl tr.err td{background:#fef2f2}
+.ad-prev{position:sticky;top:76px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#fff}
+.ad-prev .hd{padding:14px 16px;color:#fff;font-weight:900;font-size:17px}
+.ad-prev .im{height:120px;background:#e5e7eb center/cover}
+.ad-prev .bd{padding:12px 16px;font-size:13px;color:var(--sub)}
+
+/* 통계 */
+.ad-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.ad-cards div{background:#fff;border:1px solid var(--line);border-radius:13px;padding:13px 15px}
+.ad-cards b{display:block;font-size:22px;color:var(--pri)}
+.ad-cards span{font-size:12.5px;color:var(--sub);font-weight:700}
+.ad-bars{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px 16px}
+.ad-bars h4{margin:0 0 10px;font-size:14.5px}
+.ad-br{display:grid;grid-template-columns:96px minmax(0,1fr) 54px;gap:8px;align-items:center;font-size:13px;margin-bottom:6px}
+.ad-br .tr{height:16px;background:#f1f5f9;border-radius:6px;overflow:hidden}
+.ad-br .tr i{display:block;height:100%;background:var(--c,var(--pri));border-radius:6px}
+.ad-br b{text-align:right}
+
+.ad-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.ad-q{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.ad-q .hd{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ad-q p{margin:6px 0;font-size:13.5px;color:#334155;white-space:pre-wrap}
+.ad-q .ans{background:#f0fdf4;border-radius:9px;padding:8px 10px;font-size:13px;margin-top:6px;white-space:pre-wrap}
+
+@media (max-width:960px){
+  .ad-body{grid-template-columns:minmax(0,1fr)}
+  .ad-side{display:flex;gap:4px;overflow-x:auto;padding:8px;border-right:0;border-bottom:1px solid var(--line);position:sticky;top:58px;z-index:40}
+  .ad-side .ad-who{display:none}
+  .ad-side button{width:auto;white-space:nowrap;padding:9px 12px;font-size:13.5px}
+  .ad-std{grid-template-columns:minmax(0,1fr)}
+  .ad-cats{display:flex;overflow-x:auto;gap:4px}
+  .ad-cats button{width:auto;white-space:nowrap}
+  .ad-ct{grid-template-columns:minmax(0,1fr)}
+  .ad-prev{position:static}
+  .ad-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ad-sum{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:600px){
+  .ad-main{padding:14px 12px 60px}
+  .ad-top{padding:0 12px}
+  .ad-top .ad-logo small{display:none}
+  .ad-top select{max-width:100%}
+  .ad-kv{grid-template-columns:minmax(0,1fr)}
+  .ad-sr{grid-template-columns:minmax(0,1fr)}
+  .ad-sr .rt{justify-content:flex-start}
+  .ad-fr{grid-template-columns:minmax(0,1fr)}
+  .ad-fr>b{padding-top:0}
+  .ad-fr>i{justify-self:start}
+  .ad-br{grid-template-columns:72px minmax(0,1fr) 44px}
+  .g-mbox{padding:20px 14px}
+}
+</style>
+</head><body>
+<header class="ad-top">
+  <div class="ad-logo">반값여행 관리자 · admin.bangap.or.kr<small>시안 G</small></div>
+  <div class="ad-tr">
+    <label for="adPersona" class="ad-sub" style="color:#94a3b8">로그인 계정</label>
+    <select id="adPersona" onchange="adPersonaChange(this.value)"></select>
+    <a href="index.html" target="_blank" rel="noopener">사용자 사이트 ↗</a>
+  </div>
+</header>
+<div class="ad-body">
+  <nav class="ad-side" id="adSide" aria-label="관리자 메뉴"></nav>
+  <main class="ad-main" id="adMain"></main>
+</div>
+<div id="gToast" role="status"></div>
+<div id="gModal" class="g-modal" role="dialog" aria-modal="true"></div>
+
+<script src="../site-assets/data.js?v=20260818a"></script>
+<script src="g.js?v=1"></script>
+<script src="g-corp.js?v=1"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   시안 G 관리자 (착수보고 p28 운영 기준 설정 · p21 지역 콘텐츠 + 테스트 홈페이지 고도화 심사)
+   gShell 을 쓰지 않는 관리자 전용 레이아웃. 저장은 g.js 저장소 함수만 쓴다.
+   상태 변경은 모두 gSetStatus(이력·알림톡 자동). 건별 판정·보정은 gPutApp + 이력 메모.
+   ═══════════════════════════════════════════════════════════════════ */
+document.getElementById('gModal').addEventListener('click',e=>{ if(e.target.id==='gModal') gCloseModal(); });
+
+const AD={view:'apps',f:{region:'',round:'',status:'',type:'',q:''},sel:{},stdCat:'basic',stdRegion:null,stdDraft:{},
+  ctRegion:null,ctRounds:null,csv:null,bdTab:'notice',bdEdit:null,qRegion:'',stRegion:'',open:null,row:null,ocrRow:null};
+const AD_MENU=[['apps','📋 신청 관리(심사)'],['std','⚙️ 운영 기준 설정'],['content','🗺 지역 콘텐츠'],['board','📢 공지·FAQ·문의'],['stats','📊 통계'],['demo','🧪 데모 도구']];
+const AD_VERIFY={dju:'디주 통합로그인',kakao:'카카오톡 인증',id:'신분증 첨부'};
+/* 착수보고 p27 핵심 항목 표준안 9개 */
+const AD_CORE=['A3','B4','A1','M8','C1','P1','P2','M10','S2','U1'];
+
+/* ── 공통 ── */
+function adId(s){ return String(s==null?'':s).replace(/[^A-Za-z0-9_\-]/g,''); }
+function adP(){ return gPersona(); }
+function adHQ(){ return !gPersona().region; }
+function adScope(){ return gPersona().region; }
+function adBy(){ return gPersona().name; }
+function adRegions(){ const s=adScope(); return s?[gRegion(s)]:gRegionsAll(); }
+function adApps(){ const s=adScope(); return gApps().filter(a=>!s||a.region===s); }
+function adCan(a){ return a&&(!adScope()||a.region===adScope()); }
+function adRName(slug){ const r=gRegion(slug); return r?r.full:slug; }
+function adTag(a){ return adRName(a.region)+' '+a.round+'회차'; }
+function adNights(a){ const n=gDiff(a.start,a.end); return n+'박 '+(n+1)+'일'; }
+function adPeopleN(a){ return Math.max(1,(a.people||[]).length); }
+/* 방금 보낸 알림톡을 관리자 화면에도 미리보기(신청자 계정의 최근 알림) */
+function adTalk(uid){ const l=gNotis(uid); if(l[0]&&l[0].talk&&gAgo(l[0].at)==='방금') gTalkPreview(l[0]); }
+function adNum(id,slug){ const v=gStd(id,slug); const m=String(v.val).match(/\d+/); return m?Number(m[0]):0; }
+
+/* ── 상단 페르소나·메뉴 ── */
+function adPersonaInit(){
+  const s=document.getElementById('adPersona');
+  s.innerHTML=gPersonas().map(p=>'<option value="'+gEsc(p.id)+'">'+gEsc(p.name)+'</option>').join('');
+  s.value=adP().id;
+}
+function adPersonaChange(id){
+  if(Object.keys(AD.stdDraft).length&&!confirm('저장하지 않은 운영 기준 변경이 있습니다. 버리고 계정을 바꿀까요?')){ document.getElementById('adPersona').value=adP().id; return; }
+  gSetPersona(id); AD.f.region=''; AD.sel={}; AD.stdRegion=null; AD.stdDraft={}; AD.ctRegion=null; AD.ctRounds=null; AD.csv=null; AD.qRegion=''; AD.stRegion='';
+  gCloseModal(); adRender(); gToast(adBy()+'(으)로 전환했습니다','ok');
+}
+function adSide(){
+  const pend=adApps().filter(a=>['received','review','change_review','settle_review','refund_ok'].indexOf(a.status)>=0).length;
+  const unans=gInquiries().filter(q=>!q.answer&&(!adScope()||q.region===adScope())).length;
+  document.getElementById('adSide').innerHTML='<div class="ad-who"><b>'+gEsc(adBy())+'</b>'+(adHQ()?'전 지역 · 통합 항목 관리 권한':'담당 지역만 조회·처리')+'</div>'+
+    AD_MENU.map(m=>'<button class="'+(AD.view===m[0]?'on':'')+'" onclick="adGo(\''+m[0]+'\')">'+m[1]+
+      (m[0]==='apps'&&pend?'<span class="n">'+pend+'</span>':'')+(m[0]==='board'&&unans?'<span class="n">'+unans+'</span>':'')+'</button>').join('');
+}
+function adGo(v){
+  if(AD.view==='std'&&v!=='std'&&Object.keys(AD.stdDraft).length&&!confirm('저장하지 않은 운영 기준 변경이 있습니다. 이동할까요?')) return;
+  if(v!=='std') AD.stdDraft={};
+  AD.view=v; try{ history.replaceState(null,'','#'+v); }catch(e){} adRender(); scrollTo(0,0);
+}
+function adCrumb(t,extra){ return '<div class="ad-crumb">반값여행 관리자 <span>›</span> '+t+(extra?'<small>'+extra+'</small>':'')+'</div>'; }
+function adRender(){
+  adCtCapture();
+  adSide();
+  const fn={apps:adViewApps,std:adViewStd,content:adViewContent,board:adViewBoard,stats:adViewStats,demo:adViewDemo}[AD.view]||adViewApps;
+  document.getElementById('adMain').innerHTML=fn();
+  if(AD.view==='content'){ adCtPrev(); adRndCheck(); }
+}
+
+/* ═══ 1. 신청 관리(심사) ═════════════════════════════════════════ */
+function adFiltered(ignoreStatus){
+  const f=AD.f, q=f.q.trim().toLowerCase();
+  return adApps().filter(a=>(!f.region||a.region===f.region)&&(!f.round||String(a.round)===f.round)&&(ignoreStatus||!f.status||a.status===f.status)&&
+    (!f.type||a.type===f.type)&&(!q||[a.id,a.userName,a.uid].some(v=>String(v||'').toLowerCase().indexOf(q)>=0)))
+    .sort((a,b)=>a.createdAt<b.createdAt?1:-1);
+}
+function adSetF(k,v){ AD.f[k]=v; AD.sel={}; adRender(); }
+function adViewApps(){
+  const base=adFiltered(true), list=adFiltered(false), f=AD.f;
+  const tiles=Object.keys(G_ST).map(k=>{ const s=G_ST[k]; const n=base.filter(a=>a.status===k).length;
+    return '<button class="ad-tile'+(f.status===k?' on':'')+'" style="--c:'+s.c+'" onclick="adSetF(\'status\',AD.f.status===\''+k+'\'?\'\':\''+k+'\')"><b>'+n+'</b><span>'+s.nm+'</span></button>'; }).join('');
+  const regOpt=adScope()?'<option value="'+adScope()+'">'+gEsc(adRName(adScope()))+'</option>'
+    :'<option value="">전체 지역(25)</option>'+gRegionsAll().map(r=>'<option value="'+r.slug+'"'+(f.region===r.slug?' selected':'')+'>'+gEsc(r.full)+'</option>').join('');
+  const rows=list.map(a=>{
+    const k=adId(a.id);
+    return '<tr onclick="adOpen(\''+k+'\')"><td onclick="event.stopPropagation()"><input type="checkbox" aria-label="선택" '+(AD.sel[a.id]?'checked':'')+' onchange="adSel(\''+k+'\',this.checked)"></td>'+
+      '<td><b>'+gEsc(a.id)+'</b></td><td>'+gEsc(gMask(a.userName))+'<div class="ad-sub">'+gEsc(a.uid)+'</div></td>'+
+      '<td>'+gEsc(adRName(a.region))+'</td><td>'+a.round+'회차</td><td>'+gEsc(gTypeName(a.type))+' '+adPeopleN(a)+'명</td>'+
+      '<td>'+gMD(a.start)+'~'+gMD(a.end)+'<div class="ad-sub">'+adNights(a)+'</div></td><td>'+gBadge(a.status)+'</td><td>'+gDot(a.createdAt)+'</td></tr>';
+  }).join('');
+  const nSel=list.filter(a=>AD.sel[a.id]).length;
+  return adCrumb('신청 관리(심사)',adHQ()?'전 지역 신청 건':gEsc(adRName(adScope()))+' 신청 건만 표시')+
+    '<div class="ad-h"><h2>신청 관리</h2><p>행을 누르면 상세 창에서 심사합니다. 상태가 바뀌면 신청자에게 알림톡이 자동 발송됩니다.</p></div>'+
+    '<div class="ad-tiles">'+tiles+'</div>'+
+    '<div class="ad-bar">'+
+      '<select class="inp" aria-label="지역" onchange="adSetF(\'region\',this.value)"'+(adScope()?' disabled':'')+'>'+regOpt+'</select>'+
+      '<select class="inp" aria-label="회차" onchange="adSetF(\'round\',this.value)"><option value="">전체 회차</option>'+[1,2,3,4].map(n=>'<option value="'+n+'"'+(f.round===String(n)?' selected':'')+'>'+n+'회차</option>').join('')+'</select>'+
+      '<select class="inp" aria-label="상태" onchange="adSetF(\'status\',this.value)"><option value="">전체 상태</option>'+Object.keys(G_ST).map(k=>'<option value="'+k+'"'+(f.status===k?' selected':'')+'>'+G_ST[k].nm+'</option>').join('')+'</select>'+
+      '<select class="inp" aria-label="유형" onchange="adSetF(\'type\',this.value)"><option value="">전체 유형</option>'+G_TYPES.map(t=>'<option value="'+t.key+'"'+(f.type===t.key?' selected':'')+'>'+t.nm+'</option>').join('')+'</select>'+
+      '<input class="inp" type="search" placeholder="신청번호·이름·계정 검색" value="'+gEsc(f.q)+'" onkeydown="if(event.key===\'Enter\')adSetF(\'q\',this.value)" onchange="adSetF(\'q\',this.value)" style="flex:1;min-width:160px">'+
+    '</div>'+
+    '<div class="ad-bar"><span class="small muted">'+list.length+'건'+(nSel?' · 선택 '+nSel+'건':'')+'</span><span class="sp"></span>'+
+      '<button class="btn sm" onclick="adBulk(\'start\')"'+(nSel?'':' disabled')+'>선택 건 심사 시작</button>'+
+      '<button class="btn sm navy" onclick="adBulk(\'approve\')"'+(nSel?'':' disabled')+'>선택 건 승인</button></div>'+
+    (list.length?'<div class="tbl-wrap"><table class="tbl ad-tbl"><thead><tr><th><input type="checkbox" aria-label="전체 선택" onchange="adSelAll(this.checked)"'+(nSel&&nSel===list.length?' checked':'')+'></th><th>신청번호</th><th>신청자</th><th>지역</th><th>회차</th><th>유형</th><th>일정</th><th>상태</th><th>신청일</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+      :'<div class="ad-empty">조건에 맞는 신청 건이 없습니다.'+(gApps().length?'':'<br>[데모 도구]에서 다른 계정 신청 시드를 만들어 보세요.')+'</div>');
+}
+function adSel(id,on){ const a=gApps().find(x=>adId(x.id)===id); if(a){ if(on) AD.sel[a.id]=1; else delete AD.sel[a.id]; } adRender(); }
+function adSelAll(on){ AD.sel={}; if(on) adFiltered(false).forEach(a=>AD.sel[a.id]=1); adRender(); }
+function adBulk(act){
+  const ids=adFiltered(false).filter(a=>AD.sel[a.id]).map(a=>a.id);
+  const need=act==='start'?'received':'review';
+  const ok=ids.filter(id=>gApp(id).status===need), skip=ids.length-ok.length;
+  if(!ok.length){ gToast((act==='start'?'접수 완료':'심사중')+' 상태인 건만 처리할 수 있습니다','bad'); return; }
+  if(act==='approve'&&!confirm(ok.length+'건을 일괄 승인할까요? 유형별 지원 한도가 확정되고 알림톡이 발송됩니다.')) return;
+  ok.forEach(id=>act==='start'?adStart(id):adApprove(id));
+  AD.sel={}; adRender();
+  gToast(ok.length+'건 '+(act==='start'?'심사 시작':'승인')+' 처리'+(skip?' · '+skip+'건은 상태가 맞지 않아 건너뜀':''),'ok');
+}
+
+/* ── 상세 창 ── */
+function adOpen(id,keep){
+  const a=gApps().find(x=>adId(x.id)===adId(id)); if(!a){ gToast('신청 건을 찾을 수 없습니다','bad'); return; }
+  if(!adCan(a)){ gToast('담당 지역 신청 건만 볼 수 있습니다','bad'); return; }
+  if(AD.open!==a.id){ AD.row=null; AD.ocrRow=null; }
+  AD.open=a.id;
+  const box=document.querySelector('#gModal .g-mbox'), y=keep&&box?box.scrollTop:0;
+  gModal(adDetailHtml(a),'wide');
+  const nb=document.querySelector('#gModal .g-mbox'); if(nb&&y) nb.scrollTop=y;
+}
+function adRefresh(id){ adRender(); if(id&&document.getElementById('gModal').classList.contains('on')) adOpen(id,true); }
+function adKV(rows){ return '<div class="ad-kv">'+rows.filter(Boolean).map(r=>'<div><span>'+r[0]+'</span><b>'+r[1]+'</b></div>').join('')+'</div>'; }
+function adChecks(a){
+  const res=G_RESIDENCE[a.uid], blk=res?gAddrBlock(a.region,res.sigungu):null;
+  const lead=gDiff(gYmd(gD(a.createdAt)),a.start), A1=gStdNum('A1')||2, C5=gStdNum('C5')||7, days=gDiff(a.start,a.end)+1;
+  const yr=String(a.start).slice(0,4);
+  const others=gApps().filter(x=>!x.demo&&x.uid===a.uid&&x.id!==a.id&&G_INACTIVE.indexOf(x.status)<0&&String(x.start).slice(0,4)===yr);
+  const g=a.grant||gGrant(a.type,a.people);
+  const c=[];
+  c.push(res?(blk?['bad','거주지 '+res.sigungu+' — '+(blk==='same'?'관내 거주자':'인접 지역 거주자')+' 신청 불가']:['','거주지 자동 확인 — '+res.sido+' '+res.sigungu+' (관외)'])
+            :['warn','거주지 — 행정정보 공동이용 조회 결과 없음(데모 계정 외)']);
+  c.push(lead>=A1?['','신청 마감 충족 — 여행 '+lead+'일 전 신청(기준 '+A1+'일 전)']:['bad','신청 마감 위반 — 여행 '+lead+'일 전 신청(기준 '+A1+'일 전)']);
+  c.push(days<=C5?['','여행 일정 '+days+'일(최대 '+C5+'일)']:['bad','여행 일정 '+days+'일 — 최대 '+C5+'일 초과']);
+  c.push(others.length?['warn','연 1회 기준 확인 필요 — 같은 계정의 '+yr+'년 유효 신청 '+others.length+'건('+others.slice(0,3).map(x=>x.id).join(', ')+(others.length>3?' 외 '+(others.length-3)+'건':'')+')']:['','연 1회 충족']);
+  c.push(['',g.label+' — 한도 '+gWon(g.cap)+' · 환급률 '+g.rate+'% · 최소 소비 '+gWon(g.minSpend)]);
+  if(a.type==='family'&&!(a.docs||[]).some(d=>/등본/.test(d.name))) c.push(['bad','가족 유형 — 주민등록등본 미첨부']);
+  if((a.people||[]).some(p=>p.minor&&!p.doc)) c.push(['bad','미성년자 동행 서류 미첨부']);
+  return '<div class="ad-chips">'+c.map(x=>'<span class="ad-chip '+x[0]+'">'+(x[0]==='bad'?'✕ ':x[0]==='warn'?'⚠ ':'✓ ')+gEsc(x[1])+'</span>').join('')+'</div>';
+}
+function adDetailHtml(a){
+  const r=gRegion(a.region), g=a.grant||gGrant(a.type,a.people);
+  const ppl=(a.people||[]).map(p=>'<tr><td>'+gEsc(gMask(p.name))+'</td><td>'+gEsc(p.rel||'')+(p.minor?' <span class="ad-tag bad">미성년</span>':'')+'</td>'+
+    '<td>'+(p.birth?gDot(p.birth)+' (만 '+gAge(p.birth)+'세)':'-')+'</td><td>'+gEsc(AD_VERIFY[p.verified]||p.verified||'-')+'</td><td>'+(p.doc?'📎 '+gEsc(p.doc):'-')+'</td></tr>').join('');
+  const docs=(a.docs||[]).length?(a.docs||[]).map(d=>'<span class="ad-chip" style="background:#f8fafc;color:#334155;border-color:#e2e8f0">📎 '+gEsc(d.name)+(d.size?' ('+Math.round(d.size/1024)+'KB)':'')+'</span>').join(''):'<span class="small muted">첨부 서류 없음</span>';
+  const hist=(a.history||[]).slice().reverse().map(h=>{ const s=G_ST[h.st]||{nm:h.st,c:'#94a3b8'};
+    return '<li style="--c:'+s.c+'"><b>'+gEsc(s.nm)+'</b> <small>'+gDT(h.at)+' · '+gEsc(h.by||'')+'</small>'+(h.memo?'<div>'+gEsc(h.memo)+'</div>':'')+'</li>'; }).join('');
+  let h='<h3>'+gEsc(a.id)+' · '+gEsc(r?r.full:a.region)+' '+a.round+'회차 '+gBadge(a.status)+'</h3>'+
+    '<div class="ad-sec"><h4>신청 정보</h4>'+adKV([
+      ['신청자',gEsc(gMask(a.userName))+' <span class="ad-sub">('+gEsc(a.uid)+')</span>'],
+      ['유형·인원',gEsc(gTypeName(a.type))+' '+adPeopleN(a)+'명'],
+      ['여행 일정',gDot(a.start)+' ~ '+gDot(a.end)+' ('+adNights(a)+')'],
+      ['신청일',gDT(a.createdAt)],
+      ['지원 기준',gEsc(g.label)+' · 한도 '+gWon(g.cap)+' · '+g.rate+'%'],
+      ['지원 확정',a.grant&&a.grant.confirmed?'<span class="ad-tag ok">확정</span> '+gDot(a.grant.confirmedAt)+' · '+gEsc(a.grant.by||''):'<span class="ad-tag mute">승인 시 확정</span>'],
+      a.plan?['여행 계획',gEsc(a.plan)]:null,
+      ['약관 동의',a.agree?(['check','privacy','third'].map(k=>a.agree[k]?'✓':'✕').join(' ')+' (체크리스트·개인정보·제3자)'):'-']
+    ])+adChecks(a)+'</div>'+
+    '<div class="ad-sec"><h4>신청자·동행자 · 인증 방법</h4><div class="tbl-wrap"><table class="tbl ad-tbl"><thead><tr><th>이름</th><th>관계</th><th>생년월일</th><th>인증</th><th>서류</th></tr></thead><tbody>'+ppl+'</tbody></table></div></div>'+
+    '<div class="ad-sec"><h4>첨부 서류</h4><div class="ad-chips">'+docs+'</div></div>';
+  if(a.fix&&(a.status==='fix'||a.status==='settle_fix'))
+    h+='<div class="ad-box warn">⚠ <b>'+(a.fix.target==='settle'?'정산':'신청')+' 보완 요청 중</b> — 사유: '+gEsc(a.fix.reason)+(a.fix.due?' · 기한 '+gDot(a.fix.due)+' (D'+(gDiff(gToday(),a.fix.due)>=0?'-'+gDiff(gToday(),a.fix.due):'+'+(-gDiff(gToday(),a.fix.due)))+')':'')+
+      ((a.fix.files||[]).length?'<br>제출 파일: '+a.fix.files.map(f=>gEsc(f.name||f)).join(', '):'')+'</div>';
+  if(a.change) h+='<div class="ad-sec"><h4>일정 변경 요청 '+(a.change.result?'<span class="ad-tag '+(a.change.result==='approved'?'ok':'bad')+'">'+(a.change.result==='approved'?'승인':'반려')+'됨</span>':'<span class="ad-tag chk">심사 대기</span>')+'</h4>'+adKV([
+      ['기존 일정',a.change.prev?gDot(a.change.prev.start)+' ~ '+gDot(a.change.prev.end):'-'],
+      ['변경 요청',gDot(a.change.start)+' ~ '+gDot(a.change.end)],
+      ['변경 사유',gEsc(a.change.reason||'-')],['요청일',a.change.at?gDT(a.change.at):'-']])+adChangeCheck(a)+'</div>';
+  if(a.settle) h+=adSettleHtml(a);
+  if(a.refund) h+='<div class="ad-sec"><h4>환급 지급</h4>'+adKV([['지급액',gWon(a.refund.amount)],['지급일',a.refund.paidAt?gDot(a.refund.paidAt):'-'],
+      ['핀번호',gEsc(String(a.refund.pin||'').replace(/^(\d{4})-\d{4}-/,'$1-****-'))],['앱 등록',a.refund.registered?'등록 완료':'미등록'],['지급 수단',gEsc(r?r.voucher:'지역사랑상품권')]])+'</div>';
+  h+=adActsHtml(a);
+  h+='<div class="ad-sec"><h4>검토 의견 <span class="ad-sub" style="font-weight:600">승인·반려와 별개로 남는 담당자 메모</span></h4>'+
+    (a.review&&a.review.memo?'<div class="ad-box">'+gEsc(a.review.memo)+'<div class="ad-sub">'+gEsc(a.review.by||'')+' · '+gDT(a.review.at)+'</div></div>':'')+
+    '<div class="row" style="display:flex;gap:8px;flex-wrap:wrap"><textarea class="inp" id="adMemo" placeholder="검토 의견을 입력하세요" style="min-height:56px;flex:1;min-width:200px"></textarea>'+
+    '<button class="btn sm" onclick="adMemo(\''+adId(a.id)+'\')">'+(a.review&&a.review.memo?'검토 의견 수정':'검토 의견 등록')+'</button></div></div>';
+  h+='<div class="ad-sec"><h4>처리 이력</h4><ul class="ad-tl">'+hist+'</ul></div>';
+  return h;
+}
+function adChangeCheck(a){
+  const c=a.change; if(!c) return '';
+  const lead=gDiff(gToday(),c.start), A1=gStdNum('A1')||2, C5=gStdNum('C5')||7, days=gDiff(c.start,c.end)+1;
+  const rd=(gRegion(a.region)||{rounds:[]}).rounds.find(x=>x.n===a.round);
+  const inRound=rd?(c.start>=rd.travelStart&&c.end<=rd.travelEnd):true;
+  const x=[[lead>=A1,'변경 일정 여행 '+lead+'일 전(기준 '+A1+'일 전)'],[days<=C5,'일정 '+days+'일(최대 '+C5+'일)'],
+    [inRound,rd?'회차 여행 기간 '+gMD(rd.travelStart)+'~'+gMD(rd.travelEnd)+(inRound?' 안':' 밖'):'회차 정보 없음']];
+  return '<div class="ad-chips">'+x.map(z=>'<span class="ad-chip '+(z[0]?'':'bad')+'">'+(z[0]?'✓ ':'✕ ')+gEsc(z[1])+'</span>').join('')+'</div>';
+}
+
+/* ── 정산 심사 (고도화: 건별 전환·판독값 보정·법인카드·중복) ── */
+const AD_OCR_F=[['merchant','업소명'],['amount','금액'],['date','결제일'],['approval','승인번호'],['card','카드번호']];
+/* settle.html 의 OCR 키(shop·appr·amts)와 시드 키(merchant·approval·amount)를 함께 읽는다 */
+function adOcrVal(o,k){ if(!o) return null; const al={merchant:['merchant','shop'],amount:['amount','amts'],approval:['approval','appr'],date:['date'],card:['card']}[k]||[k];
+  for(const x of al){ const v=o[x]; if(v!=null&&!(Array.isArray(v)&&!v.length)) return Array.isArray(v)?v.join('/'):v; } return null; }
+function adFileName(f){ return f?(typeof f==='string'?f:(f.name||'첨부 파일')):''; }
+function adItemGet(it,k){ if(k==='date') return String(it.at||'').slice(0,10); if(k==='card') return it.card||''; return it[k]==null?'':String(it[k]); }
+function adCorpOf(it){
+  if(!it.card) return null;
+  if(it.corpCheck) return it.corpCheck;
+  return gCorpCheck(it.card,(it.ocr&&it.ocr.text)||'',false);
+}
+function adNormAppr(v){ return String(v||'').replace(/[^0-9]/g,''); }
+function adCombo(it){ const p=gCardParts(it.card); return p.bin6&&it.amount&&it.at?p.bin6+'|'+it.amount+'|'+String(it.at).slice(0,10):null; }
+/* 다른 신청 건에 같은 승인번호 또는 카드 앞6+금액+날짜가 있으면 중복 의심 */
+function adDupOf(a,it){
+  const ap=adNormAppr(it.approval), cb=adCombo(it); const out=[];
+  gApps().forEach(x=>{
+    if(x.id===a.id||!x.settle||G_INACTIVE.indexOf(x.status)>=0) return;
+    (x.settle.items||[]).forEach(y=>{
+      let why=null;
+      if(ap.length>=6&&adNormAppr(y.approval)===ap) why='승인번호 '+it.approval+' 동일';
+      else if(cb&&adCombo(y)===cb) why='카드 앞6자리·금액·결제일 동일';
+      if(why) out.push({why,id:x.id,uid:x.uid,region:x.region,status:x.status});
+    });
+  });
+  return out;
+}
+function adIsHuman(it){ return (it.edited||[]).some(e=>e.field!=='ok'&&e.field!=='corp'); }
+/* 재계산: 자동 분류 → 법인카드 확정 → 담당자 수동 전환 순으로 적용 */
+function adRecalc(a){
+  const S=a.settle; if(!S) return a;
+  const auto=gClassify(S.items||[],a);
+  S.items=(S.items||[]).map((it,i)=>{
+    const x=Object.assign({},it), c=auto[i];
+    x.autoOk=c.ok; x.autoReason=c.reason;
+    if(x.manual){ /* 담당자 전환값 유지 */ }
+    else if(x.corp==='corp'||adCorpAuto(x)){ x.ok=false; x.reason='법인·타인 명의 결제 불인정'+(x.corp==='corp'?'':' (영수증 카드종류 표기)'); }
+    else { x.ok=c.ok; x.reason=c.reason; }
+    return x;
+  });
+  S.recognized=S.items.filter(x=>x.ok).reduce((s,x)=>s+(Number(x.amount)||0),0);
+  S.rejectedAmt=S.items.filter(x=>!x.ok).reduce((s,x)=>s+(Number(x.amount)||0),0);
+  S.expected=gRefundOf(a,S.recognized).amount;
+  return a;
+}
+function adCorpAuto(x){ if(x.corp) return false; const c=adCorpOf(x); return !!(c&&c.result==='corp'&&c.basis==='receipt'); }
+function adSettleView(a){ return adRecalc(JSON.parse(JSON.stringify(a))); }
+function adSettleHtml(a0){
+  const a=adSettleView(a0), S=a.settle, k=adId(a.id), canEdit=a.status==='settle_review'&&adCan(a);
+  const rows=S.items.map((it,i)=>{
+    const corp=adCorpOf(it), dup=adDupOf(a,it), human=adIsHuman(it);
+    const c0=it.ocr&&it.ocr.confidence!=null?Number(it.ocr.confidence):null, conf=c0==null||isNaN(c0)?null:Math.round(c0<=1?c0*100:c0);
+    let tr='<tr class="'+(it.ok?'':'off')+'"><td>'+(i+1)+'</td>'+
+      '<td>'+(it.src==='upload'?'<span class="ad-tag mute">첨부</span>':'<span class="ad-tag core">지역화폐</span>')+'</td>'+
+      '<td><b>'+gEsc(it.merchant)+'</b><div class="ad-sub">'+gEsc(it.cat||'')+(it.biz?' · '+gEsc(it.biz):'')+(it.prepay?' · 선결제':'')+'</div></td>'+
+      '<td class="amt tr"><b>'+gWon(it.amount)+'</b></td><td>'+(it.at?gDT(it.at):'-')+'</td>'+
+      '<td>'+gEsc(it.approval||'-')+(it.card?'<div class="ad-sub">'+gEsc(gCardMask(it.card))+'</div>':'')+'</td>'+
+      '<td>'+(it.autoOk?'<span class="ad-tag ok">인정</span>':'<span class="ad-tag bad">불인정</span>')+(it.autoReason?'<div class="ad-sub">'+gEsc(it.autoReason)+'</div>':'')+'</td>'+
+      '<td>'+(it.ok?'<span class="ad-tag ok">인정</span>':'<span class="ad-tag bad">불인정</span>')+(it.manual?' <span class="ad-tag chk">담당자 전환</span>':'')+
+        (!it.ok&&it.reason?'<div class="ad-sub">'+gEsc(it.reason)+'</div>':'')+(human?'<div><span class="ad-tag human">🔧 사람이 보정한 건</span></div>':'')+
+        (conf!=null?'<div class="ad-sub">OCR 신뢰도 '+conf+'%'+(conf<80?' ⚠':'')+'</div>':'')+'</td>'+
+      '<td>'+(canEdit?'<button class="btn sm" onclick="adRowOpen('+i+',\'row\')">'+(it.ok?'불인정 전환':'인정 전환')+'</button>'+
+        (it.src==='upload'?' <button class="btn sm" onclick="adRowOpen('+i+',\'ocr\')">판독값 보정</button>':''):'')+'</td></tr>';
+    const notes=[];
+    if(corp) notes.push('<div class="ad-box '+(corp.result==='corp'?'warn':corp.needsReview?'warn':'ok')+'">'+gCorpIcon(corp)+' <b style="color:'+gCorpColor(corp)+'">'+gEsc(corp.label)+'</b> — '+gEsc(corp.detail)+
+      (corp.needsReview&&canEdit?'<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" onclick="adCorpSet(\''+k+'\','+i+',\'personal\')">💳 개인카드로 확정</button><button class="btn sm" onclick="adCorpSet(\''+k+'\','+i+',\'corp\')">🏢 법인카드로 확정</button><span class="ad-sub" style="align-self:center">확정 결과는 BIN 판정표에 학습됩니다</span></div>':'')+'</div>');
+    if(it.flag) notes.push('<div class="ad-box warn">⚠ <b>제출 시 자동 점검</b> — '+gEsc(it.flag)+'</div>');
+    if(dup.length) notes.push('<div class="ad-box bad">🚫 <b>중복 제출 의심</b> — '+dup.map(d=>gEsc(d.why)+' (신청 '+gEsc(d.id)+' · '+gEsc(adRName(d.region))+' · 계정 '+gEsc(d.uid)+' · '+gEsc((G_ST[d.status]||{}).nm||d.status)+')').join('<br>')+'<br>같은 결제로 이미 정산이 진행된 건이 있습니다. 환급 승인 전에 반드시 확인해 주세요.</div>');
+    if((it.edited||[]).length) notes.push('<div class="ad-box '+(human?'warn':'')+'">'+(human?'🔧 <b>사람이 보정한 건</b> — 자동 판독만으로 통과한 건이 아닙니다.<br>':'')+'<b>변경 이력</b>'+
+      it.edited.map(e=>'<br>· '+gDT(e.at)+' '+gEsc(e.by)+' — '+gEsc(adFieldName(e.field))+' 「'+gEsc(e.from)+'」→「'+gEsc(e.to)+'」 / 사유: '+gEsc(e.why)).join('')+'</div>');
+    if(canEdit&&AD.row===i) notes.push('<div class="ad-box info"><b>'+(it.ok?'불인정':'인정')+'으로 전환</b> — 사유는 필수이며 변경 이력에 남습니다.'+
+      '<div class="row" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><input class="inp" id="adWhy" placeholder="전환 사유 (필수, 예: 숙박확인서로 숙박비 확인)" style="flex:1;min-width:200px;padding:8px 10px">'+
+      '<button class="btn sm navy" onclick="adToggle(\''+k+'\','+i+')">전환 저장</button><button class="btn sm" onclick="adRowOpen(-1)">취소</button></div></div>');
+    if(canEdit&&AD.ocrRow===i) notes.push('<div class="ad-box info"><b>🔧 판독값 보정</b> — 고친 항목은 변경 전·후·사유·담당자가 이력에 남고 「사람이 보정한 건」으로 표시됩니다. 보정 후 자동 분류를 다시 실행합니다.'+
+      (it.ocr?'<div class="ad-sub" style="margin-top:4px">OCR 판독 원값: '+AD_OCR_F.map(f=>{ const v=adOcrVal(it.ocr,f[0]); return f[1]+' '+gEsc(v==null?'-':v); }).join(' · ')+(it.ocr.file?' · 파일 '+gEsc(adFileName(it.ocr.file)):'')+(it.ocr.text?' · 원문 「'+gEsc(it.ocr.text)+'」':'')+'</div>':'')+
+      '<div class="ad-mini">'+AD_OCR_F.map(f=>'<div><label for="adO_'+f[0]+'">'+f[1]+'</label><input class="inp" id="adO_'+f[0]+'" '+(f[0]==='date'?'type="date" ':f[0]==='amount'?'type="number" min="0" ':'')+'value="'+gEsc(adItemGet(it,f[0]))+'"></div>').join('')+'</div>'+
+      '<div class="row" style="display:flex;gap:6px;flex-wrap:wrap"><input class="inp" id="adOWhy" placeholder="보정 사유 (필수, 예: 영수증 원본 대조 결과 금액 오독)" style="flex:1;min-width:200px;padding:8px 10px">'+
+      '<button class="btn sm navy" onclick="adOcrFix(\''+k+'\','+i+')">보정 저장</button><button class="btn sm" onclick="adRowOpen(-1)">취소</button></div></div>');
+    if(notes.length) tr+='<tr class="sub"><td></td><td colspan="8">'+notes.join('')+'</td></tr>';
+    return tr;
+  }).join('');
+  const visits=S.visits||a.visits||[], need=adNum('V4',a.region)||2;
+  const lodgeItems=S.items.filter(x=>x.cat==='숙박'), lodgeUp=lodgeItems.some(x=>x.src==='upload');
+  const R=gRefundOf(a,S.recognized), g=a.grant||gGrant(a.type,a.people);
+  const unresolved=S.items.filter(x=>{ const c=adCorpOf(x); return c&&c.needsReview&&x.ok; }).length;
+  const dups=S.items.filter(x=>adDupOf(a,x).length).length;
+  const humans=S.items.filter(adIsHuman).length;
+  const due=gYmd(gAdd(gD(a.end),gStdNum('C1')||10)), late=S.at&&gYmd(gD(S.at))>due;
+  return '<div class="ad-sec"><h4>정산 심사 <span class="ad-sub" style="font-weight:600">정산번호 '+gEsc(S.id||'-')+' · 접수 '+(S.at?gDT(S.at):'-')+'</span>'+
+      (humans?'<span class="ad-tag human">🔧 사람이 보정한 건 '+humans+'</span>':'')+(dups?'<span class="ad-tag bad">중복 의심 '+dups+'</span>':'')+(unresolved?'<span class="ad-tag chk">카드 구분 확정 필요 '+unresolved+'</span>':'')+'</h4>'+
+    '<div class="ad-chips"><span class="ad-chip '+(late?'bad':'')+'">'+(late?'✕ ':'✓ ')+'정산 기한 '+gDot(due)+' (여행 종료 후 '+(gStdNum('C1')||10)+'일)'+(late?' 초과 접수':' 내 접수')+'</span>'+
+      '<span class="ad-chip">'+gEsc(gStd('P1').val)+' · 결제수단 '+gEsc(gStd('P7',a.region).val)+'</span></div>'+
+    '<div class="tbl-wrap"><table class="tbl ad-tbl ad-it"><thead><tr><th>#</th><th>출처</th><th>업소·업종</th><th class="tr">금액</th><th>일시</th><th>승인번호·카드</th><th>자동 분류</th><th>심사 판정</th><th>동작</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '<div class="grid g2" style="margin-top:10px">'+
+      '<div class="ad-box '+(visits.length>=need?'ok':'bad')+'"><b>📍 방문 인증 '+visits.length+' / 필수 '+need+'개소 '+(visits.length>=need?'충족':'미충족')+'</b>'+
+        (visits.length?visits.map(v=>'<br>· '+gEsc(v.spot)+' — '+gDot(v.date)+' · '+(v.method==='qr'?'QR':'인증사진')+(v.gps?' · GPS 확인':' · GPS 미확인')).join(''):'<br>인증 내역이 없습니다')+'</div>'+
+      '<div class="ad-box '+(!lodgeItems.length?'':(S.lodging&&S.lodging.file)?'ok':lodgeUp?'bad':'')+'"><b>🏨 숙박 증빙</b><br>'+
+        (!lodgeItems.length?'숙박 결제 건 없음 — 해당 없음':
+          (S.lodging&&S.lodging.file?'📎 '+gEsc(adFileName(S.lodging.file))+(S.lodging.prepay?' · 선결제(여행 전 '+(gStdNum('P5')||180)+'일 이내 인정)':''):(lodgeUp?'✕ 숙박확인서 미첨부 — '+gEsc(gStd('P6').val)+' 필요':'지역화폐 결제 숙박 — 확인서 불요')))+'</div>'+
+    '</div>'+
+    '<div class="ad-sum"><div><span>인정 금액</span><b>'+gWon(S.recognized)+'</b></div><div><span>불인정 금액</span><b>'+gWon(S.rejectedAmt)+'</b></div>'+
+      '<div><span>계산 ('+R.rate+'%, 한도 '+gMan(R.cap)+')</span><b>'+gWon(R.raw)+'</b></div><div class="hl"><span>환급액</span><b>'+gWon(R.amount)+'</b></div></div>'+
+    (R.meetsMin?'':'<div class="ad-box bad">✕ 최소 소비액 미달 — 인정 '+gWon(S.recognized)+' / 기준 '+gWon(g.minSpend)+' ('+gEsc(gStd('M8').val)+' × '+adPeopleN(a)+'명). 환급 승인할 수 없습니다.</div>')+
+    (S.sign?'<div class="ad-sub" style="margin-top:6px">부정수급 유의사항 확인 '+(S.agree&&S.agree.fraud?'✓':'✕')+' · 서명 '+gEsc(S.sign)+'</div>':'')+
+    '</div>';
+}
+function adFieldName(f){ const m={ok:'인정 여부',corp:'카드 구분'}; const o=AD_OCR_F.find(x=>x[0]===f); return m[f]||(o?o[1]:f); }
+function adRowOpen(i,kind){ AD.row=kind==='row'?i:null; AD.ocrRow=kind==='ocr'?i:null; adOpen(AD.open,true); }
+function adLoadSettle(id){ const a=gApps().find(x=>adId(x.id)===id); if(!a||!a.settle||a.status!=='settle_review'||!adCan(a)){ gToast('정산 심사중인 건만 수정할 수 있습니다','bad'); return null; } return a; }
+function adToggle(id,i){
+  const a=adLoadSettle(id); if(!a) return; const why=(document.getElementById('adWhy')||{}).value||'';
+  if(!why.trim()){ gToast('전환 사유를 입력해 주세요','bad'); return; }
+  adRecalc(a); const it=a.settle.items[i]; if(!it) return;
+  const from=it.ok?'인정':'불인정', to=it.ok?'불인정':'인정';
+  a.history=a.history||[]; it.manual=true; it.ok=!it.ok; it.reason=it.ok?'':'담당자 판정: '+why.trim();
+  it.edited=(it.edited||[]).concat([{field:'ok',from,to,why:why.trim(),by:adBy(),at:gNow().toISOString()}]);
+  adRecalc(a);
+  a.history.push({at:gNow().toISOString(),st:a.status,by:adBy(),memo:'정산 '+(i+1)+'번 '+it.merchant+' '+from+'→'+to+' (사유: '+why.trim()+')'});
+  gPutApp(a); AD.row=null; gToast((i+1)+'번 결제를 '+to+'으로 전환했습니다 · 환급액 '+gWon(a.settle.expected),'ok'); adRefresh(a.id);
+}
+function adOcrFix(id,i){
+  const a=adLoadSettle(id); if(!a) return; const why=((document.getElementById('adOWhy')||{}).value||'').trim();
+  if(!why){ gToast('보정 사유를 입력해 주세요','bad'); return; }
+  const it=a.settle.items[i]; if(!it) return;
+  const ch=[];
+  AD_OCR_F.forEach(f=>{
+    const el=document.getElementById('adO_'+f[0]); if(!el) return;
+    const nv=el.value.trim(), ov=adItemGet(it,f[0]);
+    if(nv===ov) return;
+    if(f[0]==='amount'&&!(Number(nv)>0)){ ch.push({bad:'금액'}); return; }
+    if(f[0]==='date'&&!/^\d{4}-\d{2}-\d{2}$/.test(nv)){ ch.push({bad:'결제일'}); return; }
+    ch.push({field:f[0],from:ov,to:nv});
+  });
+  const bad=ch.find(c=>c.bad); if(bad){ gToast(bad.bad+' 값을 확인해 주세요','bad'); return; }
+  if(!ch.length){ gToast('바뀐 항목이 없습니다','bad'); return; }
+  ch.forEach(c=>{
+    if(c.field==='amount') it.amount=Math.floor(Number(c.to));
+    else if(c.field==='date') it.at=c.to+String(it.at||'T12:00:00').slice(10);
+    else if(c.field==='card'){ it.card=gCardMask(c.to)||c.to; delete it.corpCheck; delete it.corp; }
+    else it[c.field]=c.to;
+    it.edited=(it.edited||[]).concat([{field:c.field,from:c.from,to:c.to,why,by:adBy(),at:gNow().toISOString()}]);
+  });
+  adRecalc(a); a.history=a.history||[];
+  a.history.push({at:gNow().toISOString(),st:a.status,by:adBy(),memo:'판독값 보정 '+(i+1)+'번 ('+ch.map(c=>adFieldName(c.field)+' '+(c.from||'-')+'→'+c.to).join(', ')+') 사유: '+why});
+  gPutApp(a); AD.ocrRow=null; gToast('판독값을 보정하고 다시 분류했습니다','ok'); adRefresh(a.id);
+}
+function adCorpSet(id,i,kind){
+  const a=adLoadSettle(id); if(!a) return; const it=a.settle.items[i]; if(!it||!it.card) return;
+  const prev=adCorpOf(it);
+  it.corpCheck=gCorpDecide(it.card,kind,adBy()); it.corp=kind;
+  it.edited=(it.edited||[]).concat([{field:'corp',from:prev?prev.label:'-',to:it.corpCheck.label,why:'영수증 원본 확인',by:adBy(),at:gNow().toISOString()}]);
+  adRecalc(a); a.history=a.history||[];
+  a.history.push({at:gNow().toISOString(),st:a.status,by:adBy(),memo:'정산 '+(i+1)+'번 '+it.corpCheck.label});
+  gPutApp(a); gToast(it.corpCheck.label+(kind==='corp'?' — 불인정 처리':''),'ok'); adRefresh(a.id);
+}
+
+/* ── 상태별 동작 ── */
+function adActsHtml(a){
+  const k=adId(a.id), st=a.status, g=gGrant(a.type,a.people);
+  const B=(t,fn,cls)=>'<button class="btn sm '+(cls||'')+'" onclick="'+fn+'(\''+k+'\')">'+t+'</button>';
+  const rsn=ph=>'<textarea class="inp" id="adRsn" placeholder="'+ph+'"></textarea>';
+  const due='<label class="small" style="display:flex;gap:6px;align-items:center;margin-top:8px">보완 기한 <input class="inp" type="date" id="adDue" value="'+gYmd(gAdd(gToday(),7))+'" min="'+gYmd(gToday())+'" style="width:auto;padding:6px 9px"></label>';
+  if(!adCan(a)) return '';
+  let h='';
+  if(st==='received') h='<div class="row">'+B('심사 시작','adStart','navy')+'<span class="small muted">심사를 시작하면 신청자 마이페이지에 「심사중」으로 표시됩니다.</span></div>';
+  else if(st==='review') h='<div class="ad-box ok" style="margin-top:0">승인하면 <b>'+gEsc(g.label)+' 지원 한도 '+gWon(g.cap)+' · 환급률 '+g.rate+'%</b>가 확정되고 승인 알림톡이 발송됩니다. 실제 환급액은 정산에서 인정 소비액 × 환급률로 계산합니다.</div>'+
+    '<div class="row">'+B('✅ 승인','adApproveBtn','ok')+B('⛔ 반려','adReject','bad')+B('✏️ 보완 요청','adFix','bad')+'</div>'+rsn('반려·보완 사유 (반려·보완 요청 시 필수 — 알림톡에 그대로 안내됩니다)')+due;
+  else if(st==='fix') h='<div class="row">'+B('↩ 보완 없이 심사 재개','adResume','navy')+'<span class="small muted">신청자가 보완 제출하면 마이페이지에서 심사중으로 돌아옵니다.</span></div>';
+  else if(st==='change_review') h='<div class="row">'+B('📅 일정 변경 승인','adChgOk','ok')+B('변경 반려','adChgNo','bad')+'</div>'+rsn('변경 반려 사유 (반려 시 필수 — 원래 일정은 그대로 유지됩니다)');
+  else if(st==='settle_review') h='<div class="row">'+B('💰 환급 승인','adRefundOk','ok')+B('✏️ 정산 보완 요청','adSettleFix','bad')+'</div>'+rsn('정산 보완 사유 (보완 요청 시 필수, 예: 숙박확인서 누락)')+due;
+  else if(st==='settle_fix') h='<div class="row">'+B('↩ 보완 없이 정산 심사 재개','adSettleResume','navy')+'</div>';
+  else if(st==='refund_ok'){
+    const ok=(a.history||[]).filter(x=>x.st==='refund_ok').pop(), U1=gStdNum('U1')||14;
+    const dl=ok?gYmd(gAdd(gD(ok.at),U1)):null, left=dl?gDiff(gToday(),dl):null;
+    h='<div class="ad-box '+(left!=null&&left<0?'bad':'warn')+'" style="margin-top:0">💳 지급 대기 — 환급액 <b>'+gWon(a.settle?gRefundOf(a,a.settle.recognized).amount:0)+'</b> · 「'+gEsc(gStd('U1').val)+'」 기한 <b>'+(dl?gDot(dl):'-')+'</b>'+(left!=null?(left>=0?' (D-'+left+')':' ('+(-left)+'일 경과)'):'')+'</div>'+
+      '<div class="row">'+B('💸 지급 처리','adPay','ok')+'<span class="small muted">'+gEsc((gRegion(a.region)||{}).voucher||'지역사랑상품권')+' 핀번호(4-4-4)를 발급하고 환급 완료 알림톡을 보냅니다.</span></div>';
+  }
+  else return '';
+  return '<div class="ad-acts"><b style="display:block;margin-bottom:8px">심사 처리</b>'+h+'</div>';
+}
+function adGetApp(id){ const a=gApps().find(x=>adId(x.id)===adId(id)); if(!a||!adCan(a)){ gToast('처리 권한이 없습니다','bad'); return null; } return a; }
+function adRsnVal(){ const el=document.getElementById('adRsn'); return el?el.value.trim():''; }
+function adAfter(a,msg){ adTalk(a.uid); gToast(msg,'ok'); adRefresh(a.id); }
+function adStart(id){ const a=adGetApp(id); if(!a||a.status!=='received') return; gSetStatus(a.id,'review',{by:adBy(),memo:'심사 시작'}); if(AD.open===a.id) adAfter(a,'심사를 시작했습니다'); }
+function adApprove(id){
+  const a=adGetApp(id); if(!a||a.status!=='review') return;
+  const g=gGrant(a.type,a.people);
+  gSetStatus(a.id,'approved',{by:adBy(),memo:g.label+' 지원 한도 '+gWon(g.cap)+' · 환급률 '+g.rate+'% 확정',
+    patch:{grant:Object.assign({},g,{confirmed:true,confirmedAt:gNow().toISOString(),by:adBy()})}});
+  return a;
+}
+function adApproveBtn(id){ const a=adApprove(id); if(a) adAfter(a,'승인했습니다 — 알림톡 발송'); }
+function adReject(id){
+  const a=adGetApp(id); if(!a) return; const r=adRsnVal();
+  if(!r){ gToast('반려 사유를 입력해 주세요','bad'); document.getElementById('adRsn').focus(); return; }
+  gSetStatus(a.id,'rejected',{by:adBy(),memo:r}); adAfter(a,'반려 처리했습니다 — 알림톡 발송');
+}
+function adFix(id){
+  const a=adGetApp(id); if(!a) return; const r=adRsnVal(), due=(document.getElementById('adDue')||{}).value;
+  if(!r){ gToast('보완 사유를 입력해 주세요','bad'); document.getElementById('adRsn').focus(); return; }
+  if(!due||due<gYmd(gToday())){ gToast('보완 기한은 오늘 이후 날짜로 정해 주세요','bad'); return; }
+  gSetStatus(a.id,'fix',{by:adBy(),memo:r,patch:{fix:{target:'apply',reason:r,due,files:[]}}}); adAfter(a,'보완을 요청했습니다 — 알림톡 발송');
+}
+function adResume(id){ const a=adGetApp(id); if(!a||a.status!=='fix') return; gSetStatus(a.id,'review',{by:adBy(),memo:'보완 없이 심사 재개'}); adAfter(a,'심사를 재개했습니다'); }
+function adChgOk(id){
+  const a=adGetApp(id); if(!a||a.status!=='change_review'||!a.change) return; const c=a.change;
+  gSetStatus(a.id,'approved',{by:adBy(),silent:true,memo:'일정 변경 승인 '+gMD(c.prev?c.prev.start:a.start)+'~'+gMD(c.prev?c.prev.end:a.end)+' → '+gMD(c.start)+'~'+gMD(c.end),
+    patch:{start:c.start,end:c.end,change:Object.assign({},c,{result:'approved',decidedAt:gNow().toISOString(),by:adBy()})}});
+  gNotify(a.uid,'change',a.region,'일정 변경 승인',adTag(a)+' 여행 일정 변경이 승인되었습니다. 변경된 일정: '+gMD(c.start)+' ~ '+gMD(c.end),'mypage.html?app='+a.id,true);
+  adAfter(a,'일정 변경을 승인했습니다 — 재승인 결과 알림톡 발송');
+}
+function adChgNo(id){
+  const a=adGetApp(id); if(!a||a.status!=='change_review'||!a.change) return; const r=adRsnVal();
+  if(!r){ gToast('변경 반려 사유를 입력해 주세요','bad'); document.getElementById('adRsn').focus(); return; }
+  const c=a.change;
+  gSetStatus(a.id,'approved',{by:adBy(),silent:true,memo:'일정 변경 반려 — 기존 일정 유지 (사유: '+r+')',
+    patch:{change:Object.assign({},c,{result:'rejected',reason2:r,decidedAt:gNow().toISOString(),by:adBy()})}});
+  gNotify(a.uid,'change',a.region,'일정 변경 반려',adTag(a)+' 일정 변경 요청이 반려되었습니다. 기존 일정('+gMD(a.start)+' ~ '+gMD(a.end)+')이 그대로 유지됩니다. 사유: '+r,'mypage.html?app='+a.id,true);
+  adAfter(a,'일정 변경을 반려했습니다 — 기존 일정 유지');
+}
+function adRefundOk(id){
+  const a=adGetApp(id); if(!a||a.status!=='settle_review'||!a.settle) return;
+  adRecalc(a); const S=a.settle, R=gRefundOf(a,S.recognized);
+  if(!R.meetsMin){ gToast('최소 소비액 미달로 환급 승인할 수 없습니다 — 정산 보완을 요청해 주세요','bad'); return; }
+  const unresolved=S.items.filter(x=>{ const c=adCorpOf(x); return c&&c.needsReview&&x.ok; }).length;
+  const dups=S.items.filter(x=>adDupOf(a,x).length).length;
+  const visits=(S.visits||a.visits||[]).length, need=adNum('V4',a.region)||2;
+  const warn=[]; if(unresolved) warn.push('카드 구분 미확정 '+unresolved+'건'); if(dups) warn.push('중복 의심 '+dups+'건'); if(visits<need) warn.push('방문 인증 '+visits+'/'+need+'개소');
+  if(warn.length&&!confirm('확인이 필요한 항목이 있습니다: '+warn.join(', ')+'\n그래도 환급 승인할까요?')) return;
+  S.reviewedBy=adBy(); S.reviewedAt=gNow().toISOString(); S.expected=R.amount;
+  gSetStatus(a.id,'refund_ok',{by:adBy(),memo:'인정 '+gWon(S.recognized)+' · 불인정 '+gWon(S.rejectedAmt)+' · 환급 '+gWon(R.amount)+' 승인'+(warn.length?' (확인 후 승인: '+warn.join(', ')+')':''),patch:{settle:S}});
+  adAfter(a,'환급 승인 — '+gWon(R.amount)+' · '+(gStdNum('U1')||14)+'일 이내 지급');
+}
+function adSettleFix(id){
+  const a=adGetApp(id); if(!a) return; const r=adRsnVal(), due=(document.getElementById('adDue')||{}).value;
+  if(!r){ gToast('정산 보완 사유를 입력해 주세요','bad'); document.getElementById('adRsn').focus(); return; }
+  if(!due||due<gYmd(gToday())){ gToast('보완 기한은 오늘 이후 날짜로 정해 주세요','bad'); return; }
+  adRecalc(a);
+  gSetStatus(a.id,'settle_fix',{by:adBy(),memo:r,patch:{settle:a.settle,fix:{target:'settle',reason:r,due,files:[]}}}); adAfter(a,'정산 보완을 요청했습니다 — 알림톡 발송');
+}
+function adSettleResume(id){ const a=adGetApp(id); if(!a||a.status!=='settle_fix') return; gSetStatus(a.id,'settle_review',{by:adBy(),silent:true,memo:'보완 없이 정산 심사 재개'}); adAfter(a,'정산 심사를 재개했습니다'); }
+function adPin(){ const b=new Uint32Array(3); (window.crypto||{getRandomValues:x=>x.map(()=>Math.floor(Math.random()*1e4))}).getRandomValues(b); return Array.from(b).map(n=>String(n%10000).padStart(4,'0')).join('-'); }
+function adPay(id){
+  const a=adGetApp(id); if(!a||a.status!=='refund_ok') return;
+  const amt=a.settle?gRefundOf(a,a.settle.recognized).amount:0;
+  if(!confirm(gWon(amt)+'을 '+((gRegion(a.region)||{}).voucher||'지역사랑상품권')+'으로 지급 처리할까요?')) return;
+  gSetStatus(a.id,'refunded',{by:adBy(),memo:'환급금 '+gWon(amt)+' 지급',patch:{refund:{amount:amt,pin:adPin(),paidAt:gYmd(gToday()),registered:false}}});
+  adAfter(a,'지급 처리했습니다 — 환급 완료 알림톡 발송');
+}
+function adMemo(id){
+  const a=adGetApp(id); if(!a) return; const v=(document.getElementById('adMemo')||{}).value||'';
+  if(!v.trim()){ gToast('검토 의견을 입력해 주세요','bad'); return; }
+  const had=!!(a.review&&a.review.memo);
+  a.review={memo:v.trim(),by:adBy(),at:gNow().toISOString()}; a.history=a.history||[];
+  a.history.push({at:gNow().toISOString(),st:a.status,by:adBy(),memo:(had?'검토 의견 수정: ':'검토 의견 등록: ')+v.trim()});
+  gPutApp(a); gToast(had?'검토 의견을 수정했습니다':'검토 의견을 등록했습니다','ok'); adRefresh(a.id);
+}
+
+/* ═══ 2. 운영 기준 설정 (p28) ════════════════════════════════════ */
+function adStdSlug(){ if(adScope()) return adScope(); if(!AD.stdRegion) AD.stdRegion='pyeongchang'; return AD.stdRegion; }
+function adStdVal(s,slug){ return Object.prototype.hasOwnProperty.call(AD.stdDraft,s.id)?AD.stdDraft[s.id]:gStd(s.id,slug).val; }
+function adViewStd(){
+  const slug=adStdSlug(), r=gRegion(slug);
+  const nLock=G_STD.filter(s=>!s.opt).length, nOpt=G_STD.filter(s=>s.opt).length;
+  const cats=G_STD_CATS.map(c=>{ const l=G_STD.filter(s=>s.cat===c[0]); return '<button class="'+(AD.stdCat===c[0]?'on':'')+'" onclick="AD.stdCat=\''+c[0]+'\';adRender()">'+c[1]+'<small>'+l.length+(l.some(s=>s.opt)?' ('+l.filter(s=>!s.opt).length+'+'+l.filter(s=>s.opt).length+')':'')+'</small></button>'; }).join('');
+  const rows=G_STD.filter(s=>s.cat===AD.stdCat).map(s=>{
+    const core=AD_CORE.indexOf(s.id)>=0?' <span class="ad-tag core">핵심 표준안</span>':'';
+    const chk=s.check?' <span class="ad-tag chk">확인 필요</span>':'';
+    if(!s.opt){
+      const v=gStd(s.id,slug), ov=(gGet('stdLock',{})||{})[s.id];
+      return '<div class="ad-sr lock"><div class="nm">'+gEsc(s.name)+'<small>'+s.id+core+chk+'</small></div>'+
+        '<div class="vl">'+gEsc(v.val)+' (전국 공통)'+(ov?' <span class="ad-tag mute">공사 수정값</span>':'')+'</div>'+
+        '<div class="rt"><span class="ad-tag lock">🔒 잠금</span>'+(adHQ()?'<button class="btn sm" onclick="adLockEdit(\''+s.id+'\')">공사 전용 수정</button>':'')+'</div></div>';
+    }
+    const cur=adStdVal(s,slug), dirty=Object.prototype.hasOwnProperty.call(AD.stdDraft,s.id);
+    const ctl=s.choices?'<select class="inp" onchange="adStdDraft(\''+s.id+'\',this.value)" aria-label="'+gEsc(s.name)+'">'+s.choices.map(c=>'<option'+(String(c)===String(cur)?' selected':'')+'>'+gEsc(c)+'</option>').join('')+'</select>'
+      :'<input class="inp" maxlength="80" value="'+gEsc(cur)+'" placeholder="지역 표기 입력 (없으면 비워 둠)" oninput="adStdDraft(\''+s.id+'\',this.value,true)" aria-label="'+gEsc(s.name)+'">';
+    return '<div class="ad-sr'+(dirty?' dirty':'')+'" id="adSr_'+s.id+'"><div class="nm">'+gEsc(s.name)+'<small>'+s.id+core+(s.def!=null&&s.def!==''?' · 기본 '+gEsc(s.def):'')+'</small></div><div class="vl">'+ctl+'</div><div class="rt"><span class="ad-tag opt">옵션</span></div></div>';
+  }).join('');
+  const regSel=adScope()?'<select class="inp" disabled><option>'+gEsc(r.full)+'</option></select>'
+    :'<select class="inp" onchange="adStdRegion(this.value)" aria-label="지역">'+gRegionsAll().map(x=>'<option value="'+x.slug+'"'+(x.slug===slug?' selected':'')+'>'+gEsc(x.full)+'</option>').join('')+'</select>';
+  const dn=Object.keys(AD.stdDraft).length;
+  return adCrumb('운영 기준 설정','admin.bangap.or.kr/options')+
+    '<div class="ad-h"><h2>지역별 운영 기준</h2><p>54개 항목 = <b>통합 '+nLock+'</b>(전국 공통 · 잠금) + <b>옵션 '+nOpt+'</b>(지자체 선택). '+(adHQ()?'공사는 전 지역을 전환해 점검하고 통합 항목을 수정할 수 있습니다.':'통합 항목은 지자체에서 수정할 수 없습니다.')+'</p></div>'+
+    '<div class="ad-std"><div class="ad-cats" role="tablist">'+cats+'</div><div>'+
+      '<div class="ad-stdbar">'+regSel+'<span class="sp" style="flex:1"></span>'+(dn?'<span class="ad-tag chk">저장 안 된 변경 '+dn+'</span>':'')+
+        '<a class="btn sm" href="rguide.html?r='+slug+'" target="_blank" rel="noopener">미리보기</a><button class="btn sm blue" onclick="adStdSave()">저장</button></div>'+
+      rows+
+      '<div class="note" style="margin-top:10px">저장하면 '+gEsc(r.full)+' 사용자 페이지(지역 홈·신청·정산·안내)에 <b>바로 반영</b>됩니다. [미리보기]로 반영될 화면을 먼저 확인해 주세요.</div>'+
+    '</div></div>'+
+    (adHQ()?adStdMatrix():'');
+}
+function adStdRegion(v){
+  if(Object.keys(AD.stdDraft).length&&!confirm('저장하지 않은 변경이 있습니다. 버리고 지역을 바꿀까요?')){ adRender(); return; }
+  AD.stdDraft={}; AD.stdRegion=v; adRender();
+}
+function adStdDraft(id,v,soft){
+  const slug=adStdSlug(); if(String(gStd(id,slug).val)===String(v)) delete AD.stdDraft[id]; else AD.stdDraft[id]=v;
+  if(soft){ const el=document.getElementById('adSr_'+id); if(el) el.classList.toggle('dirty',Object.prototype.hasOwnProperty.call(AD.stdDraft,id)); return; }
+  adRender();
+}
+function adStdSave(){
+  const slug=adStdSlug(), ids=Object.keys(AD.stdDraft);
+  if(!ids.length){ gToast('바뀐 항목이 없습니다'); return; }
+  if(adScope()&&slug!==adScope()){ gToast('담당 지역만 저장할 수 있습니다','bad'); return; }
+  ids.forEach(id=>{ const s=G_STD.find(x=>x.id===id); if(s&&s.opt) gSetStdOpt(slug,id,String(AD.stdDraft[id]).replace(/[<>]/g,'').trim()); });
+  AD.stdDraft={}; adRender(); gToast(adRName(slug)+' 옵션 '+ids.length+'개 저장 — 사용자 페이지에 바로 반영됩니다','ok');
+}
+function adLockEdit(id){
+  if(!adHQ()){ gToast('공사 총괄만 수정할 수 있습니다','bad'); return; }
+  const s=G_STD.find(x=>x.id===id), v=gStd(id);
+  const hasNum=s.num!=null, numStr=Array.isArray(v.num)?v.num.join(','):(v.num==null?'':v.num);
+  gModal('<h3>통합 항목 수정 — '+gEsc(s.name)+' ('+s.id+')</h3><div class="note warn">전국 25개 지역에 공통 적용되는 값입니다. 바꾸면 모든 지역의 사용자 화면과 심사 계산에 즉시 반영됩니다.</div>'+
+    '<label class="f" for="adLv">표시 값</label><input class="inp" id="adLv" maxlength="60" value="'+gEsc(v.val)+'">'+
+    (hasNum?'<label class="f" for="adLn">계산용 수치 '+(Array.isArray(s.num)?'(쉼표로 구분, 예: 19,34)':'')+'</label><input class="inp" id="adLn" value="'+gEsc(numStr)+'"><p class="small muted">기준값: '+gEsc(s.val)+' / '+gEsc(Array.isArray(s.num)?s.num.join(','):s.num)+'</p>':'')+
+    '<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap"><button class="btn navy" onclick="adLockSave(\''+id+'\')">저장</button><button class="btn" onclick="adLockReset(\''+id+'\')">기준값으로 되돌리기</button><button class="btn ghost" onclick="gCloseModal()">취소</button></div>');
+}
+function adLockSave(id){
+  const s=G_STD.find(x=>x.id===id); const val=document.getElementById('adLv').value.replace(/[<>]/g,'').trim();
+  if(!val){ gToast('표시 값을 입력해 주세요','bad'); return; }
+  let num;
+  if(s.num!=null){
+    const raw=document.getElementById('adLn').value.trim();
+    if(Array.isArray(s.num)){ num=raw.split(',').map(x=>Number(x.trim())); if(num.length!==s.num.length||num.some(x=>!isFinite(x))||num[0]>num[1]){ gToast('수치를 '+s.num.length+'개, 작은 값부터 쉼표로 입력해 주세요','bad'); return; } }
+    else { num=Number(raw); if(raw===''||!isFinite(num)||num<0){ gToast('계산용 수치를 0 이상의 숫자로 입력해 주세요','bad'); return; } }
+  }
+  gSetStdLock(id,val,num); gCloseModal(); adRender(); gToast(s.name+' 전국 공통값을 수정했습니다','ok');
+}
+function adLockReset(id){
+  const all=gGet('stdLock',{})||{}; delete all[id]; gSet('stdLock',all); gCloseModal(); adRender(); gToast('기준값으로 되돌렸습니다','ok');
+}
+function adStdMatrix(){
+  const opts=G_STD.filter(s=>s.opt);
+  const body=gRegionsAll().map(r=>'<tr><th style="position:sticky;left:0;background:#fff">'+gEsc(r.full)+'</th>'+opts.map(s=>{
+    const v=gStd(s.id,r.slug).val, d=s.def==null?r.app:s.def; return '<td class="'+(String(v)!==String(d)?'df':'')+'">'+gEsc(v===''?'—':v)+'</td>'; }).join('')+'</tr>').join('');
+  return '<div class="sec"><div class="ad-h"><h2 style="font-size:17px">전 지역 옵션 현황</h2><p>공사 전용 · 25개 지역 × 옵션 '+opts.length+'개. 기본값과 다른 칸은 주황색입니다.</p></div>'+
+    '<div class="ad-scroll"><table><thead><tr><th style="position:sticky;left:0;z-index:2">지역</th>'+opts.map(s=>'<th>'+gEsc(s.name)+'<div class="ad-sub">'+s.id+'</div></th>').join('')+'</tr></thead><tbody>'+body+'</tbody></table></div></div>';
+}
+
+/* ═══ 3. 지역 콘텐츠 (p21) ═══════════════════════════════════════ */
+function adCtSlug(){ if(adScope()) return adScope(); if(!AD.ctRegion) AD.ctRegion='pyeongchang'; return AD.ctRegion; }
+/* 회차 추가·CSV 미리보기 등으로 다시 그려도 입력 중인 값이 지워지지 않게 보관 */
+function adCtCapture(){
+  const s=document.getElementById('adCSlug'); if(!s) return;
+  const v=id=>{ const el=document.getElementById(id); return el?el.value:null; };
+  AD.ctDraft={slug:s.value,color:v('adCColor'),image:v('adCImg'),intro:v('adCIntro'),near:v('adCNear'),dept:v('adCDept'),phone:v('adCPhone'),at:[0,1,2,3].map(i=>v('adCAt'+i))};
+}
+function adCtForget(){ const s=document.getElementById('adCSlug'); if(s) s.value=''; }
+function adViewContent(){
+  const slug=adCtSlug(), r0=gRegion(slug), dr=AD.ctDraft&&AD.ctDraft.slug===slug?AD.ctDraft:null;
+  const r=dr?Object.assign({},r0,{color:dr.color,image:dr.image,intro:dr.intro,nearby:String(dr.near||'').split(/\s*,\s*/).filter(Boolean),dept:dr.dept,phone:dr.phone,attractions:dr.at}):r0;
+  if(!AD.ctRounds||AD.ctRounds.slug!==slug) AD.ctRounds={slug,list:r.rounds.map(x=>Object.assign({},x))};
+  const regSel=adScope()?'<select class="inp" disabled style="width:auto"><option>'+gEsc(r.full)+'</option></select>'
+    :'<select class="inp" style="width:auto" onchange="AD.ctRegion=this.value;AD.ctRounds=null;AD.csv=null;AD.ctDraft=null;adCtForget();adRender()" aria-label="지역">'+gRegionsAll().map(x=>'<option value="'+x.slug+'"'+(x.slug===slug?' selected':'')+'>'+gEsc(x.full)+'</option>').join('')+'</select>';
+  const F=(lb,ctl,tag,wide)=>'<div class="ad-fr'+(wide?' wide':'')+'"><b>'+lb+'</b><div>'+ctl+'</div>'+(wide?'':'<i>'+tag+'</i>')+'</div>';
+  const rounds='<div class="tbl-wrap"><table class="tbl ad-rtbl"><thead><tr><th>회차</th><th>신청 시작</th><th>신청 종료</th><th>여행 시작</th><th>여행 종료</th><th>정원</th><th>상태</th><th></th></tr></thead><tbody id="adRBody">'+
+    AD.ctRounds.list.map((x,i)=>'<tr id="adRr'+i+'"><td><b>'+(i+1)+'</b></td>'+
+      ['applyStart','applyEnd','travelStart','travelEnd'].map(k=>'<td><input type="date" value="'+gEsc(x[k])+'" onchange="adRnd('+i+',\''+k+'\',this.value)" aria-label="'+(i+1)+'회차 '+k+'"></td>').join('')+
+      '<td><input class="q" type="number" min="1" value="'+gEsc(x.quota)+'" onchange="adRnd('+i+',\'quota\',this.value)" aria-label="정원"></td>'+
+      '<td>'+(x.applyStart&&x.applyEnd?gStateBadge(gRoundState(slug,Object.assign({},x,{n:i+1}))==='full'?'full':gRoundState(slug,Object.assign({},x,{n:i+1}))):'')+'</td>'+
+      '<td><button class="btn sm" onclick="adRndDel('+i+')" aria-label="삭제">삭제</button></td></tr>').join('')+
+    '</tbody></table></div><div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn sm" onclick="adRndAdd()">＋ 회차 추가</button><span class="small muted" id="adRMsg">신청 시작 ≤ 신청 종료, 여행 시작 ≤ 여행 종료, 여행 시작은 신청 시작 이후, 다음 회차 신청은 이전 회차 신청 종료 이후여야 합니다.</span></div>';
+  const csv=AD.csv&&AD.csv.slug===slug?adCsvPreview():'';
+  const curM=(r.merchants&&r.merchants.length)?'<span class="ad-tag ok">업로드 목록 '+r.merchants.length+'곳 적용 중</span> <button class="btn sm" onclick="adMerchClear()">업로드 목록 해제</button>':'<span class="ad-tag mute">기본(데모) 목록 '+gMerchants(slug).length+'곳</span>';
+  return adCrumb('지역 콘텐츠','표준 템플릿 + 지역 정보 = 지역 페이지')+
+    '<div class="ad-h"><h2>지역별 입력 정보</h2><p>공통 템플릿(화면 구성·메뉴·신청/정산 화면)은 고정이고, 아래 지역 정보만 입력하면 지역 페이지가 완성됩니다.</p></div>'+
+    '<div class="ad-bar">'+regSel+'<span class="sp"></span><a class="btn sm" href="region.html?r='+slug+'" target="_blank" rel="noopener">지역 홈 미리보기</a><button class="btn sm blue" onclick="adCtSave()">저장</button></div>'+
+    '<div class="ad-ct"><div class="card" style="padding:6px 18px 14px"><input type="hidden" id="adCSlug" value="'+slug+'">'+
+      F('브랜드 컬러','<div style="display:flex;gap:8px;align-items:center"><input type="color" id="adCColor" value="'+gEsc(r.color)+'" oninput="adCtPrev()" style="width:52px;height:40px;border:1px solid #d6dae1;border-radius:8px;padding:2px"><code id="adCColorT">'+gEsc(r.color)+'</code></div>','관리자 등록')+
+      F('대표 이미지','<input class="inp" id="adCImg" value="'+gEsc(r.image||'')+'" placeholder="../assets/img/tour50/평창.jpg" oninput="adCtPrev()"><p class="small muted" style="margin:4px 0 0">사이트 안 이미지 경로만 입력할 수 있습니다(예: ../assets/img/…). 비우면 브랜드 컬러 그라데이션.</p>','관리자 등록')+
+      F('한 줄 소개','<input class="inp" id="adCIntro" maxlength="60" value="'+gEsc(r.intro)+'" oninput="adCtPrev()">','관리자 입력')+
+      F('회차 일정 <i class="ad-sub" style="font-weight:600">관리자 입력</i>',rounds,'',true)+
+      F('결제·환급 수단',gEsc(gStd('P7',slug).val)+' 결제 · '+gEsc(gStd('U5',slug).val)+' 지급 <button class="btn sm" onclick="AD.stdRegion=\''+slug+'\';AD.stdCat=\'pay\';adGo(\'std\')">운영 기준에서 변경</button>','옵션 선택')+
+      F('정산 기한·지급 기간',gEsc(gStd('C1').val)+' · '+gEsc(gStd('U1').val),'고정')+
+      F('옵션 항목 설정값','운영 기준 설정의 옵션 '+G_STD.filter(s=>s.opt).length+'개 <button class="btn sm" onclick="AD.stdRegion=\''+slug+'\';adGo(\'std\')">열기</button>','옵션 선택')+
+      F('인접 제외 지역','<input class="inp" id="adCNear" value="'+gEsc(r.nearby.join(', '))+'" placeholder="강릉, 정선, 횡성"><p class="small muted" style="margin:4px 0 0">쉼표로 구분. 이 지역 거주자는 신청할 수 없습니다(통합 항목 B2 \'주변 지역\').</p>','옵션 선택')+
+      F('대표 명소 4곳','<div class="grid g2" style="gap:6px">'+[0,1,2,3].map(i=>'<input class="inp" id="adCAt'+i+'" maxlength="40" value="'+gEsc(r.attractions[i]||'')+'" placeholder="명소 '+(i+1)+'">').join('')+'</div>','관리자 등록')+
+      F('담당부서·전화','<div class="grid g2" style="gap:6px"><input class="inp" id="adCDept" maxlength="40" value="'+gEsc(r.dept)+'"><input class="inp" id="adCPhone" maxlength="20" value="'+gEsc(r.phone)+'"></div>','관리자 입력')+
+      F('소비인정 업소','<div>'+curM+'</div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px"><input type="file" id="adCsv" accept=".csv,text/csv" onchange="adCsvRead(this)"><button class="btn sm" onclick="adCsvSample()">양식 내려받기</button></div>'+
+        '<p class="small muted" style="margin:4px 0 0">엑셀에서 「CSV(쉼표로 분리)」로 저장해 올려 주세요. 머리글: <b>업종,업소명,주소</b> · 업종은 음식/관광/쇼핑/숙박/제외. 인코딩은 UTF-8·EUC-KR(엑셀 기본) 모두 됩니다. =,+,-,@ 로 시작하는 칸은 수식 실행을 막기 위해 앞 기호를 지웁니다.</p>'+csv,'엑셀 업로드')+
+    '</div><div class="ad-prev" id="adPrev"></div></div>';
+}
+function adCtPrevHtml(){
+  const slug=adCtSlug(), r=gRegion(slug);
+  const col=(document.getElementById('adCColor')||{}).value||r.color, img=(document.getElementById('adCImg')||{}).value, intro=(document.getElementById('adCIntro')||{}).value;
+  const ok=adImgOk(img), bg=img&&ok?gRegionBg({image:img,color:col}):'linear-gradient(135deg,'+col+',#0f172a)';
+  return '<div class="hd" style="background:'+gEsc(col)+'">'+gEsc(r.full)+' 반값여행</div><div class="im" style="background:'+bg+'"></div>'+
+    '<div class="bd"><b style="color:var(--ink)">'+gEsc(intro==null?r.intro:intro)+'</b><br>'+(img&&!ok?'<span style="color:var(--bad)">이미지 경로 형식이 올바르지 않습니다</span><br>':'')+'같은 구조, 지역마다 다른 정체성 — 저장 후 [지역 홈 미리보기]로 확인하세요.</div>';
+}
+function adCtPrev(){ const p=document.getElementById('adPrev'); if(p) p.innerHTML=adCtPrevHtml(); const c=document.getElementById('adCColorT'), i=document.getElementById('adCColor'); if(c&&i) c.textContent=i.value; }
+function adImgOk(v){ return !v||/^(\.\.\/)?assets\/[A-Za-z0-9가-힣_\-./]+\.(jpg|jpeg|png|webp|gif)$/i.test(v)&&v.indexOf('..',3)<0; }
+function adRnd(i,k,v){ const x=AD.ctRounds.list[i]; if(!x) return; x[k]=k==='quota'?Math.max(1,Math.floor(Number(v)||0)):v; adRndCheck(); }
+function adRndAdd(){
+  const l=AD.ctRounds.list, last=l[l.length-1], base=last?gAdd(gD(last.applyEnd),10):gToday(), d=n=>gYmd(gAdd(base,n));
+  l.push({n:l.length+1,applyStart:d(0),applyEnd:d(25),travelStart:d(4),travelEnd:d(55),quota:last?last.quota:50}); adRender();
+}
+function adRndDel(i){ if(AD.ctRounds.list.length<=1){ gToast('회차는 1개 이상 있어야 합니다','bad'); return; } if(!confirm((i+1)+'회차를 삭제할까요? (저장해야 반영됩니다)')) return; AD.ctRounds.list.splice(i,1); adRender(); }
+function adRndErrors(){
+  const l=AD.ctRounds.list, err=[];
+  l.forEach((x,i)=>{
+    const e=[];
+    ['applyStart','applyEnd','travelStart','travelEnd'].forEach(k=>{ if(!/^\d{4}-\d{2}-\d{2}$/.test(x[k]||'')) e.push('날짜 누락'); });
+    if(!e.length){
+      if(x.applyStart>x.applyEnd) e.push('신청 종료가 시작보다 빠름');
+      if(x.travelStart>x.travelEnd) e.push('여행 종료가 시작보다 빠름');
+      if(x.travelStart<x.applyStart) e.push('여행 시작이 신청 시작보다 빠름');
+      if(x.travelEnd<x.applyEnd) e.push('여행 종료가 신청 종료보다 빠름');
+      if(i>0&&l[i-1].applyEnd&&x.applyStart<=l[i-1].applyEnd) e.push('이전 회차 신청 기간과 겹침');
+    }
+    if(!(x.quota>=1)) e.push('정원 1명 이상');
+    if(e.length) err.push({i,msg:(i+1)+'회차: '+Array.from(new Set(e)).join(', ')});
+  });
+  return err;
+}
+function adRndCheck(){
+  const err=adRndErrors();
+  AD.ctRounds.list.forEach((x,i)=>{ const tr=document.getElementById('adRr'+i); if(tr) tr.classList.toggle('err',err.some(e=>e.i===i)); });
+  const m=document.getElementById('adRMsg'); if(m){ m.style.color=err.length?'var(--bad)':''; m.textContent=err.length?err.map(e=>e.msg).join(' / '):'날짜 순서가 올바릅니다. [저장]을 눌러 반영하세요.'; }
+  return err;
+}
+function adCtSave(){
+  const slug=adCtSlug(); if(adScope()&&slug!==adScope()){ gToast('담당 지역만 저장할 수 있습니다','bad'); return; }
+  const v=id=>(document.getElementById(id)||{}).value||'';
+  const color=v('adCColor'), image=v('adCImg').trim(), intro=v('adCIntro').trim().replace(/[<>]/g,'');
+  if(!/^#[0-9a-f]{6}$/i.test(color)){ gToast('브랜드 컬러를 확인해 주세요','bad'); return; }
+  if(!adImgOk(image)){ gToast('대표 이미지는 사이트 안 이미지 경로(../assets/…)만 입력할 수 있습니다','bad'); return; }
+  if(!intro){ gToast('한 줄 소개를 입력해 주세요','bad'); return; }
+  const err=adRndCheck(); if(err.length){ gToast('회차 일정을 확인해 주세요 — '+err[0].msg,'bad'); return; }
+  const nearby=v('adCNear').split(/[,，\s]+/).map(x=>x.trim().replace(/[<>]/g,'')).filter(Boolean);
+  const attractions=[0,1,2,3].map(i=>v('adCAt'+i).trim().replace(/[<>]/g,'')).filter(Boolean);
+  if(attractions.length<4){ gToast('대표 명소 4곳을 모두 입력해 주세요','bad'); return; }
+  const dept=v('adCDept').trim().replace(/[<>]/g,''), phone=v('adCPhone').trim().replace(/[^0-9\-]/g,'');
+  if(!dept||!phone){ gToast('담당부서와 전화번호를 입력해 주세요','bad'); return; }
+  const rounds=AD.ctRounds.list.map((x,i)=>({n:i+1,applyStart:x.applyStart,applyEnd:x.applyEnd,travelStart:x.travelStart,travelEnd:x.travelEnd,quota:Math.floor(Number(x.quota))}));
+  const patch={color,intro,nearby,attractions,dept,phone,rounds}; if(image) patch.image=image; else patch.image=null;
+  gSetRegionCfg(slug,patch); AD.ctRounds=null; AD.ctDraft=null; document.getElementById('adCSlug').value=''; adRender(); gToast(adRName(slug)+' 지역 정보를 저장했습니다 — 지역 페이지에 바로 반영됩니다','ok');
+}
+/* 소비인정 업소 CSV */
+function adCsvParse(text){
+  const rows=[]; let row=[], cell='', q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){ cell+='"'; i++; } else q=false; } else cell+=c; }
+    else if(c==='"') q=true;
+    else if(c===','){ row.push(cell); cell=''; }
+    else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n') i++; row.push(cell); rows.push(row); row=[]; cell=''; }
+    else cell+=c;
+  }
+  if(cell!==''||row.length){ row.push(cell); rows.push(row); }
+  return rows.filter(r=>r.some(x=>x.trim()!==''));
+}
+function adCsvClean(s){ let v=String(s||'').replace(/^﻿/,'').trim(); let fx=false; while(/^[=+\-@\t\r]/.test(v)){ v=v.slice(1).trim(); fx=true; } return {v:v.replace(/[<>]/g,'').slice(0,80),fx}; }
+function adCsvRead(inp){
+  const f=inp.files&&inp.files[0]; if(!f) return;
+  if(f.size>2*1024*1024){ gToast('2MB 이하 CSV만 올릴 수 있습니다','bad'); inp.value=''; return; }
+  const rd=new FileReader();
+  rd.onload=()=>{
+    const buf=new Uint8Array(rd.result); let text, enc='UTF-8';
+    try{ text=new TextDecoder('utf-8',{fatal:true}).decode(buf); }catch(e){ try{ text=new TextDecoder('euc-kr').decode(buf); enc='EUC-KR'; }catch(e2){ gToast('파일 인코딩을 읽을 수 없습니다','bad'); return; } }
+    const rows=adCsvParse(text.replace(/^﻿/,''));
+    if(!rows.length){ gToast('빈 파일입니다','bad'); return; }
+    const head=rows[0].map(h=>h.replace(/^﻿/,'').trim());
+    const ix={cat:head.indexOf('업종'),name:head.indexOf('업소명'),addr:head.indexOf('주소')};
+    if(ix.cat<0||ix.name<0||ix.addr<0){ gToast('머리글에 업종, 업소명, 주소가 있어야 합니다 (현재: '+head.slice(0,5).join(', ')+')','bad'); AD.csv=null; adRender(); return; }
+    const ok=[], bad=[]; let fixed=0;
+    rows.slice(1).forEach((r,n)=>{
+      const c=adCsvClean(r[ix.cat]), nm=adCsvClean(r[ix.name]), ad=adCsvClean(r[ix.addr]);
+      if(c.fx||nm.fx||ad.fx) fixed++;
+      const cat=c.v; const why=!nm.v?'업소명 없음':(['음식','관광','쇼핑','숙박','제외'].indexOf(cat)<0?'업종 값 오류('+cat+')':'');
+      if(why) bad.push({line:n+2,why}); else ok.push({cat,name:nm.v,addr:ad.v});
+    });
+    AD.csv={slug:adCtSlug(),file:f.name,enc,ok,bad,fixed}; adRender();
+  };
+  rd.readAsArrayBuffer(f);
+}
+function adCsvPreview(){
+  const c=AD.csv;
+  return '<div class="ad-box info" style="margin-top:10px"><b>미리보기 — '+gEsc(c.file)+'</b> · 인코딩 '+c.enc+' · 정상 '+c.ok.length+'건'+(c.bad.length?' · <span style="color:var(--bad)">오류 '+c.bad.length+'건 제외</span>':'')+(c.fixed?' · 수식 기호 제거 '+c.fixed+'건':'')+
+    (c.bad.length?'<div class="ad-sub">'+c.bad.slice(0,5).map(b=>b.line+'행: '+gEsc(b.why)).join(' / ')+(c.bad.length>5?' …':'')+'</div>':'')+
+    '<div class="tbl-wrap" style="margin-top:6px;max-height:240px;overflow:auto"><table class="tbl ad-tbl"><thead><tr><th>업종</th><th>업소명</th><th>주소</th></tr></thead><tbody>'+
+    c.ok.slice(0,20).map(m=>'<tr><td>'+gEsc(m.cat)+'</td><td>'+gEsc(m.name)+'</td><td>'+gEsc(m.addr)+'</td></tr>').join('')+'</tbody></table></div>'+
+    (c.ok.length>20?'<div class="ad-sub">… 외 '+(c.ok.length-20)+'건</div>':'')+
+    '<div style="display:flex;gap:8px;margin-top:8px"><button class="btn sm navy" onclick="adCsvApply()"'+(c.ok.length?'':' disabled')+'>'+c.ok.length+'곳 적용</button><button class="btn sm" onclick="AD.csv=null;adRender()">취소</button></div></div>';
+}
+function adCsvApply(){
+  const c=AD.csv; if(!c||!c.ok.length) return; if(adScope()&&c.slug!==adScope()) return;
+  gSetRegionCfg(c.slug,{merchants:c.ok}); AD.csv=null; adRender(); gToast(adRName(c.slug)+' 소비인정 업소 '+c.ok.length+'곳을 적용했습니다','ok');
+}
+function adMerchClear(){ if(!confirm('업로드한 업소 목록을 해제하고 기본 목록으로 되돌릴까요?')) return; gSetRegionCfg(adCtSlug(),{merchants:[]}); adRender(); gToast('업로드 목록을 해제했습니다','ok'); }
+function adCsvSample(){ adDownload('소비인정업소_양식.csv',[['업종','업소명','주소'],['음식','○○식당',adRName(adCtSlug())+' ○○읍 ○○길 12'],['숙박','○○펜션',adRName(adCtSlug())+' ○○면 ○○로 5']]); }
+
+/* ═══ 4. 공지·FAQ·문의 ═══════════════════════════════════════════ */
+function adCanNotice(n){ return adHQ()||n.scope===adScope(); }
+function adViewBoard(){
+  const tabs='<div class="ad-tabs">'+[['notice','공지·FAQ'],['qna','문의']].map(t=>'<button class="chip'+(AD.bdTab===t[0]?' on':'')+'" onclick="AD.bdTab=\''+t[0]+'\';AD.bdEdit=null;adRender()">'+t[1]+'</button>').join('')+'</div>';
+  return adCrumb('공지·FAQ·문의',adHQ()?'통합 공지는 공사만 등록':gEsc(adRName(adScope()))+' 지역 게시물만 편집')+tabs+(AD.bdTab==='qna'?adBoardQna():adBoardNotice());
+}
+function adBoardNotice(){
+  const list=gNotices().filter(n=>adHQ()||n.scope==='all'||n.scope===adScope());
+  const e=AD.bdEdit?gNotices().find(n=>n.id===AD.bdEdit):null;
+  const scopeOpt=adHQ()?'<option value="all">통합(전국)</option>'+gRegionsAll().map(r=>'<option value="'+r.slug+'"'+(e&&e.scope===r.slug?' selected':'')+'>'+gEsc(r.full)+'</option>').join('')
+    :'<option value="'+adScope()+'">'+gEsc(adRName(adScope()))+'</option>';
+  const form='<div class="card"><b>'+(e?'게시물 수정':'새 게시물 등록')+'</b><div class="grid g3" style="margin-top:8px">'+
+    '<div><label class="f" for="adNKind">구분</label><select class="inp" id="adNKind"><option value="notice">공지</option><option value="faq"'+(e&&e.kind==='faq'?' selected':'')+'>FAQ</option></select></div>'+
+    '<div><label class="f" for="adNScope">범위</label><select class="inp" id="adNScope">'+scopeOpt+'</select></div>'+
+    '<div><label class="f">&nbsp;</label><label class="check" style="margin:0"><input type="checkbox" id="adNPin"'+(e&&e.pin?' checked':'')+'> 상단 고정</label></div></div>'+
+    '<label class="f" for="adNTitle">제목</label><input class="inp" id="adNTitle" maxlength="80" value="'+gEsc(e?e.title:'')+'">'+
+    '<label class="f" for="adNBody">내용</label><textarea class="inp" id="adNBody" maxlength="2000">'+gEsc(e?e.body:'')+'</textarea>'+
+    '<div style="display:flex;gap:8px;margin-top:10px"><button class="btn navy" onclick="adNSave()">'+(e?'수정 저장':'등록')+'</button>'+(e?'<button class="btn" onclick="AD.bdEdit=null;adRender()">취소</button>':'')+'</div>'+
+    '<p class="small muted">통합 공지는 25개 지역 고객지원 화면에 자동 노출됩니다(이중 등록 없음).</p></div>';
+  const rows=list.map(n=>{ const can=adCanNotice(n);
+    return '<tr><td>'+(n.pin?'📌 ':'')+(n.kind==='faq'?'<span class="ad-tag" style="background:#f3e8ff;color:#7c3aed">FAQ</span>':n.scope==='all'?'<span class="ad-tag core">통합</span>':'<span class="ad-tag" style="background:#fff7ed;color:#c2410c">지역</span>')+'</td>'+
+      '<td><b>'+gEsc(n.title)+'</b><div class="ad-sub">'+gEsc(String(n.body||'').slice(0,60))+'</div></td><td>'+(n.scope==='all'?'전국':gEsc(adRName(n.scope)))+'</td><td>'+gDot(n.date)+'</td>'+
+      '<td style="white-space:nowrap">'+(can?'<button class="btn sm" onclick="AD.bdEdit=\''+adId(n.id)+'\';adRender();scrollTo(0,0)">수정</button> <button class="btn sm bad" onclick="adNDel(\''+adId(n.id)+'\')">삭제</button>':'<span class="ad-tag lock">🔒 공사 전용</span>')+'</td></tr>'; }).join('');
+  return form+'<div class="tbl-wrap" style="margin-top:14px"><table class="tbl ad-tbl"><thead><tr><th>구분</th><th>제목</th><th>지역</th><th>등록일</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+function adNSave(){
+  const v=id=>(document.getElementById(id)||{}).value||'';
+  const title=v('adNTitle').trim(), body=v('adNBody').trim(), scope=v('adNScope'), kind=v('adNKind')==='faq'?'faq':'notice', pin=document.getElementById('adNPin').checked;
+  if(!title||!body){ gToast('제목과 내용을 입력해 주세요','bad'); return; }
+  if(!adHQ()&&scope!==adScope()){ gToast('담당 지역 게시물만 등록할 수 있습니다','bad'); return; }
+  if(scope!=='all'&&!gRegion(scope)) return;
+  const l=gNotices();
+  if(AD.bdEdit){ const n=l.find(x=>x.id===AD.bdEdit); if(!n||!adCanNotice(n)){ gToast('수정 권한이 없습니다','bad'); return; } Object.assign(n,{title,body,scope,kind,pin}); }
+  else l.push({id:'T'+gSeq(),scope,kind,title,body,date:gYmd(gToday()),pin});
+  gSaveNotices(l); const ed=!!AD.bdEdit; AD.bdEdit=null; adRender(); gToast(ed?'수정했습니다':'등록했습니다 — 사용자 화면에 바로 노출됩니다','ok');
+}
+function adNDel(id){
+  const l=gNotices(), n=l.find(x=>x.id===id); if(!n||!adCanNotice(n)){ gToast('삭제 권한이 없습니다','bad'); return; }
+  if(!confirm('「'+n.title+'」을(를) 삭제할까요?')) return;
+  gSaveNotices(l.filter(x=>x.id!==id)); adRender(); gToast('삭제했습니다','ok');
+}
+function adBoardQna(){
+  const sc=adScope(), rf=sc||AD.qRegion;
+  const list=gInquiries().filter(q=>!rf||q.region===rf).sort((a,b)=>(a.answer?1:0)-(b.answer?1:0)||(a.at<b.at?1:-1));
+  const sel=sc?'':'<div class="ad-bar"><select class="inp" onchange="AD.qRegion=this.value;adRender()" aria-label="지역"><option value="">전체 지역</option>'+gRegionsAll().map(r=>'<option value="'+r.slug+'"'+(AD.qRegion===r.slug?' selected':'')+'>'+gEsc(r.full)+'</option>').join('')+'</select></div>';
+  const items=list.map(q=>{ const k=adId(q.id);
+    return '<div class="ad-q"><div class="hd">'+(q.answer?'<span class="ad-tag ok">답변완료</span>':'<span class="ad-tag bad">답변대기</span>')+(q.secret?'<span class="ad-tag mute">🔒 비공개</span>':'')+
+      '<b>'+gEsc(q.title)+'</b><span class="ad-sub">'+gEsc(adRName(q.region))+' · '+gEsc(q.name)+' · '+gDot(q.at)+'</span></div><p>'+gEsc(q.body)+'</p>'+
+      (q.answer?'<div class="ans"><b>답변</b> ('+gDot(q.answer.at)+')<br>'+gEsc(q.answer.body)+'</div>':'')+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><textarea class="inp" id="adA_'+k+'" placeholder="'+(q.answer?'답변 수정':'답변 작성')+' — 등록하면 알림톡이 자동 발송됩니다" style="min-height:52px;flex:1;min-width:200px"></textarea><button class="btn sm navy" onclick="adAnswer(\''+k+'\')">'+(q.answer?'답변 수정':'답변 등록')+'</button></div></div>'; }).join('');
+  return sel+(items||'<div class="ad-empty">문의가 없습니다.</div>');
+}
+function adAnswer(id){
+  const q=gInquiries().find(x=>adId(x.id)===id); if(!q) return;
+  if(adScope()&&q.region!==adScope()){ gToast('담당 지역 문의만 답변할 수 있습니다','bad'); return; }
+  const v=((document.getElementById('adA_'+id)||{}).value||'').trim(); if(!v){ gToast('답변 내용을 입력해 주세요','bad'); return; }
+  gAnswerInquiry(q.id,v); adTalk(q.uid); adRender(); gToast('답변을 등록했습니다 — 알림톡 발송','ok');
+}
+
+/* ═══ 5. 통계 ═══════════════════════════════════════════════════ */
+function adStatList(){ const sc=adScope()||AD.stRegion; return gApps().filter(a=>!sc||a.region===sc); }
+function adBars(title,pairs,color){
+  const max=Math.max(1,...pairs.map(p=>p[1]));
+  return '<div class="ad-bars"><h4>'+title+'</h4>'+(pairs.length?pairs.map(p=>'<div class="ad-br"><span>'+gEsc(p[0])+'</span><div class="tr"><i style="width:'+Math.round(p[1]/max*100)+'%;--c:'+(p[2]||color||'var(--pri)')+'"></i></div><b>'+p[1]+'</b></div>').join(''):'<p class="small muted">데이터가 없습니다.</p>')+'</div>';
+}
+function adAgeBand(a){ const p=(a.people||[])[0]; if(!p||!p.birth) return '미확인'; const g=gAge(p.birth); return g<20?'10대':g<30?'20대':g<40?'30대':g<50?'40대':g<60?'50대':'60대 이상'; }
+function adViewStats(){
+  const list=adStatList(), active=list.filter(a=>G_INACTIVE.indexOf(a.status)<0);
+  const ppl=active.reduce((s,a)=>s+adPeopleN(a),0);
+  const appr=['approved','change_review','settle_review','settle_fix','refund_ok','refunded'];
+  const nA=list.filter(a=>appr.indexOf(a.status)>=0).length, nR=list.filter(a=>a.status==='rejected').length;
+  const settled=list.filter(a=>a.settle).length;
+  const paid=list.filter(a=>a.status==='refunded'&&a.refund).reduce((s,a)=>s+(Number(a.refund.amount)||0),0);
+  const cnt=(fn)=>{ const m={}; list.forEach(a=>{ const k=fn(a); m[k]=(m[k]||0)+1; }); return m; };
+  const byR=cnt(a=>adRName(a.region)), byS=cnt(a=>a.status), byT=cnt(a=>a.type), byA=cnt(adAgeBand);
+  const ages=['10대','20대','30대','40대','50대','60대 이상','미확인'];
+  const quotaRows=adRegions().filter(r=>!AD.stRegion||adScope()||r.slug===AD.stRegion).flatMap(r=>(adScope()||AD.stRegion?r.rounds:[gRegionState(r).round]).map(rd=>{
+    const u=gRoundUsed(r.slug,rd.n), pct=Math.min(100,Math.round(u/rd.quota*100)), st=gRoundState(r.slug,rd);
+    return '<div class="ad-br" style="grid-template-columns:150px minmax(0,1fr) 110px"><span>'+gEsc(r.full)+' '+rd.n+'회차 '+gStateBadge(st)+'</span><div class="tr"><i style="width:'+pct+'%;--c:'+(pct>=100?'var(--bad)':pct>=80?'var(--warn)':'var(--ok)')+'"></i></div><b>'+u+'/'+rd.quota+' ('+pct+'%)</b></div>'; })).join('');
+  const sel=adScope()?'':'<select class="inp" style="width:auto" onchange="AD.stRegion=this.value;adRender()" aria-label="지역"><option value="">전체 지역</option>'+gRegionsAll().map(r=>'<option value="'+r.slug+'"'+(AD.stRegion===r.slug?' selected':'')+'>'+gEsc(r.full)+'</option>').join('')+'</select>';
+  return adCrumb('통계',adHQ()?'전 지역 집계':gEsc(adRName(adScope()))+' 집계')+
+    '<div class="ad-bar">'+sel+'<span class="sp"></span><button class="btn sm" onclick="adCsvApps()">⬇ 신청 데이터 CSV</button><button class="btn sm" onclick="adCsvSettle()">⬇ 정산 데이터 CSV</button></div>'+
+    '<div class="ad-cards"><div><b>'+list.length+'</b><span>신청 건수</span></div><div><b>'+ppl+'</b><span>신청자 수(취소·반려 제외, 동행 포함)</span></div>'+
+      '<div><b>'+(nA+nR?Math.round(nA/(nA+nR)*100)+'%':'-')+'</b><span>승인률 (승인 '+nA+' / 반려 '+nR+')</span></div><div><b>'+settled+'</b><span>정산 접수</span></div><div><b>'+gWon(paid)+'</b><span>환급 금액 합계(지급 완료)</span></div></div>'+
+    '<div class="grid g2">'+
+      (adScope()?'':adBars('지역별 신청',Object.keys(byR).sort((a,b)=>byR[b]-byR[a]).map(k=>[k,byR[k]])))+
+      adBars('상태별',Object.keys(G_ST).filter(k=>byS[k]).map(k=>[G_ST[k].nm,byS[k],G_ST[k].c]))+
+      adBars('유형별',G_TYPES.filter(t=>byT[t.key]).map(t=>[t.nm,byT[t.key]]),'var(--blue)')+
+      adBars('연령대별 (대표 신청자)',ages.filter(k=>byA[k]).map(k=>[k,byA[k]]),'#7c3aed')+
+    '</div>'+
+    '<div class="ad-bars" style="margin-top:16px"><h4>회차별 정원 소진율 '+(adScope()||AD.stRegion?'':'<span class="ad-sub">(지역별 현재·다음 회차)</span>')+'</h4>'+quotaRows+'</div>';
+}
+/* CSV — UTF-8 BOM, =+-@ 로 시작하는 칸은 ' 접두로 수식 주입 방지 */
+function adCell(v){ let s=String(v==null?'':v); if(/^[=+\-@\t\r]/.test(s)) s="'"+s; return '"'+s.replace(/"/g,'""')+'"'; }
+function adDownload(name,rows){
+  const csv='﻿'+rows.map(r=>r.map(adCell).join(',')).join('\r\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download=name;
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500);
+}
+function adCsvRowsApps(){
+  const head=['신청번호','지역','회차','유형','인원','신청자(마스킹)','계정','여행 시작','여행 종료','상태','신청일','지원 한도','환급률(%)','지원 확정'];
+  return [head].concat(adStatList().map(a=>{ const g=a.grant||gGrant(a.type,a.people);
+    return [a.id,adRName(a.region),a.round,gTypeName(a.type),adPeopleN(a),gMask(a.userName),a.uid,a.start,a.end,(G_ST[a.status]||{}).nm||a.status,gYmd(gD(a.createdAt)),g.cap,g.rate,a.grant&&a.grant.confirmed?'Y':'N']; }));
+}
+function adCsvRowsSettle(){
+  const head=['신청번호','정산번호','지역','회차','신청자(마스킹)','정산 접수일','결제 건수','인정 금액','불인정 금액','환급액','사람 보정 건수','중복 의심 건수','법인카드 건수','상태','지급액','지급일'];
+  return [head].concat(adStatList().filter(a=>a.settle).map(a0=>{ const a=adSettleView(a0), S=a.settle;
+    return [a.id,S.id||'',adRName(a.region),a.round,gMask(a.userName),S.at?gYmd(gD(S.at)):'',S.items.length,S.recognized,S.rejectedAmt,S.expected,
+      S.items.filter(adIsHuman).length,S.items.filter(x=>adDupOf(a,x).length).length,S.items.filter(x=>{ const c=adCorpOf(x); return c&&c.result==='corp'; }).length,
+      (G_ST[a.status]||{}).nm||a.status,a.refund?a.refund.amount:'',a.refund&&a.refund.paidAt?a.refund.paidAt:'']; }));
+}
+function adCsvApps(){ const r=adCsvRowsApps(); adDownload('반값여행_신청데이터_'+gYmd(gToday())+'.csv',r); gToast('신청 데이터 '+(r.length-1)+'건을 내려받았습니다','ok'); }
+function adCsvSettle(){ const r=adCsvRowsSettle(); adDownload('반값여행_정산데이터_'+gYmd(gToday())+'.csv',r); gToast('정산 데이터 '+(r.length-1)+'건을 내려받았습니다','ok'); }
+
+/* ═══ 6. 데모 도구 ═══════════════════════════════════════════════ */
+function adViewDemo(){
+  const off=Number(gGet('dayOffset',0))||0;
+  const users=(typeof ACCOUNTS!=='undefined'?ACCOUNTS:[]).filter(a=>/^user[1-5]$/.test(a.id));
+  return adCrumb('데모 도구','시연용 — 운영 화면에는 없습니다')+
+    '<div class="grid g2">'+
+    '<div class="card"><b>데모 날짜 이동</b><p class="small muted">오늘: <b>'+gDot(gToday())+'</b> (실제 날짜에서 '+(off>=0?'+':'')+off+'일). 모든 화면의 오늘·기한·회차 상태가 이 날짜 기준으로 바뀝니다.</p>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">'+[-7,-1,1,7,14].map(n=>'<button class="btn sm" onclick="adDay('+(off+n)+')">'+(n>0?'+':'')+n+'일</button>').join('')+'<button class="btn sm navy" onclick="adDay(0)">오늘로</button></div>'+
+      '<div style="display:flex;gap:6px;margin-top:8px"><input class="inp" type="number" id="adOff" value="'+off+'" style="width:110px"><button class="btn sm" onclick="adDay(Number(document.getElementById(\'adOff\').value)||0)">일수로 이동</button></div></div>'+
+    '<div class="card"><b>다른 계정 신청 시드 생성</b><p class="small muted">테스트 계정 user1~user5 각각에 마이페이지 시연 6건(gSeedDemo 와 같은 구성)과 심사 시연 건(접수·일정 변경·정산 심사: 첨부 영수증·판독 오류·법인카드·중복 승인번호)을 만듭니다. 이미 만든 계정은 건너뜁니다.</p>'+
+      '<div class="small" style="margin:6px 0">'+users.map(u=>gEsc(u.id)+' '+gEsc(u.name)+' — '+(gUGet('seeded',false,u.id)?'시연 6건 ✓':'시연 6건 없음')+' · '+(gUGet('adseed',false,u.id)?'심사 시연 ✓':'심사 시연 없음')).join('<br>')+'</div>'+
+      '<button class="btn sm navy" onclick="adSeedAll()">user1~user5 시드 생성</button></div>'+
+    '<div class="card"><b>시안 G 데이터 초기화</b><p class="small muted">localStorage 의 <code>dtidG_</code> 키(신청·알림·공지·문의·운영 기준·지역 설정·대기열 등)만 삭제합니다. 로그인 상태와 다른 시안 데이터는 그대로 둡니다.</p>'+
+      '<button class="btn sm bad" onclick="adReset()">시안 G 데이터 초기화</button></div>'+
+    '<div class="card"><b>현재 저장 현황</b><p class="small">신청 '+gApps().length+'건 · 공지 '+gNotices().length+'건 · 문의 '+gInquiries().length+'건 · 지역 설정 '+Object.keys(gGet('regionCfg',{})||{}).length+'곳 · 옵션 설정 '+Object.keys(gGet('stdOpt',{})||{}).length+'곳 · 통합 수정 '+Object.keys(gGet('stdLock',{})||{}).length+'개 · BIN 판정표 '+gBins().length+'건</p></div>'+
+    '</div>';
+}
+function adDay(n){ gSet('dayOffset',n); adRender(); gToast('데모 날짜: '+gDot(gToday()),'ok'); }
+function adReset(){
+  if(!confirm('시안 G 데이터(dtidG_ 로 시작하는 저장값)를 모두 삭제할까요? 되돌릴 수 없습니다.')) return;
+  const ks=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.indexOf(G_P)===0) ks.push(k); }
+  ks.forEach(k=>localStorage.removeItem(k));
+  AD.sel={}; AD.stdDraft={}; AD.ctRounds=null; AD.csv=null; gCloseModal(); adPersonaInit(); adRender(); gToast(ks.length+'개 키를 삭제했습니다','ok');
+}
+/* g.js 의 gSeedDemo(uid) 는 이름·거주지를 로그인 계정(gUser)에서 읽어 다른 계정으로 만들 수 없다.
+   그래서 같은 구성을 uid 인자로 만드는 함수를 이 페이지에 둔다(gUid 를 바꾸지 않음). */
+function adUserOf(uid){
+  const a=(typeof ACCOUNTS!=='undefined')?ACCOUNTS.find(x=>x.id===uid):null; if(!a) return null;
+  const b=getAccountBirth(uid), res=G_RESIDENCE[uid]||{sido:'서울특별시',sigungu:'종로구'};
+  return {id:uid,name:a.name,birth:b.ymd,sido:res.sido,sigungu:res.sigungu};
+}
+function adSeedDemoFor(uid){
+  if(gUGet('seeded',false,uid)) return 0;
+  /* g.js 의 gSeedDemo 가 계정 지정을 지원하면 그것을 쓴다(시연 표시 demo 포함) */
+  if(typeof gUserOf==='function'){ const n0=gApps().length; gSeedDemo(uid); return gApps().length-n0; }
+  const u=adUserOf(uid); if(!u) return 0;
+  const T=gToday(), d=n=>gYmd(gAdd(T,n)), at=n=>gAdd(T,n).toISOString();
+  const me={name:u.name,birth:u.birth,rel:'본인',verified:'dju'}, comp={name:'김동행',birth:'1992-05-14',rel:'동행',verified:'kakao'};
+  const alt=['hapcheon','geochang','goheung','haenam','jecheon','yeongam'];
+  const pick=s=>gAddrBlock(s,u.sigungu)?alt.find(x=>!gAddrBlock(x,u.sigungu)):s;
+  const mk=(region,round,type,people,start,end,status,extra)=>{
+    region=pick(region); const id=gNewAppId(), g=gGrant(type,people);
+    const a=Object.assign({id,uid,userName:u.name,region,round,type,people,start,end,plan:'',docs:[],agree:{check:true,privacy:true,third:true},status,grant:g,createdAt:at(-20),
+      history:[{at:at(-20),st:'received',by:'system',memo:'사전신청 접수'}]},extra||{});
+    if(status!=='received') a.history.push({at:at(-18),st:status,by:'demo',memo:''});
+    return a;
+  };
+  const list=[
+    mk('pyeongchang',2,'team',[me,comp],d(8),d(10),'fix',{fix:{target:'apply',reason:'동행자 신분증 사본 판독 불가(재첨부 필요)',due:d(4),files:[]}}),
+    mk('miryang',2,'solo',[me],d(14),d(15),'review'),
+    mk('hadong',2,'solo',[me],d(3),d(4),'approved'),
+    mk('yeonggwang',1,'solo',[me],d(-12),d(-11),'settle_review',{settle:{id:'S'+gSeq(),at:at(-8),items:[
+      {src:'localpay',merchant:'영광 한우촌',cat:'음식',amount:68000,at:d(-12)+'T12:10:00',ok:true},
+      {src:'localpay',merchant:'영광 힐링펜션',cat:'숙박',amount:90000,at:d(-12)+'T15:00:00',ok:true},
+      {src:'localpay',merchant:'영광 셀프주유소',cat:'제외',amount:50000,at:d(-11)+'T09:30:00',ok:false,reason:'제외 업종'}],
+      visits:[{spot:'영광 지정관광지 1',date:d(-12),method:'qr',gps:true},{spot:'영광 지정관광지 2',date:d(-11),method:'qr',gps:true}],recognized:158000,rejectedAmt:50000,expected:79000}}),
+    mk('wando',1,'solo',[me],d(-60),d(-59),'refunded',{settle:{id:'S'+gSeq(),at:at(-55),items:[
+      {src:'localpay',merchant:'완도 전복식당',cat:'음식',amount:80000,at:d(-60)+'T12:00:00',ok:true},
+      {src:'localpay',merchant:'완도 로컬푸드직매장',cat:'쇼핑',amount:70000,at:d(-59)+'T11:00:00',ok:true}],
+      visits:[{spot:'완도 지정관광지 1',date:d(-60),method:'qr',gps:true}],recognized:150000,rejectedAmt:0,expected:75000},
+      refund:{amount:75000,pin:'5821-0394-2210',paidAt:d(-45),registered:false}}),
+    mk('namhae',1,'solo',[me],d(-90),d(-88),'refunded',{settle:{id:'S'+gSeq(),at:at(-85),items:[
+      {src:'localpay',merchant:'남해 멸치쌈밥',cat:'음식',amount:120000,at:d(-90)+'T12:00:00',ok:true},
+      {src:'localpay',merchant:'남해 독일마을 상회',cat:'쇼핑',amount:180000,at:d(-89)+'T11:00:00',ok:true}],
+      visits:[],recognized:300000,rejectedAmt:0,expected:100000},refund:{amount:100000,pin:'7710-2283-9015',paidAt:d(-75),registered:true}})
+  ];
+  gSaveApps(gApps().concat(list));
+  const nl=gUGet('noti',[],uid)||[], R=i=>gRegion(list[i].region);
+  const push=(kind,region,title,body,link,ago,read)=>nl.push({id:'N'+gSeq(),kind,region,title,body,link,at:gAdd(gNow(),-ago).toISOString(),read:!!read,talk:true});
+  push('fix',list[0].region,'보완 요청',R(0).full+' 2회차 신청 건에 보완이 필요합니다. 사유: 동행자 신분증 사본 판독 불가(재첨부 필요)','mypage.html?app='+list[0].id,1);
+  push('approve',list[2].region,'승인 완료',R(2).full+' 2회차 반값여행 신청이 승인되었습니다.','mypage.html?app='+list[2].id,5,true);
+  push('settle',list[3].region,'정산 접수',R(3).full+' 1회차 정산 신청이 접수되었습니다.','mypage.html?app='+list[3].id,8,true);
+  push('refund',list[4].region,'환급 완료',R(4).full+' 1회차 환급금 75,000원이 '+R(4).voucher+'으로 지급되었습니다.','mypage.html?app='+list[4].id,15,true);
+  gUSet('noti',nl,uid); gUSet('seeded',true,uid);
+  return list.length;
+}
+/* 심사 시연용: 접수 · 일정 변경 심사 · 정산 심사(첨부 영수증·판독 오류·법인카드·중복 승인번호·방문 인증 부족) */
+function adSeedReviewFor(uid){
+  if(gUGet('adseed',false,uid)) return 0;
+  const u=adUserOf(uid); if(!u) return 0;
+  const idx=Math.max(0,['user1','user2','user3','user4','user5'].indexOf(uid));
+  const T=gToday(), d=n=>gYmd(gAdd(T,n)), at=n=>gAdd(T,n).toISOString();
+  const O=['pyeongchang','yeonggwang','hadong','miryang'];
+  const region=[0,1,2,3].map(k=>O[(idx+k)%4]).find(s=>!gAddrBlock(s,u.sigungu))||'hapcheon';
+  const r=gRegion(region), rn=gRegionState(r).round.n, n=r.name;
+  const me={name:u.name,birth:u.birth,rel:'본인',verified:'dju'};
+  const H=(list)=>list.map(x=>({at:at(x[0]),st:x[1],by:x[2]||'system',memo:x[3]||''}));
+  const mk=(o)=>{ const g=gGrant(o.type,o.people); return Object.assign({id:gNewAppId(),uid,demo:true,userName:u.name,region,round:rn,plan:'',docs:[],agree:{check:true,privacy:true,third:true},grant:g},o); };
+  const fam=idx%2===0;
+  const people=fam?[me,{name:'김가족',birth:'1988-02-11',rel:'가족',verified:'kakao'},{name:'김어린',birth:'2015-03-02',rel:'가족',verified:'id',minor:true,doc:'주민등록등본.pdf'}]
+                  :[me,{name:'이동행',birth:'1996-09-21',rel:'동행',verified:'id',doc:'동행자_신분증(뒷자리 마스킹).jpg'}];
+  const A=mk({type:fam?'family':'team',people,start:d(9+idx),end:d(11+idx),plan:n+' 지정관광지와 전통시장을 둘러볼 예정입니다.',docs:fam?[{name:'주민등록등본.pdf',size:182000}]:[{name:'동행자_신분증(뒷자리 마스킹).jpg',size:96000}],
+    status:'received',createdAt:at(-1),history:H([[-1,'received','system','사전신청 접수']])});
+  const B=mk({type:'solo',people:[me],start:d(5),end:d(6),status:'change_review',createdAt:at(-12),
+    change:{start:d(16),end:d(18),reason:'회사 일정으로 여행 일정을 미룹니다',at:at(-1),prev:{start:d(5),end:d(6)}},
+    history:H([[-12,'received','system','사전신청 접수'],[-11,'review','데모 담당자','심사 시작'],[-10,'approved','데모 담당자','개인 지원 한도 확정'],[-1,'change_review','신청자','일정 변경 요청']])});
+  B.grant=Object.assign({},B.grant,{confirmed:true,confirmedAt:at(-10),by:'데모 담당자'});
+  const cards=['9410-12**-****-3381','5521-00**-****-7710','4579-73**-****-1204','3560-99**-****-5502','6253-11**-****-8890'];
+  const cardTxt=['','카드종류: 신한카드-법인','카드종류: 국민 개인 신용','',''];
+  const appr=(idx===0||idx===1)?'30458812':String(41000000+idx*1373);
+  const st=d(-9), en=d(-7);
+  const lodgeAmt=120000, misread=idx===0;
+  let items=[
+    {src:'localpay',merchant:n+' 한우촌',cat:'음식',amount:72000,at:st+'T12:20:00',approval:String(70000000+idx*11+1)},
+    {src:'localpay',merchant:n+' 레일바이크',cat:'관광',amount:30000,at:d(-8)+'T10:00:00',approval:String(70000000+idx*11+2)},
+    {src:'localpay',merchant:n+' 셀프주유소',cat:'제외',biz:'주유소',excluded:true,amount:45000,at:en+'T09:30:00',approval:String(70000000+idx*11+3)},
+    {src:'upload',merchant:n+' 힐링펜션',cat:'숙박',amount:misread?12000:lodgeAmt,at:st+'T15:00:00',approval:appr,card:cards[idx],
+      ocr:{merchant:n+' 힐링펜션',amount:misread?12000:lodgeAmt,date:st,approval:appr,card:cards[idx],confidence:misread?0.62:0.93,text:cardTxt[idx]}},
+    {src:'upload',merchant:n+' 막국수',cat:'음식',amount:18000,at:d(-8)+'T18:40:00',approval:String(52000000+idx*7),card:cards[idx],
+      ocr:{merchant:n+' 막국수',amount:18000,date:d(-8),approval:String(52000000+idx*7),card:cards[idx],confidence:0.88,text:cardTxt[idx]}}
+  ];
+  const C=mk({type:'solo',people:[me],start:st,end:en,status:'settle_review',createdAt:at(-25),
+    visits:[{spot:r.attractions[0],date:st,method:'qr',gps:true,at:st+'T11:00:00'}].concat(idx%2===0?[{spot:r.attractions[1],date:d(-8),method:'photo',gps:true,at:d(-8)+'T14:00:00'}]:[]),
+    history:H([[-25,'received','system','사전신청 접수'],[-24,'review','데모 담당자','심사 시작'],[-23,'approved','데모 담당자','개인 지원 한도 확정'],[-3,'settle_review','system','정산 접수']])});
+  C.grant=Object.assign({},C.grant,{confirmed:true,confirmedAt:at(-23),by:'데모 담당자'});
+  items=gClassify(items,C);
+  C.settle={id:'S'+gSeq(),at:at(-3),items,visits:C.visits.slice(),lodging:idx===3?null:{file:'숙박확인서_날인.pdf',prepay:false},agree:{fraud:true,terms:true},sign:u.name};
+  adRecalc(C);
+  const list=[A,B,C];
+  if(idx===3){ /* 지급 대기 1건 */
+    const D=mk({type:'solo',people:[me],start:d(-20),end:d(-19),status:'refund_ok',createdAt:at(-40),
+      history:H([[-40,'received','system','사전신청 접수'],[-38,'approved','데모 담당자',''],[-15,'settle_review','system','정산 접수'],[-12,'refund_ok','데모 담당자','환급 승인']])});
+    D.settle={id:'S'+gSeq(),at:at(-15),items:gClassify([{src:'localpay',merchant:n+' 장터국밥',cat:'음식',amount:110000,at:d(-20)+'T12:00:00',approval:'88120034'},{src:'localpay',merchant:n+' 로컬푸드직매장',cat:'쇼핑',amount:60000,at:d(-19)+'T10:00:00',approval:'88120035'}],{start:d(-20),end:d(-19),region}),
+      visits:[{spot:r.attractions[0],date:d(-20),method:'qr',gps:true},{spot:r.attractions[2],date:d(-19),method:'qr',gps:true}],agree:{fraud:true,terms:true},sign:u.name};
+    adRecalc(D); list.push(D);
+  }
+  gSaveApps(gApps().concat(list));
+  gUSet('adseed',true,uid);
+  return list.length;
+}
+function adSeedAll(){
+  let n=0; ['user1','user2','user3','user4','user5'].forEach(uid=>{ n+=adSeedDemoFor(uid); n+=adSeedReviewFor(uid); });
+  adRender(); gToast(n?n+'건을 만들었습니다 — [신청 관리]에서 심사해 보세요':'이미 모든 계정에 시드가 있습니다',n?'ok':'');
+}
+
+/* ── 시작 ── */
+window.addEventListener('storage',e=>{ if(e.key&&e.key.indexOf(G_P)===0&&AD.view!=='std'&&AD.view!=='content'&&AD.view!=='board'){ adRender(); } });
+(function(){
+  adPersonaInit();
+  const h=(location.hash||'').slice(1); if(AD_MENU.some(m=>m[0]===h)) AD.view=h;
+  adRender();
+  const q=gQS('app'); if(q) adOpen(q);
+})();
+</script>
+</body></html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>지역화폐 사용법 — 대한민국 반값여행 · 시안 G</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="g.css?v=1">
+<style>
+/* 지역화폐 사용법 (착수보고 p20 ③) — 접두사 .lp- */
+.lp-ban{border-radius:16px;padding:26px 26px;color:#fff;background:var(--blue)}
+.lp-ban h1{margin:0;font-size:28px;letter-spacing:-.5px}
+.lp-ban p{margin:6px 0 0;font-size:16px;opacity:.95}
+.lp-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+.lp-two div{border-radius:14px;padding:18px 20px}
+.lp-two div:first-child{background:#e6fbf7} .lp-two div:last-child{background:#f1f3f6}
+.lp-two small{display:block;color:var(--blue);font-weight:800;font-size:15px}
+.lp-two b{display:block;font-size:19px;margin:2px 0 8px}
+.lp-two ul{margin:0;padding-left:18px;font-size:13.5px;color:#334155}
+.lp-steps{display:flex;justify-content:space-between;position:relative;margin:10px 0 4px;padding:0 4%}
+.lp-steps::before{content:'';position:absolute;left:10%;right:10%;top:22px;border-top:2px dashed #c7d2fe}
+.lp-steps div{position:relative;text-align:center;width:20%;font-size:14px;font-weight:600;color:#334155;word-break:keep-all}
+.lp-steps i{display:flex;width:44px;height:44px;margin:0 auto 6px;border-radius:50%;border:2px solid var(--blue);background:#fff;color:var(--blue);font-style:normal;font-weight:800;align-items:center;justify-content:center;font-size:17px}
+.lp-steps div:last-child i{background:var(--blue);color:#fff}
+.lp-steps small{display:block;color:var(--sub);font-weight:400;font-size:12px;margin-top:2px}
+.lp-apps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.lp-apps button{border:2px solid var(--line);background:#fff;border-radius:12px;padding:13px 6px;font-weight:800;font-size:15px;cursor:pointer}
+.lp-apps button:hover{border-color:var(--blue);color:var(--blue)}
+.lp-apps button.me{border-color:var(--blue);background:var(--blue-l);color:var(--blue)}
+.lp-apps button small{display:block;font-size:11px;font-weight:700}
+.lp-caution{margin-top:14px;background:var(--pri-l);color:var(--pri);font-weight:800;border-radius:12px;padding:14px 18px}
+.lp-pin{display:flex;gap:14px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fff}
+.lp-pin+.lp-pin{margin-top:10px}
+.lp-pin .info{flex:1;min-width:200px}
+.lp-pin b{font-size:15.5px}
+.lp-pin .amt{font-size:20px;font-weight:900;color:var(--ok)}
+.lp-pin code{font-family:ui-monospace,Consolas,monospace;font-size:15px;background:#f1f5f9;padding:3px 8px;border-radius:6px;letter-spacing:1px}
+.lp-wallet{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:linear-gradient(135deg,#0f766e,#115e59);color:#fff;border-radius:14px;padding:16px 20px;margin-bottom:14px}
+.lp-wallet .v{font-size:24px;font-weight:900}
+.lp-wallet .btn{margin-left:auto}
+.lp-ast{counter-reset:a;margin:6px 0 0;padding:0;list-style:none}
+.lp-ast li{counter-increment:a;padding:8px 0 8px 34px;position:relative;border-bottom:1px dashed var(--line);font-size:14.5px}
+.lp-ast li::before{content:counter(a);position:absolute;left:0;top:8px;width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-weight:800;font-size:12.5px;display:flex;align-items:center;justify-content:center}
+@media (max-width:960px){ .lp-apps{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media (max-width:600px){
+  .lp-two{grid-template-columns:minmax(0,1fr)}
+  .lp-steps{padding:0}
+  .lp-steps div{font-size:12px} .lp-steps i{width:36px;height:36px;font-size:15px} .lp-steps::before{top:18px}
+  .lp-apps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lp-ban{padding:20px}
+  .lp-ban h1{font-size:23px}
+  .lp-wallet .btn{margin-left:0}
+}
+</style>
+</head><body>
+<main><div class="wrap" id="lpMain"></div></main>
+<script src="../site-assets/data.js?v=20260818a"></script>
+<script src="g.js?v=1"></script>
+<script>
+const SLUG=(gQS('r')&&gRegion(gQS('r')))?gQS('r'):'pyeongchang';
+gShell({mode:'region',slug:SLUG,active:'guide'});
+if(gUser()) gSeedDemo();
+const R=gRegion(SLUG), APP=gStd('P7',SLUG).val;
+
+/* 앱별 등록 방법 (데모 안내) */
+const LP_APP_GUIDE={
+  'CHAK':['CHAK 앱 실행 → 로그인','하단 [지갑] → [상품권 등록]','[PIN 번호로 등록] 선택','PIN 16자리 입력 → [등록]','[보유 상품권]에서 잔액 확인'],
+  '비플페이':['비플페이 앱 실행 → 로그인','[지역화폐] 탭 → 해당 지역 선택','[쿠폰·선물함] 메뉴','[PIN 등록]에 번호 입력','[모바일 상품권]에 등록 완료'],
+  '오케이페이':['오케이페이 앱 실행 → 로그인','[전체메뉴] → [쿠폰함]','[쿠폰 등록하기]','PIN 번호 입력 → [확인]','결제 수단에 상품권 추가 완료'],
+  'NH농협':['NH콕뱅크/올원페이 앱 실행','[지역화폐] 메뉴 선택','[선물·쿠폰 등록]','PIN 번호 입력 → [등록]','[내 지역화폐]에서 잔액 확인'],
+  '하나원큐':['하나원큐 앱 실행 → 로그인','[혜택] → [지역사랑상품권]','[쿠폰 등록]','PIN 번호 입력 → [등록]','[보유 상품권]에서 확인']
+};
+function lpAppModal(name){
+  const s=LP_APP_GUIDE[name]||LP_APP_GUIDE['CHAK'];
+  gModal('<h3>📱 '+gEsc(name)+' 앱 등록 방법</h3>'+(name===APP?'<p class="small" style="color:var(--blue);font-weight:700;margin:-4px 0 8px">'+gEsc(R.full)+' 결제·환급 앱입니다</p>':'<p class="small muted" style="margin:-4px 0 8px">'+gEsc(R.full)+'은 '+gEsc(APP)+' 앱을 씁니다. 다른 지역 환급금일 때 참고하세요.</p>')+
+    '<ol class="lp-ast">'+s.map(x=>'<li>'+gEsc(x)+'</li>').join('')+'</ol>'+
+    '<div class="note warn" style="margin-top:14px">본인 명의 앱에만 등록할 수 있고, 등록한 PIN 은 재발급되지 않습니다.</div>'+
+    '<div style="text-align:right;margin-top:14px"><button class="btn navy sm" onclick="gCloseModal()">확인</button></div>');
+}
+
+/* ── 환급금 PIN 등록 (pay.html 과 같은 로직) ── */
+function lpWallet(){ return gUGet('wallet',{})||{}; }
+function lpRefunds(){ return gMyApps().filter(a=>a.refund&&a.refund.pin&&(a.status==='refunded')); }
+function lpPinMask(p){ return String(p).replace(/\d(?=(?:\D*\d){4})/g,'•'); }
+function lpRegisterAsk(id){
+  const a=gApp(id); if(!a||!a.refund) return;
+  const r=gRegion(a.region), app=gStd('P7',a.region).val;
+  gModal('<h3>환급금 PIN 등록</h3><p class="muted">'+gEsc(r.full)+' '+a.round+'회차 환급금을 <b>'+gEsc(app)+'</b> 앱에 등록합니다.</p>'+
+    '<div class="note"><div>금액 <b>'+gWon(a.refund.amount)+'</b> ('+gEsc(r.voucher)+')</div><div style="margin-top:4px">PIN <code style="font-family:Consolas,monospace;font-size:15px">'+gEsc(a.refund.pin)+'</code></div></div>'+
+    '<label class="f" for="lpPinIn">PIN 번호 입력</label><input class="inp" id="lpPinIn" inputmode="numeric" placeholder="0000-0000-0000" value="'+gEsc(a.refund.pin)+'">'+
+    '<label class="check"><input type="checkbox" id="lpOwn"><span>본인 명의 앱에 등록합니다. 등록 후에는 재발급되지 않습니다.</span></label>'+
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn" onclick="gCloseModal()">취소</button><button class="btn blue" onclick="lpRegister(\''+gEsc(a.id)+'\')">등록 완료</button></div>');
+}
+function lpRegister(id){
+  const a=gApp(id); if(!a||!a.refund||a.refund.registered){ gCloseModal(); return; }
+  const v=(document.getElementById('lpPinIn')||{}).value||'';
+  if(v.replace(/\D/g,'')!==String(a.refund.pin).replace(/\D/g,'')){ gToast('PIN 번호가 일치하지 않아요','bad'); return; }
+  if(!document.getElementById('lpOwn').checked){ gToast('본인 명의 앱 확인에 체크해 주세요','bad'); return; }
+  a.refund.registered=true; a.refund.registeredAt=gNow().toISOString(); gPutApp(a);
+  const w=lpWallet(); w[a.region]=(Number(w[a.region])||0)+Number(a.refund.amount||0); gUSet('wallet',w);
+  const tx=gUGet('wtx',[])||[]; tx.push({region:a.region,kind:'refund',label:'환급금 PIN 등록',amount:a.refund.amount,at:gNow().toISOString()}); gUSet('wtx',tx);
+  gCloseModal(); gToast(gWon(a.refund.amount)+'이 '+gStd('P7',a.region).val+' 지갑에 등록되었어요','ok'); lpRender();
+}
+
+function lpMine(){
+  const u=gUser();
+  if(!u) return '<div class="card"><b>내 환급금 PIN</b><p class="muted" style="margin:6px 0 12px">로그인하면 환급 완료 건의 PIN 을 확인하고 바로 등록할 수 있어요.</p><a class="btn navy sm" href="'+gLoginUrl()+'">디주 로그인</a></div>';
+  const all=lpRefunds(), here=all.filter(a=>a.region===SLUG), other=all.filter(a=>a.region!==SLUG&&!a.refund.registered);
+  const bal=Number(lpWallet()[SLUG])||0;
+  const row=a=>{ const reg=a.refund.registered;
+    return '<div class="lp-pin"><div class="info"><b>'+gEsc(R.full)+' '+a.round+'회차 · '+gEsc(gTypeName(a.type))+'</b> <span class="small muted">'+gEsc(a.id)+'</span>'+
+      '<div class="small muted">지급일 '+gDot(a.refund.paidAt)+' · PIN <code>'+gEsc(reg?a.refund.pin:lpPinMask(a.refund.pin))+'</code></div></div>'+
+      '<div class="amt">'+gWon(a.refund.amount)+'</div>'+
+      (reg?'<span class="g-st" style="--c:#0f766e">✓ 등록 완료</span>':'<button class="btn blue sm" onclick="lpRegisterAsk(\''+gEsc(a.id)+'\')">PIN 등록</button>')+'</div>'; };
+  return '<div class="lp-wallet"><div><div class="small" style="opacity:.85">'+gEsc(u.name)+' 님의 '+gEsc(APP)+' 지갑 · '+gEsc(R.voucher)+'</div><div class="v">'+gWon(bal)+'</div></div>'+
+      '<a class="btn sm" href="pay.html?r='+SLUG+'">지역화폐 앱(모의) 열기 ›</a></div>'+
+    (here.length?here.map(row).join(''):'<div class="note">'+gEsc(R.full)+'의 환급 완료 건이 없어요. 정산 심사 후 환급이 지급되면 이곳에 PIN 이 표시됩니다.</div>')+
+    (other.length?'<p class="small muted" style="margin:12px 0 0">다른 지역에 등록하지 않은 환급금이 있어요: '+other.map(a=>{ const r=gRegion(a.region); return '<a style="color:var(--blue);font-weight:700" href="localpay.html?r='+a.region+'#mine">'+gEsc(r?r.full:a.region)+' '+gWon(a.refund.amount)+'</a>'; }).join(' · ')+'</p>':'');
+}
+
+function lpRender(){
+  document.getElementById('lpMain').innerHTML=
+    '<p class="small muted" style="margin:0 0 8px"><a href="region.html?r='+SLUG+'">'+gEsc(R.full)+'</a> › 사업안내</p>'+
+    '<div class="lp-ban" style="background:linear-gradient(120deg,var(--blue),'+gEsc(R.color)+')"><h1>지역화폐 사용법</h1><p>'+gEsc(R.full)+gJosa(R.full,'은는')+' <b>'+gEsc(APP)+' 앱 QR</b>로 결제, 환급금도 지역화폐로</p></div>'+
+    '<div class="lp-two"><div><small>결제할 때</small><b>관광소비는 지역화폐로만</b><ul><li>관내 가맹점에서 '+gEsc(APP)+' 앱 QR 결제</li><li>결제내역이 정산 때 자동으로 불러와져요</li><li>카드·현금영수증은 숙박만 인정</li></ul></div>'+
+      '<div><small>환급받을 때</small><b>환급금도 지역화폐로</b><ul><li>정산 승인 후 '+gStdNum('U1')+'일 이내 모바일 '+gEsc(R.voucher)+' 지급</li><li>알림톡으로 받은 PIN 을 앱에 등록</li><li>사용 기한: '+gEsc(gStd('U3').val)+'</li></ul></div></div>'+
+    '<section class="sec card"><div class="sec-h"><h2>환급금(PIN) 등록 5단계</h2></div>'+
+      '<div class="lp-steps">'+[['핀번호 확인','알림톡·마이페이지'],['앱 실행',APP],['쿠폰 메뉴','상품권·쿠폰함'],['핀번호 입력','16자리'],['등록 완료','잔액 확인']].map((s,i)=>'<div><i>'+(i+1)+'</i>'+gEsc(s[0])+'<small>'+gEsc(s[1])+'</small></div>').join('')+'</div></section>'+
+    '<section class="sec"><div class="sec-h"><h2>앱별 등록 방법</h2></div>'+
+      '<div class="lp-apps">'+G_PAY_APPS.map(n=>'<button class="'+(n===APP?'me':'')+'" onclick="lpAppModal(\''+gEsc(n)+'\')">'+gEsc(n)+(n===APP?'<small>'+gEsc(R.name)+' 사용 앱</small>':'')+'</button>').join('')+'</div>'+
+      '<div class="lp-caution">유의 · 본인 명의 앱만 등록 · 재발급 불가</div></section>'+
+    '<section class="sec" id="mine"><div class="sec-h"><div><h2>내 환급금 PIN</h2><p>환급 완료 건을 바로 등록할 수 있어요</p></div></div>'+lpMine()+'</section>';
+}
+lpRender();
+if(location.hash==='#mine') setTimeout(()=>{ const e=document.getElementById('mine'); if(e) e.scrollIntoView(); },50);
+</script>
+</body></html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>공지사항 — 대한민국 반값여행 · 시안 G</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="g.css?v=1">
+<style>
+/* 통합 공지사항·FAQ 전용 (.nt-) — 착수보고 p14 */
+.nt-h{margin:6px 0 4px;font-size:28px;letter-spacing:-.5px}
+.nt-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:20px 0 12px}
+.nt-tabs{display:flex;flex-wrap:wrap;gap:6px}
+.nt-tab{border:0;border-radius:999px;padding:8px 18px;font-weight:800;font-size:14px;cursor:pointer;background:#eef0f3;color:#64748b}
+.nt-tab.on{background:var(--blue);color:#fff}
+.nt-f{display:flex;gap:8px;flex-wrap:wrap;flex:0 1 auto;min-width:0}
+.nt-f select{width:170px} .nt-f .srch{position:relative;width:240px}
+.nt-f .srch input{padding-right:34px}
+.nt-f .srch span{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--mute);pointer-events:none}
+.nt-list{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.nt-row,.nt-head{display:grid;grid-template-columns:70px 90px minmax(0,1fr) 110px 110px;align-items:center;gap:8px;padding:0 14px}
+.nt-head{background:#f8fafc;color:#475569;font-weight:700;font-size:14px;height:46px;border-bottom:1px solid var(--line);text-align:center}
+.nt-head div:nth-child(3){text-align:center}
+.nt-row{min-height:52px;border-bottom:1px solid #f1f5f9;cursor:pointer;font-size:14.5px;text-align:center;width:100%;background:none;border-left:0;border-right:0;border-top:0;font:inherit;color:inherit}
+.nt-row:hover{background:#fcfcfd}
+.nt-row .tt{text-align:left;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nt-row.nt-pinned{background:#f3f7ff} .nt-row.nt-pinned .tt{font-weight:800}
+.nt-row.nt-pinned .no{color:var(--blue);font-weight:800}
+.nt-row .dt,.nt-row .rg{color:var(--sub);font-size:14px}
+.nt-row[aria-expanded="true"] .tt{white-space:normal;color:var(--blue)}
+.nt-bd{display:none;padding:16px 18px 18px 184px;border-bottom:1px solid var(--line);background:#fbfcfe;font-size:14.5px;color:#334155}
+.nt-bd.on{display:block}
+.nt-bd .lk{margin-top:10px;font-size:13px}
+.nt-bd .lk a{color:var(--blue);font-weight:700}
+.nt-bg{display:inline-block;min-width:58px;border-radius:999px;color:#fff;font-weight:800;font-size:12.5px;padding:3px 10px}
+.nt-bg.all{background:var(--blue)} .nt-bg.rg{background:#f97316} .nt-bg.faq{background:#7c3aed}
+.nt-empty{padding:40px;text-align:center;color:var(--mute)}
+.nt-pg{display:flex;justify-content:center;gap:4px;margin-top:18px;flex-wrap:wrap}
+.nt-pg button{min-width:36px;height:36px;border:1px solid var(--line);background:#fff;border-radius:9px;cursor:pointer;font-weight:700;color:#475569}
+.nt-pg button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.nt-pg button:disabled{opacity:.35;cursor:default}
+.nt-meta{font-size:13px;color:var(--sub);margin-top:8px}
+@media (max-width:760px){
+  .nt-f{width:100%} .nt-f select{flex:1 1 140px;width:auto} .nt-f .srch{flex:2 1 180px;width:auto}
+  .nt-head{display:none}
+  .nt-row{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"bg rg" "tt tt" "dt dt";text-align:left;padding:12px 14px;gap:4px 8px;min-height:0}
+  .nt-row .no{display:none}
+  .nt-row .cb{grid-area:bg} .nt-row .rg{grid-area:rg;font-size:13px} .nt-row .tt{grid-area:tt;white-space:normal;font-size:15px}
+  .nt-row .dt{grid-area:dt;font-size:12.5px}
+  .nt-row.nt-pinned .rg::before{content:'📌 공지 · '}
+  .nt-bd{padding:12px 14px 16px}
+}
+</style>
+</head><body>
+<main><div class="wrap">
+  <h1 class="nt-h">공지사항</h1>
+  <p class="muted" style="margin:0">통합 공지, 지역 소식, 자주 묻는 질문을 한 곳에서 찾아보세요. 지역 페이지의 공지와 같은 게시판이에요.</p>
+
+  <div class="nt-bar">
+    <div class="nt-tabs" role="tablist" id="ntTabs"></div>
+    <div class="nt-f">
+      <select class="inp" id="ntRegion" aria-label="지역 선택"></select>
+      <div class="srch"><input class="inp" id="ntQ" type="search" placeholder="제목 검색" aria-label="제목 검색"><span>⌕</span></div>
+    </div>
+  </div>
+
+  <div class="nt-list" id="ntList"></div>
+  <div class="nt-meta" id="ntMeta"></div>
+  <div class="nt-pg" id="ntPg"></div>
+</div></main>
+<script src="../site-assets/data.js?v=20260818a"></script>
+<script src="g.js?v=1"></script>
+<script>
+gShell({mode:'hub',active:'notice'});
+
+const NT_TABS=[['all','전체'],['hub','통합 공지'],['region','지역 소식'],['faq','FAQ']];
+const PER=10;
+const NT={tab:NT_TABS.some(t=>t[0]===gQS('tab'))?gQS('tab'):'all',region:'',q:'',page:1,open:gQS('id')||null};
+const REG=gRegionsAll();
+if(gQS('r')&&REG.some(r=>r.slug===gQS('r'))) NT.region=gQS('r');
+
+document.getElementById('ntRegion').innerHTML='<option value="">전체 지역</option>'+REG.slice().sort((a,b)=>a.full<b.full?-1:1).map(r=>'<option value="'+r.slug+'">'+gEsc(r.full)+'</option>').join('');
+document.getElementById('ntRegion').value=NT.region;
+
+function ntKind(n){ return n.kind==='faq'?'faq':(n.scope==='all'?'all':'rg'); }
+function ntBadge(n){ const k=ntKind(n); return '<span class="nt-bg '+k+'">'+(k==='faq'?'FAQ':k==='all'?'통합':'지역')+'</span>'; }
+function ntRegionName(n){ if(n.scope==='all') return '전국'; const r=gRegion(n.scope); return r?r.full:n.scope; }
+function ntFilter(){
+  const q=NT.q.trim().toLowerCase();
+  return gNotices().filter(n=>{
+    if(NT.tab==='hub'&&!(n.scope==='all'&&n.kind!=='faq')) return false;
+    if(NT.tab==='region'&&!(n.scope!=='all'&&n.kind!=='faq')) return false;
+    if(NT.tab==='faq'&&n.kind!=='faq') return false;
+    if(NT.region&&n.scope!==NT.region) return false;
+    if(q&&String(n.title).toLowerCase().indexOf(q)<0) return false;
+    return true;
+  });
+}
+function ntSync(){
+  const p=new URLSearchParams();
+  if(NT.tab!=='all') p.set('tab',NT.tab);
+  if(NT.region) p.set('r',NT.region);
+  const s=p.toString();
+  try{ history.replaceState(null,'',location.pathname+(s?'?'+s:'')); }catch(e){}
+}
+function ntRender(){
+  document.getElementById('ntTabs').innerHTML=NT_TABS.map(t=>'<button class="nt-tab'+(NT.tab===t[0]?' on':'')+'" role="tab" aria-selected="'+(NT.tab===t[0])+'" data-t="'+t[0]+'">'+t[1]+'</button>').join('');
+  const all=ntFilter();
+  const pins=all.filter(n=>n.pin), rest=all.filter(n=>!n.pin);   /* 중요 공지는 페이지마다 맨 위에 고정 */
+  const pages=Math.max(1,Math.ceil(rest.length/PER));
+  if(NT.page>pages) NT.page=pages;
+  if(NT.open){ const i=rest.findIndex(n=>n.id===NT.open); if(i>=0) NT.page=Math.floor(i/PER)+1; }
+  const slice=rest.slice((NT.page-1)*PER,NT.page*PER);
+  const row=(n,no)=>{
+    const op=NT.open===n.id;
+    return '<button class="nt-row'+(n.pin?' nt-pinned':'')+'" data-id="'+gEsc(n.id)+'" aria-expanded="'+op+'" aria-controls="bd_'+gEsc(n.id)+'">'+
+      '<span class="no">'+no+'</span><span class="cb">'+ntBadge(n)+'</span><span class="tt">'+(n.kind==='faq'?'Q. ':'')+gEsc(n.title)+'</span>'+
+      '<span class="rg">'+gEsc(ntRegionName(n))+'</span><span class="dt">'+gDot(n.date)+'</span></button>'+
+      '<div class="nt-bd'+(op?' on':'')+'" id="bd_'+gEsc(n.id)+'">'+(n.kind==='faq'?'<b style="color:#7c3aed">A. </b>':'')+gEsc(n.body).replace(/\n/g,'<br>')+
+      (n.scope!=='all'?'<div class="lk"><a href="support.html?r='+encodeURIComponent(n.scope)+'&tab='+(n.kind==='faq'?'faq':'notice')+'">'+gEsc(ntRegionName(n))+' 고객지원에서 보기 ›</a></div>':'')+'</div>';
+  };
+  const head='<div class="nt-head"><div>번호</div><div>구분</div><div>제목</div><div>지역</div><div>등록일</div></div>';
+  document.getElementById('ntList').innerHTML=head+(all.length
+    ?pins.map(n=>row(n,'공지')).join('')+slice.map((n,i)=>row(n,rest.length-((NT.page-1)*PER+i))).join('')
+    :'<div class="nt-empty">조건에 맞는 글이 없어요.'+(NT.q?' 검색어를 바꿔 보세요.':'')+'</div>');
+  document.getElementById('ntMeta').textContent='총 '+all.length+'건'+(pins.length?' (상단 고정 공지 '+pins.length+'건 포함)':'');
+  let pg='<button data-p="'+(NT.page-1)+'" '+(NT.page<=1?'disabled':'')+' aria-label="이전 페이지">‹</button>';
+  for(let i=1;i<=pages;i++) pg+='<button data-p="'+i+'" class="'+(i===NT.page?'on':'')+'" aria-label="'+i+'페이지"'+(i===NT.page?' aria-current="page"':'')+'>'+i+'</button>';
+  pg+='<button data-p="'+(NT.page+1)+'" '+(NT.page>=pages?'disabled':'')+' aria-label="다음 페이지">›</button>';
+  document.getElementById('ntPg').innerHTML=pg;
+  ntSync();
+}
+document.getElementById('ntTabs').onclick=e=>{ const b=e.target.closest('[data-t]'); if(!b) return; NT.tab=b.dataset.t; NT.page=1; NT.open=null; ntRender(); };
+document.getElementById('ntRegion').onchange=e=>{ NT.region=e.target.value; NT.page=1; NT.open=null; ntRender(); };
+let ntT; document.getElementById('ntQ').oninput=e=>{ clearTimeout(ntT); ntT=setTimeout(()=>{ NT.q=e.target.value; NT.page=1; NT.open=null; ntRender(); },150); };
+document.getElementById('ntPg').onclick=e=>{ const b=e.target.closest('[data-p]'); if(!b||b.disabled) return; NT.page=Number(b.dataset.p); NT.open=null; ntRender(); window.scrollTo({top:0,behavior:'smooth'}); };
+document.getElementById('ntList').onclick=e=>{
+  const r=e.target.closest('.nt-row'); if(!r) return;
+  const id=r.dataset.id, on=r.getAttribute('aria-expanded')!=='true';
+  document.querySelectorAll('.nt-row[aria-expanded="true"]').forEach(x=>{ x.setAttribute('aria-expanded','false'); const b=document.getElementById('bd_'+x.dataset.id); if(b) b.classList.remove('on'); });
+  if(on){ r.setAttribute('aria-expanded','true'); const b=document.getElementById('bd_'+id); if(b) b.classList.add('on'); NT.open=id; } else NT.open=null;
+};
+ntRender();
+</script>
+</body></html>

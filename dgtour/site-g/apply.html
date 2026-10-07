@@ -1,0 +1,696 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>사전신청 — 대한민국 반값여행 · 시안 G</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="g.css?v=1">
+<style>
+/* 사전신청 전용 (.ap-) */
+.ap-band{background:linear-gradient(120deg,var(--rc) 0%,#0f172a 140%);color:#fff}
+.ap-band .g-in{padding:26px 20px 24px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:flex-end;justify-content:space-between}
+.ap-band h1{margin:0;font-size:26px;letter-spacing:-.5px}
+.ap-band p{margin:4px 0 0;opacity:.88;font-size:14px}
+.ap-band .g-ss{margin-left:6px;vertical-align:middle}
+.ap-wrap{max-width:900px}
+.ap-h{margin:0 0 4px;font-size:21px;letter-spacing:-.3px}
+.ap-sub{margin:0 0 16px;color:var(--sub);font-size:14px}
+.ap-types{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.ap-type{position:relative;text-align:left;border:2px solid var(--line);background:#fff;border-radius:14px;padding:14px;cursor:pointer;font:inherit;color:inherit;transition:.15s}
+.ap-type:hover{border-color:#cbd5e1}
+.ap-type.on{border-color:var(--pri);background:var(--pri-l)}
+.ap-type:disabled{cursor:not-allowed;opacity:.55;background:#f8fafc}
+.ap-type .em{font-size:24px}
+.ap-type b{display:block;font-size:16px;margin-top:4px}
+.ap-type small{display:block;color:var(--sub);font-size:12.5px;line-height:1.4}
+.ap-type .cap{margin-top:8px;font-size:13px;font-weight:800;color:var(--pri)}
+.ap-type .why{margin-top:6px;font-size:12px;color:var(--bad);font-weight:700}
+.ap-live{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.ap-live div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.ap-live span{display:block;font-size:12.5px;color:var(--sub)}
+.ap-live b{font-size:18px}
+.ap-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ap-msg{min-height:20px;font-size:13.5px;font-weight:700;margin-top:8px}
+.ap-msg.bad{color:var(--bad)} .ap-msg.ok{color:var(--ok)}
+.ap-nav{display:flex;gap:10px;justify-content:space-between;margin-top:22px;flex-wrap:wrap}
+.ap-nav .btn.pri{min-width:180px}
+.ap-ro{background:#f8fafc!important;color:#334155}
+.ap-tag{display:inline-block;font-size:11.5px;font-weight:800;color:var(--blue);background:var(--blue-l);border-radius:6px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+.ap-addr{display:flex;align-items:center;gap:10px;margin-top:12px;padding:12px 14px;border-radius:11px;background:#f8fafc;border:1px solid var(--line);font-size:14px}
+.ap-addr.ok{background:#effbf8;border-color:#a7e3d6}
+.ap-spin{width:18px;height:18px;border:3px solid #cbd5e1;border-top-color:var(--blue);border-radius:50%;animation:apSpin .8s linear infinite;flex:none}
+@keyframes apSpin{to{transform:rotate(360deg)}}
+.ap-comp{border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:12px;background:#fff}
+.ap-comp.ok{border-color:#a7e3d6}
+.ap-comp h4{margin:0 0 4px;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ap-meth{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.ap-panel{margin-top:10px;padding:12px;border-radius:11px;background:#f8fafc;font-size:13.5px}
+.ap-done{color:var(--ok);font-weight:800}
+.ap-fam{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:11px;padding:10px 12px;margin-top:8px;cursor:pointer;font:inherit;color:inherit}
+.ap-fam.on{border-color:var(--pri);background:var(--pri-l)}
+.ap-fam.dis{cursor:default;background:#f8fafc;color:var(--mute)}
+.ap-fam .ck{flex:none;width:22px;height:22px;border-radius:6px;border:2px solid #cbd5e1;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:13px}
+.ap-fam.on .ck,.ap-fam.self .ck{background:var(--pri);border-color:var(--pri)}
+.ap-fam .rel{font-size:12px;font-weight:800;color:var(--blue);margin-left:4px}
+.ap-fam small{display:block;font-size:12px;color:var(--sub)}
+.ap-chk .check b{display:block;font-size:14.5px}
+.ap-chk .check span{font-size:13px;color:var(--sub)}
+.ap-terms{border:1px solid var(--line);border-radius:11px;background:#fff;margin:8px 0}
+.ap-terms summary{cursor:pointer;padding:10px 14px;font-size:13px;color:var(--blue);font-weight:700}
+.ap-terms div{padding:0 14px 12px;font-size:13px;color:#475569}
+.ap-terms table{width:100%;border-collapse:collapse;font-size:12.5px}
+.ap-terms td,.ap-terms th{border:1px solid var(--line);padding:6px 8px;text-align:left}
+.ap-sum{border:1px solid var(--line);border-radius:14px;background:#fff;margin-top:12px;overflow:hidden}
+.ap-sum h4{margin:0;padding:12px 16px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ap-sum dl{margin:0;padding:6px 16px 12px;display:grid;grid-template-columns:130px minmax(0,1fr);gap:6px 12px;font-size:14px}
+.ap-sum dt{color:var(--sub)} .ap-sum dd{margin:0;font-weight:600;word-break:keep-all}
+.ap-big{text-align:center;padding:34px 20px}
+.ap-big .ic{font-size:46px}
+.ap-big h2{margin:8px 0 6px;font-size:24px}
+.ap-big p{margin:4px 0;color:var(--sub)}
+.ap-no{display:inline-block;margin:14px 0;font-size:26px;font-weight:900;letter-spacing:1px;color:var(--navy);background:#f1f5f9;border-radius:12px;padding:8px 18px}
+.ap-qno{font-size:60px;font-weight:900;color:var(--pri);line-height:1}
+.ap-login{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:20px 0}
+.ap-login div{background:#f8fafc;border-radius:12px;padding:14px;font-size:13.5px}
+.ap-login b{display:block;font-size:15px;margin-bottom:2px}
+.ap-demo{margin-top:16px;border:1px dashed #cbd5e1;border-radius:11px;padding:10px 14px;font-size:12.5px;color:var(--sub)}
+.ap-demo summary{cursor:pointer;font-weight:700}
+.ap-demo .btn{margin:6px 6px 0 0}
+.ap-fix{border-left:4px solid var(--pri)}
+.ap-files{margin:8px 0 0;padding:0;list-style:none;font-size:13px}
+.ap-files li{display:flex;justify-content:space-between;gap:8px;padding:6px 10px;background:#f8fafc;border-radius:8px;margin-top:4px}
+.ap-files button{border:0;background:none;color:var(--bad);cursor:pointer;font-weight:700}
+@media (max-width:760px){
+  .ap-types{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ap-live,.ap-login{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:600px){
+  .ap-row{grid-template-columns:minmax(0,1fr)}
+  .ap-sum dl{grid-template-columns:96px minmax(0,1fr)}
+  .ap-band h1{font-size:22px}
+  .ap-nav .btn{flex:1}
+}
+</style>
+</head><body>
+<main>
+  <section class="ap-band" id="apBand"></section>
+  <div class="wrap ap-wrap">
+    <ol class="steps" id="apSteps" style="display:none"></ol>
+    <div id="apView"></div>
+  </div>
+</main>
+<script src="../site-assets/data.js?v=20260818a"></script>
+<script src="g.js?v=1"></script>
+<script>
+const AP_SLUG=(gQS('r')&&gRegion(gQS('r')))?gQS('r'):'pyeongchang';
+gShell({mode:'region',slug:AP_SLUG,active:'apply'});
+
+/* ═══ 사전신청 5단계 (착수보고 p18) — 로그인 안내 → ①유형·일정 → ②신청자·동행자 → ③체크리스트·약관 → ④최종 확인 → ⑤완료
+   고도화 유지(시안 D): 정원·대기열·과부하 판단(gCapacity/gQueue), 동시접속 버전 잠금(gLockVer/gLockBump),
+   가족 주민등록등본 세대원 선택(배우자·직계만, 이름 마스킹, 최대 5명) */
+const AP=(function(){
+  const R=gRegion(AP_SLUG), U=gUser();
+  const A1=gStdNum('A1')||2, A2=gStdNum('A2')||30, C5=gStdNum('C5')||7, C1=gStdNum('C1')||10;
+  const B4=gStdNum('B4')||1, B5=gStdNum('B5')||18;
+  const V4=gStd('V4',AP_SLUG).val, FAMILY_MAX=5, TEAM_MAX=6;
+  const STEP_NM=['유형·일정','신청자·동행자','체크리스트·약관','최종 확인','완료'];
+  const CHECKS=[
+    ['지역화폐 결제만 소비로 인정됩니다','여행지에서는 '+gEsc(gStd('P7',AP_SLUG).val)+' 등 지역화폐로 결제해 주세요. 카드·현금영수증은 숙박만 예외로 인정됩니다(날인 숙박확인서 필요).'],
+    ['지정관광지 방문 인증이 필요합니다','여행 중 지정관광지 '+gEsc(V4)+' 방문을 QR 또는 얼굴이 보이는 인증사진으로 인증해야 합니다.'],
+    ['여행 종료 후 '+C1+'일 이내 정산신청해야 합니다','기한이 지나면 환급받을 수 없습니다. 정산 결과는 알림톡으로 안내합니다.'],
+    ['제외 업종 결제는 인정되지 않습니다','주유소·카센터·금은방·학원·유흥업소'+(R.extraExcl?'·'+gEsc(R.extraExcl):'')+', 연매출 30억원 초과 업소 결제는 소비 금액에서 제외됩니다.'],
+    ['반값여행은 1인 연 1회만 신청할 수 있습니다','전국 25개 참여 지역을 합산해 연 1회입니다. 취소·반려된 신청은 횟수에 포함되지 않습니다.'],
+    ['허위·부정 수급 시 환수됩니다','허위 증빙·중복 제출·타인 명의 결제 등 부정 수급이 확인되면 지원금 전액 환수 및 향후 참여가 제한됩니다.']
+  ];
+  const S={type:null,start:'',end:'',n:1,plan:'',comps:[],famOpen:false,fam:[],hh:null,
+           check:CHECKS.map(()=>false),privacy:false,third:false,addrOk:false,addrBusy:false,lockV:0};
+  let RD=null, FIX=null, fixFiles=[], noB4=false, view='', qTimer=null, kakaoT={};
+  const $=id=>document.getElementById(id);
+  const ymd=n=>gYmd(gAdd(gToday(),n));
+  const minD=(a,b)=>a<b?a:b, maxD=(a,b)=>a>b?a:b;
+
+  /* ── 지역 띠 ── */
+  function band(){
+    const st=gRegionState(R), rd=RD||st.round;
+    const badge=RD?'<span class="g-ss open">'+RD.n+'회차 접수중</span>':gStateBadge(st.full?'full':st.state);
+    $('apBand').style.setProperty('--rc',R.color);
+    $('apBand').innerHTML='<div class="g-in"><div><h1>'+gEsc(R.full)+' 사전신청'+badge+'</h1>'+
+      (rd?'<p>신청 기간 '+gMD(rd.applyStart)+' ~ '+gMD(rd.applyEnd)+' · 여행 기간 '+gMD(rd.travelStart)+' ~ '+gMD(rd.travelEnd)+'</p>':'')+'</div>'+
+      '<p>여행 '+A1+'일 전까지 신청 · 디지털 관광주민증 로그인 후 약 3분</p></div>';
+  }
+  function steps(k){
+    const el=$('apSteps');
+    if(!k){ el.style.display='none'; return; }
+    el.style.display='';
+    el.innerHTML=STEP_NM.map((n,i)=>'<li class="'+(i+1<k?'done':(i+1===k?'on':''))+'">'+n+'</li>').join('');
+  }
+  function show(html,k){ steps(k); $('apView').innerHTML=html; window.scrollTo(0,0); }
+
+  /* ── 안내 화면(사전 필터링) ── */
+  function blockView(ic,title,desc,acts){
+    show('<div class="card ap-big"><div class="ic">'+ic+'</div><h2>'+title+'</h2>'+desc+
+      '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px">'+(acts||'')+'</div></div>',0);
+  }
+  function loginView(){
+    show('<div class="card"><h2 class="ap-h">로그인 안내</h2><p class="ap-sub">반값여행 사전신청은 <b>디지털 관광주민증 로그인 한 번</b>으로 진행됩니다.</p>'+
+      '<div class="ap-login"><div><b>🪪 신분증 제출 없음</b>디주에 등록된 이름·생년월일·휴대폰이 자동 입력됩니다.</div>'+
+      '<div><b>🏠 거주지 자동 확인</b>행정정보 공동이용으로 거주지를 확인해 신청 가능 여부를 바로 알려드려요.</div>'+
+      '<div><b>⏱ 약 3분</b>유형·일정 → 신청자·동행자 → 체크리스트 → 최종 확인 순으로 진행됩니다.</div></div>'+
+      '<div class="note">동행자가 있다면 동행자도 디지털 관광주민증 회원이거나 카카오톡 인증이 필요합니다. 가족 신청은 주민등록등본으로 세대원을 확인합니다.</div>'+
+      '<div class="ap-nav" style="justify-content:center"><a class="btn pri lg" href="'+gEsc(gLoginUrl())+'">디지털 관광주민증 로그인</a></div>'+
+      '<p class="small muted tc">아직 회원이 아니신가요? 디지털 관광주민증 앱에서 가입 후 이용해 주세요.</p></div>',0);
+  }
+
+  function boot(){
+    band();
+    if(!U) return loginView();
+    const fx=gQS('fix');
+    if(fx) return bootFix(fx);
+    const t=gUGet('myq',null);
+    if(t&&t.slug===AP_SLUG){
+      if(gApp(t.appId)) { gUSet('myq',null); return doneView(gApp(t.appId),true); }
+      if(gQueue(t.slug,t.n).some(x=>x.id===t.id)){ RD=R.rounds.find(x=>x.n===t.n)||null; band(); return queueView(); }
+      gUSet('myq',null);
+    }
+    const st=gRegionState(R);
+    if(st.state!=='open'){
+      if(st.state==='soon'||st.next){
+        const nx=st.next||st.round, on=gHasAlert(AP_SLUG,nx.n);
+        const head=st.full?['⏳','이번 회차는 예산이 소진되어 조기 마감되었어요']:(st.state==='soon'?['🔔','아직 접수 기간이 아니에요']:['📭','이번 회차 접수가 마감되었어요']);
+        return blockView(head[0],head[1],'<p>다음 '+nx.n+'회차 접수는 <b>'+gDot(nx.applyStart)+'</b>에 시작합니다 (D-'+Math.max(0,gDiff(gToday(),nx.applyStart))+').</p>'+
+          '<p>알림을 신청하면 접수 시작 시 디지털 관광주민증에 등록된 번호로 알림톡을 보내드려요.</p>',
+          '<button class="btn pri" id="apAlertBtn" onclick="AP.alertMe('+nx.n+')"'+(on?' disabled':'')+'>'+(on?'알림 신청 완료':'알림 신청')+'</button><a class="btn" href="region.html?r='+AP_SLUG+'">지역 홈</a><a class="btn" href="index.html#map">다른 지역 찾기</a>'+demoResetBtn());
+      }
+      return blockView(st.full?'⏳':'📭',st.full?'예산 소진으로 조기 마감되었어요':'올해 접수가 모두 마감되었어요','<p>'+gEsc(R.full)+'의 올해 반값여행 회차가 모두 마감되었습니다.</p>',
+        '<a class="btn pri" href="index.html#map">접수 중인 다른 지역 보기</a>'+demoResetBtn());
+    }
+    RD=st.round; band();
+    const ab=gAddrBlock(AP_SLUG,U.sigungu);
+    if(ab) return blockView('🏠',ab==='same'?'관내 거주자는 신청할 수 없어요':'인접 지역 거주자는 신청할 수 없어요',
+      '<p>행정정보 공동이용으로 확인한 거주지: <b>'+gEsc(U.addr)+'</b></p><p>반값여행은 관외 방문객을 위한 사업으로, '+gEsc(R.full)+gJosa(R.full,'과와')+' '+(ab==='same'?'같은 시·군':'인접한 시·군('+gEsc(R.nearby.join('·'))+')')+'에 거주하시면 신청할 수 없습니다.</p>',
+      '<a class="btn pri" href="index.html#map">신청 가능한 지역 찾기</a>');
+    if(!noB4){
+      const y=String(gToday().getFullYear());
+      const mine=gMyApps().filter(a=>!a.demo&&String(a.createdAt).slice(0,4)===y&&G_INACTIVE.indexOf(a.status)<0);   /* 시연 데이터(demo)는 횟수에 넣지 않는다 */
+      if(mine.length>=B4){
+        const a=mine[0], ar=gRegion(a.region);
+        return blockView('📌','올해 반값여행을 이미 신청하셨어요',
+          '<p>반값여행은 1인 <b>연 '+B4+'회</b>만 신청할 수 있습니다(전국 25개 지역 합산).</p>'+
+          '<p>기존 신청: <b>'+gEsc(ar?ar.full:a.region)+' '+a.round+'회차 · '+gTypeName(a.type)+'</b> '+gBadge(a.status)+'</p>'+
+          '<p class="small">취소·반려된 신청은 횟수에 포함되지 않습니다. 기존 신청을 취소하면 다시 신청할 수 있어요.</p>',
+          '<a class="btn pri" href="mypage.html?app='+encodeURIComponent(a.id)+'">기존 신청 보기</a>'+
+          '<button class="btn sm ghost" onclick="AP.skipB4()" title="시연용">데모: 이번 한 번 제한 건너뛰기</button>');
+      }
+    }
+    if(gAge(U.birth)<B5) return blockView('🧑','대표자는 만 '+B5+'세 이상이어야 해요','<p>신청 대표자는 만 '+B5+'세 이상이어야 합니다. 보호자 명의로 신청해 주세요.</p>','<a class="btn" href="region.html?r='+AP_SLUG+'">지역 홈</a>');
+    go(1);
+  }
+  function bootFix(id){
+    const a=gApp(id);
+    if(!a||a.uid!==U.id) return blockView('❓','보완할 신청을 찾을 수 없어요','<p>본인 신청 건만 보완할 수 있습니다.</p>','<a class="btn pri" href="mypage.html">마이페이지</a>');
+    if(a.status!=='fix') return blockView('ℹ️','보완 요청 상태가 아니에요','<p>현재 상태: '+gBadge(a.status)+'</p>','<a class="btn pri" href="mypage.html?app='+encodeURIComponent(a.id)+'">신청 상세 보기</a>');
+    FIX=a;
+    if(a.region!==AP_SLUG){ location.replace('apply.html?r='+encodeURIComponent(a.region)+'&fix='+encodeURIComponent(a.id)); return; }
+    RD=R.rounds.find(x=>x.n===a.round)||gRegionState(R).round; band();
+    S.type=a.type; S.start=a.start; S.end=a.end; S.n=a.people.length; S.plan=a.plan||'';
+    S.comps=a.people.filter(p=>p.rel==='동행').map(p=>({name:p.name,birth:p.birth,phone:'',method:p.verified,verified:p.verified,idMask:true,idFile:null,minorDoc:p.doc?{name:p.doc}:null,state:'done'}));
+    if(a.type==='family'){ S.famOpen=true; const hh=household(); S.fam=a.people.filter(p=>p.rel==='가족').map(p=>{ const m=hh.find(h=>h.name===p.name); return m?m.id:null; }).filter(Boolean); }
+    S.check=CHECKS.map(()=>true); S.privacy=S.third=!!(a.agree&&a.agree.privacy); S.third=!!(a.agree&&a.agree.third);
+    S.addrOk=true;
+    go(4);
+  }
+
+  function go(k){
+    if(qTimer){ clearInterval(qTimer); qTimer=null; }
+    view='s'+k;
+    if(k===1) s1(); else if(k===2) s2(); else if(k===3) s3(); else if(k===4) s4();
+  }
+
+  /* ═══ ① 유형·일정 ═══ */
+  function dateRule(){
+    const minS=maxD(RD.travelStart,ymd(A1)), maxS=minD(RD.travelEnd,ymd(A2));
+    return {minS,maxS,maxE:S.start?minD(gYmd(gAdd(S.start,C5-1)),RD.travelEnd):RD.travelEnd};
+  }
+  function dateErr(){
+    const r=dateRule();
+    if(r.minS>r.maxS) return '이 회차에는 지금 신청할 수 있는 여행 날짜가 남아 있지 않아요.';
+    if(!S.start) return '여행 시작일을 선택해 주세요.';
+    if(S.start<ymd(A1)) return '여행 시작 '+A1+'일 전까지만 신청할 수 있어요. '+gMD(ymd(A1))+' 이후 날짜를 선택해 주세요.';
+    if(S.start<RD.travelStart||S.start>RD.travelEnd) return RD.n+'회차 여행 기간('+gMD(RD.travelStart)+' ~ '+gMD(RD.travelEnd)+') 안에서 선택해 주세요.';
+    if(S.start>ymd(A2)) return '여행 시작일 '+A2+'일 전부터 신청할 수 있어요. '+gMD(ymd(A2))+'까지 출발하는 일정만 선택할 수 있습니다.';
+    if(!S.end) return '여행 종료일을 선택해 주세요.';
+    if(S.end<S.start) return '종료일이 시작일보다 빠릅니다.';
+    if(gDiff(S.start,S.end)+1>C5) return '여행 일정은 최대 '+C5+'일까지입니다. ('+gMD(r.maxE)+'까지 선택 가능)';
+    if(S.end>RD.travelEnd) return '종료일이 회차 여행 기간('+gMD(RD.travelEnd)+'까지)을 넘습니다.';
+    return '';
+  }
+  function nRange(t){ return t==='team'?[2,TEAM_MAX]:t==='family'?[2,FAMILY_MAX]:[1,1]; }
+  function capTxt(t){
+    if(t==='solo'||t==='family') { const g=gGrant(t,[{}]); return '최대 '+gMan(g.cap)+' · 환급 '+g.rate+'%'; }
+    if(t==='youth') return '최대 '+gMan(gStdNum('M4'))+' · 환급 '+gStdNum('M7')+'%';
+    return '최대 '+gMan(gStdNum('M2'))+' · 청년팀 '+gMan(gStdNum('M5'));
+  }
+  function people(){
+    const me={name:U.name,birth:U.birth,rel:'본인',verified:'dju'};
+    if(S.type==='team') return [me].concat(S.comps.map(c=>Object.assign({name:c.name,birth:c.birth,rel:'동행',verified:c.verified||null},
+        c.birth&&gAge(c.birth)<19?{minor:true,doc:c.minorDoc?c.minorDoc.name:''}:{})));
+    if(S.type==='family') return [me].concat(household().filter(h=>S.fam.indexOf(h.id)>=0).map(h=>Object.assign({name:h.name,birth:h.birth,rel:'가족',famRel:h.rel,verified:'id',doc:'주민등록등본(행정정보 공동이용)'},h.age<19?{minor:true}:{})));
+    return [me];
+  }
+  function grantNow(){
+    if(S.type==='team'&&S.comps.some(c=>!c.birth)){ const ps=[{birth:U.birth}]; for(let i=1;i<S.n;i++) ps.push({birth:(S.comps[i-1]||{}).birth||'1900-01-01'}); return gGrant('team',ps); }
+    if(S.type==='team') return gGrant('team',people());
+    const ps=[]; for(let i=0;i<S.n;i++) ps.push({birth:i===0?U.birth:'1900-01-01'});
+    return gGrant(S.type,ps);
+  }
+  function s1(){
+    const r=dateRule();
+    const types=G_TYPES.map(t=>{
+      const dis=t.key==='youth'&&!U.youth;
+      return '<button type="button" class="ap-type'+(S.type===t.key?' on':'')+'" onclick="AP.setType(\''+t.key+'\')"'+(dis?' disabled':'')+'>'+
+        '<span class="em">'+t.em+'</span><b>'+t.nm+'</b><small>'+t.sub+'</small><div class="cap">'+capTxt(t.key)+'</div>'+
+        (dis?'<div class="why">만 19~34세만 신청 가능 (회원님 만 '+gAge(U.birth)+'세)</div>':'')+'</button>';
+    }).join('');
+    const rg=nRange(S.type||'solo');
+    let nSel='';
+    if(S.type==='team'||S.type==='family'){
+      nSel='<label class="f" for="apN">인원 <small class="muted">(본인 포함 '+rg[0]+'~'+rg[1]+'명)</small></label><select class="inp" id="apN" onchange="AP.setN(this.value)">';
+      for(let i=rg[0];i<=rg[1];i++) nSel+='<option value="'+i+'"'+(S.n===i?' selected':'')+'>'+i+'명</option>';
+      nSel+='</select>';
+    }
+    const dl=gDiff(gToday(),RD.applyEnd);
+    show('<div class="card"><h2 class="ap-h">① 여행 유형과 일정을 선택해 주세요</h2>'+
+      '<p class="ap-sub">유형별 지원 금액과 신청 마감이 바로 계산됩니다. 규정 밖 날짜는 선택할 수 없어요.</p>'+
+      '<div class="ap-types">'+types+'</div>'+
+      '<div class="ap-live" id="apLive"></div>'+
+      '<div class="ap-row"><div><label class="f" for="apS">여행 시작일</label><input class="inp" type="date" id="apS" value="'+gEsc(S.start)+'" min="'+r.minS+'" max="'+r.maxS+'" onchange="AP.setDate()"></div>'+
+      '<div><label class="f" for="apE">여행 종료일 <small class="muted">(최대 '+C5+'일)</small></label><input class="inp" type="date" id="apE" value="'+gEsc(S.end)+'" min="'+(S.start||r.minS)+'" max="'+r.maxE+'" onchange="AP.setDate()"></div></div>'+
+      '<div class="ap-msg" id="apDMsg" aria-live="polite"></div>'+
+      '<div class="note small" style="margin-top:6px">📅 '+RD.n+'회차 여행 기간 '+gDot(RD.travelStart)+' ~ '+gDot(RD.travelEnd)+' · 출발 '+A1+'일 전까지 신청 · 출발 '+A2+'일 전부터 신청 가능 · 일정 최대 '+C5+'일 · 이 회차 신청 마감 '+gDot(RD.applyEnd)+' (D-'+dl+')</div>'+
+      '<div class="ap-row"><div>'+nSel+'</div><div></div></div>'+
+      '<label class="f" for="apPlan">간단한 여행 계획 <small class="muted">(선택)</small></label><textarea class="inp" id="apPlan" maxlength="300" placeholder="예) 1일차 대관령 양떼목장 · 2일차 월정사 전나무숲길" oninput="AP.setPlan(this.value)">'+gEsc(S.plan)+'</textarea>'+
+      '<div class="ap-nav"><a class="btn" href="region.html?r='+AP_SLUG+'">취소</a><button class="btn pri" id="apNext1" onclick="AP.next1()">다음 — 신청자·동행자</button></div></div>'+
+      fixHint(),1);
+    live();
+  }
+  function live(){
+    const el=$('apLive'); if(!el) return;
+    const err=S.type?dateErr():'';
+    const m=$('apDMsg');
+    if(m){ m.className='ap-msg '+(S.start&&err?'bad':(S.start&&S.end&&!err?'ok':'')); m.textContent=S.start||S.end?(err||'✓ 신청 가능한 일정입니다 ('+(gDiff(S.start,S.end)+1)+'일)'):''; }
+    if(!S.type){ el.innerHTML='<div style="grid-column:1/-1"><span>유형을 선택하면</span><b style="font-size:15px">지원 한도·환급률·최소 소비액이 실시간으로 표시됩니다</b></div>'; }
+    else{
+      const g=grantNow();
+      const dead=S.start?gMD(gAdd(S.start,-A1))+'까지':'출발 '+A1+'일 전까지';
+      el.innerHTML='<div><span>예상 최대 지원 ('+gEsc(g.label)+')</span><b>'+gWon(g.cap)+'</b></div>'+
+        '<div><span>환급률 · 최소 소비액</span><b>'+g.rate+'% · '+gMan(g.minSpend)+'</b></div>'+
+        '<div><span>이 일정의 신청 마감</span><b>'+dead+'</b></div>';
+    }
+    const b=$('apNext1'); if(b) b.disabled=!S.type||!!err;
+  }
+  function setType(k){
+    if(k==='youth'&&!U.youth) return;
+    S.type=k; const rg=nRange(k); S.n=Math.min(Math.max(S.n,rg[0]),rg[1]); if(k==='team'||k==='family') S.n=Math.max(S.n,2);
+    if(k!=='family'){ S.fam=[]; }
+    syncComps(); s1();
+  }
+  function setN(v){ S.n=Number(v)||1; syncComps(); if(S.type==='family') S.fam=S.fam.slice(0,S.n-1); live(); }
+  function setPlan(v){ S.plan=v; }
+  function setDate(){
+    S.start=$('apS').value; S.end=$('apE').value;
+    const r=dateRule();
+    $('apE').min=S.start||r.minS; $('apE').max=r.maxE;
+    if(S.start&&S.end&&(S.end<S.start)) { S.end=''; $('apE').value=''; }
+    live();
+  }
+  function syncComps(){
+    const need=S.type==='team'?S.n-1:0;
+    while(S.comps.length<need) S.comps.push({name:'',birth:'',phone:'',method:'',verified:null,idMask:false,idFile:null,minorDoc:null,state:''});
+    S.comps=S.comps.slice(0,need);
+  }
+  function next1(){ const e=dateErr(); if(!S.type){ gToast('여행 유형을 선택해 주세요','bad'); return; } if(e){ gToast(e,'bad'); return; } go(2); }
+
+  /* ═══ ② 신청자·동행자 ═══ */
+  function household(){
+    if(S.hh) return S.hh;
+    const h=gHash(U.id+'household'), sur=U.name.charAt(0), age=gAge(U.birth), y=gToday().getFullYear();
+    const given=['서준','지우','하윤','도윤','서연','민준','지호','수아','예은','시우','채원','현우'];
+    const pick=k=>given[(h>>k)%given.length], p2=n=>String(n).padStart(2,'0');
+    const rows=[];
+    if(age>=30) rows.push({rel:'배우자',name:(sur==='김'?'이':sur)+pick(1),by:y-age+((h>>2)%5-2)});
+    if(age>=35){ rows.push({rel:'자녀',name:sur+pick(3),by:y-((h>>3)%14+6)}); if((h>>4)%2===0) rows.push({rel:'자녀',name:sur+pick(5),by:y-((h>>5)%10+3)}); }
+    rows.push({rel:'부',name:sur+pick(6),by:y-age-((h>>6)%8+25)});
+    rows.push({rel:'모',name:(sur==='김'?'박':sur)+pick(7),by:y-age-((h>>7)%8+23)});
+    rows.push({rel:'형제',name:sur+pick(8),by:y-age-((h>>8)%6-3)});
+    const direct=['배우자','자녀','부','모','조부','조모','손자','손녀'];
+    S.hh=rows.map((r,i)=>{
+      const birth=r.by+'-'+p2(1+(h>>(i+1))%12)+'-'+p2(1+(h>>(i+3))%28), ok=direct.indexOf(r.rel)>=0;
+      return {id:'H'+i,rel:r.rel,name:r.name,masked:gMask(r.name),birth,birthYear:r.by,age:gAge(birth),eligible:ok,why:ok?'':'배우자·직계 존비속이 아니어서 함께 신청할 수 없습니다'};
+    });
+    return S.hh;
+  }
+  function compOk(c){ return !!(c.name&&c.birth&&c.verified&&(!(gAge(c.birth)<19)||c.minorDoc)); }
+  function s2ok(){
+    if(!S.addrOk) return false;
+    if(S.type==='team') return S.comps.every(compOk);
+    if(S.type==='family') return S.fam.length===S.n-1;
+    return true;
+  }
+  function s2(){
+    const self='<div class="card"><h2 class="ap-h">② 신청자·동행자 정보를 확인해 주세요</h2>'+
+      '<p class="ap-sub">본인 정보는 디지털 관광주민증에서 자동으로 불러왔습니다. 수정이 필요하면 디주 앱에서 변경해 주세요.</p>'+
+      '<h3 style="margin:6px 0 0;font-size:16px">신청자(대표자) <span class="ap-tag">디지털 관광주민증 연동</span></h3>'+
+      '<div class="grid g3" style="gap:10px"><div><label class="f">이름</label><input class="inp ap-ro" readonly value="'+gEsc(U.name)+'"></div>'+
+      '<div><label class="f">생년월일</label><input class="inp ap-ro" readonly value="'+gEsc(U.birthDot)+' (만 '+gAge(U.birth)+'세)"></div>'+
+      '<div><label class="f">휴대폰</label><input class="inp ap-ro" readonly value="'+gEsc(U.phone)+'"></div></div>'+
+      '<div class="ap-addr'+(S.addrOk?' ok':'')+'" id="apAddr">'+addrHtml()+'</div>';
+    let body='';
+    if(S.type==='team'){
+      body='<h3 style="margin:22px 0 0;font-size:16px">동행자 '+(S.n-1)+'명</h3>'+
+        '<p class="small muted" style="margin:4px 0 0">동행자는 카카오톡 인증, 디지털 관광주민증 회원 조회, 신분증 첨부(주민번호 뒷자리 마스킹) 중 하나로 본인 확인이 필요합니다. 전원 인증해야 다음으로 넘어갈 수 있어요.</p>'+
+        '<div id="apComps">'+S.comps.map(compHtml).join('')+'</div>'+
+        '<div id="apYouth">'+youthHtml()+'</div>';
+    }else if(S.type==='family'){
+      body='<h3 style="margin:22px 0 0;font-size:16px">함께 여행하는 가족 <small class="muted">(본인 포함 '+S.n+'명 · '+(S.n-1)+'명 선택)</small></h3><div id="apFam">'+famHtml()+'</div>';
+    }else if(S.type==='youth'){
+      body='<div class="note ok" style="margin-top:14px">🎒 만 '+gAge(U.birth)+'세 — 청년 기준(만 19~34세)을 충족해 환급률 '+gStdNum('M7')+'%, 최대 '+gMan(gStdNum('M4'))+'가 적용됩니다.</div>';
+    }
+    show(self+body+'<div class="ap-nav"><button class="btn" onclick="AP.go(1)">이전</button><button class="btn pri" id="apNext2" onclick="AP.next2()">다음 — 체크리스트·약관</button></div></div>'+fixHint(),2);
+    upd2();
+    if(!S.addrOk&&!S.addrBusy){
+      S.addrBusy=true;
+      setTimeout(()=>{ S.addrBusy=false; S.addrOk=!gAddrBlock(AP_SLUG,U.sigungu); const a=$('apAddr'); if(a){ a.className='ap-addr'+(S.addrOk?' ok':''); a.innerHTML=addrHtml(); } upd2(); },1000);
+    }
+  }
+  function addrHtml(){
+    if(!S.addrOk) return '<span class="ap-spin"></span><span>행정정보 공동이용으로 거주지를 확인하고 있어요…</span>';
+    return '<span>✅</span><span>행정정보 공동이용으로 확인됨: <b>'+gEsc(U.addr)+'</b> — '+gEsc(R.full)+' 관외 거주자로 신청할 수 있습니다.</span>';
+  }
+  function upd2(){ const b=$('apNext2'); if(b) b.disabled=!s2ok(); }
+  function youthHtml(){
+    if(S.type!=='team') return '';
+    const ps=people(), all=ps.every(p=>p.birth&&gIsYouth(p.birth)), g=gGrant('team',ps);
+    if(all) return '<div class="note ok" style="margin-top:12px">🎒 신청자와 동행자 전원이 만 19~34세입니다 — <b>청년팀</b>으로 자동 전환되어 환급률 '+g.rate+'%, 최대 '+gMan(g.cap)+'가 적용됩니다.</div>';
+    return '<div class="note small" style="margin-top:12px">단체(팀) 기준: 환급률 '+g.rate+'%, 최대 '+gMan(g.cap)+'. 전원이 만 19~34세면 청년팀(최대 '+gMan(gStdNum('M5'))+')으로 자동 전환됩니다.</div>';
+  }
+  function compHtml(c,i){
+    const minor=c.birth&&gAge(c.birth)<19, ok=compOk(c);
+    const M=[['kakao','카카오톡 인증'],['dju','디주 회원 조회'],['id','신분증 첨부']];
+    let panel='';
+    if(c.verified&&c.method!=='id'){
+      panel='<div class="ap-panel"><span class="ap-done">✓ '+(c.verified==='kakao'?'카카오톡 인증 완료':'디지털 관광주민증 회원 확인 완료')+'</span> <button class="btn sm ghost" onclick="AP.compReset('+i+')">다시 인증</button></div>';
+    }else if(c.method==='kakao'){
+      panel='<div class="ap-panel"><label class="f" style="margin-top:0">동행자 휴대폰</label><input class="inp" id="apCP'+i+'" inputmode="numeric" maxlength="13" placeholder="010-0000-0000" value="'+gEsc(c.phone)+'" oninput="AP.compSet('+i+',\'phone\',this.value)">'+
+        (c.state==='pending'?'<p style="display:flex;gap:8px;align-items:center;margin:10px 0 0"><span class="ap-spin"></span>카카오톡으로 인증 요청을 보냈어요. 동행자가 카카오톡에서 [인증하기]를 누르면 완료됩니다.</p>'
+          :'<button class="btn sm blue" style="margin-top:8px" onclick="AP.kakao('+i+')">카카오톡 인증 요청</button>')+'</div>';
+    }else if(c.method==='dju'){
+      panel='<div class="ap-panel">동행자의 디지털 관광주민증 가입 정보(이름)로 회원을 조회합니다. <button class="btn sm blue" onclick="AP.dju('+i+')">회원 조회</button>'+
+        '<div class="small muted" style="margin-top:6px">테스트 회원: '+ACCOUNTS.filter(a=>a.id!==U.id).map(a=>gEsc(a.name)).join(' · ')+'</div><div class="ap-msg bad" id="apCD'+i+'"></div></div>';
+    }else if(c.method==='id'){
+      panel='<div class="ap-panel"><label class="f" style="margin-top:0">신분증 사본 <small class="muted">(jpg·png·pdf · 10MB 이하)</small></label><input class="inp" type="file" accept="image/*,.pdf" onchange="AP.compFile('+i+',this,\'idFile\')">'+
+        (c.idFile?'<div class="small" style="margin-top:4px">📄 '+gEsc(c.idFile.name)+'</div>':'')+
+        '<label class="check" style="margin-top:8px"><input type="checkbox" '+(c.idMask?'checked ':'')+'onchange="AP.compMask('+i+',this.checked)"><span>주민등록번호 <b>뒷자리를 가린</b> 사본임을 확인했습니다 (운영기준 A4)</span></label>'+
+        (c.verified?'<span class="ap-done">✓ 신분증 첨부 완료 — 담당자가 심사 시 확인합니다</span>':'')+'</div>';
+    }
+    return '<div class="ap-comp'+(ok?' ok':'')+'"><h4>동행자 '+(i+1)+(ok?' <span class="ap-done">✓ 인증 완료</span>':'')+(minor?' <span class="g-st" style="--c:#b45309">미성년</span>':'')+'</h4>'+
+      '<div class="ap-row"><div><label class="f">이름</label><input class="inp" value="'+gEsc(c.name)+'" maxlength="20" oninput="AP.compSet('+i+',\'name\',this.value)" onchange="AP.compChanged('+i+')"></div>'+
+      '<div><label class="f">생년월일</label><input class="inp" type="date" value="'+gEsc(c.birth)+'" max="'+gYmd(gToday())+'" onchange="AP.compSet('+i+',\'birth\',this.value);AP.compChanged('+i+')"></div></div>'+
+      '<div class="ap-meth">'+M.map(m=>'<button type="button" class="chip'+(c.method===m[0]?' on':'')+'" onclick="AP.compMethod('+i+',\''+m[0]+'\')">'+m[1]+'</button>').join('')+'</div>'+panel+
+      (minor?'<div class="ap-panel" style="background:#fff7ed"><b>미성년 동행자 — 가족관계 증빙 첨부 필수</b> (운영기준 A6)<br><span class="small">가족관계증명서 또는 주민등록등본을 첨부해 주세요.</span>'+
+        '<input class="inp" style="margin-top:6px" type="file" accept="image/*,.pdf" onchange="AP.compFile('+i+',this,\'minorDoc\')">'+(c.minorDoc?'<div class="small">📄 '+gEsc(c.minorDoc.name)+'</div>':'')+'</div>':'')+
+      '</div>';
+  }
+  function reComps(){ const el=$('apComps'); if(el) el.innerHTML=S.comps.map(compHtml).join(''); const y=$('apYouth'); if(y) y.innerHTML=youthHtml(); upd2(); }
+  function compSet(i,k,v){ S.comps[i][k]=v; }
+  function compChanged(i){ const c=S.comps[i]; if(c.verified==='dju'||c.verified==='kakao'){ c.verified=null; c.state=''; gToast('정보가 바뀌어 다시 인증해 주세요'); } reComps(); }
+  function compMethod(i,m){ const c=S.comps[i]; if(c.verified&&c.method===m) return; c.method=m; c.verified=null; c.state=''; reComps(); }
+  function compReset(i){ const c=S.comps[i]; c.verified=null; c.state=''; reComps(); }
+  function needNB(c){ if(!c.name.trim()||!c.birth){ gToast('동행자 이름과 생년월일을 먼저 입력해 주세요','bad'); return false; } return true; }
+  function kakao(i){
+    const c=S.comps[i]; if(!needNB(c)) return;
+    if(!/^01\d-?\d{3,4}-?\d{4}$/.test(String(c.phone).trim())){ gToast('동행자 휴대폰 번호를 확인해 주세요','bad'); return; }
+    c.state='pending'; reComps();
+    clearTimeout(kakaoT[i]);
+    kakaoT[i]=setTimeout(()=>{ if(S.comps[i]===c&&c.state==='pending'){ c.state='done'; c.verified='kakao'; reComps(); gToast('동행자 '+(i+1)+' 카카오톡 인증이 완료되었어요','ok'); } },3000);
+  }
+  function dju(i){
+    const c=S.comps[i];
+    if(!c.name.trim()){ gToast('동행자 이름을 입력해 주세요','bad'); return; }
+    const a=ACCOUNTS.find(x=>x.name===c.name.trim()&&x.id!==U.id);
+    const m=$('apCD'+i);
+    if(!a){ if(m) m.textContent='디지털 관광주민증 회원을 찾지 못했어요. 카카오톡 인증이나 신분증 첨부를 이용해 주세요.'; return; }
+    if(S.comps.some((x,j)=>j!==i&&x.verified==='dju'&&x.name===a.name)){ if(m) m.textContent='이미 등록된 동행자입니다.'; return; }
+    c.birth=getAccountBirth(a.id).ymd; c.verified='dju'; c.state='done'; reComps();
+    gToast('디주 회원 확인 — 생년월일을 회원 정보로 채웠어요','ok');
+  }
+  function compFile(i,inp,k){
+    const f=inp.files&&inp.files[0]; const c=S.comps[i];
+    if(!f){ c[k]=null; reComps(); return; }
+    if(!/\.(jpe?g|png|pdf)$/i.test(f.name)||f.size>10*1024*1024){ gToast('jpg·png·pdf, 10MB 이하 파일만 첨부할 수 있어요','bad'); inp.value=''; return; }
+    c[k]={name:f.name,size:f.size};
+    if(k==='idFile'&&c.method==='id') c.verified=c.idMask?'id':null;
+    reComps();
+  }
+  function compMask(i,v){ const c=S.comps[i]; c.idMask=v; if(c.method==='id') c.verified=(v&&c.idFile)?'id':null; reComps(); }
+  function famHtml(){
+    if(!S.famOpen) return '<div class="note" style="margin-top:8px">가족 신청은 주민등록등본으로 세대원을 확인합니다(행정정보 공동이용, 모의). 조회된 세대원 중 <b>배우자·직계 존비속</b>만 선택할 수 있어요.</div>'+
+      '<button class="btn blue" style="margin-top:10px" onclick="AP.famLookup()">📄 주민등록등본 조회</button>';
+    const rows=household().map(m=>{
+      if(!m.eligible) return '<div class="ap-fam dis"><span class="ck">–</span><span><b>'+gEsc(m.masked)+'</b><span class="rel">'+gEsc(m.rel)+'</span><small>'+gEsc(m.why)+'</small></span></div>';
+      const on=S.fam.indexOf(m.id)>=0;
+      return '<button type="button" class="ap-fam'+(on?' on':'')+'" onclick="AP.famToggle(\''+m.id+'\')"><span class="ck">'+(on?'✓':'')+'</span><span><b>'+gEsc(m.masked)+'</b><span class="rel">'+gEsc(m.rel)+'</span><small>'+m.birthYear+'년생 · 만 '+m.age+'세'+(m.age<19?' · 미성년(등본으로 관계 확인됨)':'')+'</small></span></button>';
+    }).join('');
+    const need=S.n-1, cnt=S.fam.length;
+    return '<div class="note small" style="margin-top:8px">📄 주민등록등본 조회 결과 — 개인정보 보호를 위해 이름 가운데 글자를 가려 표시합니다. 본인 포함 최대 '+FAMILY_MAX+'명.</div>'+
+      '<div class="ap-fam self dis" style="color:inherit"><span class="ck">✓</span><span><b>'+gEsc(gMask(U.name))+'</b><span class="rel">본인</span><small>신청자 — 항상 포함됩니다</small></span></div>'+rows+
+      '<div class="ap-msg '+(cnt===need?'ok':'bad')+'">'+(cnt===need?'✓ '+cnt+'명 선택 완료':'①단계에서 정한 인원('+S.n+'명)에 맞게 가족 '+need+'명을 선택해 주세요 (현재 '+cnt+'명)')+'</div>';
+  }
+  function famLookup(){ S.famOpen=true; household(); $('apFam').innerHTML=famHtml(); upd2(); gToast('주민등록등본 조회 완료 — 함께 여행할 가족을 선택하세요','ok'); }
+  function famToggle(id){
+    const k=S.fam.indexOf(id);
+    if(k>=0) S.fam.splice(k,1);
+    else{ if(S.fam.length>=S.n-1){ gToast('①단계에서 정한 인원은 본인 포함 '+S.n+'명입니다. 인원을 바꾸려면 이전 단계에서 수정해 주세요','bad'); return; } S.fam.push(id); }
+    $('apFam').innerHTML=famHtml(); upd2();
+  }
+  function next2(){ if(!s2ok()){ gToast('신청자·동행자 확인을 모두 마쳐 주세요','bad'); return; } go(FIX?4:3); }
+
+  /* ═══ ③ 체크리스트·약관 ═══ */
+  function s3(){
+    const ck=CHECKS.map((c,i)=>'<label class="check"><input type="checkbox" '+(S.check[i]?'checked ':'')+'onchange="AP.ck('+i+',this.checked)"><span><b>'+(i+1)+'. '+c[0]+'</b><span>'+c[1]+'</span></span></label>').join('');
+    show('<div class="card ap-chk"><h2 class="ap-h">③ 핵심 유의사항과 약관을 확인해 주세요</h2><p class="ap-sub">정산에서 불인정되기 쉬운 6가지입니다. 하나씩 확인해 주세요.</p>'+
+      '<button class="btn navy sm" onclick="AP.allAgree()">전체 확인·동의</button>'+ck+
+      '<h3 style="margin:22px 0 4px;font-size:16px">약관 동의</h3>'+
+      '<label class="check"><input type="checkbox" id="apPv" '+(S.privacy?'checked ':'')+'onchange="AP.ag(\'privacy\',this.checked)"><span><b>[필수] 개인정보 수집·이용 동의</b></span></label>'+
+      '<details class="ap-terms"><summary>약관 본문 보기</summary><div><table><tr><th>수집 항목</th><td>신청자 이름·생년월일·휴대폰·거주지(행정정보 공동이용), 동행자 이름·생년월일·인증 결과, 첨부 서류</td></tr>'+
+        '<tr><th>이용 목적</th><td>반값여행 신청 자격 확인, 심사·정산·환급, 결과 안내(알림톡)</td></tr><tr><th>보유 기간</th><td>사업 종료 후 3년 (관계 법령에 따라 보존 필요 시 해당 기간)</td></tr></table>'+
+        '<p>동의를 거부할 수 있으나, 거부 시 반값여행 신청이 제한됩니다.</p></div></details>'+
+      '<label class="check"><input type="checkbox" id="apTh" '+(S.third?'checked ':'')+'onchange="AP.ag(\'third\',this.checked)"><span><b>[필수] 개인정보 제3자 제공 동의</b></span></label>'+
+      '<details class="ap-terms"><summary>약관 본문 보기</summary><div><table><tr><th>제공받는 자</th><td>'+gEsc(R.full)+'('+gEsc(R.dept)+'), 지역화폐 운영사('+gEsc(gStd('P7',AP_SLUG).val)+')</td></tr>'+
+        '<tr><th>제공 목적</th><td>신청 심사, 지역화폐 결제내역 조회, 환급금(모바일 '+gEsc(R.voucher)+') 지급</td></tr><tr><th>제공 항목</th><td>이름·생년월일·휴대폰·여행 일정·결제내역</td></tr><tr><th>보유 기간</th><td>제공 목적 달성 후 즉시 파기(정산 종료 후 1년 이내)</td></tr></table></div></details>'+
+      '<div class="ap-nav"><button class="btn" onclick="AP.go(2)">이전</button><button class="btn pri" id="apNext3" onclick="AP.next3()">다음 — 최종 확인</button></div></div>',3);
+    upd3();
+  }
+  function s3ok(){ return S.check.every(Boolean)&&S.privacy&&S.third; }
+  function upd3(){ const b=$('apNext3'); if(b) b.disabled=!s3ok(); }
+  function ck(i,v){ S.check[i]=v; upd3(); }
+  function ag(k,v){ S[k]=v; upd3(); }
+  function allAgree(){ const on=!s3ok(); S.check=S.check.map(()=>on); S.privacy=S.third=on; s3(); }
+  function next3(){ if(!s3ok()){ gToast('유의사항 6가지와 필수 약관에 모두 동의해 주세요','bad'); return; } go(4); }
+
+  /* ═══ ④ 최종 확인 ═══ */
+  function fixHint(){
+    if(!FIX) return '';
+    return '<p class="small muted tc">보완 중인 신청 '+gEsc(FIX.id)+' — 수정을 마치면 [다음]으로 최종 확인 화면에 돌아갑니다.</p>';
+  }
+  function s4(){
+    S.lockV=gLockVer(AP_SLUG);
+    const ps=people(), g=gGrant(S.type,ps);
+    const vm={dju:'디주 회원',kakao:'카카오톡 인증',id:'신분증 첨부'};
+    const comp=ps.slice(1).map(p=>'<div>'+gEsc(S.type==='family'?gMask(p.name):p.name)+' <span class="muted small">('+gEsc(p.famRel||p.rel)+' · '+gEsc(gDot(p.birth))+' · '+(S.type==='family'?'주민등록등본 확인':vm[p.verified]||'-')+(p.minor?' · 미성년'+(p.doc&&S.type==='team'?' · 가족관계 증빙 첨부':''):'')+')</span></div>').join('')||'<span class="muted">없음 (1인 여행)</span>';
+    const sec=(t,k,dl)=>'<div class="ap-sum"><h4>'+t+'<button class="btn sm" onclick="AP.go('+k+')">수정하기</button></h4><dl>'+dl+'</dl></div>';
+    const fx=FIX?('<div class="card ap-fix" style="margin-bottom:14px"><h2 class="ap-h">⚠ 보완이 필요한 신청입니다</h2>'+
+        '<p style="margin:6px 0"><b>사유</b> · '+gEsc(FIX.fix&&FIX.fix.reason||'-')+'</p><p style="margin:6px 0"><b>기한</b> · '+(FIX.fix&&FIX.fix.due?gDot(FIX.fix.due)+'까지 (D-'+Math.max(0,gDiff(gToday(),FIX.fix.due))+')':'-')+'</p>'+
+        '<label class="f">보완 서류 첨부 <small class="muted">(jpg·png·pdf · 10MB 이하 · 최대 5개)</small></label><input class="inp" type="file" accept="image/*,.pdf" onchange="AP.fixFile(this)">'+
+        '<ul class="ap-files" id="apFixFiles">'+fixFilesHtml()+'</ul><p class="small muted">서류 첨부 외에 일정·동행자 등 신청 내용도 아래 [수정하기]로 고칠 수 있습니다.</p></div>'):'';
+    show(fx+'<div class="card"><h2 class="ap-h">④ 신청 내용을 마지막으로 확인해 주세요</h2><p class="ap-sub">제출 후에는 승인 전까지 마이페이지에서 취소할 수 있습니다.</p>'+
+      sec('여행 유형·일정',1,'<dt>지역·회차</dt><dd>'+gEsc(R.full)+' '+RD.n+'회차</dd><dt>유형</dt><dd>'+gEsc(gTypeName(S.type))+(g.label!==gTypeName(S.type)?' → <b>'+gEsc(g.label)+'</b>':'')+' · '+ps.length+'명</dd>'+
+        '<dt>여행 일정</dt><dd>'+gDot(S.start)+' ~ '+gDot(S.end)+' ('+(gDiff(S.start,S.end)+1)+'일)</dd>'+(S.plan?'<dt>여행 계획</dt><dd>'+gEsc(S.plan)+'</dd>':''))+
+      sec('신청자·동행자',2,'<dt>신청자</dt><dd>'+gEsc(U.name)+' · '+gEsc(U.birthDot)+' · '+gEsc(U.phone)+'</dd><dt>거주지</dt><dd>'+gEsc(U.addr)+' <span class="small muted">(행정정보 공동이용 확인)</span></dd><dt>'+(S.type==='family'?'가족':'동행자')+'</dt><dd>'+comp+'</dd>')+
+      sec('체크리스트·약관',3,'<dt>유의사항</dt><dd>핵심 유의사항 6가지 확인 완료</dd><dt>약관</dt><dd>개인정보 수집·이용, 제3자 제공 동의</dd>')+
+      '<div class="ap-live" style="margin-top:16px"><div><span>예상 최대 지원 ('+gEsc(g.label)+')</span><b>'+gWon(g.cap)+'</b></div><div><span>환급률</span><b>'+g.rate+'%</b></div><div><span>최소 소비액 (1인 '+gMan(gStdNum('M8'))+')</span><b>'+gWon(g.minSpend)+'</b></div></div>'+
+      '<p class="small muted">환급액 = 인정 소비액 × 환급률 (지원 한도 이내). 최소 소비액에 못 미치면 환급되지 않습니다.</p>'+
+      '<div class="ap-nav"><button class="btn" onclick="AP.go('+(FIX?2:3)+')">이전</button><button class="btn pri lg" id="apSubmit" onclick="AP.submit()">'+(FIX?'보완 제출':'신청서 제출')+'</button></div>'+
+      (FIX?'':'<details class="ap-demo"><summary>시연 도구 — 정원·대기열</summary><div>현재 '+capTxtNow()+'</div>'+
+        '<button class="btn sm" onclick="AP.demoFull()">정원 꽉 채우기 (대기열 시연)</button><button class="btn sm" onclick="AP.demoOver()">대기열까지 채우기 (과부하 시연)</button><button class="btn sm" onclick="AP.demoReset()">시연 상태 되돌리기</button></details>')+
+      '</div>',4);
+  }
+  function demoResetBtn(){ return gGet('demoQuotaBak_'+AP_SLUG,null)?'<button class="btn sm ghost" onclick="AP.demoReset();location.reload()" title="시연용">데모: 정원 시연 상태 되돌리기</button>':''; }
+  function capTxtNow(){ const c=gCapacity(AP_SLUG,RD); return '정원 '+c.quota+'건 중 '+c.used+'건 접수 · 대기 '+c.queue+'/'+c.queueMax; }
+  function fixFilesHtml(){ return fixFiles.map((f,i)=>'<li><span>📄 '+gEsc(f.name)+' <span class="muted">('+Math.max(1,Math.round(f.size/1024))+'KB)</span></span><button onclick="AP.fixDel('+i+')">삭제</button></li>').join(''); }
+  function fixFile(inp){
+    const f=inp.files&&inp.files[0]; if(!f) return;
+    if(!/\.(jpe?g|png|pdf)$/i.test(f.name)||f.size>10*1024*1024){ gToast('jpg·png·pdf, 10MB 이하 파일만 첨부할 수 있어요','bad'); inp.value=''; return; }
+    if(fixFiles.length>=5){ gToast('최대 5개까지 첨부할 수 있어요','bad'); return; }
+    fixFiles.push({name:f.name,size:f.size}); inp.value=''; $('apFixFiles').innerHTML=fixFilesHtml();
+  }
+  function fixDel(i){ fixFiles.splice(i,1); $('apFixFiles').innerHTML=fixFilesHtml(); }
+
+  /* ── 제출: 정원 판단(즉시 접수 / 대기열 / 과부하) + 동시접속 버전 잠금 ── */
+  function draft(){
+    const ps=people();
+    const docs=[];
+    S.comps.forEach(c=>{ if(c.idFile) docs.push({name:c.idFile.name,size:c.idFile.size}); if(c.minorDoc&&c.minorDoc.size!=null) docs.push({name:c.minorDoc.name,size:c.minorDoc.size}); });
+    return {uid:U.id,userName:U.name,region:AP_SLUG,round:RD.n,type:S.type,people:ps,start:S.start,end:S.end,plan:S.plan.trim(),docs,
+      agree:{check:true,privacy:S.privacy,third:S.third},grant:gGrant(S.type,ps)};
+  }
+  function mkApp(d,id,memo){
+    const at=gNow().toISOString();
+    return gPutApp(Object.assign({id:id||gNewAppId()},d,{status:'received',createdAt:at,history:[{at,st:'received',by:'user',memo:memo||'사전신청 접수'}]}));
+  }
+  function submit(){
+    if(FIX) return submitFix();
+    if(dateErr()){ gToast(dateErr(),'bad'); return go(1); }
+    if(!s2ok()) return go(2);
+    if(!s3ok()) return go(3);
+    const rs=gRoundState(AP_SLUG,RD);
+    if(rs==='closed'){ return blockView('📭','신청 기간이 끝났어요','<p>'+RD.n+'회차 접수가 마감되었습니다.</p>','<a class="btn pri" href="region.html?r='+AP_SLUG+'">지역 홈</a>'); }
+    const btn=$('apSubmit'); if(btn) btn.disabled=true;
+    let cap=gCapacity(AP_SLUG,RD);
+    if(gLockVer(AP_SLUG)!==S.lockV){           /* 확인 화면을 연 뒤 다른 접속에서 접수가 있었다 → 최신 정원으로 1회 재판단 */
+      S.lockV=gLockVer(AP_SLUG); cap=gCapacity(AP_SLUG,RD);
+      gToast('다른 신청자의 접수가 반영되어 남은 정원을 다시 확인했어요');
+    }
+    if(cap.mode==='ok'){
+      gLockBump(AP_SLUG);
+      const a=mkApp(draft());
+      doneView(a);
+    }else if(cap.mode==='queue'){
+      const q=gQueue(AP_SLUG,RD.n), id='Q'+gSeq(), appId=gNewAppId();
+      q.push({id,uid:U.id,at:gNow().toISOString(),appId,draft:draft()});
+      gQueueSave(AP_SLUG,RD.n,q);
+      gUSet('myq',{slug:AP_SLUG,n:RD.n,id,appId});
+      queueView();
+    }else overView(cap);
+  }
+  function submitFix(){
+    if(!s2ok()) return go(2);
+    const d=draft(), a=FIX;
+    const changed=d.type!==a.type||d.start!==a.start||d.end!==a.end||JSON.stringify(d.people.map(p=>[p.name,p.birth,p.verified]))!==JSON.stringify(a.people.map(p=>[p.name,p.birth,p.verified]))||d.plan!==(a.plan||'');
+    if(!fixFiles.length&&!changed){ gToast('보완 서류를 첨부하거나 신청 내용을 수정해 주세요','bad'); return; }
+    if(dateErr()&&(d.start!==a.start||d.end!==a.end)){ gToast(dateErr(),'bad'); return go(1); }
+    const patch={type:d.type,people:d.people,start:d.start,end:d.end,plan:d.plan,grant:d.grant,
+      docs:(a.docs||[]).concat(d.docs.filter(x=>!(a.docs||[]).some(y=>y.name===x.name))).concat(fixFiles),
+      fix:Object.assign({},a.fix||{},{files:fixFiles.slice(),submittedAt:gNow().toISOString()})};
+    const r=gSetStatus(a.id,'review',{memo:'보완 제출'+(fixFiles.length?' (서류 '+fixFiles.length+'건)':'')+(changed?' · 신청 내용 수정':''),by:'user',patch});
+    gToast('보완 서류가 제출되었습니다','ok');
+    doneView(r,false,true);
+  }
+  function queueTick(){
+    const t=gUGet('myq',null); if(!t) return;
+    /* 자리가 나면 대기열 맨 앞부터 실제 신청(received)으로 전환 — 누가 화면을 보고 있든 같은 규칙 */
+    const rd=gRegion(t.slug).rounds.find(x=>x.n===t.n); if(!rd) return;
+    const q=gQueue(t.slug,t.n); let moved=false;
+    while(q.length&&gRoundUsed(t.slug,t.n)<rd.quota){
+      const h=q.shift(); moved=true;
+      if(h.demo||!h.draft) continue;            /* 시연용 대기자는 접수 없이 빠진다 */
+      gLockBump(t.slug);
+      if(!gApp(h.appId)) mkApp(h.draft,h.appId,'대기열 통과 후 접수');
+    }
+    if(moved) gQueueSave(t.slug,t.n,q);
+    const done=gApp(t.appId);
+    if(done){ gUSet('myq',null); if(qTimer){ clearInterval(qTimer); qTimer=null; } gToast('대기열을 통과해 접수되었어요','ok'); return doneView(done,true); }
+    const pos=q.findIndex(x=>x.id===t.id)+1;
+    if(pos<=0){ gUSet('myq',null); return boot(); }
+    const el=$('apQ'); if(!el) return;
+    const cap=gCapacity(t.slug,rd);
+    el.innerHTML='<div class="ap-qno">'+pos+'</div><p>내 앞 대기 <b>'+(pos-1)+'명</b> · 정원 '+cap.quota+'건 중 '+cap.used+'건 접수</p><p class="small muted">마지막 확인 '+gDT(gNow().toISOString()).slice(11)+' · 3초마다 자동 갱신</p>';
+  }
+  function queueView(){
+    view='queue';
+    show('<div class="card ap-big"><div class="ic">🕐</div><h2>신청자가 많아 대기 중이에요</h2>'+
+      '<p>정원이 찼지만 취소·반려로 자리가 나면 <b>대기 순서대로 자동 접수</b>됩니다. 이 화면을 닫아도 순번은 유지돼요.</p>'+
+      '<div id="apQ" style="margin:18px 0"></div>'+
+      '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn" onclick="AP.qCancel()">대기 취소</button>'+
+      '<button class="btn sm ghost" onclick="AP.demoSeat()" title="시연용">데모: 자리 1개 만들기</button></div></div>',4);
+    queueTick();
+    if(qTimer) clearInterval(qTimer);
+    qTimer=setInterval(queueTick,3000);
+  }
+  function qCancel(){
+    const t=gUGet('myq',null); if(!t) return;
+    if(!confirm('대기를 취소할까요? 다시 신청하면 맨 뒤 순번이 됩니다.')) return;
+    gQueueSave(t.slug,t.n,gQueue(t.slug,t.n).filter(x=>x.id!==t.id));
+    gUSet('myq',null); if(qTimer){ clearInterval(qTimer); qTimer=null; }
+    gToast('대기를 취소했어요');
+    if(S.type) go(4); else boot();
+  }
+  function overView(cap){
+    view='over';
+    show('<div class="card ap-big"><div class="ic">🚦</div><h2>접속자가 많아 잠시 후 다시 시도해 주세요</h2>'+
+      '<p>현재 '+gEsc(R.full)+' '+RD.n+'회차는 정원 '+cap.quota+'건이 모두 찼고 대기열('+cap.queue+'/'+cap.queueMax+'명)도 가득 찼습니다.</p>'+
+      '<p class="small muted">입력하신 내용은 이 화면을 닫기 전까지 유지됩니다.</p>'+
+      '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px"><button class="btn pri" onclick="AP.submit()">다시 시도</button><button class="btn" onclick="AP.go(4)">최종 확인으로</button>'+
+      '<button class="btn sm ghost" onclick="AP.demoReset();AP.go(4)">데모: 시연 상태 되돌리기</button></div></div>',4);
+  }
+  /* 시연 도구 — 회차 정원을 관리자 '회차 일정' 저장값으로 덮어써 대기열·과부하를 재현 */
+  function setQuota(q){
+    const cfg=(gGet('regionCfg',{})||{})[AP_SLUG]||{};
+    if(gGet('demoQuotaBak_'+AP_SLUG,null)==null) gSet('demoQuotaBak_'+AP_SLUG,{rounds:cfg.rounds||null});
+    const rounds=R.rounds.map(x=>x.n===RD.n?Object.assign({},x,{quota:q}):x);
+    gSetRegionCfg(AP_SLUG,{rounds}); R.rounds=rounds; RD=rounds.find(x=>x.n===RD.n);
+  }
+  /* 접수 0건이면 정원 0 → 대기열 한도도 0 이라 바로 과부하가 된다. 시연용 접수 1건(demo 표시)을 채워 정원 1로 만든다 */
+  function fillToQuota(){
+    if(!gRoundUsed(AP_SLUG,RD.n)){
+      const me={name:'시연용',birth:'1990-01-01',rel:'본인',verified:'dju'};
+      mkApp({uid:'demo_fill',userName:'시연용',region:AP_SLUG,round:RD.n,type:'solo',people:[me],start:RD.travelEnd,end:RD.travelEnd,plan:'',docs:[],
+        agree:{check:true,privacy:true,third:true},grant:gGrant('solo',[me]),demo:true},null,'시연용 정원 채움');
+    }
+    setQuota(gRoundUsed(AP_SLUG,RD.n));
+  }
+  function demoFull(){ fillToQuota(); gToast('정원을 현재 접수 건수로 맞췄어요 — 제출하면 대기열로 들어갑니다'); s4(); }
+  function demoOver(){
+    fillToQuota();
+    const q=gQueue(AP_SLUG,RD.n), max=Math.ceil(RD.quota*0.3);
+    while(q.length<max) q.push({id:'Q'+gSeq(),uid:'demo_q',at:gNow().toISOString(),appId:'DEMOQ-'+gSeq(),demo:true,draft:null});
+    gQueueSave(AP_SLUG,RD.n,q); gToast('대기열을 가득 채웠어요 — 제출하면 과부하 안내가 나옵니다'); s4();
+  }
+  function demoReset(){
+    const bak=gGet('demoQuotaBak_'+AP_SLUG,null);
+    if(bak){ gSetRegionCfg(AP_SLUG,{rounds:bak.rounds}); try{ localStorage.removeItem(G_P+'demoQuotaBak_'+AP_SLUG); }catch(e){} }
+    const fresh=gRegion(AP_SLUG); R.rounds=fresh.rounds; if(RD) RD=fresh.rounds.find(x=>x.n===RD.n)||RD;
+    fresh.rounds.forEach(rd=>gQueueSave(AP_SLUG,rd.n,gQueue(AP_SLUG,rd.n).filter(x=>!x.demo)));
+    gSaveApps(gApps().filter(a=>!(a.demo&&a.uid==='demo_fill'&&a.region===AP_SLUG)));
+    gToast('시연 상태를 되돌렸어요'); if(RD) band();
+    if(view==='s4') s4();
+  }
+  function demoSeat(){
+    const t=gUGet('myq',null); if(!t) return;
+    const q=gQueue(t.slug,t.n);
+    /* 내 앞의 시연용 대기자는 비우고, 정원을 1 늘려 자리를 만든다 */
+    const mine=q.findIndex(x=>x.id===t.id);
+    gQueueSave(t.slug,t.n,q.filter((x,i)=>!(x.demo&&i<mine)));
+    const rd=R.rounds.find(x=>x.n===t.n); RD=rd; setQuota(Math.max(rd.quota,gRoundUsed(t.slug,t.n))+1);
+    gToast('취소 1건이 생겨 자리가 났어요 — 곧 자동 접수됩니다'); queueTick();
+  }
+
+  /* ═══ ⑤ 완료 ═══ */
+  function doneView(a,fromQueue,isFix){
+    view='s5';
+    const g=a.grant||gGrant(a.type,a.people);
+    show('<div class="card ap-big"><div class="ic">'+(isFix?'📨':'🎉')+'</div><h2>'+(isFix?'보완 서류가 제출되었어요':'사전신청이 완료되었어요')+'</h2>'+
+      (fromQueue?'<p>대기열을 통과해 자동 접수되었습니다.</p>':'')+
+      '<div class="ap-no">신청번호 '+gEsc(a.id)+'</div>'+
+      '<p><b>'+gEsc(R.full)+' '+a.round+'회차</b> · '+gEsc(g.label)+' '+a.people.length+'명 · '+gDot(a.start)+' ~ '+gDot(a.end)+'</p>'+
+      '<p>예상 최대 지원 <b>'+gWon(g.cap)+'</b> (환급률 '+g.rate+'%)</p>'+
+      '<div class="note" style="text-align:left;max-width:520px;margin:18px auto 0">💬 '+(isFix?'담당자가 보완 서류를 다시 심사합니다. ':'')+'심사 결과는 <b>알림톡</b>으로 알려드려요. 승인 후 여행 중에는 지역화폐로 결제하고 지정관광지 '+gEsc(V4)+'를 인증해 주세요.</div>'+
+      '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:20px"><a class="btn pri lg" href="mypage.html?app='+encodeURIComponent(a.id)+'">마이페이지에서 확인</a><a class="btn lg" href="region.html?r='+AP_SLUG+'">지역 홈</a>'+demoResetBtn()+'</div></div>',5);
+  }
+
+  function alertMe(n){ if(gAddAlert(AP_SLUG,n)){ gToast('알림 신청이 완료되었어요. 접수가 시작되면 알림톡으로 알려드려요','ok'); } const b=$('apAlertBtn'); if(b){ b.disabled=true; b.textContent='알림 신청 완료'; } }
+
+  return {boot,go,setType,setN,setPlan,setDate,next1,next2,next3,compSet,compChanged,compMethod,compReset,kakao,dju,compFile,compMask,
+    famLookup,famToggle,ck,ag,allAgree,submit,qCancel,demoFull,demoOver,demoReset,demoSeat,fixFile,fixDel,alertMe,
+    skipB4(){ noB4=true; boot(); }, _S:S, view:()=>view};
+})();
+AP.boot();
+</script>
+</body></html>

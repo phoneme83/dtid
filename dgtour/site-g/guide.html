@@ -1,0 +1,221 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>사업안내 — 대한민국 반값여행 · 시안 G</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="g.css?v=1">
+<style>
+/* 통합 사업안내 전용 (.gd-) — 착수보고 p13 */
+.gd-top{background:#fff;border-bottom:1px solid var(--line)}
+.gd-top .g-in{padding:34px 20px 26px}
+.gd-top small{color:var(--pri);font-weight:800;font-size:13px}
+.gd-top h1{margin:6px 0 6px;font-size:30px;letter-spacing:-.6px}
+.gd-top p{margin:0;color:var(--sub)}
+.gd-why{background:var(--blue-l);border:1px solid #dbe5fb;border-radius:18px;padding:22px}
+.gd-why h2{margin:0 0 4px;font-size:21px}
+.gd-why>p{margin:0 0 14px;color:var(--blue);font-weight:800}
+.gd-wc{background:#fff;border-radius:14px;padding:18px;text-align:center}
+.gd-wc em{display:block;font-style:normal;color:var(--blue);font-weight:900;font-size:13px}
+.gd-wc b{display:block;font-size:17px;margin:4px 0 6px}
+.gd-wc span{font-size:13.5px;color:var(--sub)}
+.gd-type{text-align:center;border:1px solid var(--line);border-radius:14px;padding:18px 14px;background:#fff;display:flex;flex-direction:column}
+.gd-type .em{font-size:28px}
+.gd-type h3{margin:4px 0 2px;font-size:17px}
+.gd-type .amt{color:var(--blue);font-weight:900;font-size:21px;margin:2px 0 10px}
+.gd-type dl{margin:0;text-align:left;font-size:13.5px;display:grid;grid-template-columns:40px minmax(0,1fr);gap:5px 8px;border-top:1px dashed var(--line);padding-top:10px;flex:1}
+.gd-type dt{color:var(--mute);font-weight:700} .gd-type dd{margin:0}
+.gd-type .ex{background:#f8fafc;border-radius:8px;padding:6px 8px;font-size:12.5px}
+.gd-common{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.gd-common span{background:#f1f5f9;border-radius:999px;padding:5px 12px;font-size:13px;color:#334155}
+.gd-common b{color:var(--ink)}
+.gd-steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;position:relative}
+.gd-step{text-align:center;position:relative;padding:0 6px}
+.gd-step::before{content:'';position:absolute;top:21px;left:-50%;width:100%;height:2px;background:#dbe5fb;z-index:0}
+.gd-step:first-child::before{display:none}
+.gd-step .n{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;width:44px;height:44px;margin:0 auto 8px;border-radius:50%;background:var(--blue);color:#fff;font-weight:900;font-size:18px}
+.gd-step b{display:block;font-size:15.5px}
+.gd-step .dl{display:inline-block;margin-top:5px;background:var(--pri-l);color:var(--pri);font-weight:800;font-size:12.5px;border-radius:999px;padding:2px 10px}
+.gd-step p{margin:6px 0 0;font-size:12.5px;color:var(--sub)}
+.gd-tabs{display:flex;gap:6px}
+.gd-tab{border:0;border-radius:999px;padding:6px 16px;font-weight:800;font-size:13.5px;cursor:pointer;background:#eef0f3;color:#64748b}
+.gd-tab.on{background:var(--blue);color:#fff}
+.gd-docs{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.gd-docs li{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-size:14px}
+.gd-docs li .k{flex:none;font-size:11.5px;font-weight:800;border-radius:6px;padding:2px 7px;margin-top:2px}
+.k.auto{background:#effbf8;color:var(--ok)} .k.need{background:var(--pri-l);color:var(--pri)} .k.alt{background:#fef3c7;color:#92400e}
+.gd-docs small{display:block;color:var(--sub);font-size:12.5px}
+.gd-grp{font-size:12.5px;font-weight:800;color:var(--mute);margin:14px 0 -4px}
+.gd-cat{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.gd-cbox{border-radius:12px;padding:12px 14px;font-size:13.5px}
+.gd-cbox.ok{background:#effbf8;border:1px solid #b7e4da} .gd-cbox.no{background:#fff4f2;border:1px solid #fbd0c8}
+.gd-cbox h4{margin:0 0 8px;font-size:14.5px}
+.gd-cbox.ok h4{color:var(--ok)} .gd-cbox.no h4{color:var(--bad)}
+.gd-cbox ul{margin:0;padding-left:16px} .gd-cbox li{margin:3px 0}
+.gd-tagl{display:flex;flex-wrap:wrap;gap:4px;margin:2px 0 6px}
+.gd-tagl span{background:#fff;border-radius:6px;padding:1px 7px;font-size:12.5px;font-weight:700;border:1px solid rgba(0,0,0,.06)}
+.gd-rej{margin-top:14px}
+.gd-rej h4{margin:0 0 8px;font-size:14.5px}
+.gd-rj{display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 8px;border-bottom:1px dashed var(--line);padding:8px 0;font-size:13.5px}
+.gd-rj:last-child{border-bottom:0}
+.gd-rj i{font-style:normal;color:var(--pri);font-weight:900}
+.gd-rj small{grid-column:2;color:var(--ok);font-weight:600}
+.gd-lock{font-size:11px;color:#64748b;background:#eef0f3;border-radius:5px;padding:1px 6px;margin-left:4px;font-weight:700;white-space:nowrap}
+.gd-notes{margin:0;padding-left:18px;font-size:14px;color:#334155} .gd-notes li{margin:4px 0}
+.gd-band{background:var(--navy);color:#fff;border-radius:16px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.gd-band p{margin:0;font-weight:600}
+.gd-pair .card+.card{margin-top:0}
+@media (max-width:960px){
+  .gd-steps{grid-template-columns:minmax(0,1fr);gap:10px}
+  .gd-step{display:grid;grid-template-columns:44px minmax(0,1fr);gap:2px 12px;text-align:left;align-items:center}
+  .gd-step::before{display:none}
+  .gd-step .n{grid-row:span 3;margin:0}
+  .gd-step .dl{justify-self:start;margin-top:2px}
+  .gd-step p{margin:0}
+}
+@media (max-width:600px){
+  .gd-top h1{font-size:24px}
+  .gd-cat{grid-template-columns:minmax(0,1fr)}
+  .gd-band .btn{width:100%}
+}
+</style>
+</head><body>
+<main>
+  <section class="gd-top"><div class="g-in">
+    <small>사업안내</small>
+    <h1>25개 지역 공통 기준 안내</h1>
+    <p>대상, 지원금, 절차를 한 페이지에 담았어요. 지역별 차이는 각 지역 페이지에서 확인하세요.</p>
+  </div></section>
+
+  <div class="wrap">
+    <section class="gd-why">
+      <h2>Why 반값여행</h2>
+      <p>지역도 살고 여행자도 웃는 상생 여행</p>
+      <div class="grid g3">
+        <div class="gd-wc"><em>01</em><b>인구감소지역 관광 활성화</b><span>잘 알려지지 않은 전국 25개 인구감소지역으로 여행을 이끕니다.</span></div>
+        <div class="gd-wc"><em>02</em><b id="gdWhy2"></b><span>여행 경비의 절반을 지역사랑상품권으로 돌려드려요.</span></div>
+        <div class="gd-wc"><em>03</em><b>지원금이 지역 상권으로 순환</b><span>환급금은 지역화폐로 지급되어 다시 그 지역에서 쓰입니다.</span></div>
+      </div>
+    </section>
+
+    <section class="sec card">
+      <div class="sec-h"><div><h2>유형별 지원</h2><p>나에게 맞는 유형을 확인하세요. 환급액 = 인정 소비액 × 환급률 (유형별 한도 이내)</p></div></div>
+      <div class="grid g4" id="gdTypes"></div>
+      <div class="gd-common" id="gdCommon"></div>
+    </section>
+
+    <section class="sec card">
+      <div class="sec-h"><div><h2>참여 절차</h2><p>전 지역 동일한 5단계예요. 단계마다 기한을 꼭 확인하세요.</p></div></div>
+      <div class="gd-steps" id="gdSteps"></div>
+    </section>
+
+    <section class="sec grid g2 gd-pair">
+      <div class="card">
+        <div class="sec-h" style="margin-bottom:4px"><h2 style="font-size:19px">필요 서류</h2>
+          <div class="gd-tabs" role="tablist"><button class="gd-tab on" data-t="apply" role="tab" aria-selected="true">신청 시</button><button class="gd-tab" data-t="settle" role="tab" aria-selected="false">정산 시</button></div></div>
+        <div id="gdDocs"></div>
+      </div>
+      <div class="card">
+        <div class="sec-h" style="margin-bottom:10px"><div><h2 style="font-size:19px">인정 · 불인정 기준</h2><p>전국 공통 항목이에요. 지역별 추가 제외 업종은 지역 페이지에서 확인하세요.</p></div></div>
+        <div id="gdScope"></div>
+      </div>
+    </section>
+
+    <section class="sec card">
+      <div class="sec-h"><h2 style="font-size:19px">유의사항</h2></div>
+      <ul class="gd-notes" id="gdNotes"></ul>
+    </section>
+
+    <div class="gd-band">
+      <p>유의사항 · 결제수단 등 지역별 차이는 지역 페이지에서 확인하세요</p>
+      <a class="btn pri" href="index.html#map">지역 선택하러 가기 →</a>
+    </div>
+  </div>
+</main>
+<script src="../site-assets/data.js?v=20260818a"></script>
+<script src="g.js?v=1"></script>
+<script>
+gShell({mode:'hub',active:'guide'});
+
+const S=id=>gStd(id), V=id=>gEsc(gStd(id).val), N=id=>gStdNum(id);
+const lock='<span class="gd-lock" title="전국 공통(통합) 기준">🔒 공통</span>';
+const rate=N('M6'), yrate=N('M7'), yr=N('M9')||[19,34], minS=N('M8');
+const v4=String(S('V4').val||'').replace(/[^0-9]/g,'')||'2';
+
+document.getElementById('gdWhy2').textContent='최대 '+rate+'% · 청년 '+yrate+'% 환급';
+
+/* 유형별 지원 — 금액은 운영기준 M1~M5 (관리자 변경 즉시 반영) */
+/* 예시 소비액: 한도를 다 받는 금액(만원 올림)과 최소 소비액(1인 기준 × 인원) 중 큰 값 */
+function ex(_s,r,cap,n){ const spend=Math.max(minS*n,Math.ceil(cap*100/r/10000)*10000); const g=Math.min(Math.floor(spend*r/100),cap); return (n>1?n+'명이 ':'')+gMan(spend)+' 쓰면 → <b>'+gWon(g)+'</b> 환급'; }
+const T=[
+  {em:'🧳',nm:'개인',cap:N('M1'),who:'관외 거주 만 '+N('B5')+'세 이상 1인',auth:'디지털 관광주민증 로그인',ex:ex(minS*2,rate,N('M1'),1)},
+  {em:'🎒',nm:'청년',cap:N('M4'),who:'만 '+yr[0]+'~'+yr[1]+'세 1인 (환급률 '+yrate+'%)',auth:'디주 로그인 · 생년월일로 자동 확인',ex:ex(minS*2,yrate,N('M4'),1)},
+  {em:'👥',nm:'팀 2인+',cap:N('M2'),who:'2인 이상 · 전원 청년이면 청년팀 최대 '+gMan(N('M5')),auth:'대표자 디주 + 동행자 카카오톡 인증',ex:ex(minS*2*2,rate,N('M2'),2)},
+  {em:'👨‍👩‍👧',nm:'가족',cap:N('M3'),who:'가족관계 2인 이상',auth:'디주 로그인 + '+gStd('A5').val,ex:ex(minS*4*2.5,rate,N('M3'),4)}
+];
+document.getElementById('gdTypes').innerHTML=T.map(t=>'<div class="gd-type"><div class="em">'+t.em+'</div><h3>'+t.nm+'</h3><div class="amt">최대 '+gEsc(gMan(t.cap))+'</div>'+
+  '<dl><dt>대상</dt><dd>'+gEsc(t.who)+'</dd><dt>인증</dt><dd>'+gEsc(t.auth)+'</dd><dt>예시</dt><dd class="ex">'+t.ex+'</dd></dl></div>').join('');
+document.getElementById('gdCommon').innerHTML=
+  '<span>최소 소비액 <b>'+V('M8')+'</b></span><span>환급률 <b>'+rate+'%</b> (청년 '+yrate+'%)</span><span>신청 횟수 <b>'+V('B4')+'</b></span>'+
+  '<span>대상 <b>'+V('B1')+'</b></span><span>제외 <b>'+V('B2')+'</b></span><span>외국인 <b>'+V('B3')+'</b></span>';
+
+/* 참여 절차 5단계 — 기한은 A1·C1·U1·V4 */
+const ST=[
+  ['사전신청','여행 '+N('A1')+'일 전까지','디주 로그인 후 약 3분 · 여행 '+N('A2')+'일 전부터 신청 가능'],
+  ['심사·승인','알림톡 안내','심사 결과·보완 요청은 '+S('A7').val],
+  ['여행','관광지 '+v4+'곳 인증','지역화폐로 결제하고 지정관광지에서 인증사진('+S('V1').val+')'],
+  ['정산신청','여행 후 '+N('C1')+'일 이내','지역화폐 결제내역 자동 불러오기 · '+S('C2').val],
+  ['환급',N('U1')+'일 이내','정산 승인 후 모바일 지역사랑상품권 지급']
+];
+document.getElementById('gdSteps').innerHTML=ST.map((s,i)=>'<div class="gd-step"><span class="n">'+(i+1)+'</span><b>'+s[0]+'</b><span class="dl">'+gEsc(s[1])+'</span><p>'+gEsc(s[2])+'</p></div>').join('');
+
+/* 필요 서류 — 신청 시 / 정산 시, 디주 로그인 가능 여부로 구분 */
+const DOCS={
+  apply:'<div class="gd-grp">디지털 관광주민증 로그인이 되면</div><ul class="gd-docs">'+
+    '<li><span class="k auto">자동</span><div><b>디지털 관광주민증 로그인</b> (신분증 제출 없음)<small>이름·생년월일·연락처 자동 입력, 거주지는 행정정보 공동이용으로 자동 확인</small></div></li>'+
+    '<li><span class="k need">제출</span><div><b>가족 유형: '+V('A5')+'</b><small>가족관계 확인용 · 발급 3개월 이내</small></div></li>'+
+    '<li><span class="k need">제출</span><div><b>미성년자 동행: 가족관계 증빙</b><small>'+V('A6')+'</small></div></li></ul>'+
+    '<div class="gd-grp">로그인이 어렵다면 (동행자·미성년자·취약계층)</div><ul class="gd-docs">'+
+    '<li><span class="k alt">대체</span><div><b>동행자: 카카오톡 인증</b><small>디주 미가입 동행자는 신청 2단계에서 카카오톡으로 본인 확인</small></div></li>'+
+    '<li><span class="k alt">대체</span><div><b>신분증 사본</b><small>'+V('A4')+' · 미성년자·취약계층 신분증 대체</small></div></li></ul>',
+  settle:'<ul class="gd-docs">'+
+    '<li><span class="k auto">자동</span><div><b>지역화폐 결제내역</b><small>여행 기간 결제를 자동으로 불러와 인정/불인정을 분류해요 (제출 불필요)</small></div></li>'+
+    '<li><span class="k need">제출</span><div><b>관광지 인증사진 '+v4+'곳</b><small>'+V('V2')+' · '+V('V1')+' · QR 인증 시 자동 입력</small></div></li>'+
+    '<li><span class="k need">제출</span><div><b>숙박 증빙</b><small>'+V('P6')+' (숙박은 카드·현금영수증도 인정)</small></div></li>'+
+    '<li><span class="k need">제출</span><div><b>숙박 선결제 영수증</b><small>'+V('P5')+'</small></div></li>'+
+    '<li><span class="k auto">자동</span><div><b>정산 시점 디지털 관광주민증</b><small>'+V('C3')+'</small></div></li></ul>'
+};
+function gdDocs(t){
+  document.querySelectorAll('.gd-tab').forEach(b=>{ const on=b.dataset.t===t; b.classList.toggle('on',on); b.setAttribute('aria-selected',on); });
+  document.getElementById('gdDocs').innerHTML=DOCS[t];
+}
+document.querySelector('.gd-tabs').onclick=e=>{ const b=e.target.closest('[data-t]'); if(b) gdDocs(b.dataset.t); };
+gdDocs(gQS('docs')==='settle'?'settle':'apply');
+
+/* 인정·불인정 기준 — S1·S2·S3·P1~P6 */
+const tags=s=>'<div class="gd-tagl">'+String(s).split(/[·,]/).map(x=>'<span>'+gEsc(x.trim())+'</span>').join('')+'</div>';
+document.getElementById('gdScope').innerHTML='<div class="gd-cat">'+
+  '<div class="gd-cbox ok"><h4>✔ 인정</h4>'+
+    '<div class="small"><b>업종</b>'+lock+'</div>'+tags(S('S1').val)+
+    '<ul><li>여행지 관내 가맹점의 <b>지역화폐 결제</b></li><li>숙박: 카드·현금영수증 인정 ('+V('P6')+')</li><li>숙박 선결제: '+V('P5')+'</li></ul></div>'+
+  '<div class="gd-cbox no"><h4>✖ 불인정</h4>'+
+    '<div class="small"><b>제외 업종</b>'+lock+'</div>'+tags(S('S2').val)+
+    '<ul><li>카드영수증: '+V('P1')+'</li><li>현금영수증: '+V('P2')+'</li><li>간이영수증·계좌이체: '+V('P3')+'</li><li>법인·타인 명의 결제: '+V('P4')+'</li><li>'+V('S3')+'</li></ul></div>'+
+  '</div>'+
+  '<div class="gd-rej"><h4>주요 거절 사례</h4>'+
+  [['여행 기간 밖의 결제 (예: 여행 전날 식당 결제)','승인받은 여행 기간 안에서 결제하세요. 숙박 선결제만 예외예요.'],
+   ['주유소·카센터에서 지역화폐로 결제','결제는 되지만 제외 업종이라 정산에서 빠져요.'],
+   ['식당 카드영수증 제출','숙박 외에는 지역화폐 결제만 인정돼요.'],
+   ['법인카드·가족 명의 카드로 숙박 결제','신청자 본인 명의로 결제해 주세요.'],
+   ['인증사진에 얼굴이 없거나 지정관광지가 아님','얼굴과 관광지 안내판이 함께 보이게, 지정관광지 '+v4+'곳에서 찍어 주세요.']]
+  .map((x,i)=>'<div class="gd-rj"><i>'+(i+1)+'</i><span>'+gEsc(x[0])+'</span><small>→ '+gEsc(x[1])+'</small></div>').join('')+'</div>';
+
+/* 유의사항 */
+document.getElementById('gdNotes').innerHTML=[
+  '반값여행은 <b>'+V('B4')+'</b>만 신청할 수 있어요. 승인 전 취소한 건은 횟수에 포함되지 않아요.',
+  '거주지와 같은 지역, 인접 지역은 신청할 수 없어요. (<a href="index.html#find" style="color:var(--blue);font-weight:700">내 거주지로 확인하기</a>)',
+  '회차별 모집은 <b>'+V('C4')+'</b>이에요.',
+  '여행 일정은 <b>'+V('C5')+'</b>까지 신청할 수 있어요.',
+  '환급받은 지역사랑상품권은 <b>'+V('U3')+'</b>까지 '+V('U2')+'에서 쓸 수 있어요. 환불 규정: '+V('U4')+'.',
+  '거짓·부정한 방법으로 지원받으면 환수되고 이후 참여가 제한될 수 있어요.'
+].map(x=>'<li>'+x+'</li>').join('');
+</script>
+</body></html>

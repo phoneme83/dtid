@@ -1,0 +1,148 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>디지털 관광주민증 로그인 — 대한민국 반값여행 · 시안 G</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="g.css?v=1">
+<style>
+/* 디지털 관광주민증 로그인 전용 (.lg-) — 착수보고 p5·p18·p27 */
+.lg-wrap{max-width:980px;margin:0 auto;padding:36px 20px 60px}
+.lg-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:22px;align-items:start}
+.lg-intro{background:linear-gradient(160deg,#1f2a44,#2b3a63);color:#fff;border-radius:20px;padding:28px}
+.lg-intro .card-mk{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:700}
+.lg-intro h1{margin:14px 0 10px;font-size:27px;line-height:1.3;letter-spacing:-.6px}
+.lg-intro h1 em{font-style:normal;color:#fdba74}
+.lg-intro>p{margin:0 0 18px;color:#cbd5e1;font-size:15px}
+.lg-pts{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.lg-pts li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;background:rgba(255,255,255,.07);border-radius:12px;padding:11px 12px;font-size:14px}
+.lg-pts li i{font-style:normal;font-size:20px;text-align:center}
+.lg-pts b{display:block;font-size:14.5px}
+.lg-pts span{color:#cbd5e1;font-size:13px}
+.lg-box{background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px}
+.lg-box h2{margin:0 0 4px;font-size:21px}
+.lg-sns{display:grid;gap:9px;margin:16px 0 10px}
+.lg-btn{display:grid;grid-template-columns:36px minmax(0,1fr) auto;align-items:center;gap:10px;border-radius:12px;padding:12px 14px;cursor:pointer;font:inherit;font-weight:800;font-size:15px;text-align:left;border:1px solid transparent;transition:.15s}
+.lg-btn:hover{filter:brightness(.96);transform:translateY(-1px)}
+.lg-btn:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+.lg-btn .ic{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.18);font-size:16px}
+.lg-btn small{font-weight:600;font-size:12px;opacity:.85;white-space:nowrap}
+.lg-in{text-align:center;padding:8px 0 4px}
+.lg-in .av{font-size:44px}
+.lg-in h2{margin:6px 0 4px}
+.lg-in .btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.lg-info{display:grid;grid-template-columns:90px minmax(0,1fr);gap:6px 10px;text-align:left;background:#f8fafc;border-radius:12px;padding:14px 16px;margin-top:14px;font-size:14px}
+.lg-info dt{color:var(--mute);font-weight:700} .lg-info dd{margin:0}
+.lg-tbl td.blk{color:var(--pri);font-weight:700}
+.lg-tbl td.okc{color:var(--ok)}
+.lg-tbl .who{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.lg-tbl .snsb{display:inline-block;border-radius:6px;padding:1px 7px;font-size:12px;font-weight:800}
+.lg-tbl tr.me td{background:#fff7ed}
+@media (max-width:820px){ .lg-grid{grid-template-columns:minmax(0,1fr)} .lg-intro{order:2} }
+@media (max-width:600px){
+  .lg-wrap{padding:22px 16px 50px}
+  .lg-box,.lg-intro{padding:20px}
+  .lg-btn{grid-template-columns:32px minmax(0,1fr)}
+  .lg-btn small{grid-column:2;white-space:normal}
+  .lg-tbl thead{display:none}
+  .lg-tbl tr{display:block;border-bottom:1px solid var(--line);padding:8px 4px}
+  .lg-tbl td{display:block;border:0;padding:3px 8px}
+}
+</style>
+</head><body>
+<main><div class="lg-wrap">
+  <div class="lg-grid">
+    <section class="lg-intro">
+      <span class="card-mk">🪪 디지털 관광주민증 | 대한민국 반값여행</span>
+      <h1>디지털 관광주민증으로<br><em>한 번에 로그인</em>하세요</h1>
+      <p>반값여행은 별도 회원가입이나 추가 본인인증 없이, 디지털 관광주민증 로그인 한 번으로 전국 25개 지역을 신청할 수 있어요.</p>
+      <ul class="lg-pts">
+        <li><i>🔓</i><div><b>별도 회원가입 없음</b><span>지역마다 회원가입을 반복하지 않아도 돼요.</span></div></li>
+        <li><i>📝</i><div><b>신청서 자동 입력</b><span>이름·생년월일·연락처는 등록 정보로, 거주지는 행정정보 공동이용으로 자동 확인해요.</span></div></li>
+        <li><i>🗂</i><div><b>한 계정으로 전 지역 관리</b><span>사전신청·정산·환급 이력을 마이페이지에서 한 번에 확인해요.</span></div></li>
+        <li><i>💬</i><div><b>알림톡으로 결과 안내</b><span>심사 결과·보완 요청·환급 안내를 등록된 휴대폰으로 보내 드려요.</span></div></li>
+      </ul>
+    </section>
+    <section class="lg-box" id="lgBox"></section>
+  </div>
+
+  <section class="sec card">
+    <div class="sec-h"><div><h2 style="font-size:19px">테스트 계정 거주지 안내</h2>
+      <p>시연용 계정마다 거주지가 정해져 있어요. 거주지와 같은 지역·인접 지역은 신청할 수 없어요(사전 필터링 시연).</p></div></div>
+    <div class="tbl-wrap"><table class="tbl lg-tbl"><thead><tr><th>테스트 계정</th><th>로그인 버튼</th><th>등록 거주지</th><th>신청할 수 없는 지역</th></tr></thead><tbody id="lgTbl"></tbody></table></div>
+    <p class="muted small" style="margin:10px 0 0">※ 실제 서비스에서는 디지털 관광주민증 등록 정보와 행정안전부 행정정보 공동이용으로 거주지를 확인합니다. 이 화면은 인증을 하지 않는 목업이에요.</p>
+  </section>
+</div></main>
+<script src="../site-assets/data.js?v=20260818a"></script>
+<script src="g.js?v=1"></script>
+<script>
+gShell({mode:'hub'});
+
+/* ?next= 는 같은 폴더의 .html 상대경로만 허용 (오픈 리다이렉트 방지) */
+function lgNext(){
+  const n=gQS('next')||'';
+  if(!/^[A-Za-z0-9_-]+\.html(\?[^#\s\\]*)?(#[A-Za-z0-9_-]*)?$/.test(n)) return 'index.html';
+  if(/^login\.html/.test(n)) return 'index.html';
+  return n;
+}
+function lgName(id){ const a=ACCOUNTS.find(x=>x.id===id); return a?a.name:id; }
+const lgSido=s=>{ for(const t of [['전남',/전남|전라남/],['전북',/전북|전라북/],['경남',/경남|경상남/],['경북',/경북|경상북/],['충남',/충남|충청남/],['충북',/충북|충청북/]]) if(t[1].test(s)) return t[0]; return String(s).slice(0,2); };
+/* 거주지 기준 신청 불가 지역 (관내 판정은 시·도까지 확인) */
+function lgBlocked(res){
+  return gRegionsAll().map(r=>{
+    let b=gAddrBlock(r.slug,res.sigungu);
+    if(b==='same'&&lgSido(res.sido)!==lgSido(r.sido)) b=null;
+    return b?{r,b}:null;
+  }).filter(Boolean);
+}
+
+function lgRender(){
+  const u=gUser(), box=document.getElementById('lgBox');
+  if(u){
+    box.innerHTML='<div class="lg-in"><div class="av">'+gEsc(u.av||'🙂')+'</div><h2>'+gEsc(u.name)+' 님으로 로그인됨</h2>'+
+      '<p class="muted" style="margin:0">디지털 관광주민증 인증 완료</p>'+
+      '<dl class="lg-info"><dt>생년월일</dt><dd>'+gEsc(u.birthDot)+(u.youth?' <span class="g-st" style="--c:#7c3aed">청년</span>':'')+'</dd>'+
+      '<dt>휴대폰</dt><dd>'+gEsc(u.phone)+' <span class="muted small">(알림톡 수신)</span></dd>'+
+      '<dt>거주지</dt><dd>'+gEsc(u.addr)+' <span class="muted small">(행정정보 공동이용 확인)</span></dd></dl>'+
+      '<div class="btns"><button class="btn" id="lgOut">로그아웃</button><a class="btn navy" href="mypage.html">마이페이지</a>'+
+      (gQS('next')?'<a class="btn pri" href="'+gEsc(lgNext())+'">계속하기 →</a>':'<a class="btn pri" href="index.html#find">여행지 찾기 →</a>')+'</div></div>';
+    document.getElementById('lgOut').onclick=()=>{ gLogout(); };
+  } else {
+    box.innerHTML='<h2>디지털 관광주민증으로 로그인</h2>'+
+      '<p class="muted small" style="margin:0">디지털 관광주민증에 연결한 계정을 선택하세요.</p>'+
+      (gQS('next')?'<div class="note" style="margin-top:12px">로그인하면 보던 화면으로 돌아가요.</div>':'')+
+      '<div class="lg-sns">'+SNS_LOGIN.map(s=>{
+        const res=G_RESIDENCE[s.userId]||{};
+        return '<button class="lg-btn" data-uid="'+gEsc(s.userId)+'" aria-label="'+gEsc(s.aria)+' (테스트 계정 '+gEsc(lgName(s.userId))+')" '+
+          'style="background:'+gEsc(s.bg)+';color:'+gEsc(s.fg)+';border-color:'+gEsc(s.border||s.bg)+'">'+
+          '<span class="ic" style="'+(s.border?'background:#f1f5f9':'')+'">'+gEsc(s.icon)+'</span><span>'+gEsc(s.label)+'로 로그인</span>'+
+          '<small>테스트: '+gEsc(lgName(s.userId))+' · '+gEsc(res.sigungu||'')+'</small></button>';
+      }).join('')+'</div>'+
+      '<p class="muted small" style="margin:12px 0 0">아직 디지털 관광주민증이 없나요? <a href="#" id="lgJoin" style="color:var(--blue);font-weight:700">디지털 관광주민증 발급 안내 ›</a></p>'+
+      '<p class="muted small" style="margin:6px 0 0">동행자는 디지털 관광주민증이 없어도 사전신청 2단계에서 카카오톡 인증으로 등록할 수 있어요.</p>';
+  }
+}
+document.getElementById('lgBox').addEventListener('click',e=>{
+  const j=e.target.closest('#lgJoin');
+  if(j){ e.preventDefault(); gModal('<h3>디지털 관광주민증 발급 안내</h3><p>디지털 관광주민증은 한국관광공사 「디지털 관광주민증」 서비스에서 휴대폰 본인인증으로 발급받을 수 있어요. 발급 후 이 화면에서 연결한 계정으로 로그인하면 돼요.</p><p class="muted small">목업 화면이라 실제 발급 페이지로 이동하지 않아요.</p><div style="text-align:right"><button class="btn" onclick="gCloseModal()">확인</button></div>'); return; }
+  const b=e.target.closest('[data-uid]'); if(!b) return;
+  const uid=b.dataset.uid;
+  if(!ACCOUNTS.some(a=>a.id===uid)) return;
+  try{ localStorage.setItem('dgtour_user_id',uid); }catch(err){ gToast('로그인 정보를 저장할 수 없어요','bad'); return; }
+  gSeedDemo(uid);
+  gToast(lgName(uid)+' 님, 환영합니다','ok');
+  setTimeout(()=>location.href=lgNext(),400);
+});
+
+/* 테스트 계정 거주지 표 */
+document.getElementById('lgTbl').innerHTML=ACCOUNTS.map(a=>{
+  const res=G_RESIDENCE[a.id]||{sido:'서울특별시',sigungu:'종로구'};
+  const sns=SNS_LOGIN.find(s=>s.userId===a.id);
+  const bl=lgBlocked(res);
+  return '<tr class="'+(gUid()===a.id?'me':'')+'"><td><span class="who">'+gEsc(a.emojiAv)+' <b>'+gEsc(a.name)+'</b> <span class="muted small">'+gEsc(a.id)+'</span></span></td>'+
+    '<td>'+(sns?'<span class="snsb" style="background:'+gEsc(sns.bg)+';color:'+gEsc(sns.fg)+';border:1px solid '+gEsc(sns.border||sns.bg)+'">'+gEsc(sns.label)+'</span>':'—')+'</td>'+
+    '<td>'+gEsc(res.sido+' '+res.sigungu)+'</td>'+
+    (bl.length?'<td class="blk">'+bl.map(x=>gEsc(x.r.full)+' ('+(x.b==='same'?'관내':'인접')+')').join(', ')+'</td>':'<td class="okc">없음 · 25개 지역 모두 신청 가능</td>')+'</tr>';
+}).join('');
+
+lgRender();
+</script>
+</body></html>

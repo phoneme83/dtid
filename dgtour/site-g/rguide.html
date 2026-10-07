@@ -1,0 +1,148 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>신청·정산 안내 — 대한민국 반값여행 · 시안 G</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="g.css?v=1">
+<style>
+/* 지역 신청·정산 안내 (착수보고 p20 ①) — 접두사 .gu- */
+.gu-h1{margin:0 0 4px;font-size:26px;letter-spacing:-.5px}
+.gu-ban{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;background:var(--pri-l);border:2px solid var(--pri);border-radius:14px;padding:16px 18px;margin:18px 0 6px;color:var(--pri);font-weight:800;font-size:17px;text-align:center}
+.gu-ban button{border:0;background:var(--pri);color:#fff;font-weight:800;padding:8px 14px;border-radius:9px;cursor:pointer;font-size:14.5px}
+.gu-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 4px;position:sticky;top:64px;background:var(--bg);padding:8px 0;z-index:5}
+.gu-tabs a{padding:8px 14px;border-radius:999px;background:#fff;border:1px solid var(--line);font-weight:700;font-size:14px}
+.gu-tabs a:hover{border-color:var(--pri);color:var(--pri)}
+.gu-sub{font-size:14px;color:var(--sub);margin:-2px 0 14px}
+.gu-type{border:1px solid var(--line);border-radius:14px;padding:18px;background:#fff}
+.gu-type .em{font-size:28px}
+.gu-type b{display:block;font-size:17px;margin:6px 0 2px}
+.gu-type .amt{font-size:22px;font-weight:900;color:var(--pri);margin:4px 0 8px}
+.gu-type ul{margin:0;padding-left:18px;font-size:13.5px;color:var(--sub)}
+.gu-flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;counter-reset:f}
+.gu-flow div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;position:relative}
+.gu-flow div::before{counter-increment:f;content:counter(f);display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font-weight:800;align-items:center;justify-content:center;font-size:13px}
+.gu-flow b{display:block;margin:8px 0 2px;font-size:15.5px}
+.gu-flow p{margin:0;font-size:13.5px;color:var(--sub)}
+.gu-flow em{display:inline-block;font-style:normal;margin-top:6px;font-size:12.5px;font-weight:800;color:var(--pri);background:var(--pri-l);padding:2px 8px;border-radius:6px}
+.gu-dt{display:flex;gap:6px;margin-bottom:12px}
+.gu-dt button{border:1px solid var(--line);background:#fff;padding:8px 16px;border-radius:9px;font-weight:700;cursor:pointer}
+.gu-dt button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.gu-doc li{padding:9px 0;border-bottom:1px dashed var(--line);list-style:none;font-size:14.5px}
+.gu-doc{margin:0;padding:0}
+.gu-doc li b{display:inline-block;min-width:130px}
+.gu-ok,.gu-no{border-radius:12px;padding:16px;border:1px solid var(--line);background:#fff}
+.gu-ok h3,.gu-no h3{margin:0 0 8px;font-size:16px}
+.gu-ok h3{color:var(--ok)} .gu-no h3{color:var(--bad)}
+.gu-ok ul,.gu-no ul{margin:0;padding-left:18px;font-size:14px;line-height:1.8}
+.gu-sp{margin:0;display:grid;grid-template-columns:150px minmax(0,1fr);gap:0;border-top:1px solid var(--line)}
+.gu-sp dt,.gu-sp dd{margin:0;padding:10px 4px;border-bottom:1px solid var(--line);font-size:14.5px}
+.gu-sp dt{color:var(--sub);font-weight:700}
+.gu-sp dd .opt{font-size:11px;font-weight:800;color:#7c3aed;background:#f3e8ff;border-radius:5px;padding:1px 6px;margin-left:6px}
+.gu-mbox{border:3px solid #7c3aed;border-radius:14px;padding:4px 4px 0}
+@media (max-width:960px){ .gu-flow{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:600px){ .gu-flow{grid-template-columns:minmax(0,1fr)} .gu-sp{grid-template-columns:110px minmax(0,1fr)} .gu-doc li b{display:block} .gu-tabs{top:64px} }
+</style>
+</head><body>
+<main><div class="wrap" id="guMain"></div></main>
+<script src="../site-assets/data.js?v=20260818a"></script>
+<script src="g.js?v=1"></script>
+<script>
+const SLUG=(gQS('r')&&gRegion(gQS('r')))?gQS('r'):'pyeongchang';
+gShell({mode:'region',slug:SLUG,active:'guide'});
+const R=gRegion(SLUG);
+const V=(id)=>gStd(id,SLUG).val;
+const won=n=>gMan(n);
+
+function guSpecial(){
+  const opt=G_STD.filter(s=>s.opt);
+  const excl=V('S2')+(R.extraExcl?' + '+R.extraExcl:'');
+  const fixed=[
+    ['결제수단',V('P7')+' 앱 QR (지역화폐)'],
+    ['환급 수단','모바일 '+R.voucher],
+    ['최소 소비액',V('M8')+' 이상'],
+    ['정산 기한',V('C1')],
+    ['마감 기준',V('C4')],
+    ['제외 업종',excl],
+    ['방문 인증','지정관광지 '+V('V4')+' · '+R.photoRule],
+    ['인접 제외 지역',R.nearby.join(' · ')||'-']
+  ];
+  const optRows=opt.filter(s=>['P7','V4'].indexOf(s.id)<0).map(s=>[s.name,V(s.id)||'해당 없음',true]);
+  return '<h3>'+gEsc(R.full)+' 특이사항</h3><p class="small muted" style="margin:-4px 0 12px">전국 공통 기준에 더해 '+gEsc(R.full)+'에서 꼭 확인할 조건입니다. <span class="opt" style="font-size:11px;font-weight:800;color:#7c3aed;background:#f3e8ff;border-radius:5px;padding:1px 6px">옵션</span> 은 지자체가 정한 값입니다.</p>'+
+    '<dl class="gu-sp">'+fixed.concat(optRows).map(x=>'<dt>'+gEsc(x[0])+'</dt><dd>'+gEsc(x[1])+(x[2]?'<span class="opt">옵션</span>':'')+'</dd>').join('')+'</dl>'+
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px"><a class="btn sm" href="merchants.html?r='+SLUG+'">소비인정 업소 보기</a><button class="btn navy sm" onclick="gCloseModal()">확인</button></div>';
+}
+function guOpenSpecial(){ gModal('<div>'+guSpecial()+'</div>'); }
+
+function guDocs(k){
+  document.querySelectorAll('.gu-dt button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
+  const L=k==='apply'?[
+    ['본인 확인','디지털 관광주민증 로그인 ('+V('A3')+') — 신분증 제출 없음'],
+    ['거주지 확인','행정정보 공동이용으로 자동 확인 (별도 서류 없음)'],
+    ['동행자','카카오톡 인증 또는 신분증 사본 ('+V('A4')+')'],
+    ['가족 유형',V('A5')+' (3개월 이내 발급)'],
+    ['미성년자 동행',V('A6')],
+    ['취약계층','디지털 관광주민증 가입이 어려우면 신분증 사본으로 대체']
+  ]:[
+    ['소비 증빙','지역화폐 결제내역 자동 불러오기 ('+V('P7')+' 앱) — 영수증 불필요'],
+    ['숙박 증빙',V('P6')+' (카드 결제도 인정, '+V('P5')+')'],
+    ['방문 인증','지정관광지 '+V('V4')+' 인증사진 ('+V('V1')+', '+R.photoRule+') 또는 QR 방문 인증'],
+    ['디지털 관광주민증',V('C3')],
+    ['서약','부정 수급 유의사항 확인 및 전자서명']
+  ];
+  document.getElementById('guDocL').innerHTML=L.map(x=>'<li><b>'+gEsc(x[0])+'</b> '+gEsc(x[1])+'</li>').join('');
+}
+
+function guRender(){
+  const types=[
+    ['🧳','개인','M1','1인 여행 · 관외 거주자',[V('B5')+' 대표자','디지털 관광주민증 로그인','예) 1인 20만원 소비 → 10만원 환급']],
+    ['🎒','청년','M4','만 '+gStdNum('M9').join('~')+'세 1인',['환급률 '+V('M7'),'청년팀(전원 청년): '+V('M5'),'예) 20만원 소비 → 14만원 환급']],
+    ['👥','단체(팀)','M2','2인 이상',['동행자 카카오톡 인증','인원 × '+V('M8')+' 이상 소비','예) 2인 40만원 소비 → 20만원 환급']],
+    ['👨‍👩‍👧','가족','M3','가족관계 2인 이상',[V('A5')+' 제출','미성년 자녀 동행 가능','예) 4인 100만원 소비 → 50만원 환급']]
+  ];
+  const flow=[
+    ['사전신청','지역 홈에서 유형·일정 선택 후 신청',V('A1')],
+    ['심사·승인','지자체 심사 후 결과 안내',V('A7')],
+    ['여행','지역화폐로 결제, 지정관광지 인증','관광지 '+V('V4')],
+    ['정산신청','결제내역 불러오기·방문 인증 제출',V('C1')],
+    ['환급','모바일 '+R.voucher+'으로 지급',V('U1')]
+  ];
+  document.getElementById('guMain').innerHTML=
+    '<p class="small muted" style="margin:0 0 4px"><a href="region.html?r='+SLUG+'">'+gEsc(R.full)+'</a> › 사업안내</p>'+
+    '<h1 class="gu-h1">신청·정산 안내</h1>'+
+    '<div class="gu-ban">'+gEsc(R.full)+' 조건이 있어요 <button onclick="guOpenSpecial()">특이사항 보기</button></div>'+
+    '<p class="small muted tc" style="margin:4px 0 0">결제수단 '+gEsc(V('P7'))+' 앱 · 최소 소비액 '+gEsc(V('M8'))+' · 정산 '+gEsc(V('C1'))+'</p>'+
+    '<nav class="gu-tabs"><a href="#types">유형별 지원</a><a href="#flow">참여 절차·기한</a><a href="#docs">필요 서류</a><a href="#scope">인정·불인정 소비</a></nav>'+
+    '<p class="small muted" style="margin:6px 0 0">전국 공통 안내 (통합 <a href="guide.html" style="color:var(--blue);font-weight:700">사업안내</a>와 같은 기준이 자동 반영됩니다)</p>'+
+
+    '<section class="sec" id="types"><div class="sec-h"><div><h2>유형별 지원</h2><p>인정 소비액의 '+gEsc(V('M6'))+'(청년 '+gEsc(V('M7'))+')를 유형별 한도까지 환급</p></div></div>'+
+      '<div class="grid g4">'+types.map(t=>'<div class="gu-type"><div class="em">'+t[0]+'</div><b>'+t[1]+'</b><div class="small muted">'+gEsc(t[3])+'</div><div class="amt">최대 '+won(gStdNum(t[2]))+'</div><ul>'+t[4].map(x=>'<li>'+gEsc(x)+'</li>').join('')+'</ul></div>').join('')+'</div>'+
+      '<p class="small muted" style="margin:10px 2px 0">환급액 = min(인정 소비액 × 환급률, 유형별 한도) · 최소 소비액 '+gEsc(V('M8'))+' × 인원 · '+gEsc(V('B4'))+' 신청</p></section>'+
+
+    '<section class="sec" id="flow"><div class="sec-h"><h2>참여 절차·기한</h2></div>'+
+      '<div class="gu-flow">'+flow.map(f=>'<div><b>'+f[0]+'</b><p>'+gEsc(f[1])+'</p><em>'+gEsc(f[2])+'</em></div>').join('')+'</div>'+
+      '<div class="note" style="margin-top:12px">여행 일정은 '+gEsc(V('C5'))+', 신청은 '+gEsc(V('A2'))+' 가능합니다. 승인 후 일정 변경은 마이페이지에서 요청하면 재심사합니다.</div></section>'+
+
+    '<section class="sec card" id="docs"><div class="sec-h"><h2>필요 서류</h2></div>'+
+      '<div class="gu-dt"><button data-k="apply" onclick="guDocs(\'apply\')">신청 시</button><button data-k="settle" onclick="guDocs(\'settle\')">정산 시</button></div>'+
+      '<ul class="gu-doc" id="guDocL"></ul></section>'+
+
+    '<section class="sec" id="scope"><div class="sec-h"><h2>인정·불인정 소비</h2></div><div class="grid g2">'+
+      '<div class="gu-ok"><h3>✔ 인정되는 소비</h3><ul>'+
+        '<li>업종: '+gEsc(V('S1'))+'</li><li>여행 기간 중 관내 가맹점에서 <b>'+gEsc(V('P7'))+' 앱(지역화폐)</b>으로 결제</li>'+
+        '<li>숙박: 카드·현금 결제도 인정 ('+gEsc(V('P6'))+')</li><li>숙박 선결제 '+gEsc(V('P5'))+'</li>'+
+        (V('S6')?'<li>예외 인정: '+gEsc(V('S6'))+'</li>':'')+'</ul></div>'+
+      '<div class="gu-no"><h3>✖ 인정되지 않는 소비</h3><ul>'+
+        '<li>제외 업종: '+gEsc(V('S2'))+(R.extraExcl?' <b>+ '+gEsc(R.extraExcl)+'</b> ('+gEsc(R.name)+')':'')+'</li>'+
+        '<li>카드영수증 '+gEsc(V('P1'))+' · 현금영수증 '+gEsc(V('P2'))+'</li><li>간이영수증·계좌이체 '+gEsc(V('P3'))+'</li>'+
+        '<li>법인·타인 명의 결제 '+gEsc(V('P4'))+'</li><li>'+gEsc(V('S3'))+'</li>'+
+        (V('S4')?'<li>숙박 제외: '+gEsc(V('S4'))+'</li>':'')+(V('S5')?'<li>'+gEsc(V('S5'))+'</li>':'')+
+        '<li>여행 기간 밖의 결제(숙박 선결제 제외)</li></ul></div>'+
+    '</div>'+
+    '<div class="note warn" style="margin-top:12px"><b>주요 거절 사례</b> — 법인카드 결제, 동행자 명의 카드 결제, 주유소 결제, 여행 종료 후 '+gStdNum('C1')+'일이 지난 정산 신청, 지정관광지 인증 '+gEsc(V('V4'))+' 미충족</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px"><a class="btn sm" href="merchants.html?r='+SLUG+'">소비인정 업소 찾기 ›</a><a class="btn sm" href="localpay.html?r='+SLUG+'">지역화폐 사용법 ›</a><a class="btn pri sm" href="apply.html?r='+SLUG+'">사전신청하기 ›</a></div>'+
+    '</section>';
+  guDocs('apply');
+}
+guRender();
+if(location.hash==='#special') guOpenSpecial();
+</script>
+</body></html>

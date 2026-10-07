@@ -1,0 +1,80 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>소비인정 업소 — 대한민국 반값여행 · 시안 G</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="g.css?v=1">
+<style>
+/* 소비인정 업소 (착수보고 p20 ②) — 접두사 .mc- */
+.mc-h1{margin:0 0 4px;font-size:26px;letter-spacing:-.5px}
+.mc-warn{color:var(--pri);font-weight:700;margin:14px 0}
+.mc-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.mc-tabs .chip{padding:8px 18px;font-size:14.5px}
+.mc-tabs .chip small{font-weight:500;opacity:.7}
+.mc-search{position:relative;margin-bottom:14px}
+.mc-search .inp{padding-left:40px}
+.mc-search::before{content:'⌕';position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--mute);font-size:18px}
+.mc-cat{display:inline-block;font-size:12.5px;font-weight:800;padding:2px 9px;border-radius:6px;background:#f1f5f9;white-space:nowrap}
+.mc-cat.음식{background:#fff7ed;color:#c2410c} .mc-cat.관광{background:#ecfdf5;color:#047857}
+.mc-cat.쇼핑{background:#eef4ff;color:#1d4ed8} .mc-cat.숙박{background:#f5f3ff;color:#6d28d9}
+.mc-tbl td.nm{font-weight:700}
+.mc-pg{display:flex;justify-content:center;gap:4px;margin:16px 0 0}
+.mc-pg button{min-width:34px;height:34px;border:1px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;font-weight:700}
+.mc-pg button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.mc-pg button:disabled{opacity:.35;cursor:default}
+.mc-ex{margin-top:30px;border:1px dashed #fca5a5;background:#fff5f5;border-radius:14px;padding:18px}
+.mc-ex h3{margin:0 0 6px;color:var(--bad);font-size:16px}
+.mc-ex ul{margin:8px 0 0;padding-left:18px;font-size:14px}
+.mc-meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--sub);margin-bottom:8px}
+@media (max-width:600px){ .mc-tbl th:nth-child(3),.mc-tbl td:nth-child(3){white-space:normal} .mc-tabs .chip{padding:7px 12px} }
+</style>
+</head><body>
+<main><div class="wrap">
+  <p class="small muted" style="margin:0 0 4px" id="mcCrumb"></p>
+  <h1 class="mc-h1">소비인정 업소</h1>
+  <p class="mc-warn">! 숙박업소는 목록에 없어도 인정 · 제외 업종은 불인정</p>
+  <div class="mc-tabs" id="mcTabs"></div>
+  <div class="mc-search"><input class="inp" id="mcQ" placeholder="업소명 · 주소 검색" aria-label="업소명 또는 주소 검색" oninput="mcPage=1;mcRender()"></div>
+  <div class="mc-meta"><span id="mcCount"></span><span id="mcSrc"></span></div>
+  <div class="tbl-wrap"><table class="tbl mc-tbl"><thead><tr><th style="width:90px">업종</th><th>업소명</th><th>주소</th></tr></thead><tbody id="mcBody"></tbody></table></div>
+  <div class="mc-pg" id="mcPg"></div>
+  <div class="mc-ex" id="mcEx"></div>
+</div></main>
+<script src="../site-assets/data.js?v=20260818a"></script>
+<script src="g.js?v=1"></script>
+<script>
+const SLUG=(gQS('r')&&gRegion(gQS('r')))?gQS('r'):'pyeongchang';
+gShell({mode:'region',slug:SLUG,active:'guide'});
+const R=gRegion(SLUG);
+const ALL=gMerchants(SLUG);
+const OK=ALL.filter(m=>!m.excluded), EX=ALL.filter(m=>m.excluded);
+const PER=10;
+let mcCat='전체', mcPage=1;
+document.getElementById('mcCrumb').innerHTML='<a href="region.html?r='+SLUG+'">'+gEsc(R.full)+'</a> › 사업안내';
+document.getElementById('mcSrc').textContent=(Array.isArray(R.merchants)&&R.merchants.length)?'지자체 등록 목록(엑셀 업로드) 기준':'지자체 엑셀 업로드 목록 · 데모 데이터';
+
+function mcTabs(){
+  document.getElementById('mcTabs').innerHTML=['전체'].concat(G_MERCHANT_CATS).map(c=>{
+    const n=c==='전체'?OK.length:OK.filter(m=>m.cat===c).length;
+    return '<button class="chip'+(c===mcCat?' on':'')+'" onclick="mcCat=\''+c+'\';mcPage=1;mcTabs();mcRender()">'+c+' <small>'+n+'</small></button>';
+  }).join('');
+}
+function mcRender(){
+  const q=document.getElementById('mcQ').value.trim().toLowerCase();
+  const l=OK.filter(m=>(mcCat==='전체'||m.cat===mcCat)&&(!q||(String(m.name)+' '+String(m.addr||'')).toLowerCase().indexOf(q)>=0));
+  const pages=Math.max(1,Math.ceil(l.length/PER)); if(mcPage>pages) mcPage=pages;
+  const cur=l.slice((mcPage-1)*PER,mcPage*PER);
+  document.getElementById('mcCount').innerHTML='총 <b>'+l.length+'</b>곳';
+  document.getElementById('mcBody').innerHTML=cur.length?cur.map(m=>'<tr><td><span class="mc-cat '+gEsc(m.cat)+'">'+gEsc(m.cat)+'</span></td><td class="nm">'+gEsc(m.name)+'</td><td class="muted">'+gEsc(m.addr||'-')+'</td></tr>').join('')
+    :'<tr><td colspan="3" class="tc muted" style="padding:30px">'+(mcCat==='숙박'?'등록된 숙박업소가 없어요. 숙박업소는 목록에 없어도 소비로 인정됩니다.':'검색 결과가 없습니다.')+'</td></tr>';
+  let pg='<button '+(mcPage<=1?'disabled':'')+' onclick="mcGo('+(mcPage-1)+')" aria-label="이전">‹</button>';
+  for(let i=1;i<=pages;i++) pg+='<button class="'+(i===mcPage?'on':'')+'" onclick="mcGo('+i+')">'+i+'</button>';
+  pg+='<button '+(mcPage>=pages?'disabled':'')+' onclick="mcGo('+(mcPage+1)+')" aria-label="다음">›</button>';
+  document.getElementById('mcPg').innerHTML=pg;
+}
+function mcGo(p){ mcPage=p; mcRender(); }
+document.getElementById('mcEx').innerHTML='<h3>🚫 제외 업종 예시 (결제는 되지만 정산에서 불인정)</h3>'+
+  '<p class="small muted" style="margin:0">전국 공통 제외 업종: '+gEsc(gStd('S2').val)+(R.extraExcl?' · '+gEsc(R.name)+' 추가: <b>'+gEsc(R.extraExcl)+'</b>':'')+' · '+gEsc(gStd('S3').val)+'</p>'+
+  '<ul>'+EX.map(m=>'<li><b>'+gEsc(m.name)+'</b> <span class="muted">('+gEsc(m.biz||'제외 업종')+' · '+gEsc(m.addr||'')+')</span></li>').join('')+'</ul>';
+mcTabs(); mcRender();
+</script>
+</body></html>

@@ -1,0 +1,585 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>마이페이지 — 대한민국 반값여행 · 시안 G</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="g.css?v=1">
+<style>
+/* 마이페이지 전용 (착수보고 p23·p24) — 접두사 .my- */
+:root{--my:#6d28d9;--my-2:#7c3aed;--my-l:#f3efff}
+.my-wel{background:linear-gradient(100deg,#5b21b6,#7c3aed);color:#fff;border-radius:16px;padding:18px 22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.my-wel b{font-size:21px;letter-spacing:-.3px}
+.my-wel span{opacity:.85;font-size:14px}
+.my-wel a{margin-left:auto;font-size:13px;color:#e9ddff;border:1px solid rgba(255,255,255,.35);padding:5px 12px;border-radius:999px}
+.my-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:14px;margin-top:14px}
+.my-cash{background:linear-gradient(150deg,#6d28d9,#8b5cf6);color:#fff;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.my-cash small{opacity:.85;font-size:13px}
+.my-cash .big{font-size:30px;font-weight:900;letter-spacing:-.5px;line-height:1.2}
+.my-cash .sub{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.my-cash .sub div{background:rgba(255,255,255,.16);border-radius:10px;padding:8px 10px}
+.my-cash .sub small{display:block;font-size:11.5px}
+.my-cash .sub b{font-size:17px}
+.my-board{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.my-board-h{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.my-board-h b{font-size:16px}
+.my-warn{background:var(--pri-l);color:var(--pri);font-weight:800;font-size:12.5px;padding:4px 10px;border-radius:999px;border:0;cursor:pointer}
+.my-stages{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.my-stage{border:1px solid var(--line);background:#f8fafc;border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;transition:.15s}
+.my-stage b{display:block;font-size:24px;font-weight:900;line-height:1.2}
+.my-stage span{font-size:12.5px;color:var(--sub)}
+.my-stage:hover{border-color:var(--my-2)}
+.my-stage.on{border-color:var(--my-2);box-shadow:0 0 0 2px #ddd0ff inset;background:var(--my-l)}
+.my-stage.fix{background:#fff1f2;border-color:#fecdd3} .my-stage.fix b,.my-stage.fix span{color:var(--pri)}
+.my-stage.zero b{color:#cbd5e1}
+.my-board p{margin:10px 0 0;font-size:12.5px;color:var(--mute)}
+.my-quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+.my-quick button{border:1px solid var(--line);background:#fff;border-radius:13px;padding:16px 10px;font-weight:800;font-size:15.5px;cursor:pointer}
+.my-quick button:hover{border-color:var(--my-2);color:var(--my)}
+.my-quick button.qr{background:#111827;color:#fff;border-color:#111827}
+.my-quick button.qr:hover{background:#000;color:#fff}
+.my-list{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:14px}
+.my-list>h2{margin:0 0 12px;font-size:18px}
+.my-list>h2 small{color:var(--mute);font-weight:500;font-size:13px;margin-left:4px}
+.my-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.my-tabs .chip.fixc{color:var(--pri);border-color:#fecdd3;background:#fff1f2}
+.my-tabs .chip.on{background:#1e1b4b;border-color:#1e1b4b;color:#fff}
+.my-card{display:grid;grid-template-columns:minmax(0,1.6fr) auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:14px 12px;border-bottom:1px solid #f1f5f9;border-radius:10px}
+.my-card.fix{background:#fff1f2;border-bottom-color:#fde2e6}
+.my-card h4{margin:0;font-size:16px}
+.my-card .meta{font-size:12.5px;color:var(--mute);margin-top:2px}
+.my-card .amt{text-align:right;font-weight:800;font-size:16px}
+.my-card .amt small{display:block;font-size:11.5px;color:var(--mute);font-weight:500}
+.my-card .acts{display:flex;gap:6px;justify-content:flex-end}
+.btn.red{background:#e11d48;border-color:#e11d48;color:#fff}
+.btn.red:hover{background:#be123c}
+.btn.purple{background:var(--my-2);border-color:var(--my-2);color:#fff}
+.my-more{display:block;width:100%;margin-top:10px;border:0;background:#f8fafc;border-radius:10px;padding:10px;color:var(--sub);cursor:pointer;font-size:13.5px}
+.my-empty{padding:30px;text-align:center;color:var(--mute)}
+.my-boxes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+.my-box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;font-size:16px;font-weight:800}
+.my-box:hover{border-color:var(--my-2)}
+.my-box em{font-style:normal;color:var(--my-2)}
+.my-box small{color:var(--my-2);font-weight:600;font-size:13px}
+.my-box small.ok{color:#16a34a}
+.my-box i{font-style:normal;font-size:11.5px;background:var(--pri);color:#fff;border-radius:999px;padding:1px 7px}
+.my-demo{margin-top:26px;background:#f1f5f9;border:1px dashed #cbd5e1;border-radius:12px;padding:12px 14px;font-size:13px;color:#475569;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.my-demo b{color:#334155}
+.my-demo .sp{flex:1}
+.my-demo button{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:5px 10px;font-size:12.5px;cursor:pointer}
+/* 알림 모달 */
+.my-nh{display:flex;align-items:baseline;gap:6px} .my-nh small{color:var(--mute);font-size:15px}
+.my-keep{background:#f6f7fb;border-radius:10px;text-align:center;color:var(--sub);font-size:13.5px;padding:9px;margin:4px 0 6px}
+.my-ni{display:flex;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line);cursor:pointer;align-items:flex-start}
+.my-ni:hover{background:#fafafa}
+.my-ni>i{flex:none;width:11px;height:11px;border-radius:50%;margin-top:6px}
+.my-ni div{flex:1;min-width:0}
+.my-ni b{font-size:15px} .my-ni p{margin:2px 0 0;font-size:13px;color:var(--sub)}
+.my-ni time{flex:none;color:var(--mute);font-size:12.5px}
+.my-ni.read b{color:#64748b;font-weight:600}
+.my-nf{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:13px;color:var(--mute)}
+.my-nf button{border:0;background:none;color:var(--sub);cursor:pointer;font-size:13px}
+/* QR 모달 */
+.my-sel{display:flex;align-items:center;gap:8px;border:1px solid #e2e5ee;border-radius:10px;padding:4px 10px;margin-bottom:12px}
+.my-sel span{white-space:nowrap;font-size:14px;color:var(--sub)}
+.my-sel select{flex:1;min-width:0;border:0;padding:8px 2px;font-size:15px;background:transparent}
+.my-vf{position:relative;height:200px;background:#11111b;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#a7f3d0;font-weight:700}
+.my-vf .c{position:absolute;width:26px;height:26px;border:3px solid #fff;border-radius:3px}
+.my-vf .c1{left:32%;top:18%} .my-vf .c2{right:32%;top:18%} .my-vf .c3{left:32%;bottom:18%}
+.my-vf .c4{right:32%;bottom:18%}
+.my-vf .ln{position:absolute;left:36%;right:36%;height:3px;background:#4ade80;box-shadow:0 0 12px #4ade80;top:20%;animation:myscan 1.8s ease-in-out infinite alternate}
+@keyframes myscan{to{top:78%}}
+.my-vf .msg{position:relative;z-index:2;background:rgba(0,0,0,.55);padding:6px 12px;border-radius:999px;font-size:14px}
+.my-vf.busy .ln{animation-duration:.5s;background:#facc15;box-shadow:0 0 12px #facc15}
+.my-spots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.my-spot{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:9px 10px;cursor:pointer;font-size:14px}
+.my-spot input{accent-color:var(--my-2)}
+.my-spot.done{background:#effbf8;border-color:#a7e3d6;color:var(--ok);cursor:default}
+.my-qn{font-size:13.5px;color:var(--sub);margin:8px 0}
+.my-qn div{margin:2px 0}
+/* 상세 창 (p24) */
+.my-dh{display:flex;align-items:flex-start;gap:12px;padding-right:96px;position:relative}
+.my-dh h3{margin:8px 0 0;font-size:21px}
+.my-stamp{position:absolute;right:40px;top:-8px;width:76px;height:76px;border:3px solid #e5452c;border-radius:50%;color:#e5452c;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.15;transform:rotate(-12deg);opacity:.85}
+.my-d .prog span.done::before,.my-d .prog span.done::after,.my-d .prog span.cur::after{background:var(--my-2)}
+.my-d .prog span.cur{color:var(--my);font-weight:800} .my-d .prog span.cur::before{background:var(--my-2);box-shadow:0 0 0 4px #ddd0ff}
+.my-d .prog span.cur.bad{color:var(--pri)} .my-d .prog span.cur.bad::before{background:#e11d48;box-shadow:0 0 0 4px #fecdd3}
+.my-todo{border-radius:14px;padding:16px;margin:14px 0;background:#f8fafc;border:1px solid var(--line)}
+.my-todo.fix{background:#fff1f2;border-color:#fecdd3}
+.my-todo h4{margin:0 0 8px;font-size:16px}
+.my-todo.fix h4{color:#e11d48}
+.my-todo p{margin:4px 0;font-size:14px;color:#334155}
+.my-file{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid #fde2e6;border-radius:10px;padding:10px 12px;margin:10px 0;font-size:14px}
+.my-file span{color:var(--sub);font-size:13px}
+.my-ph{background:#f1f5f9;border-radius:10px;text-align:center;color:var(--sub);padding:14px;font-size:13.5px;margin:10px 0}
+.my-link{border:0;background:none;color:var(--my);font-weight:800;font-size:16px;cursor:pointer;padding:0}
+.my-link:disabled{color:var(--mute);cursor:not-allowed}
+.my-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:6px 0 10px}
+.my-3 div{background:#f6f7fb;border-radius:10px;text-align:center;padding:12px 6px}
+.my-3 small{display:block;font-size:12px;color:var(--sub)}
+.my-3 b{font-size:19px}
+.my-3 .bad b{color:#e11d48} .my-3 .pay{background:var(--my-l)} .my-3 .pay b{color:var(--my)}
+.my-d details{background:#effbf8;border-radius:10px;margin:8px 0}
+.my-d summary{cursor:pointer;color:#15803d;font-weight:800;padding:10px;text-align:center;font-size:14px}
+.my-d details .tbl{font-size:13px}
+.my-pin{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;font-size:14px}
+.my-pin code{font-size:15px;background:#fff;border:1px solid var(--line);padding:4px 8px;border-radius:7px;letter-spacing:1px}
+.my-sec{margin-top:18px}
+.my-sec h5{margin:0 0 8px;font-size:14px;color:var(--sub);font-weight:700}
+.my-kv{display:grid;grid-template-columns:110px minmax(0,1fr);gap:6px 12px;font-size:14px}
+.my-kv dt{color:var(--sub)} .my-kv dd{margin:0;font-weight:600}
+.my-tl{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid #e2e8f0}
+.my-tl li{position:relative;padding:4px 0 10px 8px;font-size:13.5px}
+.my-tl li::before{content:'';position:absolute;left:-21px;top:9px;width:10px;height:10px;border-radius:50%;background:var(--my-2);border:2px solid #fff}
+.my-tl time{color:var(--mute);font-size:12.5px;margin-right:6px}
+.my-tl em{font-style:normal;color:var(--sub)}
+.my-ok{color:#15803d;font-weight:700} .my-no{color:#e11d48;font-weight:700}
+.my-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.my-err{color:#e11d48;font-size:13px;min-height:18px;margin-top:6px}
+@media (max-width:960px){
+  .my-top{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:600px){
+  .my-wel b{font-size:18px}
+  .my-stages{gap:5px} .my-stage b{font-size:20px} .my-stage span{font-size:11px}
+  .my-quick{grid-template-columns:minmax(0,1fr)}
+  .my-quick button{padding:13px 10px}
+  .my-card{grid-template-columns:minmax(0,1fr) auto;gap:8px}
+  .my-card .amt{text-align:left}
+  .my-card .acts{grid-column:1 / -1;justify-content:stretch}
+  .my-card .acts .btn{flex:1}
+  .my-boxes{grid-template-columns:minmax(0,1fr)}
+  .my-3 b{font-size:16px}
+  .my-spots{grid-template-columns:minmax(0,1fr)}
+  .my-dh{padding-right:70px} .my-stamp{width:62px;height:62px;font-size:13px;right:46px;top:-6px}
+  .my-kv{grid-template-columns:90px minmax(0,1fr)}
+  .g-mbox{padding:20px 16px}
+}
+</style>
+</head><body>
+<main>
+  <div class="wrap">
+    <div class="my-wel" id="myWel"></div>
+    <div class="my-top">
+      <div class="my-cash" id="myCash"></div>
+      <div class="my-board" id="myBoard"></div>
+    </div>
+    <div class="my-quick">
+      <button class="qr" onclick="myQR()">QR 방문 인증</button>
+      <button onclick="myMerchants()">디지털 관광주민증 가맹점 찾기</button>
+      <button onclick="myForms()">서류 양식</button>
+    </div>
+    <section class="my-list" id="list">
+      <h2>신청 내역<small id="myCnt"></small></h2>
+      <div class="my-tabs" id="myTabs" role="tablist"></div>
+      <div id="myCards"></div>
+    </section>
+    <div class="my-boxes">
+      <div class="my-box" id="noti" role="button" tabindex="0" onclick="myNotiAll()"></div>
+      <div class="my-box" id="myInq" role="button" tabindex="0" onclick="myInqList()"></div>
+    </div>
+    <div class="my-demo" id="myDemo"></div>
+  </div>
+</main>
+<script src="../site-assets/data.js?v=20260818a"></script>
+<script src="g.js?v=1"></script>
+<script>
+gShell({mode:'my',active:'my'});
+/* ── 상태 ── */
+var MY={filter:'all',more:false,qrScan:false};
+var ME=gUser();
+
+function myInit(){
+  mySeedInquiry();
+  myRender();
+  var id=gQS('app');
+  if(id&&gApp(id)&&gApp(id).uid===ME.id) myDetail(id);
+  else if(location.hash==='#noti') myNotiAll();
+  document.querySelectorAll('.my-box').forEach(function(b){ b.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); b.click(); } }); });
+}
+
+/* 시드 알림의 '문의 답변'과 맞도록 내 문의 1건(답변완료)을 만든다 — 계정당 1회 */
+function mySeedInquiry(){
+  if(gUGet('myInqSeeded',false)) return;
+  var mine=myApps(), fixApp=mine.find(function(a){return a.status==='fix';});
+  var l=gInquiries();
+  if(!l.some(function(q){return q.uid===ME.id;})&&fixApp){
+    var T=gToday();
+    l.push({id:'Q'+gSeq(),region:fixApp.region,uid:ME.id,name:gMask(ME.name),title:'동행자 변경이 가능한가요?',
+      body:'승인 후 동행자를 바꿀 수 있나요?',secret:true,at:gYmd(gAdd(T,-2)),demo:true,
+      answer:{body:'여행 시작 2일 전까지 마이페이지 상세 창의 [여행 일정 변경]에서 요청하시면 재승인 후 반영됩니다.',at:gYmd(gAdd(T,-1))}});
+    gSaveInquiries(l);
+  }
+  gUSet('myInqSeeded',true);
+}
+
+/* ── 공용 계산 ── */
+function myApps(){ return gMyApps(ME.id); }
+function myStage(a){ return (G_ST[a.status]||{}).stage; }
+function myIsFix(a){ return a.status==='fix'||a.status==='settle_fix'; }
+function myTypeNm(a){
+  if(a.type==='team') return (a.grant&&a.grant.label==='청년팀')?'청년팀':'단체';
+  return {solo:'개인',youth:'청년',family:'가족'}[a.type]||gTypeName(a.type);
+}
+function myTitle(a){ var r=gRegion(a.region); return (r?r.full:a.region)+' · '+a.round+'차 · '+myTypeNm(a)+' '+((a.people||[]).length||1)+'인'; }
+function mySum(list,f){ return list.reduce(function(s,a){ return s+(Number(f(a))||0); },0); }
+function myFixUrl(a){
+  var tgt=(a.fix&&a.fix.target)||(a.status==='settle_fix'?'settle':'apply');
+  return (tgt==='settle'?'settle.html':'apply.html')+'?r='+encodeURIComponent(a.region)+'&fix='+encodeURIComponent(a.id);
+}
+function myNeed(slug){ var v=gStd('V4',slug); return parseInt(v&&v.val,10)||2; }
+function myDays(s,e){ var n=gDiff(s,e); return n+'박 '+(n+1)+'일'; }
+function myRange(a){ return gDot(a.start)+' ~ '+gMD(a.end); }
+
+/* ── 렌더 ── */
+function myRender(){
+  var apps=myApps();
+  /* 1. 환영 헤더 */
+  document.getElementById('myWel').innerHTML='<b>'+gEsc(ME.name)+' 님 환영합니다</b><span>디지털 관광주민증 인증 · '+gEsc(ME.addr)+'</span>'+
+    '<a href="#" onclick="gLogout();return false">로그아웃</a>';
+  /* 2. 환급액 */
+  var got=mySum(apps.filter(function(a){return a.status==='refunded';}),function(a){return a.refund&&a.refund.amount;});
+  var setl=mySum(apps.filter(function(a){return ['settle_review','settle_fix','refund_ok'].indexOf(a.status)>=0;}),function(a){return a.settle&&a.settle.expected;});
+  var trip=mySum(apps.filter(function(a){return a.status==='approved'||a.status==='change_review';}),function(a){return a.grant&&a.grant.cap;});
+  document.getElementById('myCash').innerHTML='<div><small>받은 환급액</small><div class="big">'+gWon(got)+'</div></div>'+
+    '<div class="sub"><div><small>정산 심사 중</small><b>+'+gWon(setl)+'</b></div><div><small>여행 예정 · 최대 환급 가능</small><b>+'+gWon(trip)+'</b></div></div>';
+  /* 3. 단계판 */
+  var cnt={}; G_STAGES.forEach(function(s){ cnt[s[0]]=0; });
+  apps.forEach(function(a){ var s=myStage(a); if(cnt[s]!=null) cnt[s]++; });
+  document.getElementById('myBoard').innerHTML='<div class="my-board-h"><b>신청 현황</b>'+
+    (cnt.fix?'<button class="my-warn" onclick="mySetFilter(\'fix\',true)">⚠ 보완이 필요한 신청 '+cnt.fix+'건</button>':'')+'</div>'+
+    '<div class="my-stages">'+G_STAGES.map(function(s){
+      return '<div class="my-stage'+(s[0]==='fix'&&cnt.fix?' fix':'')+(cnt[s[0]]?'':' zero')+(MY.filter===s[0]?' on':'')+'" role="button" tabindex="0" onclick="mySetFilter(\''+s[0]+'\',true)">'+
+        '<b>'+cnt[s[0]]+'</b><span>'+s[1]+'</span></div>';
+    }).join('')+'</div><p>단계를 누르면 아래 목록이 해당 신청만 보여요</p>';
+  /* 5. 신청 내역 */
+  document.getElementById('myCnt').textContent=apps.length+'건';
+  document.getElementById('myTabs').innerHTML=[['all','전체',apps.length]].concat(G_STAGES.map(function(s){return [s[0],s[1],cnt[s[0]]];})).map(function(t){
+    return '<button class="chip'+(MY.filter===t[0]?' on':'')+(t[0]==='fix'&&t[2]?' fixc':'')+'" role="tab" aria-selected="'+(MY.filter===t[0])+'" onclick="mySetFilter(\''+t[0]+'\')">'+t[1]+' '+t[2]+'</button>';
+  }).join('');
+  var list=apps.filter(function(a){ return MY.filter==='all'||myStage(a)===MY.filter; });
+  list.sort(function(a,b){ return (myIsFix(b)?1:0)-(myIsFix(a)?1:0)||(a.start<b.start?1:a.start>b.start?-1:0)||(a.createdAt<b.createdAt?1:-1); });
+  var show=MY.more?list:list.slice(0,4);
+  document.getElementById('myCards').innerHTML=(show.length?show.map(myCard).join(''):'<div class="my-empty">해당하는 신청이 없습니다.</div>')+
+    (list.length>4&&!MY.more?'<button class="my-more" onclick="MY.more=true;myRender()">더보기 ('+(list.length-4)+'건) ⌄</button>':'')+
+    (list.length>4&&MY.more?'<button class="my-more" onclick="MY.more=false;myRender()">접기 ⌃</button>':'');
+  /* 6. 알림 / 내 문의 */
+  var ns=gNotis(), un=ns.filter(function(n){return !n.read;}).length;
+  document.getElementById('noti').innerHTML='알림 <em>'+ns.length+'</em>'+(un?'<i>새 알림 '+un+'</i>':'')+'<small>전체 보기 ›</small>';
+  var mi=myInquiries(), ans=mi.filter(function(q){return q.answer;}).length;
+  document.getElementById('myInq').innerHTML='내 문의 <em>'+mi.length+'</em><small class="ok">답변완료 '+ans+'</small>';
+  myRenderDemo();
+}
+function myCard(a){
+  var r=gRegion(a.region), fx=myIsFix(a);
+  var amt=a.status==='refunded'?('<small>환급액</small>'+gWon(a.refund&&a.refund.amount)):('<small>최대 지원</small>'+gWon(a.grant&&a.grant.cap));
+  return '<div class="my-card'+(fx?' fix':'')+'"><div><h4>'+gEsc(myTitle(a))+'</h4><div class="meta">'+gEsc(a.id)+' · '+myRange(a)+'</div></div>'+
+    '<div>'+gBadge(a.status)+'</div><div class="amt">'+amt+'</div><div class="acts">'+
+    (fx?'<a class="btn sm red" href="'+myFixUrl(a)+'">수정하기</a>':'')+
+    '<button class="btn sm" onclick="myDetail(\''+gEsc(a.id)+'\')">상세보기</button></div></div>';
+}
+function mySetFilter(f,scroll){
+  MY.filter=(MY.filter===f&&scroll)?'all':f; MY.more=false; myRender();
+  if(scroll) document.getElementById('list').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function myInquiries(){ return gInquiries().filter(function(q){return q.uid===ME.id;}).sort(function(a,b){return a.at<b.at?1:-1;}); }
+
+/* ── 6. 전체 알림 모달 (p23 ⑥ · p9 마이페이지 알림) ── */
+function myNotiAll(){
+  var l=gNotis();
+  gModal('<div class="my-nh"><h3>전체 알림</h3><small>'+l.length+'건</small></div><div class="my-keep">최근 30일 알림만 보관</div>'+
+    (l.length?l.map(function(n){
+      var k=G_NOTI_KIND[n.kind]||['알림','#64748b'], r=gRegion(n.region);
+      return '<div class="my-ni'+(n.read?' read':'')+'" role="link" tabindex="0" onclick="myOpenNoti(\''+gEsc(n.id)+'\')"><i style="background:'+k[1]+'"></i>'+
+        '<div><b>'+(r?gEsc(r.full)+' · ':'')+gEsc(n.title)+'</b><p>'+gEsc(n.body)+'</p></div><time>'+gMD(gYmd(new Date(n.at)))+'</time></div>';
+    }).join(''):'<p class="g-empty">최근 30일 동안 받은 알림이 없습니다</p>')+
+    '<div class="my-nf"><span>알림톡을 놓쳐도 여기서 다시 확인할 수 있어요</span><button onclick="gReadAll();myRender();myNotiAll()">모두 읽음으로 표시</button></div>');
+}
+function myOpenNoti(id){
+  var n=gNotis().find(function(x){return x.id===id;}); if(!n) return;
+  gReadOne(id); myRender();
+  var m=/^mypage\.html\?app=(.+)$/.exec(n.link||'');
+  if(m&&gApp(decodeURIComponent(m[1]))){ myDetail(decodeURIComponent(m[1])); return; }
+  if(n.link&&/^[a-z]+\.html/.test(n.link)) location.href=n.link; else gCloseModal();
+}
+
+/* ── 내 문의 ── */
+function myInqList(){
+  var l=myInquiries();
+  gModal('<h3>내 문의</h3>'+(l.length?'<div class="tbl-wrap"><table class="tbl"><thead><tr><th>지역</th><th>제목</th><th>등록일</th><th>상태</th></tr></thead><tbody>'+
+    l.map(function(q){ var r=gRegion(q.region);
+      return '<tr><td>'+gEsc(r?r.full:q.region)+'</td><td><a href="support.html?r='+encodeURIComponent(q.region)+'&tab=qna">'+(q.secret?'🔒 ':'')+gEsc(q.title)+'</a></td><td>'+gMD(q.at)+'</td><td>'+
+        (q.answer?'<span class="my-ok">답변완료</span>':'<span class="muted">답변대기</span>')+'</td></tr>'; }).join('')+
+    '</tbody></table></div><p class="muted small">문의는 지역별 고객지원(문의하기)에서 작성·확인합니다. 문의는 기본 비공개입니다.</p>'
+    :'<p class="g-empty">작성한 문의가 없습니다.</p><p class="muted small tc">문의는 각 지역 페이지의 고객지원 › 문의하기에서 작성할 수 있어요.</p>'));
+}
+
+/* ── 4. 바로가기: 가맹점 찾기 / 서류 양식 ── */
+function myMerchants(){
+  var act=myApps().find(function(a){return G_INACTIVE.indexOf(a.status)<0&&a.status!=='refunded';});
+  var def=act?act.region:'pyeongchang';
+  gModal('<h3>디지털 관광주민증 가맹점 찾기</h3><p class="muted small">여행할 지역을 고르면 소비인정 업소(지역화폐 가맹점) 목록으로 이동합니다. 숙박업소는 목록에 없어도 인정, 제외 업종은 불인정입니다.</p>'+
+    '<label class="f" for="myMR">지역</label><select class="inp" id="myMR">'+G_ZONES.map(function(z){
+      return '<optgroup label="'+z+'">'+gRegionsAll().filter(function(r){return r.zone===z;}).map(function(r){
+        return '<option value="'+r.slug+'"'+(r.slug===def?' selected':'')+'>'+gEsc(r.full)+'</option>'; }).join('')+'</optgroup>'; }).join('')+'</select>'+
+    '<div class="my-row"><button class="btn purple" onclick="location.href=\'merchants.html?r=\'+document.getElementById(\'myMR\').value">소비인정 업소 보기</button>'+
+    '<button class="btn" onclick="location.href=\'localpay.html?r=\'+document.getElementById(\'myMR\').value">지역화폐 사용법</button></div>'+
+    '<p class="small" style="margin-top:14px"><a href="../site-f/benefit.html" style="color:var(--blue)">디지털 관광주민증 혜택 가맹점(시안 F) ›</a></p>');
+}
+var MY_FORMS=[
+  ['숙박확인서 (날인용)','숙박업소 날인을 받아 정산신청 때 결제영수증과 함께 제출','숙박확인서.hwp'],
+  ['가족관계 증빙 안내','가족 유형 신청 시 주민등록등본(또는 가족관계증명서) 제출','가족관계_증빙_안내.pdf'],
+  ['위임장','미성년자 동행·대리 제출 시 법정대리인 위임','위임장.hwp']
+];
+function myForms(){
+  gModal('<h3>서류 양식</h3><p class="muted small">신청·정산에 필요한 양식을 내려받으세요.</p><div class="tbl-wrap"><table class="tbl"><tbody>'+
+    MY_FORMS.map(function(f,i){ return '<tr><td><b>'+f[0]+'</b><div class="muted small">'+f[1]+'</div></td><td class="tr"><button class="btn sm" onclick="gToast(\''+f[2]+' 내려받기 (모의 — 실제 파일은 내려받지 않습니다)\')">내려받기</button></td></tr>'; }).join('')+
+    '</tbody></table></div>');
+}
+
+/* ── 7. QR 방문 인증 (p23 ⑦) ── */
+function myQRTrips(){
+  var T=gYmd(gToday());
+  return myApps().filter(function(a){ return (a.status==='approved'||a.status==='change_review')&&T>=a.start; });
+}
+function myQR(sel,spot){
+  var trips=myQRTrips();
+  if(!trips.length){
+    var up=myApps().filter(function(a){return a.status==='approved'||a.status==='change_review';}).sort(function(a,b){return a.start<b.start?-1:1;})[0];
+    gModal('<h3>QR 방문 인증</h3><div class="my-vf"><span class="c c1"></span><span class="c c2"></span><span class="c c3"></span><span class="c c4"></span><span class="msg">인증할 여행이 없습니다</span></div>'+
+      '<div class="note" style="margin-top:12px">승인 완료된 여행의 <b>여행 기간 중(또는 여행이 끝난 뒤)</b>에만 방문 인증을 할 수 있어요.'+
+      (up?'<br>다음 여행: <b>'+gEsc(myTitle(up))+'</b> · '+myRange(up)+' (D-'+gDiff(gToday(),up.start)+')':'')+'</div>'+
+      '<p class="muted small">시연: 화면 맨 아래 「데모 편의」에서 날짜를 [+1일]/[+7일] 이동하면 여행 기간이 되어 인증해 볼 수 있습니다.'+
+      (up?' <button class="btn sm" onclick="myShift('+gDiff(gToday(),up.start)+',\'qr\')">여행 시작일로 이동</button>':'')+'</p>');
+    return;
+  }
+  var a=trips.find(function(x){return x.id===sel;})||trips[0];
+  var r=gRegion(a.region), v=a.visits||[], need=myNeed(a.region);
+  var doneSet=v.map(function(x){return x.spot;});
+  var first=spot&&doneSet.indexOf(spot)<0?spot:(r.attractions.find(function(s){return doneSet.indexOf(s)<0;})||'');
+  gModal('<h3>QR 방문 인증</h3>'+
+    '<div class="my-sel"><span>인증할 여행</span><select id="myQT" onchange="myQR(this.value)">'+trips.map(function(t){
+      var rr=gRegion(t.region); return '<option value="'+gEsc(t.id)+'"'+(t.id===a.id?' selected':'')+'>'+gEsc(rr.full)+' · '+gMD(t.start)+' ~ '+gMD(t.end)+'</option>'; }).join('')+'</select></div>'+
+    '<div class="my-vf" id="myVF"><span class="c c1"></span><span class="c c2"></span><span class="c c3"></span><span class="c c4"></span><span class="ln"></span><span class="msg" id="myVFm">관광지 QR을 비춰 주세요</span></div>'+
+    '<div class="my-sec"><h5>지정관광지 선택 · 인증 '+v.length+' / 필수 '+need+'곳</h5><div class="my-spots">'+r.attractions.map(function(s){
+      var d=doneSet.indexOf(s)>=0;
+      return '<label class="my-spot'+(d?' done':'')+'"><input type="radio" name="mySpot" value="'+gEsc(s)+'"'+(d?' disabled':'')+(s===first?' checked':'')+'>'+gEsc(s)+(d?' ✓':'')+'</label>'; }).join('')+'</div></div>'+
+    '<div class="my-qn"><div>· 관광지 반경 안에서만 인증 (GPS 확인)</div><div>· 정산신청 방문 인증에 자동 입력</div></div>'+
+    '<button class="btn block purple" id="myQB" onclick="myScan(\''+gEsc(a.id)+'\')"'+(first?'':' disabled')+'>'+(first?'QR 스캔 (모의)':'지정관광지를 모두 인증했어요')+'</button>');
+}
+function myScan(id){
+  if(MY.qrScan) return;
+  var el=document.querySelector('input[name=mySpot]:checked'); if(!el){ gToast('인증할 관광지를 선택해 주세요','bad'); return; }
+  var spot=el.value;
+  var a0=gApp(id); if(a0&&(a0.visits||[]).some(function(x){return x.spot===spot;})){ gToast('이미 인증한 관광지입니다','bad'); return; }
+  MY.qrScan=true;
+  var vf=document.getElementById('myVF'), m=document.getElementById('myVFm'), b=document.getElementById('myQB');
+  vf.classList.add('busy'); m.textContent='📍 GPS 확인 중… (관광지 반경 확인)'; b.disabled=true;
+  setTimeout(function(){
+    MY.qrScan=false;
+    var a=gApp(id); if(!a) return;
+    a.visits=a.visits||[];
+    if(!a.visits.some(function(x){return x.spot===spot;})){
+      a.visits.push({spot:spot,date:gYmd(gToday()),method:'qr',gps:true,at:gNow().toISOString()});
+      gPutApp(a);
+    }
+    gToast('✓ '+spot+' 방문 인증 완료 — 정산신청 방문 인증에 자동 입력됩니다','ok');
+    myRender();
+    if(document.getElementById('myQT')) myQR(id);
+  },1500);
+}
+
+/* ── 상세 창 (p24) ── */
+function myProg(a){
+  var cur=a.status==='change_review'?2:gProgress(a);
+  var bad=myIsFix(a)||a.status==='rejected'||a.status==='canceled';
+  if(a.status==='settle_fix') cur=4;
+  return '<div class="prog" aria-label="진행 단계">'+['신청','승인','여행','정산','환급'].map(function(t,i){
+    var n=i+1; return '<span class="'+(n<cur?'done':n===cur?'cur'+(bad?' bad':''):'')+'">'+t+'</span>'; }).join('')+'</div>';
+}
+var MY_VER={dju:'디지털 관광주민증',kakao:'카카오톡 인증',id:'신분증 사본 첨부'};
+var MY_BY={system:'시스템',user:'본인',demo:'시연 데이터',admin:'관리자',hq:'한국관광공사',gov:'지자체'};
+function myBy(b){ b=String(b||''); return MY_BY[b]||(b.indexOf('gov')===0?'지자체':gEsc(b)); }
+function myDetail(id){
+  var a=gApp(id); if(!a||a.uid!==ME.id){ gToast('신청 내역을 찾을 수 없습니다','bad'); return; }
+  var r=gRegion(a.region), T=gYmd(gToday());
+  var h='<div class="my-d"><div class="my-dh"><div>'+gBadge(a.status)+'<h3>'+gEsc(myTitle(a))+'</h3></div>'+
+    (a.status==='refunded'?'<div class="my-stamp">환급<br>완료</div>':'')+'</div>'+myProg(a)+myTodo(a,r,T);
+  /* 공통: 신청 정보 */
+  h+='<div class="my-sec"><h5>신청 정보</h5><dl class="my-kv">'+
+    '<dt>신청번호</dt><dd>'+gEsc(a.id)+'</dd><dt>지역</dt><dd>'+gEsc(r?r.full+' ('+r.sido+')':a.region)+'</dd>'+
+    '<dt>회차</dt><dd>'+a.round+'회차</dd><dt>유형</dt><dd>'+gEsc((a.grant&&a.grant.label)||gTypeName(a.type))+' · 최대 '+gWon(a.grant&&a.grant.cap)+' (환급률 '+(a.grant&&a.grant.rate)+'%)</dd>'+
+    '<dt>여행 일정</dt><dd>'+gDot(a.start)+' ~ '+gDot(a.end)+' ('+myDays(a.start,a.end)+')</dd><dt>신청일</dt><dd>'+gDT(a.createdAt)+'</dd></dl></div>';
+  /* 신청자·동행자 */
+  h+='<div class="my-sec"><h5>신청자 · 동행자</h5><div class="tbl-wrap"><table class="tbl"><thead><tr><th>구분</th><th>이름</th><th>인증 방법</th></tr></thead><tbody>'+
+    (a.people||[]).map(function(p){ return '<tr><td>'+gEsc(p.rel)+(p.minor?' (미성년)':'')+'</td><td>'+gEsc(gMask(p.name))+'</td><td>'+gEsc(MY_VER[p.verified]||p.verified||'-')+'</td></tr>'; }).join('')+
+    '</tbody></table></div></div>';
+  /* 처리 이력 */
+  h+='<div class="my-sec"><h5>처리 이력</h5><ul class="my-tl">'+(a.history||[]).slice().reverse().map(function(x){
+    return '<li><time>'+gDT(x.at)+'</time>'+gBadge(x.st)+' <em>'+myBy(x.by)+(x.memo?' · '+gEsc(x.memo):'')+'</em></li>'; }).join('')+'</ul></div></div>';
+  gModal(h,'wide');
+}
+function myTodo(a,r,T){
+  var s=a.status, h='';
+  if(s==='received'||s==='review'){
+    h='<div class="my-todo"><h4>⏳ 지자체 심사 중</h4><p>'+gEsc(r.dept)+'에서 신청 내용을 확인하고 있습니다. 심사 결과는 알림톡으로 안내드립니다.</p>'+
+      '<div class="my-row"><button class="btn sm" onclick="myCancelAsk(\''+gEsc(a.id)+'\')">신청 취소</button></div></div>';
+  } else if(s==='fix'){
+    var f=a.fix||{};
+    h='<div class="my-todo fix"><h4>⚠ 보완 서류 제출 '+(f.due?gMD(f.due)+'까지':'')+'</h4><p>'+gEsc(f.reason||'보완 사유를 확인해 주세요')+'</p>'+
+      '<div class="my-file"><b>📎 보완 서류</b><span>↑ 파일 첨부는 [수정하러 가기] → 사전신청 최종 확인 단계에서 합니다</span>'+
+      ((f.files||[]).length?'<span>첨부됨: '+f.files.map(function(x){return gEsc(x.name||x);}).join(', ')+'</span>':'')+'</div>'+
+      '<a class="btn block red" href="'+myFixUrl(a)+'">수정하러 가기 ›</a></div>';
+  } else if(s==='approved'){
+    var started=T>=a.start, ended=T>a.end, v=a.visits||[], need=myNeed(a.region);
+    var due=gYmd(gAdd(a.end,gStdNum('C1')||10));
+    h='<div class="my-todo"><button class="my-link" onclick="myChange(\''+gEsc(a.id)+'\')"'+(started?' disabled':'')+'>📅 여행 일정 변경</button>'+
+      '<p class="small muted">'+(started?'여행이 시작된 뒤에는 일정을 변경할 수 없습니다.':'일정을 바꾸면 지자체 재승인이 필요합니다. (여행 시작 '+(gStdNum('A1')||2)+'일 전까지)')+'</p>'+
+      '<div class="my-sec"><h5>방문 인증 현황 · '+v.length+' / 필수 '+need+'곳</h5>'+(v.length?'<div class="small">'+v.map(function(x){
+        return '<div>✓ '+gEsc(x.spot)+' · '+gMD(x.date)+' · '+(x.method==='qr'?'QR':'사진')+(x.gps?' · GPS 확인':'')+'</div>'; }).join('')+'</div>':'<div class="small muted">아직 인증한 관광지가 없습니다.</div>')+
+      (started&&v.length<4?'<button class="btn sm" style="margin-top:8px" onclick="myQR(\''+gEsc(a.id)+'\')">QR 방문 인증</button>':'')+'</div>'+
+      '<div class="my-ph">정산 후 인정 · 불인정 · 환급액이 여기에 표시됩니다</div>'+
+      (ended?'<a class="btn block" href="settle.html?r='+encodeURIComponent(a.region)+'">정산 신청하러 가기 ›</a><p class="small muted tc">정산 기한: '+gDot(due)+'까지 (여행 종료 후 '+(gStdNum('C1')||10)+'일 이내)</p>'
+        :started?'<p class="small muted">여행 중입니다. 지역화폐로 결제하고 지정관광지에서 QR 방문 인증을 해 주세요. 여행이 끝나면 정산신청을 할 수 있어요.</p>'
+        :'<p class="small muted">여행 시작까지 D-'+gDiff(T,a.start)+' · 여행 종료 후 정산신청을 할 수 있어요.</p><div class="my-row"><button class="btn sm" onclick="myCancelAsk(\''+gEsc(a.id)+'\')">신청 취소</button></div>')+'</div>';
+  } else if(s==='change_review'){
+    var c=a.change||{}, p=c.prev||{start:a.start,end:a.end};
+    h='<div class="my-todo"><h4>📅 일정 변경 심사중</h4><p>'+gDot(p.start)+' ~ '+gMD(p.end)+' → <b>'+gDot(c.start||a.start)+' ~ '+gMD(c.end||a.end)+'</b></p>'+
+      (c.reason?'<p class="small muted">변경 사유: '+gEsc(c.reason)+'</p>':'')+(c.at?'<p class="small muted">요청일시: '+gDT(c.at)+'</p>':'')+
+      '<p class="small">재승인 결과는 알림톡으로 안내드립니다. 재승인 전까지는 기존 일정이 유효합니다.</p></div>';
+  } else if(s==='settle_review'||s==='refund_ok'){
+    var st=a.settle||{};
+    h='<div class="my-todo"><h4>'+(s==='refund_ok'?'✓ 환급 승인 — 지급 대기':'🧾 정산 심사 중')+'</h4>'+myThree(st,null)+myItems(st,true)+
+      '<p class="small">예상 환급액 <b>'+gWon(st.expected)+'</b> · 심사 후 '+(gStdNum('U1')||14)+'일 이내 '+gEsc(r.voucher)+'(으)로 지급됩니다.</p>'+
+      (st.id?'<p class="small muted">정산번호 '+gEsc(st.id)+(st.at?' · 접수 '+gDT(st.at):'')+'</p>':'')+'</div>';
+  } else if(s==='settle_fix'){
+    var f2=a.fix||{};
+    h='<div class="my-todo fix"><h4>⚠ 정산 보완 '+(f2.due?gMD(f2.due)+'까지':'')+'</h4><p>'+gEsc(f2.reason||myLastMemo(a)||'보완 사유를 확인해 주세요')+'</p>'+
+      '<div class="my-file"><b>📎 보완 증빙</b><span>↑ 파일 첨부는 정산신청 최종 확인 단계에서 합니다</span></div>'+
+      '<a class="btn block red" href="'+myFixUrl(a)+'">수정하러 가기 ›</a></div>';
+  } else if(s==='refunded'){
+    var st2=a.settle||{}, rf=a.refund||{};
+    var pin=String(rf.pin||''), mask=pin.replace(/^(\d{4})-.*$/,'$1-****-****');
+    h='<div class="my-todo">'+myThree(st2,rf.amount)+myItems(st2,false)+
+      '<p class="small">지급일 '+(rf.paidAt?gDot(rf.paidAt):'-')+' · '+gEsc(r.voucher)+'</p>'+
+      '<div class="my-pin"><span>PIN 번호</span><code id="myPin" data-on="0">'+gEsc(mask)+'</code>'+
+      '<button class="btn sm" onclick="myPinToggle(\''+gEsc(pin)+'\',\''+gEsc(mask)+'\')">보기</button>'+
+      (rf.registered?'<span class="my-ok">앱 등록 완료</span>':'<span class="my-no">미등록</span> <a class="btn sm purple" href="localpay.html?r='+encodeURIComponent(a.region)+'">PIN 등록하러 가기</a>')+'</div>'+
+      '<p class="small muted">본인 명의 앱에만 등록할 수 있으며 재발급되지 않습니다.</p></div>';
+  } else if(s==='rejected'||s==='canceled'){
+    h='<div class="my-todo"><h4>'+(s==='rejected'?'반려된 신청입니다':'취소된 신청입니다')+'</h4><p>사유: '+gEsc(myLastMemo(a)||'-')+'</p>'+
+      (s==='canceled'?'<p class="small muted">취소한 건은 연간 신청 횟수에 포함되지 않습니다.</p>':'')+'</div>';
+  }
+  return h;
+}
+function myLastMemo(a){ var h=(a.history||[]).filter(function(x){return x.st===a.status&&x.memo;}); return h.length?h[h.length-1].memo:''; }
+function myThree(st,paid){
+  var rec=Number(st.recognized)||0, rej=Number(st.rejectedAmt)||0;
+  return '<div class="my-3"><div><small>인정 금액</small><b>'+gWon(rec)+'</b></div><div class="bad"><small>불인정</small><b>'+gWon(rej)+'</b></div>'+
+    '<div class="pay"><small>'+(paid!=null?'환급 완료':'예상 환급액')+'</small><b>'+gWon(paid!=null?paid:st.expected)+'</b></div></div>';
+}
+function myItems(st,all){
+  var it=st.items||[], ok=it.filter(function(x){return x.ok;});
+  var rows=(all?it:ok);
+  if(!rows.length) return '';
+  return '<details'+(all?' open':'')+'><summary>'+(all?'정산 내역 '+it.length+'건 (인정 '+ok.length+' · 불인정 '+(it.length-ok.length)+')':'✓ 인정 내역 '+ok.length+'건 (건별 금액 공개)')+'</summary>'+
+    '<div class="tbl-wrap" style="border:0;border-radius:0 0 10px 10px"><table class="tbl"><thead><tr><th>결제일</th><th>업소</th><th>업종</th><th class="tr">금액</th><th>판정</th></tr></thead><tbody>'+
+    rows.map(function(x){ return '<tr><td>'+gMD(String(x.at||'').slice(0,10))+'</td><td>'+gEsc(x.merchant)+'</td><td>'+gEsc(x.cat)+'</td><td class="tr">'+gWon(x.amount)+'</td><td>'+
+      (x.ok?'<span class="my-ok">인정</span>':'<span class="my-no">불인정</span> <span class="small muted">'+gEsc(x.reason||'')+'</span>')+'</td></tr>'; }).join('')+
+    '</tbody></table></div></details>'+
+    ((st.visits||[]).length?'<p class="small muted">방문 인증 '+st.visits.length+'곳: '+st.visits.map(function(v){return gEsc(v.spot);}).join(', ')+'</p>':'');
+}
+function myPinToggle(pin,mask){
+  var c=document.getElementById('myPin'); if(!c) return;
+  var on=c.getAttribute('data-on')==='1';
+  c.textContent=on?mask:pin; c.setAttribute('data-on',on?'0':'1');
+  c.nextElementSibling.textContent=on?'보기':'가리기';
+}
+
+/* 신청 취소 (p9: 확인 팝업 → "신청이 취소되었어요") */
+function myCancelAsk(id){
+  var a=gApp(id); if(!a) return;
+  gModal('<h3>신청을 취소할까요?</h3><p>'+gEsc(myTitle(a))+' · '+myRange(a)+'</p>'+
+    '<div class="note warn">취소하면 되돌릴 수 없습니다. 다시 여행하려면 새로 사전신청해야 합니다.</div>'+
+    '<div class="my-row" style="justify-content:flex-end"><button class="btn" onclick="myDetail(\''+gEsc(id)+'\')">돌아가기</button>'+
+    '<button class="btn red" onclick="myCancel(\''+gEsc(id)+'\')">신청 취소</button></div>');
+}
+function myCancel(id){
+  var a=gApp(id); if(!a||['received','review','approved','fix'].indexOf(a.status)<0){ gToast('취소할 수 없는 상태입니다','bad'); return; }
+  gSetStatus(id,'canceled',{by:'user',memo:'신청자 취소'});
+  gToast('신청이 취소되었어요');
+  myRender(); myDetail(id);
+}
+
+/* 일정 변경 창 (p22·p24) */
+function myChange(id){
+  var a=gApp(id); if(!a||a.status!=='approved') return;
+  var r=gRegion(a.region), rd=r.rounds.find(function(x){return x.n===a.round;})||{travelStart:a.start,travelEnd:a.end};
+  var minS=gYmd(gAdd(gToday(),gStdNum('A1')||2)); if(minS<rd.travelStart) minS=rd.travelStart;
+  var maxD=gStdNum('C5')||7;
+  var ok=minS<=rd.travelEnd;
+  gModal('<h3>📅 여행 일정 변경</h3><p class="muted small">'+gEsc(myTitle(a))+' · 현재 일정 '+gDot(a.start)+' ~ '+gMD(a.end)+'</p>'+
+    '<div class="note"><b>변경하면 지자체 재승인이 필요합니다.</b><br>· 같은 회차 여행기간('+gDot(rd.travelStart)+' ~ '+gMD(rd.travelEnd)+') 안에서만 변경<br>· 새 시작일은 오늘부터 '+(gStdNum('A1')||2)+'일 뒤('+gMD(minS)+')부터 · 여행 일정 최대 '+maxD+'일<br>· 재승인 결과는 알림톡으로 안내되며, 그 전까지는 기존 일정이 유효합니다</div>'+
+    (ok?'<div class="grid g2"><div><label class="f" for="myCS">새 시작일</label><input class="inp" type="date" id="myCS" min="'+minS+'" max="'+rd.travelEnd+'" value="'+(a.start>=minS?a.start:minS)+'" oninput="myChkChange(\''+gEsc(id)+'\')"></div>'+
+      '<div><label class="f" for="myCE">새 종료일</label><input class="inp" type="date" id="myCE" min="'+minS+'" max="'+rd.travelEnd+'" value="'+(a.start>=minS?a.end:gYmd(gAdd(minS,gDiff(a.start,a.end))))+'" oninput="myChkChange(\''+gEsc(id)+'\')"></div></div>'+
+      '<label class="f" for="myCR">변경 사유</label><textarea class="inp" id="myCR" maxlength="200" placeholder="예) 동행자 일정 변경으로 출발일 조정" oninput="myChkChange(\''+gEsc(id)+'\')"></textarea>'+
+      '<div class="my-err" id="myCErr"></div><div class="my-row" style="justify-content:flex-end"><button class="btn" onclick="myDetail(\''+gEsc(id)+'\')">취소</button>'+
+      '<button class="btn purple" id="myCB" onclick="myChangeSubmit(\''+gEsc(id)+'\')">일정 변경 요청</button></div>'
+      :'<div class="note warn">이번 회차 여행기간 안에서 변경할 수 있는 날짜가 없습니다.</div><div class="my-row"><button class="btn" onclick="myDetail(\''+gEsc(id)+'\')">돌아가기</button></div>'));
+  if(ok) myChkChange(id);
+}
+function myChkChange(id){
+  var a=gApp(id), r=gRegion(a.region), rd=r.rounds.find(function(x){return x.n===a.round;})||{travelStart:a.start,travelEnd:a.end};
+  var s=document.getElementById('myCS').value, e=document.getElementById('myCE').value, why=document.getElementById('myCR').value.trim();
+  var minS=gYmd(gAdd(gToday(),gStdNum('A1')||2)); if(minS<rd.travelStart) minS=rd.travelStart;
+  var maxD=gStdNum('C5')||7, err='';
+  if(!s||!e) err='시작일과 종료일을 선택해 주세요.';
+  else if(s<minS) err='새 시작일은 '+gDot(minS)+' 이후여야 합니다. (여행 '+(gStdNum('A1')||2)+'일 전까지 신청)';
+  else if(e>rd.travelEnd||s>rd.travelEnd) err='같은 회차 여행기간('+gMD(rd.travelEnd)+'까지) 안에서만 변경할 수 있습니다.';
+  else if(e<s) err='종료일이 시작일보다 빠릅니다.';
+  else if(gDiff(s,e)+1>maxD) err='여행 일정은 최대 '+maxD+'일입니다. (선택: '+(gDiff(s,e)+1)+'일)';
+  else if(s===a.start&&e===a.end) err='현재 일정과 같습니다.';
+  else if(!why) err='변경 사유를 입력해 주세요.';
+  var el=document.getElementById('myCErr');
+  el.style.color=err?'':'var(--ok)';
+  el.textContent=err||('✓ '+gDot(s)+' ~ '+gMD(e)+' ('+myDays(s,e)+')로 변경을 요청합니다.');
+  document.getElementById('myCB').disabled=!!err;
+  return err?null:{s:s,e:e,why:why};
+}
+function myChangeSubmit(id){
+  var v=myChkChange(id); if(!v) return;
+  var a=gApp(id), r=gRegion(a.region);
+  gSetStatus(id,'change_review',{by:'user',memo:'일정 변경 요청',patch:{change:{start:v.s,end:v.e,reason:v.why,at:gNow().toISOString(),prev:{start:a.start,end:a.end}}}});
+  gNotify(ME.id,'change',a.region,'일정 변경','일정 변경 심사중 — '+r.full+' '+a.round+'회차 일정을 '+gMD(v.s)+'~'+gMD(v.e)+'로 변경 요청했습니다. 재승인 결과는 알림톡으로 안내드립니다.','mypage.html?app='+id,false);
+  gToast('일정 변경을 요청했습니다');
+  myRender(); myDetail(id);
+}
+
+/* ── 데모 편의 ── */
+function myRenderDemo(){
+  var off=Number(gGet('dayOffset',0))||0;
+  document.getElementById('myDemo').innerHTML='<b>데모 편의</b><span>현재 데모 날짜 '+gDot(gToday())+' (실제 날짜 '+(off>=0?'+':'')+off+'일)</span><span class="sp"></span>'+
+    '<button onclick="myShift(-7)">-7일</button><button onclick="myShift(1)">+1일</button><button onclick="myShift(7)">+7일</button><button onclick="myShift(null)">초기화</button>'+
+    '<button onclick="myReseed()">시연 데이터 다시 만들기</button>';
+}
+function myShift(n,then){
+  var off=Number(gGet('dayOffset',0))||0;
+  gSet('dayOffset',n==null?0:off+n);
+  location.href='mypage.html'+(then==='qr'?'?qr=1':'');
+}
+function myReseed(){
+  if(!confirm('내 신청·알림을 모두 지우고 시연 데이터를 다시 만들까요?')) return;
+  gSaveApps(gApps().filter(function(a){return a.uid!==ME.id;}));
+  gUSet('noti',[]);
+  gSaveInquiries(gInquiries().filter(function(q){return !(q.uid===ME.id&&q.demo);}));
+  gUSet('myInqSeeded',false);
+  try{ localStorage.removeItem(G_P+'seeded_'+ME.id); }catch(e){}
+  gSeedDemo();
+  location.href='mypage.html';
+}
+/* ── 시작 (모든 함수·상수 정의 뒤) ── */
+if(gRequireLogin()){
+  gSeedDemo();
+  myInit();
+  if(gQS('qr')) myQR();
+}
+</script>
+</body></html>

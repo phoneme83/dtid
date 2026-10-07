@@ -1,0 +1,209 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>지역화폐 앱(모의) — 대한민국 반값여행 · 시안 G</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="g.css?v=1">
+<style>
+/* 지역화폐 앱(모의) — 시안 D t50-pay.html 의 모바일 앱 목업을 단순화. 접두사 .py- */
+.py-stage{background:#334155;padding:26px 16px 40px}
+.py-cap{max-width:430px;margin:0 auto 10px;color:#cbd5e1;font-size:12.5px;text-align:center}
+.py-cap a{color:#fed7aa;font-weight:700}
+.py-app{max-width:430px;margin:0 auto;background:#f8fafc;border-radius:26px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.35);border:8px solid #0f172a}
+.py-top{color:#fff;padding:16px 18px 20px}
+.py-hd{display:flex;align-items:center;gap:8px}
+.py-hd .lg{font-size:22px}
+.py-hd h1{margin:0;font-size:17px;font-weight:800;flex:1;min-width:0}
+.py-hd select{max-width:118px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);color:#fff;border-radius:8px;padding:4px 6px;font-size:12.5px}
+.py-hd select option{color:#111}
+.py-sub{font-size:12.5px;opacity:.85;margin-top:3px}
+.py-bal{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:16px}
+.py-bal .v{font-size:30px;font-weight:900;letter-spacing:-.5px}
+.py-bal .v small{font-size:13px;font-weight:700;opacity:.85}
+.py-bal button{border:0;background:#fff;color:#0f172a;font-weight:800;border-radius:10px;padding:9px 14px;cursor:pointer;font-size:13.5px}
+.py-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:#fff;border-bottom:1px solid var(--line)}
+.py-tabs button{border:0;background:none;padding:12px 4px;font-weight:700;color:var(--sub);cursor:pointer;border-bottom:3px solid transparent;font-size:14px}
+.py-tabs button.on{color:var(--ink);border-bottom-color:var(--rc,#0f766e)}
+.py-body{padding:16px 16px 24px}
+.py-lb{font-size:13px;font-weight:800;color:#475569;margin:14px 0 8px;display:flex;justify-content:space-between;gap:8px}
+.py-lb:first-child{margin-top:0}
+.py-days{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.py-days button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 9px;font-size:12.5px;font-weight:700;cursor:pointer}
+.py-days button.on{background:var(--rc,#0f766e);color:#fff;border-color:transparent}
+.py-days .cap{flex-basis:100%;font-size:12px;color:var(--sub)}
+.py-ms{display:flex;flex-direction:column;gap:6px;max-height:330px;overflow:auto;padding-right:2px}
+.py-m{display:flex;align-items:center;gap:10px;border:2px solid #e2e8f0;border-radius:12px;padding:9px 11px;background:#fff;cursor:pointer;text-align:left;width:100%;font-size:14px}
+.py-m.on{border-color:var(--rc,#0f766e);background:#f0fdfa}
+.py-m .c{flex:none;font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px;background:#f1f5f9;color:#475569}
+.py-m .n{flex:1;min-width:0;font-weight:700}
+.py-m .n small{display:block;font-weight:400;color:var(--mute);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.py-m .w{flex:none;font-size:11px;font-weight:800;color:#b45309;background:#fff7ed;border-radius:6px;padding:2px 6px}
+.py-m.out{opacity:.75} .py-m.out .w{color:#be123c;background:#fff1f2}
+.py-amt{display:flex;gap:6px}
+.py-amt .inp{flex:1;font-size:17px;font-weight:800;text-align:right}
+.py-qa{display:flex;gap:6px;margin-top:6px}
+.py-qa button{flex:1;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 0;font-size:12.5px;font-weight:700;cursor:pointer}
+.py-pay{width:100%;margin-top:14px;min-height:54px;border:0;border-radius:14px;color:#fff;font-size:16.5px;font-weight:800;cursor:pointer;background:var(--rc,#0f766e)}
+.py-note{background:#f1f5f9;border-radius:10px;padding:10px 12px;font-size:12.5px;color:#475569;line-height:1.6;margin-top:10px}
+.py-note.warn{background:#fff7ed;color:#9a3412}
+.py-note.bad{background:#fff1f2;color:#9f1239}
+.py-tx{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #eef0f3;font-size:13.5px}
+.py-tx .i{flex:none;width:34px;height:34px;border-radius:50%;background:#f1f5f9;display:flex;align-items:center;justify-content:center}
+.py-tx .n{flex:1;min-width:0}
+.py-tx .n small{display:block;color:var(--mute);font-size:11.5px}
+.py-tx .a{font-weight:800;white-space:nowrap}
+.py-tx .a.m{color:#b91c1c} .py-tx .a.p{color:#0f766e}
+.py-tx .x{display:inline-block;font-size:10.5px;font-weight:800;color:#b45309;background:#fff7ed;border-radius:5px;padding:1px 5px;margin-left:4px}
+.py-pin{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;margin-bottom:8px}
+.py-pin .r{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.py-pin code{font-family:Consolas,monospace;background:#f1f5f9;border-radius:6px;padding:2px 6px;font-size:13px}
+.py-login{text-align:center;padding:30px 18px}
+.py-login p{font-size:13.5px;color:#475569}
+.py-qr{display:block;width:150px;height:150px;margin:6px auto 10px;border:6px solid #f1f5f9;border-radius:12px}
+.py-sum{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+.py-sum td{padding:6px 2px;border-bottom:1px dashed var(--line)} .py-sum td:last-child{text-align:right;font-weight:700}
+@media (max-width:600px){ .py-stage{padding:12px 0 30px} .py-app{border-radius:0;border-width:0} .py-cap{padding:0 16px} }
+</style>
+</head><body>
+<main>
+  <div class="py-stage">
+    <p class="py-cap">지역화폐 앱 <b>모의 화면</b>입니다 — 실제 결제는 일어나지 않습니다. 여기서 결제한 내역이 <a id="pySettle" href="settle.html">정산신청 2단계</a>의 ‘결제내역 불러오기’에 나타납니다.</p>
+    <div class="py-app" id="pyApp"></div>
+  </div>
+</main>
+<script src="../site-assets/data.js?v=20260818a"></script>
+<script src="g.js?v=1"></script>
+<script>
+const SLUG=(gQS('r')&&gRegion(gQS('r')))?gQS('r'):'pyeongchang';
+gShell({mode:'region',slug:SLUG,active:'pay'});
+if(gUser()) gSeedDemo();
+const R=gRegion(SLUG), APP=gStd('P7',SLUG).val;
+const MS=gMerchants(SLUG);
+const OUT={id:'out-1',cat:'음식',name:(R.nearby[0]||'인접')+' 한식당',addr:(R.nearby[0]||'인접 지역')+' (관외)',out:true};
+let pyTab=['pay','hist','pin'].indexOf(gQS('tab'))>=0?gQS('tab'):'pay';
+let pySel=null, pyDate=gYmd(gToday()), pyAmt='';
+document.getElementById('pySettle').href='settle.html?r='+SLUG;
+
+function pyWallet(){ return gUGet('wallet',{})||{}; }
+function pyBal(){ return Number(pyWallet()[SLUG])||0; }
+function pySetBal(v){ const w=pyWallet(); w[SLUG]=v; gUSet('wallet',w); }
+function pyTx(kind,label,amount){ const l=gUGet('wtx',[])||[]; l.push({region:SLUG,kind,label,amount,at:gNow().toISOString()}); gUSet('wtx',l); }
+function pyLocalIso(ymd){ const n=gNow(), p=x=>String(x).padStart(2,'0'); return ymd+'T'+p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds()); }
+
+/* 이 지역 승인 건(정산 시연용 날짜 빠른 선택) */
+function pyTrips(){
+  if(!gUid()) return [];
+  return gMyApps().filter(a=>a.region===SLUG&&['approved','change_review','settle_fix'].indexOf(a.status)>=0);
+}
+
+function pyPayView(){
+  const trips=pyTrips();
+  const days=trips.map(a=>{
+    const n=Math.min(gDiff(a.start,a.end),13), b=[];
+    for(let i=0;i<=n;i++){ const d=gYmd(gAdd(a.start,i)); b.push('<button class="'+(d===pyDate?'on':'')+'" onclick="pyDate=\''+d+'\';pyRender()">'+gMD(d)+'</button>'); }
+    return '<span class="cap">'+a.round+'회차 '+gEsc(gTypeName(a.type))+' 여행 '+gDot(a.start)+'~'+gMD(a.end)+' ('+gEsc(G_ST[a.status].nm)+')</span>'+b.join('');
+  }).join('');
+  const all=MS.concat([OUT]);
+  const sel=all.find(m=>m.id===pySel);
+  return '<div class="py-lb"><span>결제일 (데모용)</span><span class="small" style="font-weight:500">기본 오늘</span></div>'+
+    '<input class="inp" type="date" value="'+pyDate+'" onchange="pyDate=this.value||\''+gYmd(gToday())+'\';pyRender()" aria-label="결제일">'+
+    '<div class="py-days"><button class="'+(pyDate===gYmd(gToday())?'on':'')+'" onclick="pyDate=\''+gYmd(gToday())+'\';pyRender()">오늘</button>'+(days||'<span class="cap">이 지역에 승인된 여행이 없어요. 정산 시연은 승인 건의 여행기간 날짜로 결제해 주세요.</span>')+'</div>'+
+    '<div class="py-lb"><span>가맹점 선택</span><span class="small" style="font-weight:500">QR 스캔 대신 선택</span></div>'+
+    '<div class="py-ms">'+all.map(m=>'<button class="py-m'+(m.id===pySel?' on':'')+(m.out?' out':'')+'" onclick="pySel=\''+m.id+'\';pyRender()">'+
+      '<span class="c">'+gEsc(m.excluded?(m.biz||'제외'):m.cat)+'</span><span class="n">'+gEsc(m.name)+'<small>'+gEsc(m.addr||'')+'</small></span>'+
+      (m.out?'<span class="w">관외</span>':m.excluded?'<span class="w">⚠ 정산 불인정</span>':'')+'</button>').join('')+'</div>'+
+    (sel&&sel.excluded?'<div class="py-note warn">⚠ <b>'+gEsc(sel.biz||'제외 업종')+' 업종</b>은 반값여행 제외 업종이에요. 결제는 되지만 정산 시 불인정될 수 있어요.</div>':'')+
+    (sel&&sel.out?'<div class="py-note bad">⛔ 관외 가맹점입니다. '+gEsc(R.full)+' 지역화폐는 관내 가맹점에서만 결제가 승인됩니다.</div>':'')+
+    '<div class="py-lb"><span>결제 금액</span></div>'+
+    '<div class="py-amt"><input class="inp" id="pyAmt" inputmode="numeric" placeholder="0" value="'+gEsc(pyAmt)+'" oninput="this.value=this.value.replace(/[^0-9]/g,\'\');pyAmt=this.value"><span style="align-self:center;font-weight:800">원</span></div>'+
+    '<div class="py-qa">'+[10000,30000,50000,100000].map(v=>'<button onclick="pyAmt=String((Number(pyAmt)||0)+'+v+');pyRender()">+'+gMan(v)+'</button>').join('')+'<button onclick="pyAmt=\'\';pyRender()">지움</button></div>'+
+    '<button class="py-pay" onclick="pyPayAsk()">QR 결제</button>'+
+    '<div class="py-note">관외 가맹점에서는 결제가 승인되지 않습니다. 결제내역은 정산신청 때 자동으로 불러와집니다.</div>';
+}
+
+function pyPayAsk(){
+  const m=MS.concat([OUT]).find(x=>x.id===pySel), amt=Number(pyAmt)||0;
+  if(!m){ gToast('가맹점을 선택해 주세요','bad'); return; }
+  if(m.out){ gToast('관외 가맹점은 결제가 승인되지 않아요','bad'); return; }
+  if(amt<=0){ gToast('결제 금액을 입력해 주세요','bad'); return; }
+  if(amt>pyBal()){ gToast('잔액이 부족해요. 먼저 충전해 주세요','bad'); pyCharge(amt-pyBal()); return; }
+  gModal('<h3>QR 결제</h3><img class="py-qr" src="../assets/img/qr-code.svg" alt="가맹점 QR(모의)">'+
+    '<table class="py-sum"><tr><td>가맹점</td><td>'+gEsc(m.name)+'</td></tr><tr><td>업종</td><td>'+gEsc(m.excluded?(m.biz||'제외 업종'):m.cat)+'</td></tr>'+
+    '<tr><td>결제일</td><td>'+gDot(pyDate)+'</td></tr><tr><td>결제 수단</td><td>'+gEsc(APP)+' · '+gEsc(R.voucher)+'</td></tr><tr><td>금액</td><td style="font-size:18px">'+gWon(amt)+'</td></tr></table>'+
+    (m.excluded?'<div class="note warn">제외 업종 결제는 정산 시 불인정될 수 있어요.</div>':'')+
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn" onclick="gCloseModal()">취소</button><button class="btn pri" onclick="pyPayDo()">'+gWon(amt)+' 결제</button></div>');
+}
+function pyPayDo(){
+  const m=MS.find(x=>x.id===pySel), amt=Number(pyAmt)||0;
+  if(!m||amt<=0||amt>pyBal()){ gCloseModal(); return; }
+  gAddPayment({region:SLUG,merchantId:m.id,merchant:m.name,cat:m.excluded?'제외':m.cat,biz:m.biz||'',excluded:!!m.excluded,amount:amt,at:pyLocalIso(pyDate)});
+  pySetBal(pyBal()-amt);
+  gCloseModal(); gToast(m.name+' '+gWon(amt)+' 결제가 완료되었어요','ok');
+  pyAmt=''; pyRender();
+}
+
+function pyCharge(need){
+  gModal('<h3>'+gEsc(APP)+' 충전 (모의)</h3><p class="muted small">연결 계좌에서 충전하는 것처럼 잔액만 늘립니다.'+(need?' 부족한 금액: <b>'+gWon(need)+'</b>':'')+'</p>'+
+    '<div class="py-qa" style="margin:10px 0">'+[50000,100000,200000,300000].map(v=>'<button style="padding:12px 0" onclick="pyChargeDo('+v+')">'+gMan(v)+'</button>').join('')+'</div>'+
+    '<div style="text-align:right"><button class="btn sm" onclick="gCloseModal()">닫기</button></div>');
+}
+function pyChargeDo(v){ pySetBal(pyBal()+v); pyTx('charge','충전',v); gCloseModal(); gToast(gWon(v)+' 충전되었어요','ok'); pyRender(); }
+
+function pyHistView(){
+  const pays=gPayments().filter(p=>p.region===SLUG).map(p=>({at:p.at,kind:'pay',p}));
+  const tx=(gUGet('wtx',[])||[]).filter(t=>t.region===SLUG).map(t=>({at:t.at,kind:t.kind,t}));
+  const key=x=>{ const d=new Date(x.at); return isNaN(d)?0:d.getTime(); };
+  const l=pays.concat(tx).sort((a,b)=>key(b)-key(a));
+  if(!l.length) return '<p class="g-empty">'+gEsc(R.full)+' 결제 내역이 없습니다.</p>';
+  return l.map(x=>{
+    if(x.kind==='pay'){ const p=x.p;
+      return '<div class="py-tx"><span class="i">🏪</span><span class="n"><b>'+gEsc(p.merchant)+'</b>'+(p.excluded?'<span class="x">제외 업종</span>':'')+'<small>'+gDT(p.at)+' · '+gEsc(p.cat)+' · 승인 '+gEsc(p.approval)+'</small></span><span class="a m">-'+gWon(p.amount)+'</span></div>'; }
+    const t=x.t;
+    return '<div class="py-tx"><span class="i">'+(t.kind==='refund'?'🎁':'💰')+'</span><span class="n"><b>'+gEsc(t.label)+'</b><small>'+gDT(t.at)+'</small></span><span class="a p">+'+gWon(t.amount)+'</span></div>';
+  }).join('')+'<div class="py-note">이 내역 중 승인된 여행기간의 결제가 정산신청 때 자동으로 불러와집니다. <a href="settle.html?r='+SLUG+'" style="color:var(--blue);font-weight:700">정산신청 ›</a></div>';
+}
+
+/* ── 환급 PIN 등록 (localpay.html 과 같은 로직) ── */
+function pyPinView(){
+  const l=gMyApps().filter(a=>a.region===SLUG&&a.status==='refunded'&&a.refund&&a.refund.pin);
+  const other=gMyApps().filter(a=>a.region!==SLUG&&a.status==='refunded'&&a.refund&&a.refund.pin&&!a.refund.registered);
+  return '<div class="py-note" style="margin:0 0 10px">① 핀번호 확인 → ② 앱 실행 → ③ 쿠폰 메뉴 → ④ 핀번호 입력 → ⑤ 등록 완료<br>본인 명의 앱만 등록 · 재발급 불가</div>'+
+    (l.length?l.map(a=>'<div class="py-pin"><div class="r"><b>'+a.round+'회차 환급금</b><b style="color:#0f766e">'+gWon(a.refund.amount)+'</b></div>'+
+      '<div class="small muted" style="margin:4px 0 8px">지급일 '+gDot(a.refund.paidAt)+' · PIN <code>'+gEsc(a.refund.registered?a.refund.pin:String(a.refund.pin).replace(/\d(?=(?:\D*\d){4})/g,'•'))+'</code></div>'+
+      (a.refund.registered?'<span class="g-st" style="--c:#0f766e">✓ 등록 완료</span>':'<button class="btn blue sm block" onclick="pyRegisterAsk(\''+gEsc(a.id)+'\')">PIN 등록</button>')+'</div>').join('')
+     :'<p class="g-empty">'+gEsc(R.full)+'의 환급 완료 건이 없습니다.</p>')+
+    (other.length?'<p class="small muted">다른 지역 미등록 환급금: '+other.map(a=>{ const r=gRegion(a.region); return '<a style="color:var(--blue);font-weight:700" href="pay.html?r='+a.region+'&tab=pin">'+gEsc(r?r.name:a.region)+' '+gWon(a.refund.amount)+'</a>'; }).join(' · ')+'</p>':'');
+}
+function pyRegisterAsk(id){
+  const a=gApp(id); if(!a||!a.refund) return;
+  gModal('<h3>환급금 PIN 등록</h3><p class="muted small">'+gEsc(R.full)+' '+a.round+'회차 · '+gWon(a.refund.amount)+' · '+gEsc(R.voucher)+'</p>'+
+    '<label class="f" for="pyPinIn">PIN 번호 (알림톡으로 받은 번호)</label><input class="inp" id="pyPinIn" inputmode="numeric" value="'+gEsc(a.refund.pin)+'">'+
+    '<label class="check"><input type="checkbox" id="pyOwn"><span>본인 명의 앱에 등록합니다. 등록 후에는 재발급되지 않습니다.</span></label>'+
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn" onclick="gCloseModal()">취소</button><button class="btn blue" onclick="pyRegister(\''+gEsc(a.id)+'\')">등록 완료</button></div>');
+}
+function pyRegister(id){
+  const a=gApp(id); if(!a||!a.refund||a.refund.registered){ gCloseModal(); return; }
+  if(document.getElementById('pyPinIn').value.replace(/\D/g,'')!==String(a.refund.pin).replace(/\D/g,'')){ gToast('PIN 번호가 일치하지 않아요','bad'); return; }
+  if(!document.getElementById('pyOwn').checked){ gToast('본인 명의 앱 확인에 체크해 주세요','bad'); return; }
+  a.refund.registered=true; a.refund.registeredAt=gNow().toISOString(); gPutApp(a);
+  const w=pyWallet(); w[a.region]=(Number(w[a.region])||0)+Number(a.refund.amount||0); gUSet('wallet',w);
+  pyTx('refund','환급금 PIN 등록',a.refund.amount);
+  gCloseModal(); gToast(gWon(a.refund.amount)+'이 지갑에 등록되었어요','ok'); pyRender();
+}
+
+function pyRender(){
+  const u=gUser(), rc=gEsc(R.color);
+  const regionSel='<select onchange="location.href=\'pay.html?r=\'+this.value" aria-label="지역 선택">'+gRegionsAll().map(r=>'<option value="'+r.slug+'"'+(r.slug===SLUG?' selected':'')+'>'+gEsc(r.full)+'</option>').join('')+'</select>';
+  let html='<div class="py-top" style="background:linear-gradient(135deg,'+rc+',#0f172a)"><div class="py-hd"><span class="lg">🪙</span><h1>'+gEsc(APP)+'</h1>'+regionSel+'</div>'+
+    '<div class="py-sub">'+gEsc(R.voucher)+' · 관내 가맹점 전용'+(u?' · '+gEsc(u.name)+' 님':'')+'</div>';
+  if(!u){
+    html+='</div><div class="py-login"><b style="font-size:17px">로그인이 필요해요</b><p>반값여행과 같은 디지털 관광주민증 계정으로 로그인하면<br>결제 내역이 정산신청에 자동으로 연결됩니다.</p><a class="btn navy" href="'+gLoginUrl()+'">디주 로그인</a></div>';
+  } else {
+    html+='<div class="py-bal"><div><div class="small" style="opacity:.8">잔액</div><div class="v">'+gWon(pyBal())+'</div></div><button onclick="pyCharge()">+ 충전</button></div></div>'+
+      '<div class="py-tabs" style="--rc:'+rc+'">'+[['pay','결제'],['hist','결제 내역'],['pin','환급 PIN 등록']].map(t=>'<button class="'+(pyTab===t[0]?'on':'')+'" onclick="pyTab=\''+t[0]+'\';pyRender()">'+t[1]+'</button>').join('')+'</div>'+
+      '<div class="py-body" style="--rc:'+rc+'">'+(pyTab==='pay'?pyPayView():pyTab==='hist'?pyHistView():pyPinView())+'</div>';
+  }
+  document.getElementById('pyApp').innerHTML=html;
+}
+pyRender();
+</script>
+</body></html>

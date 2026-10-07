@@ -1,0 +1,516 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>통합 메인 — 대한민국 반값여행 · 시안 G</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="g.css?v=1">
+<style>
+/* 통합 메인 전용 (.ix-) — 착수보고 p11·p12 */
+.ix-hero{background:linear-gradient(180deg,#eaf1ff 0%,#f6f9ff 100%);border-bottom:1px solid #dbe5fb}
+.ix-hero .g-in{padding:48px 20px 40px;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:28px;align-items:center}
+.ix-hero h1{margin:0 0 14px;font-size:42px;line-height:1.22;letter-spacing:-1.2px;font-weight:900;color:var(--ink)}
+.ix-hero h1 .b{color:var(--blue)} .ix-hero h1 .r{color:var(--pri)}
+.ix-hero p{margin:0 0 20px;font-size:17px;color:#334155}
+.ix-hero p b{color:var(--pri)}
+.ix-cta{display:flex;gap:10px;flex-wrap:wrap}
+.ix-now{background:#fff;border:1px solid #dbe5fb;border-radius:18px;padding:18px 20px;box-shadow:var(--sh)}
+.ix-now h3{margin:0 0 10px;font-size:15px;color:var(--sub);font-weight:700}
+.ix-now ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.ix-now li{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14.5px}
+.ix-now li b{font-size:22px;font-weight:900}
+.ix-now small{display:block;margin-top:10px;color:var(--mute);font-size:12.5px}
+
+.ix-find{margin-top:-18px;position:relative}
+.ix-fbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.ix-sel{display:flex;flex-wrap:wrap;gap:8px;align-items:center;flex:1 1 420px;min-width:0}
+.ix-sel select{width:auto;min-width:0;flex:1 1 150px;max-width:220px}
+.ix-sel .btn{white-space:nowrap}
+.ix-chips{display:flex;flex-wrap:wrap;gap:6px}
+.ix-chip{border:0;border-radius:999px;padding:7px 14px;font-weight:800;font-size:13.5px;cursor:pointer;color:#fff;transition:.15s}
+.ix-chip[data-f="all"]{background:var(--navy)} .ix-chip[data-f="open"]{background:var(--pri)}
+.ix-chip[data-f="soon"]{background:var(--blue)} .ix-chip[data-f="closed"]{background:#9aa1ac}
+.ix-chip.dim{opacity:.35} .ix-chip:focus-visible{outline:3px solid #fecaca}
+.ix-res{margin-top:12px;font-size:14px}
+.ix-res .tag{display:inline-block;background:var(--blue-l);color:var(--blue);font-weight:800;font-size:12px;border-radius:6px;padding:2px 7px;margin-right:6px}
+.ix-body{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:18px;margin-top:16px}
+
+/* 지도 */
+.ix-map{position:relative;background:#eef3fb;border-radius:14px;padding:14px 10px 10px;overflow:hidden}
+.ix-mapin{position:relative;max-width:440px;margin:0 auto}
+.ix-mapin img{display:block;width:100%;filter:sepia(.25) hue-rotate(185deg) saturate(2.2) brightness(.97);opacity:.9}
+.ix-pin{position:absolute;transform:translate(-9px,-50%);display:flex;align-items:center;gap:3px;border:0;background:none;padding:0;cursor:pointer;font:inherit}
+.ix-pin i{flex:none;width:12px;height:12px;border-radius:50%;background:#9aa1ac;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);position:relative}
+.ix-pin b{font-size:11.5px;font-weight:800;color:#64748b;background:rgba(255,255,255,.85);border-radius:5px;padding:0 4px;white-space:nowrap;line-height:1.5}
+.ix-pin.open i{width:16px;height:16px;background:var(--pri);box-shadow:0 0 0 7px rgba(229,69,44,.18)}
+.ix-pin.open b{color:var(--pri)}
+.ix-pin.soon i{width:15px;height:15px;background:#fff;border:3px solid var(--blue)}
+.ix-pin.soon b{color:#1e3a8a}
+.ix-pin.blk i{background:repeating-linear-gradient(45deg,#94a3b8 0 2px,#fff 2px 4px)!important;border-color:#94a3b8!important;box-shadow:0 0 0 8px rgba(148,163,184,.28)}
+.ix-pin.blk b{text-decoration:line-through;color:#94a3b8}
+.ix-pin.fade{opacity:.22}
+.ix-pin.sel b{outline:2px solid var(--navy)}
+.ix-pin:focus-visible b{outline:2px solid var(--blue)}
+.ix-hatch{position:absolute;width:46px;height:46px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;
+  background:repeating-linear-gradient(45deg,rgba(100,116,139,.35) 0 3px,transparent 3px 7px);border:1px dashed #94a3b8}
+.ix-legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--sub);margin-top:8px;justify-content:center}
+.ix-legend span{display:inline-flex;align-items:center;gap:5px}
+.ix-legend i{width:11px;height:11px;border-radius:50%;display:inline-block}
+.ix-pop{position:absolute;z-index:5;width:270px;max-width:calc(100% - 16px);background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 36px rgba(15,23,42,.2);padding:14px 14px 12px;font-size:13.5px}
+.ix-pop h4{margin:0 26px 6px 0;font-size:16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ix-pop dl{margin:8px 0;display:grid;grid-template-columns:62px minmax(0,1fr);gap:4px 8px}
+.ix-pop dt{color:var(--mute);font-weight:700;font-size:12.5px} .ix-pop dd{margin:0}
+.ix-pop .x{position:absolute;top:6px;right:8px;border:0;background:none;font-size:20px;cursor:pointer;color:var(--mute)}
+.ix-pop .warn{background:#f1f5f9;border-radius:8px;padding:7px 9px;color:#475569;font-size:12.5px;margin:6px 0}
+.ix-pop .btns{display:flex;gap:6px;margin-top:8px}
+
+/* 상태별 목록 */
+.ix-lists{display:grid;gap:12px;align-content:start}
+.ix-lg{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.ix-lg h3{margin:0 0 8px;font-size:15px;display:flex;align-items:center;gap:6px}
+.ix-lg h3 small{color:var(--mute);font-weight:600;font-size:12.5px}
+.ix-lg.open h3{color:var(--pri)} .ix-lg.soon h3{color:var(--blue)} .ix-lg.closed h3{color:#6b7280}
+.ix-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;max-height:212px;overflow:auto}
+.ix-it{display:flex;justify-content:space-between;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13.5px;min-width:0}
+.ix-it:hover{border-color:#cbd5e1}
+.ix-it span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.ix-it em{font-style:normal;font-size:11.5px;font-weight:800;flex:none}
+.ix-it.blk{background:repeating-linear-gradient(45deg,#f8fafc 0 6px,#eef2f6 6px 12px);color:#94a3b8}
+.ix-it.blk span{text-decoration:line-through}
+.ix-empty{color:var(--mute);font-size:13px;padding:6px 2px}
+
+/* 달라진 점 */
+.ix-chg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.ix-cc{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}
+.ix-cc .t{display:inline-block;background:var(--blue);color:#fff;font-weight:800;font-size:12.5px;border-radius:999px;padding:3px 12px}
+.ix-cc h3{margin:10px 0 12px;font-size:17px}
+.ix-cc .was{color:var(--mute);font-size:13.5px;margin:0 0 8px}
+.ix-cc .now{background:var(--blue-l);color:var(--blue);font-weight:800;font-size:14px;border-radius:9px;padding:9px 11px;margin:0}
+.ix-cc .was b,.ix-cc .now b{margin-right:6px}
+
+/* 간트 */
+.ix-gantt{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 16px 12px}
+.ix-gscroll{overflow-x:auto}
+.ix-gin{min-width:640px;--lw:96px;position:relative;padding-bottom:22px}
+.ix-gh,.ix-gr{display:grid;grid-template-columns:var(--lw) minmax(0,1fr)}
+.ix-gh{font-size:12.5px;color:var(--mute);font-weight:700;border-bottom:1px solid var(--line);padding-bottom:6px}
+.ix-months{position:relative;height:18px}
+.ix-months span{position:absolute;top:0;transform:translateX(4px)}
+.ix-gr{align-items:center;min-height:38px;border-bottom:1px dashed #eef0f3}
+.ix-gr .nm{font-weight:800;font-size:13.5px;display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden}
+.ix-gr .nm a:hover{color:var(--pri)}
+.ix-track{position:relative;height:38px}
+.ix-track .mline{position:absolute;top:0;bottom:0;border-left:1px solid #f1f5f9}
+.ix-bar{position:absolute;top:10px;height:18px;border-radius:9px;font-size:11px;color:#fff;font-weight:800;line-height:18px;padding:0 8px;white-space:nowrap;overflow:hidden;min-width:6px}
+.ix-bar.open{background:var(--pri)} .ix-bar.soon{background:var(--blue)} .ix-bar.closed,.ix-bar.full{background:#cbd2db;color:#5b6472}
+.ix-bar.blk{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.35) 0 3px,transparent 3px 7px)}
+.ix-al{position:absolute;top:7px;height:24px;border-radius:999px;border:1px solid #bfd3ff;background:var(--blue-l);color:var(--blue);font-size:11.5px;font-weight:800;padding:0 9px;cursor:pointer;white-space:nowrap}
+.ix-al.on{background:#fff;border-color:#86efac;color:#15803d}
+.ix-al:hover{filter:brightness(.97)}
+.ix-today{position:absolute;top:0;bottom:4px;width:0;border-left:2px dashed var(--pri);left:calc(var(--lw) + (100% - var(--lw)) * var(--tp));pointer-events:none;z-index:2}
+.ix-today span{position:absolute;bottom:-2px;left:-14px;font-size:11.5px;color:var(--pri);font-weight:800;background:#fff;padding:0 2px}
+.ix-gfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
+.ix-glg{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--sub)}
+.ix-glg i{display:inline-block;width:18px;height:8px;border-radius:4px;margin-right:4px;vertical-align:middle}
+
+/* FAQ */
+.ix-faq details{background:#fff;border:1px solid var(--line);border-radius:12px;margin:8px 0}
+.ix-faq summary{cursor:pointer;padding:14px 16px;font-weight:700;list-style:none;display:flex;gap:10px;align-items:flex-start}
+.ix-faq summary::-webkit-details-marker{display:none}
+.ix-faq summary::after{content:'+';margin-left:auto;color:var(--mute);font-size:20px;line-height:1}
+.ix-faq details[open] summary::after{content:'−'}
+.ix-faq summary b{color:var(--blue);flex:none}
+.ix-faq .a{padding:0 16px 14px 44px;color:#334155;font-size:14.5px}
+
+/* 이용자 여정 (p8) */
+.ix-jy{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}
+.ix-ph{display:grid;grid-template-columns:4fr 1fr 2fr 1fr;gap:8px;margin-bottom:10px}
+.ix-ph span{border-radius:999px;text-align:center;color:#fff;font-weight:800;font-size:13px;padding:6px 4px;background:var(--blue)}
+.ix-ph span:nth-child(2){background:var(--pri)} .ix-ph span:nth-child(3){background:var(--navy)}
+.ix-ph span:nth-child(4){background:#fff;color:var(--blue);border:2px dashed var(--blue)}
+.ix-js{text-align:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 6px;min-width:0}
+.ix-js .n{display:flex;align-items:center;justify-content:center;width:34px;height:34px;margin:0 auto 6px;border-radius:50%;border:3px solid var(--blue);color:var(--blue);font-weight:900}
+.ix-js.trip .n{border-color:var(--pri);color:var(--pri)} .ix-js.after .n{border-color:var(--navy);color:var(--navy)}
+.ix-js.again .n{border-style:dashed}
+.ix-js b{display:block;font-size:13.5px}
+.ix-js a{display:inline-block;margin-top:6px;background:var(--blue-l);color:var(--blue);font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 8px}
+.ix-js p{margin:6px 0 0;font-size:11.5px;color:var(--sub);line-height:1.4}
+
+@media (max-width:960px){
+  .ix-hero .g-in{grid-template-columns:minmax(0,1fr)}
+  .ix-hero h1{font-size:32px}
+  .ix-body{grid-template-columns:minmax(0,1fr)}
+  .ix-jy{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .ix-ph{display:none}
+}
+@media (max-width:600px){
+  .ix-hero .g-in{padding:30px 16px 34px}
+  .ix-hero h1{font-size:27px}
+  .ix-hero p{font-size:15px}
+  .ix-chg{grid-template-columns:minmax(0,1fr)}
+  .ix-sel select{max-width:none;flex:1 1 calc(50% - 4px)}
+  .ix-sel .btn{flex:1 1 calc(50% - 4px)}
+  .ix-items{grid-template-columns:minmax(0,1fr)}
+  .ix-jy{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ix-pin b{font-size:10.5px}
+  .ix-faq .a{padding-left:16px}
+}
+</style>
+</head><body>
+<main>
+  <section class="ix-hero">
+    <div class="g-in">
+      <div>
+        <h1>아직 몰랐던 <span class="b">대한민국</span><br><span class="r">반값</span>으로 떠나는 <span class="r">여행</span></h1>
+        <p id="ixHeroSub"></p>
+        <div class="ix-cta">
+          <a class="btn pri lg" href="#find">나의 반값 여행지 찾기</a>
+          <a class="btn lg" href="guide.html">사업안내 보기</a>
+        </div>
+      </div>
+      <div class="ix-now" id="ixNow"></div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="card ix-find" id="find">
+      <div class="sec-h" style="margin-bottom:12px"><div><h2 id="map">나의 반값 여행지 찾기</h2>
+        <p>거주지를 고르면 본인 거주지와 인접 지역은 신청할 수 없는 지역으로 표시돼요.</p></div></div>
+      <div class="ix-fbar">
+        <div class="ix-sel">
+          <select class="inp" id="ixSido" aria-label="거주지 시·도"></select>
+          <select class="inp" id="ixSgg" aria-label="거주지 시·군·구"></select>
+          <button class="btn blue" id="ixOk">확인</button>
+          <button class="btn" id="ixReset" style="border-color:var(--blue);color:var(--blue)">재설정</button>
+        </div>
+        <div class="ix-chips" id="ixChips" role="group" aria-label="모집 상태 필터"></div>
+      </div>
+      <div class="ix-res" id="ixRes"></div>
+      <div class="ix-body">
+        <div>
+          <div class="ix-map"><div class="ix-mapin" id="ixMap">
+            <img src="../assets/img/half-map.png" alt="참여 지역 25곳 지도" width="640" height="804">
+          </div>
+          <div class="ix-legend">
+            <span><i style="background:var(--pri)"></i>접수중</span>
+            <span><i style="background:#fff;border:3px solid var(--blue)"></i>오픈예정</span>
+            <span><i style="background:#9aa1ac"></i>마감</span>
+            <span><i style="background:repeating-linear-gradient(45deg,#94a3b8 0 2px,#fff 2px 4px);border:1px solid #94a3b8"></i>신청 불가(거주지·인접)</span>
+          </div></div>
+        </div>
+        <div class="ix-lists" id="ixLists"></div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-h"><div><h2>올해 반값여행, 이렇게 달라졌어요</h2></div></div>
+      <div class="ix-chg">
+        <div class="ix-cc"><span class="t">통합</span><h3>25개 지역, 이제 하나로</h3>
+          <p class="was"><b>기존</b>지역마다 다른 웹사이트</p><p class="now"><b>현재</b>전 지역 통합 웹사이트</p></div>
+        <div class="ix-cc"><span class="t">간편</span><h3>디지털 관광주민증 로그인 한 번에</h3>
+          <p class="was"><b>기존</b>지역마다 회원가입 반복</p><p class="now"><b>현재</b>디주 원클릭 로그인</p></div>
+        <div class="ix-cc"><span class="t">플러스</span><h3>지역화폐 중심 반값여행 운영</h3>
+          <p class="was"><b>기존</b>영수증 모아 따로 정산</p><p class="now"><b>현재</b>지역화폐로 쉬운 정산</p></div>
+      </div>
+    </section>
+
+    <section class="sec" id="gantt">
+      <div class="sec-h"><div><h2>지역별 연간 접수 일정</h2>
+        <p>회차별 사전신청 기간이에요. 오픈 예정 회차는 [알림]을 신청하면 접수 시작 때 알림톡으로 알려드려요.</p></div></div>
+      <div class="ix-gantt">
+        <div class="ix-gscroll"><div class="ix-gin" id="ixGantt"></div></div>
+        <div class="ix-gfoot">
+          <div class="ix-glg"><span><i style="background:var(--pri)"></i>접수중</span><span><i style="background:var(--blue)"></i>오픈예정</span>
+            <span><i style="background:#cbd2db"></i>마감</span><span><i style="background:none;border-left:2px dashed var(--pri);width:2px;border-radius:0"></i>오늘</span></div>
+          <button class="btn sm" id="ixMore"></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec ix-faq">
+      <div class="sec-h"><div><h2>자주 묻는 질문</h2></div><a class="btn sm" href="notice.html?tab=faq">전체 보기 ›</a></div>
+      <div id="ixFaq"></div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-h"><div><h2>반값여행, 이렇게 이어져요</h2>
+        <p>탐색부터 환급, 다음 여행까지 — 단계마다 필요한 화면으로 바로 이동할 수 있어요.</p></div></div>
+      <div class="ix-ph"><span>여행 전</span><span>여행 중</span><span>여행 후</span><span>다시, 다음 여행</span></div>
+      <div class="ix-jy" id="ixJourney"></div>
+    </section>
+  </div>
+</main>
+<script src="../site-assets/data.js?v=20260818a"></script>
+<script src="g.js?v=1"></script>
+<script>
+gShell({mode:'hub'});
+
+/* ── 상태 ── */
+const IX={regions:gRegionsAll(),filter:'all',sido:'',sgg:'',applied:null,sel:null,more:false};
+IX.regions.forEach(r=>{ r._st=gRegionState(r); });
+const U=gUser();
+
+/* 시·도 이름 정규화 — '전라남도'와 '전남광주통합특별시'처럼 표기가 달라도 같은 시·도로 본다 */
+function ixSidoKey(s){
+  s=String(s||'');
+  const T=[['전남',/전남|전라남/],['전북',/전북|전라북/],['경남',/경남|경상남/],['경북',/경북|경상북/],['충남',/충남|충청남/],['충북',/충북|충청북/]];
+  for(const t of T) if(t[1].test(s)) return t[0];
+  return s.slice(0,2);
+}
+/* 거주지 판정 — g.js gAddrBlock 은 시·군·구 이름만 비교하므로(강원 고성 ↔ 경남 고성) 관내 판정에 시·도를 더 본다 */
+function ixBlock(r,a){
+  if(!a) return null;
+  const b=gAddrBlock(r.slug,a.sgg);
+  if(b==='same'&&a.sido&&ixSidoKey(a.sido)!==ixSidoKey(r.sido)) return null;
+  return b;
+}
+const ixBlk=r=>ixBlock(r,IX.applied);
+const ixBlkLabel=b=>b==='same'?'거주지(관내)':b==='nearby'?'인접 지역':'';
+
+/* ── 히어로 ── */
+document.getElementById('ixHeroSub').innerHTML='전국 25개 인구감소지역을 여행하고 경비의 <b>최대 '+gEsc(gStdNum('M6'))+'%(청년 '+gEsc(gStdNum('M7'))+'%)</b>를 환급받으세요';
+function ixCount(st){ return IX.regions.filter(r=>st==='all'||r._st.state===st).length; }
+document.getElementById('ixNow').innerHTML='<h3>오늘('+gDot(gToday())+') 모집 현황</h3><ul>'+
+  '<li><span>'+gStateBadge('open')+' 지금 접수 중</span><b style="color:var(--pri)">'+ixCount('open')+'곳</b></li>'+
+  '<li><span>'+gStateBadge('soon')+' 곧 오픈 예정</span><b style="color:var(--blue)">'+ixCount('soon')+'곳</b></li>'+
+  '<li><span>'+gStateBadge('closed')+' 이번 회차 마감</span><b style="color:#6b7280">'+ixCount('closed')+'곳</b></li></ul>'+
+  '<small>디지털 관광주민증 로그인 한 번으로 25개 지역 모두 신청할 수 있어요.</small>';
+
+/* ── 거주지 드롭다운 ── */
+const elSido=document.getElementById('ixSido'), elSgg=document.getElementById('ixSgg');
+function ixFillSido(){
+  elSido.innerHTML='<option value="">시·도 선택</option>'+T50_SIDO_LIST.map(s=>'<option value="'+gEsc(s.cd)+'">'+gEsc(s.name)+'</option>').join('');
+}
+function ixFillSgg(){
+  const l=T50_SIGUNGU[elSido.value]||[];
+  elSgg.innerHTML='<option value="">시·군·구 선택</option>'+l.map(g=>'<option>'+gEsc(g)+'</option>').join('');
+  elSgg.disabled=!l.length;
+}
+/* 계정 거주지 → 드롭다운 코드 (이름이 같은 시·도 우선, 없으면 그 시·군·구를 가진 같은 계열 시·도) */
+function ixSidoCd(sido,sgg){
+  let s=T50_SIDO_LIST.find(x=>x.name===sido);
+  if(!s) s=T50_SIDO_LIST.find(x=>ixSidoKey(x.name)===ixSidoKey(sido)&&(T50_SIGUNGU[x.cd]||[]).indexOf(sgg)>=0);
+  if(!s) s=T50_SIDO_LIST.find(x=>(T50_SIGUNGU[x.cd]||[]).indexOf(sgg)>=0);
+  return s?s.cd:'';
+}
+ixFillSido(); ixFillSgg();
+elSido.onchange=()=>{ ixFillSgg(); };
+document.getElementById('ixOk').onclick=()=>{
+  if(!elSido.value||!elSgg.value){ gToast('시·도와 시·군·구를 모두 선택해 주세요','bad'); return; }
+  const sidoName=(T50_SIDO_LIST.find(x=>x.cd===elSido.value)||{}).name;
+  IX.applied={sido:sidoName,sgg:elSgg.value,reg:false};
+  if(U&&ixSidoKey(U.sido)===ixSidoKey(sidoName)&&U.sigungu===elSgg.value) IX.applied.reg=true;
+  IX.sel=null; ixRender();
+  const n=IX.regions.filter(r=>ixBlk(r)).length;
+  gToast(n?'신청할 수 없는 지역 '+n+'곳을 빗금으로 표시했어요':'모든 참여 지역을 신청할 수 있어요','ok');
+};
+document.getElementById('ixReset').onclick=()=>{
+  IX.applied=null; IX.filter='all'; IX.sel=null;
+  elSido.value=''; ixFillSgg(); ixRender();
+};
+/* 로그인 상태면 등록 거주지로 미리 채우고 판정까지 해 둔다 (착수보고 p8 '거주지 입력 시 신청 가능한 지역을 지도에 자동 표시') */
+if(U){
+  const cd=ixSidoCd(U.sido,U.sigungu);
+  if(cd){ elSido.value=cd; ixFillSgg(); elSgg.value=U.sigungu; IX.applied={sido:U.sido,sgg:U.sigungu,reg:true}; }
+}
+
+/* ── 칩 ── */
+function ixChips(){
+  const L=[['all','전체'],['open','접수중'],['soon','오픈예정'],['closed','마감']];
+  document.getElementById('ixChips').innerHTML=L.map(x=>'<button class="ix-chip'+(IX.filter!=='all'&&IX.filter!==x[0]?' dim':'')+'" data-f="'+x[0]+'" aria-pressed="'+(IX.filter===x[0])+'">'+x[1]+' '+ixCount(x[0])+'</button>').join('');
+}
+document.getElementById('ixChips').onclick=e=>{
+  const b=e.target.closest('[data-f]'); if(!b) return;
+  IX.filter=b.dataset.f; IX.sel=null; ixRender();
+};
+
+/* ── 결과 문구 ── */
+function ixRes(){
+  const el=document.getElementById('ixRes');
+  if(!IX.applied){ el.innerHTML='<span class="muted small">거주지를 선택하고 [확인]을 누르면 신청 가능한 지역만 골라 볼 수 있어요.'+(U?'':' <a href="'+gLoginUrl()+'" style="color:var(--blue);font-weight:700">디주 로그인</a>하면 등록 거주지로 자동 설정돼요.')+'</span>'; return; }
+  const bl=IX.regions.filter(r=>ixBlk(r));
+  el.innerHTML=(IX.applied.reg?'<span class="tag">등록 거주지</span>':'')+
+    '<b>'+gEsc(IX.applied.sido)+' '+gEsc(IX.applied.sgg)+'</b> 거주 기준 — 신청 가능 <b style="color:var(--blue)">'+(25-bl.length)+'곳</b>'+
+    (bl.length?' · 신청 불가 <b style="color:var(--pri)">'+bl.length+'곳</b> ('+bl.map(r=>gEsc(r.full)+' '+ixBlkLabel(ixBlk(r))).join(', ')+')':' · 신청 불가 지역이 없어요')+
+    (IX.applied.reg?'<span class="muted small"> · 디지털 관광주민증 등록 정보(행정정보 공동이용 확인)</span>':'');
+}
+
+/* ── 지도 ── */
+function ixMap(){
+  const box=document.getElementById('ixMap');
+  box.querySelectorAll('.ix-pin,.ix-hatch,.ix-pop').forEach(x=>x.remove());
+  let h='';
+  IX.regions.forEach(r=>{
+    const st=r._st.state, b=ixBlk(r);
+    if(b) h+='<span class="ix-hatch" style="left:'+r.l+'%;top:'+r.t+'%"></span>';
+    const fade=IX.filter!=='all'&&IX.filter!==st;
+    h+='<button class="ix-pin '+st+(b?' blk':'')+(fade?' fade':'')+(IX.sel===r.slug?' sel':'')+'" data-r="'+r.slug+'" style="left:'+r.l+'%;top:'+r.t+'%" '+
+      'aria-label="'+gEsc(r.full)+' '+G_STATE_LABEL[st]+(b?' · 신청 불가':'')+'"><i></i><b>'+gEsc(r.name)+'</b></button>';
+  });
+  box.insertAdjacentHTML('beforeend',h);
+  if(IX.sel) ixPop(IX.sel);
+}
+function ixMDs(x){ const d=gD(x); return (d.getMonth()+1)+'/'+d.getDate(); }
+function ixRoundTxt(rd){ return rd.n+'회차 · 신청 '+gMD(rd.applyStart)+'~'+gMD(rd.applyEnd)+' · 여행 '+gMD(rd.travelStart)+'~'+gMD(rd.travelEnd); }
+function ixStateTxt(r){
+  const s=r._st;
+  if(s.state==='open') return '접수 마감 D-'+s.dday;
+  if(s.state==='soon') return '오픈 D-'+s.dday;
+  if(s.full) return '예산 소진 조기마감';
+  return s.next?'다음 회차 '+gMD(s.next.applyStart)+' 오픈':'올해 회차 종료';
+}
+function ixPop(slug){
+  const box=document.getElementById('ixMap'), r=IX.regions.find(x=>x.slug===slug); if(!r) return;
+  const s=r._st, b=ixBlk(r), rd=s.round;
+  const pay=gStd('P7',r.slug).val, sp=[];
+  if(r.extraExcl) sp.push('환급 제외 업종 추가: '+r.extraExcl);
+  sp.push('인접 지역 거주자 신청 불가: '+(r.nearby.length?r.nearby.join('·'):'없음'));
+  const alertBtn=(s.state==='soon'||(s.next&&s.state==='closed'))?ixAlertBtnHtml(r.slug,(s.next||rd).n,'btn sm'):'';
+  const p=document.createElement('div'); p.className='ix-pop'; p.setAttribute('role','dialog'); p.setAttribute('aria-label',r.full+' 요약');
+  p.innerHTML='<button class="x" data-act="close" aria-label="닫기">×</button>'+
+    '<h4>'+gEsc(r.full)+' '+gStateBadge(s.full?'full':s.state)+'</h4>'+
+    '<div class="muted small">'+gEsc(ixStateTxt(r))+'</div>'+
+    (b?'<div class="warn">⚠ '+gEsc(IX.applied.sgg)+' 거주자는 '+(b==='same'?'관내 거주자라':'인접 지역이라')+' 신청할 수 없어요</div>':'')+
+    '<dl><dt>회차 기간</dt><dd>'+gEsc(ixRoundTxt(rd))+'</dd>'+
+    '<dt>결제수단</dt><dd>'+gEsc(pay)+' 앱(지역화폐) · 환급 '+gEsc(r.voucher)+'</dd>'+
+    '<dt>특이사항</dt><dd>'+sp.map(gEsc).join('<br>')+'</dd></dl>'+
+    '<div class="btns"><a class="btn pri sm" href="region.html?r='+r.slug+'">지역 홈 가기 ›</a>'+alertBtn+'</div>';
+  box.appendChild(p);
+  /* 핀 옆에 놓되 지도 밖으로 나가지 않게 */
+  const W=box.clientWidth, H=box.clientHeight, pw=p.offsetWidth, ph=p.offsetHeight;
+  const px=r.l/100*W, py=r.t/100*H;
+  let x=px+16; if(x+pw>W-4) x=px-pw-16; if(x<4) x=Math.max(4,Math.min(W-pw-4,px-pw/2));
+  let y=py-ph/2; y=Math.max(4,Math.min(H-ph-4,y));
+  p.style.left=x+'px'; p.style.top=y+'px';
+}
+document.getElementById('ixMap').addEventListener('click',e=>{
+  const c=e.target.closest('[data-act="close"]'); if(c){ IX.sel=null; ixMap(); return; }
+  const pin=e.target.closest('.ix-pin'); if(!pin) return;
+  IX.sel=(IX.sel===pin.dataset.r)?null:pin.dataset.r; ixMap();
+});
+
+/* ── 상태별 목록 ── */
+function ixLists(){
+  const by=st=>IX.regions.filter(r=>r._st.state===st);
+  const open=by('open').sort((a,b)=>a._st.dday-b._st.dday);
+  const soon=by('soon').sort((a,b)=>a._st.dday-b._st.dday);
+  const closed=by('closed').sort((a,b)=>a.full<b.full?-1:1);
+  const item=(r,right,col)=>{
+    const b=ixBlk(r);
+    return '<a class="ix-it'+(b?' blk':'')+'" href="region.html?r='+r.slug+'" title="'+gEsc(r.full+(b?' — 신청 불가('+ixBlkLabel(b)+')':''))+'"><span>'+right+'</span>'+
+      (b?'<em style="color:#64748b">신청 불가</em>':col)+'</a>';
+  };
+  const G=[
+    ['open','지금 접수 중',open,r=>item(r,gEsc(r.full)+' · '+ixMDs(r._st.round.applyStart)+'~'+ixMDs(r._st.round.applyEnd),'<em style="color:var(--pri)">D-'+r._st.dday+'</em>')],
+    ['soon','곧 오픈 예정',soon,r=>item(r,gEsc(r.full)+' · 오픈 D-'+r._st.dday,'<em style="color:var(--blue)">'+gMD(r._st.round.applyStart)+'</em>')],
+    ['closed','이번 회차 마감',closed,r=>item(r,gEsc(r.full),'<em style="color:#9aa1ac">'+(r._st.full?'조기마감':r._st.next?'다음 '+gMD(r._st.next.applyStart):'종료')+'</em>')]
+  ];
+  document.getElementById('ixLists').innerHTML=G.filter(g=>IX.filter==='all'||IX.filter===g[0]).map(g=>
+    '<div class="ix-lg '+g[0]+'"><h3>'+g[1]+' <small>'+g[2].length+'곳</small></h3><div class="ix-items">'+
+    (g[2].length?g[2].map(g[3]).join(''):'<div class="ix-empty">해당 지역이 없어요</div>')+'</div></div>').join('');
+}
+
+/* ── 오픈 알림 (p9·p12: 디주 연동 번호로 알림톡, 수신 동의 필수) ── */
+function ixAlertBtnHtml(slug,n,cls){
+  const has=U&&gHasAlert(slug,n);
+  return '<button class="'+(cls||'ix-al')+(has?' on':'')+'" data-alert="'+slug+'" data-n="'+n+'"'+(cls?' style="'+(has?'color:#15803d;border-color:#86efac':'color:var(--blue);border-color:#bfd3ff')+'"':'')+'>'+(has?'✓ 신청됨':'🔔 알림')+'</button>';
+}
+function ixAlert(slug,n){
+  const r=gRegion(slug), rd=r&&r.rounds.find(x=>x.n===n); if(!rd) return;
+  if(!U){
+    gModal('<h3>🔔 오픈 알림 신청</h3><p>오픈 알림은 디지털 관광주민증에 등록된 휴대폰 번호로 알림톡을 보내 드려요.<br>먼저 <b>디지털 관광주민증으로 로그인</b>해 주세요.</p>'+
+      '<p class="muted small">'+gEsc(r.full)+' '+n+'회차 · 접수 시작 '+gDot(rd.applyStart)+'</p>'+
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn" onclick="gCloseModal()">닫기</button>'+
+      '<a class="btn navy" href="login.html?next='+encodeURIComponent('index.html#gantt')+'">디주 로그인</a></div>');
+    return;
+  }
+  if(gHasAlert(slug,n)){
+    gModal('<h3>오픈 알림 취소</h3><p><b>'+gEsc(r.full)+' '+n+'회차</b>('+gDot(rd.applyStart)+' 접수 시작) 오픈 알림을 취소할까요?</p>'+
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn" onclick="gCloseModal()">유지</button>'+
+      '<button class="btn pri" id="ixAlCancel">알림 취소</button></div>');
+    document.getElementById('ixAlCancel').onclick=()=>{ gRemoveAlert(slug,n); gCloseModal(); gToast('오픈 알림을 취소했어요'); ixRender(); };
+    return;
+  }
+  gModal('<h3>🔔 오픈 알림 신청</h3>'+
+    '<p><b>'+gEsc(r.full)+' '+n+'회차</b> 사전신청 접수가 시작되면(<b>'+gDot(rd.applyStart)+'</b>) 알림톡으로 알려드려요.</p>'+
+    '<div class="note" style="margin:10px 0">받는 번호 <b>'+gEsc(U.phone)+'</b> <span class="muted small">(디지털 관광주민증 연동 번호)</span></div>'+
+    '<label class="check"><input type="checkbox" id="ixAlAgree"><span><b>[필수] 알림톡 수신 동의</b><br><span class="muted small">발송 항목: 신청 회차 접수 시작 안내 1회 · 발송 후에는 마이페이지 알림에 30일 보관돼요. 동의하지 않으면 알림을 신청할 수 없어요.</span></span></label>'+
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn" onclick="gCloseModal()">취소</button>'+
+    '<button class="btn blue" id="ixAlGo" disabled>알림 신청</button></div>');
+  const ag=document.getElementById('ixAlAgree'), go=document.getElementById('ixAlGo');
+  ag.onchange=()=>{ go.disabled=!ag.checked; };
+  go.onclick=()=>{
+    if(!ag.checked) return;
+    gAddAlert(slug,n); gCloseModal(); gToast('알림 신청이 완료되었어요','ok'); ixRender();
+  };
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-alert]'); if(!b) return;
+  e.preventDefault(); ixAlert(b.dataset.alert,Number(b.dataset.n));
+});
+
+/* ── 연간 접수 일정 간트 (p12) ── */
+function ixGantt(){
+  const T=gToday();
+  const s=new Date(T.getFullYear(),T.getMonth()-2,1), e=new Date(T.getFullYear(),T.getMonth()+6,1);
+  const total=gDiff(s,e), pct=d=>Math.max(0,Math.min(100,gDiff(s,d)/total*100));
+  const months=[]; for(let i=0;i<8;i++){ const m=new Date(s.getFullYear(),s.getMonth()+i,1); months.push({p:pct(m),t:(m.getMonth()+1)+'월'+(m.getMonth()===0?' <small>\''+String(m.getFullYear()).slice(2)+'</small>':'')}); }
+  const ord={open:0,soon:1,closed:2};
+  const key=r=>{ const st=r._st; return st.state==='open'?st.round.applyEnd:st.state==='soon'?st.round.applyStart:(st.next?st.next.applyStart:'9999')+r.slug; };
+  const rows=IX.regions.filter(r=>IX.filter==='all'||r._st.state===IX.filter)
+    .sort((a,b)=>ord[a._st.state]-ord[b._st.state]||(key(a)<key(b)?-1:1));
+  const shown=IX.more?rows:rows.slice(0,8);
+  const ml=months.map(m=>'<span class="mline" style="left:'+m.p+'%"></span>').join('');
+  let h='<div class="ix-gh"><div>지역</div><div class="ix-months">'+months.map(m=>'<span style="left:'+m.p+'%">'+m.t+'</span>').join('')+'</div></div>';
+  shown.forEach(r=>{
+    const b=ixBlk(r);
+    let bars='';
+    r.rounds.forEach(rd=>{
+      if(rd.applyEnd<gYmd(s)||rd.applyStart>=gYmd(e)) return;
+      const st=gRoundState(r.slug,rd), L=pct(rd.applyStart), R=pct(gAdd(rd.applyEnd,1));
+      const w=Math.max(.8,R-L);
+      bars+='<span class="ix-bar '+st+(b?' blk':'')+'" style="left:'+L+'%;width:'+w+'%" title="'+gEsc(r.full+' '+rd.n+'회차 신청 '+gDot(rd.applyStart)+'~'+gDot(rd.applyEnd)+' ('+G_STATE_LABEL[st]+')')+'">'+(w>7?rd.n+'회차 '+gMD(rd.applyStart)+'~'+gMD(rd.applyEnd):w>3?rd.n+'회':'')+'</span>';
+      if(st==='soon'&&!b){
+        const at=Math.min(R,86);
+        bars+='<span style="position:absolute;left:calc('+at+'% + 5px);top:0">'+ixAlertBtnHtml(r.slug,rd.n)+'</span>';
+      }
+    });
+    h+='<div class="ix-gr"><div class="nm"><i class="dot '+r._st.state+'"></i><a href="region.html?r='+r.slug+'">'+gEsc(r.full)+'</a></div>'+
+       '<div class="ix-track">'+ml+bars+'</div></div>';
+  });
+  if(!shown.length) h+='<div class="ix-empty" style="padding:16px">해당 상태의 지역이 없어요</div>';
+  h+='<div class="ix-today" style="--tp:'+(pct(T)/100)+'"><span>오늘</span></div>';
+  document.getElementById('ixGantt').innerHTML=h;
+  const mb=document.getElementById('ixMore');
+  mb.style.display=rows.length>8?'':'none';
+  mb.textContent=IX.more?'접기 ▲':'더보기 ('+rows.length+'개 지역 전체) ▼';
+}
+document.getElementById('ixMore').onclick=()=>{ IX.more=!IX.more; ixGantt(); };
+
+/* ── FAQ ── */
+function ixFaq(){
+  const l=gNotices().filter(n=>n.scope==='all'&&n.kind==='faq').slice(0,5);
+  document.getElementById('ixFaq').innerHTML=l.length?l.map((n,i)=>'<details><summary><b>Q'+(i+1)+'.</b><span>'+gEsc(n.title)+'</span></summary><div class="a">'+gEsc(n.body)+'</div></details>').join('')
+    :'<p class="muted">등록된 자주 묻는 질문이 없어요.</p>';
+}
+
+/* ── 이용자 여정 (p8) ── */
+function ixJourney(){
+  const v4=String(gStd('V4').val||'').replace(/[^0-9]/g,'')||'2';
+  const S=[
+    ['','여행지 찾기','통합 메인','#find','거주지로 신청 가능한 지역을 지도에 표시'],
+    ['','지역 조건 확인','지역 홈','region.html?r=pyeongchang','회차 일정·결제수단·특이사항'],
+    ['','사전신청','사전 신청','apply.html?r=pyeongchang','디주 로그인 후 바로 · 여행 '+gStdNum('A1')+'일 전까지'],
+    ['','승인 안내','알림톡','mypage.html','심사 결과·보완 요청을 알림톡으로'],
+    ['trip','여행','여행 현장','pay.html?r=pyeongchang','지역화폐 결제 · 지정관광지 '+v4+'곳 인증'],
+    ['after','정산신청','정산신청','settle.html?r=pyeongchang','결제내역 자동 연동 · 여행 후 '+gStdNum('C1')+'일 이내'],
+    ['after','환급·확인','마이페이지','mypage.html','지역사랑상품권 환급 · '+gStdNum('U1')+'일 이내'],
+    ['again','재탐색·재방문','관심지역 알림','#gantt','신규 회차 오픈 알림톡']
+  ];
+  document.getElementById('ixJourney').innerHTML=S.map((s,i)=>'<div class="ix-js '+s[0]+'"><span class="n">'+(i+1)+'</span><b>'+s[1]+'</b><a href="'+s[3]+'">'+s[2]+'</a><p>'+gEsc(s[4])+'</p></div>').join('');
+}
+
+function ixRender(){ ixChips(); ixRes(); ixMap(); ixLists(); ixGantt(); }
+ixRender(); ixFaq(); ixJourney();
+window.addEventListener('resize',()=>{ if(IX.sel) ixMap(); });
+if(location.hash==='#gantt'||location.hash==='#map') setTimeout(()=>{ const t=document.getElementById(location.hash.slice(1)); if(t) t.scrollIntoView(); },60);
+</script>
+</body></html>

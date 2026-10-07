@@ -1,0 +1,144 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>고객지원 — 대한민국 반값여행 · 시안 G</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="g.css?v=1">
+<style>
+/* 고객지원 (착수보고 p20 ④) — 접두사 .sp- */
+.sp-h1{margin:0 0 14px;font-size:26px;letter-spacing:-.5px}
+.sp-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#f1f3f6;margin-bottom:18px}
+.sp-tabs a{text-align:center;padding:13px 6px;font-weight:700;color:var(--sub);font-size:15.5px;border:2px solid transparent}
+.sp-tabs a.on{background:#fff;color:var(--blue);border-color:var(--blue);border-radius:10px}
+.sp-tool{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.sp-tool .inp{max-width:280px}
+.sp-tag{display:inline-block;font-size:11.5px;font-weight:800;padding:2px 8px;border-radius:6px;background:var(--blue-l);color:var(--blue);white-space:nowrap}
+.sp-tag.loc{background:#fff7ed;color:#c2410c}
+.sp-tag.imp{background:var(--pri);color:#fff}
+.sp-row{border-bottom:1px solid var(--line);background:#fff}
+.sp-q{display:flex;gap:10px;align-items:center;padding:15px 14px;cursor:pointer;width:100%;border:0;background:none;text-align:left;font-size:15px}
+.sp-q:hover{background:#fafbfc}
+.sp-q .t{flex:1;min-width:0;word-break:keep-all}
+.sp-q .tg{flex:none;display:inline-flex;gap:4px}
+.sp-q .t.lock{color:var(--mute)}
+.sp-q small{color:var(--mute);white-space:nowrap;font-size:12.5px}
+.sp-a{display:none;padding:4px 16px 18px 16px;font-size:14.5px;color:#334155;white-space:pre-wrap}
+.sp-row.open .sp-a{display:block}
+.sp-list{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.sp-list .sp-row:last-child{border-bottom:0}
+.sp-ans{display:inline-block;font-size:12.5px;font-weight:800;padding:5px 12px;border-radius:999px;white-space:nowrap}
+.sp-ans.ok{background:#e7f8ef;color:#15803d} .sp-ans.wait{background:#f1f3f6;color:#6b7280}
+.sp-me{font-size:11px;font-weight:800;color:#7c3aed;background:#f3e8ff;border-radius:5px;padding:1px 6px;margin-left:4px}
+.sp-reply{margin-top:12px;border-left:3px solid #15803d;background:#f0fdf4;border-radius:8px;padding:10px 12px}
+.sp-reply b{color:#15803d}
+.sp-fq::before{content:'Q';font-weight:900;color:var(--blue);margin-right:2px}
+.sp-pg{display:flex;justify-content:center;gap:4px;margin:14px 0 0}
+.sp-pg button{min-width:32px;height:32px;border:1px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;font-weight:700}
+.sp-pg button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.sp-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px}
+@media (max-width:600px){ .sp-q{flex-wrap:wrap;gap:6px 10px;padding:13px 12px} .sp-q .t{flex-basis:100%;order:2} .sp-q .sp-ans{order:3} .sp-tool .inp{max-width:none} }
+</style>
+</head><body>
+<main><div class="wrap">
+  <p class="small muted" style="margin:0 0 4px" id="spCrumb"></p>
+  <h1 class="sp-h1">고객지원</h1>
+  <nav class="sp-tabs" id="spTabs"></nav>
+  <div id="spBody"></div>
+</div></main>
+<script src="../site-assets/data.js?v=20260818a"></script>
+<script src="g.js?v=1"></script>
+<script>
+const SLUG=(gQS('r')&&gRegion(gQS('r')))?gQS('r'):'pyeongchang';
+gShell({mode:'region',slug:SLUG,active:'support'});
+const R=gRegion(SLUG);
+let TAB=['notice','faq','qna'].indexOf(gQS('tab'))>=0?gQS('tab'):'notice';
+let OPEN=gQS('id')||'';
+let spPage=1, spMine=false, spQ='';
+document.getElementById('spCrumb').innerHTML='<a href="region.html?r='+SLUG+'">'+gEsc(R.full)+'</a> › 고객지원';
+
+function spGo(t){
+  TAB=t; spPage=1; OPEN='';
+  history.replaceState(null,'','support.html?r='+SLUG+'&tab='+t);
+  spRender();
+}
+function spToggle(el){ el.parentNode.classList.toggle('open'); }
+function spScope(n){ return n.scope==='all'?'<span class="sp-tag">통합</span>':'<span class="sp-tag loc">'+gEsc(R.name)+'</span>'; }
+
+function spNotices(kind){
+  const l=gNotices().filter(n=>n.kind===kind&&(n.scope==='all'||n.scope===SLUG))
+    .filter(n=>!spQ||(n.title+' '+n.body).toLowerCase().indexOf(spQ.toLowerCase())>=0);
+  if(kind==='notice'){
+    const PER=10, pages=Math.max(1,Math.ceil(l.length/PER)); if(spPage>pages) spPage=pages;
+    const cur=l.slice((spPage-1)*PER,spPage*PER);
+    let pg=''; if(pages>1) for(let i=1;i<=pages;i++) pg+='<button class="'+(i===spPage?'on':'')+'" onclick="spPage='+i+';spRender()">'+i+'</button>';
+    return '<div class="sp-list">'+(cur.length?cur.map(n=>'<div class="sp-row'+(n.id===OPEN?' open':'')+'" id="n-'+gEsc(n.id)+'"><button class="sp-q" onclick="spToggle(this)">'+
+      '<span class="tg">'+(n.pin?'<span class="sp-tag imp">중요</span> ':'')+spScope(n)+'</span><span class="t">'+gEsc(n.title)+'</span><small>'+gDot(n.date)+'</small></button>'+
+      '<div class="sp-a">'+gEsc(n.body)+'</div></div>').join(''):'<p class="g-empty">검색 결과가 없습니다.</p>')+'</div>'+
+      '<div class="sp-pg">'+pg+'</div>';
+  }
+  return '<div class="sp-list">'+(l.length?l.map(n=>'<div class="sp-row'+(n.id===OPEN?' open':'')+'" id="n-'+gEsc(n.id)+'"><button class="sp-q" onclick="spToggle(this)">'+
+    spScope(n)+'<span class="t sp-fq"> '+gEsc(n.title)+'</span><small>▾</small></button><div class="sp-a"><b style="color:var(--pri)">A </b>'+gEsc(n.body)+'</div></div>').join(''):'<p class="g-empty">검색 결과가 없습니다.</p>')+'</div>';
+}
+
+function spQna(){
+  const uid=gUid();
+  let l=gInquiries().filter(q=>q.region===SLUG).sort((a,b)=>a.at<b.at?1:(a.at>b.at?-1:(String(a.id)<String(b.id)?1:-1)));
+  if(spMine) l=l.filter(q=>q.uid===uid);
+  const rows=l.map(q=>{
+    const mine=uid&&q.uid===uid, hidden=q.secret&&!mine;
+    const title=hidden?'비공개 문의입니다':q.title;
+    const head='<button class="sp-q" onclick="'+(hidden?'gToast(\'비공개 문의는 작성자 본인만 볼 수 있어요\',\'bad\')':'spToggle(this)')+'">'+
+      '<span class="t'+(q.secret?' lock':'')+'">'+(q.secret?'🔒 ':'')+gEsc(title)+(mine?'<span class="sp-me">내 문의</span>':'')+'</span>'+
+      '<small>'+gEsc(gMask(q.name))+' · '+gDot(q.at)+'</small>'+
+      '<span class="sp-ans '+(q.answer?'ok':'wait')+'">'+(q.answer?'답변완료':'답변대기')+'</span></button>';
+    const body=hidden?'':'<div class="sp-a">'+gEsc(q.body)+
+      (q.answer?'<div class="sp-reply"><b>답변</b> <span class="small muted">'+gEsc(R.dept)+' · '+gDot(q.answer.at)+'</span><div style="margin-top:4px">'+gEsc(q.answer.body)+'</div></div>'
+               :'<div class="sp-reply" style="border-color:#cbd5e1;background:#f8fafc"><span class="muted">담당 부서에서 확인 중입니다. 답변이 등록되면 알림톡으로 알려 드려요.</span></div>')+'</div>';
+    return '<div class="sp-row'+(q.id===OPEN&&!hidden?' open':'')+'" id="n-'+gEsc(q.id)+'">'+head+body+'</div>';
+  }).join('');
+  return '<div class="sp-tool">'+(uid?'<button class="chip'+(spMine?'':' on')+'" onclick="spMine=false;spRender()">전체 문의</button><button class="chip'+(spMine?' on':'')+'" onclick="spMine=true;spRender()">내 문의</button>':'')+
+      '<span class="small muted" style="margin-left:auto">'+gEsc(R.dept)+' · '+gEsc(gStd('B6',SLUG).val)+' 답변</span></div>'+
+    '<div class="sp-list">'+(rows||'<p class="g-empty">'+(spMine?'작성한 문의가 없습니다.':'등록된 문의가 없습니다.')+'</p>')+'</div>'+
+    '<div class="sp-foot"><span class="small muted">🔒 비공개 문의는 작성자 본인만 볼 수 있습니다. 문의는 기본 비공개로 등록됩니다.</span><button class="btn blue" onclick="spWrite()">문의 작성</button></div>';
+}
+
+function spWrite(){
+  const u=gUser();
+  if(!u){
+    gModal('<h3>문의 작성</h3><p>문의는 디지털 관광주민증 로그인 후 작성할 수 있어요. 답변은 알림톡으로 안내해 드립니다.</p>'+
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px"><button class="btn" onclick="gCloseModal()">닫기</button><a class="btn navy" href="'+gLoginUrl()+'">디주 로그인</a></div>');
+    return;
+  }
+  gModal('<h3>'+gEsc(R.full)+'에 문의하기</h3><p class="small muted" style="margin:-4px 0 4px">작성자 '+gEsc(gMask(u.name))+' · 답변은 디지털 관광주민증 연동 번호로 알림톡 안내</p>'+
+    '<label class="f" for="spT">제목</label><input class="inp" id="spT" maxlength="60" placeholder="제목을 입력해 주세요">'+
+    '<label class="f" for="spB">내용</label><textarea class="inp" id="spB" maxlength="2000" placeholder="신청번호가 있으면 함께 적어 주세요" style="min-height:140px"></textarea>'+
+    '<label class="check"><input type="checkbox" id="spS" checked><span>🔒 비공개로 등록 (작성자 본인과 담당자만 열람)</span></label>'+
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn" onclick="gCloseModal()">취소</button><button class="btn blue" onclick="spSave()">등록</button></div>');
+  setTimeout(()=>{ const t=document.getElementById('spT'); if(t) t.focus(); },30);
+}
+function spSave(){
+  const u=gUser(); if(!u) return;
+  const t=document.getElementById('spT').value.trim(), b=document.getElementById('spB').value.trim();
+  if(!t){ gToast('제목을 입력해 주세요','bad'); return; }
+  if(b.length<5){ gToast('내용을 5자 이상 입력해 주세요','bad'); return; }
+  const l=gInquiries();
+  const q={id:'Q'+gSeq(),region:SLUG,uid:u.id,name:u.name,title:t,body:b,secret:document.getElementById('spS').checked,at:gYmd(gToday()),answer:null};
+  l.push(q); gSaveInquiries(l);
+  gCloseModal(); gToast('문의가 등록되었어요','ok');
+  OPEN=q.id; spRender();
+}
+
+function spRender(){
+  document.getElementById('spTabs').innerHTML=[['notice','공지사항'],['faq','FAQ'],['qna','문의하기']].map(t=>
+    '<a href="support.html?r='+SLUG+'&tab='+t[0]+'" class="'+(TAB===t[0]?'on':'')+'" onclick="spGo(\''+t[0]+'\');return false">'+t[1]+'</a>').join('');
+  const search=TAB!=='qna'?'<div class="sp-tool"><input class="inp" id="spSearch" placeholder="제목·내용 검색" value="'+gEsc(spQ)+'" oninput="spQ=this.value;spPage=1;spRenderList()">'+
+    '<span class="small muted">통합 공지는 25개 지역에 자동 노출되고, '+gEsc(R.name)+' 소식이 함께 표시됩니다.</span></div>':'';
+  document.getElementById('spBody').innerHTML=search+'<div id="spList"></div>';
+  spRenderList();
+}
+function spRenderList(){
+  document.getElementById('spList').innerHTML=TAB==='qna'?spQna():spNotices(TAB);
+  if(OPEN){ const e=document.getElementById('n-'+OPEN); if(e) setTimeout(()=>e.scrollIntoView({block:'center'}),30); }
+}
+spRender();
+</script>
+</body></html>
