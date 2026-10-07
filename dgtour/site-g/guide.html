@@ -137,7 +137,7 @@ gShell({mode:'hub',active:'guide'});
 
 const S=id=>gStd(id), V=id=>gEsc(gStd(id).val), N=id=>gStdNum(id);
 const lock='<span class="gd-lock" title="전국 공통(통합) 기준">🔒 공통</span>';
-const rate=N('M6'), yrate=N('M7'), yr=N('M9')||[19,34], minS=N('M8');
+const rate=N('M6'), yrate=N('M7'), yr=Array.isArray(N('M9'))?N('M9'):[19,34], minS=N('M8');
 const v4=String(S('V4').val||'').replace(/[^0-9]/g,'')||'2';
 
 document.getElementById('gdWhy2').textContent='최대 '+rate+'% · 청년 '+yrate+'% 환급';

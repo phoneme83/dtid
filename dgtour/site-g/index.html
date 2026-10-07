@@ -37,7 +37,7 @@
 .ix-map{position:relative;background:#eef3fb;border-radius:14px;padding:14px 10px 10px;overflow:hidden}
 .ix-mapin{position:relative;max-width:440px;margin:0 auto}
 .ix-mapin img{display:block;width:100%;filter:sepia(.25) hue-rotate(185deg) saturate(2.2) brightness(.97);opacity:.9}
-.ix-pin{position:absolute;transform:translate(-9px,-50%);display:flex;align-items:center;gap:3px;border:0;background:none;padding:0;cursor:pointer;font:inherit}
+.ix-pin{position:absolute;transform:translate(-9px,-50%);display:flex;align-items:center;gap:3px;border:0;background:none;padding:0;cursor:pointer;font:inherit;min-height:40px;min-width:40px}
 .ix-pin i{flex:none;width:12px;height:12px;border-radius:50%;background:#9aa1ac;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);position:relative}
 .ix-pin b{font-size:11.5px;font-weight:800;color:#64748b;background:rgba(255,255,255,.85);border-radius:5px;padding:0 4px;white-space:nowrap;line-height:1.5}
 .ix-pin.open i{width:16px;height:16px;background:var(--pri);box-shadow:0 0 0 7px rgba(229,69,44,.18)}
@@ -96,20 +96,32 @@
 .ix-months span{position:absolute;top:0;transform:translateX(4px)}
 .ix-gr{align-items:center;min-height:38px;border-bottom:1px dashed #eef0f3}
 .ix-gr .nm{font-weight:800;font-size:13.5px;display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden}
+.ix-gr .nm a{display:inline-flex;align-items:center;min-height:38px}
 .ix-gr .nm a:hover{color:var(--pri)}
 .ix-track{position:relative;height:38px}
 .ix-track .mline{position:absolute;top:0;bottom:0;border-left:1px solid #f1f5f9}
-.ix-bar{position:absolute;top:10px;height:18px;border-radius:9px;font-size:11px;color:#fff;font-weight:800;line-height:18px;padding:0 8px;white-space:nowrap;overflow:hidden;min-width:6px}
+.ix-bar{position:absolute;z-index:1;top:10px;height:18px;border-radius:9px;font-size:11px;color:#fff;font-weight:800;line-height:18px;padding:0 8px;white-space:nowrap;overflow:hidden;min-width:6px}
 .ix-bar.open{background:var(--pri)} .ix-bar.soon{background:var(--blue)} .ix-bar.closed,.ix-bar.full{background:#cbd2db;color:#5b6472}
 .ix-bar.blk{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.35) 0 3px,transparent 3px 7px)}
-.ix-al{position:absolute;top:7px;height:24px;border-radius:999px;border:1px solid #bfd3ff;background:var(--blue-l);color:var(--blue);font-size:11.5px;font-weight:800;padding:0 9px;cursor:pointer;white-space:nowrap}
+.ix-alw{position:absolute;top:0;z-index:1}
+.ix-al{position:absolute;top:3px;height:32px;border-radius:999px;border:1px solid #bfd3ff;background:var(--blue-l);color:var(--blue);font-size:11.5px;font-weight:800;padding:0 9px;cursor:pointer;white-space:nowrap}
 .ix-al.on{background:#fff;border-color:#86efac;color:#15803d}
 .ix-al:hover{filter:brightness(.97)}
-.ix-today{position:absolute;top:0;bottom:4px;width:0;border-left:2px dashed var(--pri);left:calc(var(--lw) + (100% - var(--lw)) * var(--tp));pointer-events:none;z-index:2}
-.ix-today span{position:absolute;bottom:-2px;left:-14px;font-size:11.5px;color:var(--pri);font-weight:800;background:#fff;padding:0 2px}
+.ix-al::before{content:'';position:absolute;left:0;right:0;top:-4px;bottom:-4px}   /* 누르는 영역 40px */
+.ix-today{position:absolute;top:0;bottom:4px;width:0;border-left:2px dashed var(--pri);left:calc(var(--lw) + (100% - var(--lw)) * var(--tp));pointer-events:none;z-index:0}
+.ix-today span{position:absolute;bottom:-2px;left:-14px;white-space:nowrap;font-size:11.5px;color:var(--pri);font-weight:800;background:#fff;padding:0 2px}
 .ix-gfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
 .ix-glg{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--sub)}
 .ix-glg i{display:inline-block;width:18px;height:8px;border-radius:4px;margin-right:4px;vertical-align:middle}
+
+/* 모바일 전용 오픈 알림 목록 (간트는 가로 스크롤이라 버튼이 화면 밖) */
+.ix-gal{display:none}
+.ix-gal h3{margin:14px 0 6px;font-size:15px}
+.ix-gal li{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px dashed #eef0f3;list-style:none}
+.ix-gal li div{flex:1;min-width:0;font-size:14px}
+.ix-gal li small{display:block;color:var(--sub);font-size:12.5px}
+.ix-gal ul{margin:0;padding:0}
+.ix-gal .btn{flex:none;min-height:42px;white-space:nowrap}
 
 /* FAQ */
 .ix-faq details{background:#fff;border:1px solid var(--line);border-radius:12px;margin:8px 0}
@@ -152,6 +164,8 @@
   .ix-jy{grid-template-columns:repeat(2,minmax(0,1fr))}
   .ix-pin b{font-size:10.5px}
   .ix-faq .a{padding-left:16px}
+  .ix-alw{display:none}
+  .ix-gal{display:block}
 }
 </style>
 </head><body>
@@ -217,6 +231,7 @@
         <p>회차별 사전신청 기간이에요. 오픈 예정 회차는 [알림]을 신청하면 접수 시작 때 알림톡으로 알려드려요.</p></div></div>
       <div class="ix-gantt">
         <div class="ix-gscroll"><div class="ix-gin" id="ixGantt"></div></div>
+        <div class="ix-gal" id="ixGal"></div>
         <div class="ix-gfoot">
           <div class="ix-glg"><span><i style="background:var(--pri)"></i>접수중</span><span><i style="background:var(--blue)"></i>오픈예정</span>
             <span><i style="background:#cbd2db"></i>마감</span><span><i style="background:none;border-left:2px dashed var(--pri);width:2px;border-radius:0"></i>오늘</span></div>
@@ -460,6 +475,7 @@ function ixGantt(){
   const shown=IX.more?rows:rows.slice(0,8);
   const ml=months.map(m=>'<span class="mline" style="left:'+m.p+'%"></span>').join('');
   let h='<div class="ix-gh"><div>지역</div><div class="ix-months">'+months.map(m=>'<span style="left:'+m.p+'%">'+m.t+'</span>').join('')+'</div></div>';
+  const gal=[];
   shown.forEach(r=>{
     const b=ixBlk(r);
     let bars='';
@@ -470,7 +486,8 @@ function ixGantt(){
       bars+='<span class="ix-bar '+st+(b?' blk':'')+'" style="left:'+L+'%;width:'+w+'%" title="'+gEsc(r.full+' '+rd.n+'회차 신청 '+gDot(rd.applyStart)+'~'+gDot(rd.applyEnd)+' ('+G_STATE_LABEL[st]+')')+'">'+(w>7?rd.n+'회차 '+gMD(rd.applyStart)+'~'+gMD(rd.applyEnd):w>3?rd.n+'회':'')+'</span>';
       if(st==='soon'&&!b){
         const at=Math.min(R,86);
-        bars+='<span style="position:absolute;left:calc('+at+'% + 5px);top:0">'+ixAlertBtnHtml(r.slug,rd.n)+'</span>';
+        bars+='<span class="ix-alw" style="left:calc('+at+'% + 5px)">'+ixAlertBtnHtml(r.slug,rd.n)+'</span>';
+        gal.push([r,rd]);
       }
     });
     h+='<div class="ix-gr"><div class="nm"><i class="dot '+r._st.state+'"></i><a href="region.html?r='+r.slug+'">'+gEsc(r.full)+'</a></div>'+
@@ -479,6 +496,9 @@ function ixGantt(){
   if(!shown.length) h+='<div class="ix-empty" style="padding:16px">해당 상태의 지역이 없어요</div>';
   h+='<div class="ix-today" style="--tp:'+(pct(T)/100)+'"><span>오늘</span></div>';
   document.getElementById('ixGantt').innerHTML=h;
+  /* 모바일: 오픈예정 회차 알림 버튼을 목록으로 (간트 행 순서 그대로) */
+  document.getElementById('ixGal').innerHTML=gal.length?'<h3>🔔 오픈 예정 회차 알림 신청</h3><ul>'+gal.map(x=>
+    '<li><div><b>'+gEsc(x[0].full)+' '+x[1].n+'회차</b><small>접수 시작 '+gDot(x[1].applyStart)+'</small></div>'+ixAlertBtnHtml(x[0].slug,x[1].n,'btn sm')+'</li>').join('')+'</ul>':'';
   const mb=document.getElementById('ixMore');
   mb.style.display=rows.length>8?'':'none';
   mb.textContent=IX.more?'접기 ▲':'더보기 ('+rows.length+'개 지역 전체) ▼';

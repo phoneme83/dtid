@@ -44,6 +44,7 @@
 <script>
 const SLUG=(gQS('r')&&gRegion(gQS('r')))?gQS('r'):'pyeongchang';
 gShell({mode:'region',slug:SLUG,active:'guide'});
+if(gQS('r')!==null&&gQS('r')!==SLUG) gToast('요청한 지역을 찾을 수 없어 평창군을 보여드립니다','bad');
 const R=gRegion(SLUG);
 const ALL=gMerchants(SLUG);
 const OK=ALL.filter(m=>!m.excluded), EX=ALL.filter(m=>m.excluded);

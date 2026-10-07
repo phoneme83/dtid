@@ -22,7 +22,7 @@ const G_P='dtidG_';
 
 /* ── 저장소 ───────────────────────────────────────────────────── */
 function gGet(k,def){ try{ const v=localStorage.getItem(G_P+k); return v==null?def:JSON.parse(v); }catch(e){ return def; } }
-function gSet(k,v){ try{ localStorage.setItem(G_P+k,JSON.stringify(v)); }catch(e){} }
+function gSet(k,v){ try{ localStorage.setItem(G_P+k,JSON.stringify(v)); return true; }catch(e){ return false; } }   /* 용량 초과·차단 시 false */
 function gUid(){ try{ return localStorage.getItem(G_LOGIN_KEY)||''; }catch(e){ return ''; } }
 function gUGet(k,def,uid){ return gGet(k+'_'+(uid||gUid()),def); }
 function gUSet(k,v,uid){ gSet(k+'_'+(uid||gUid()),v); }
@@ -33,7 +33,13 @@ function gNow(){ const d=new Date(); d.setDate(d.getDate()+(Number(gGet('dayOffs
 function gToday(){ const d=gNow(); d.setHours(0,0,0,0); return d; }
 function gYmd(d){ d=(d instanceof Date)?d:new Date(d); const p=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
 function gAdd(d,n){ const x=(d instanceof Date)?new Date(d):new Date(d+'T00:00:00'); x.setDate(x.getDate()+n); return x; }
-function gD(s){ return (s instanceof Date)?s:new Date(String(s).slice(0,10)+'T00:00:00'); }
+function gD(s){
+  if(s instanceof Date) return s;
+  s=String(s==null?'':s);
+  if(s.length>10&&s[10]==='T'){ const d=new Date(s); if(!isNaN(d)){ d.setHours(0,0,0,0); return d; } }   /* 타임스탬프는 현지 날짜로(UTC 'Z' 값이 하루 밀리지 않게) */
+  return new Date(s.slice(0,10)+'T00:00:00');
+}
+function gRealToday(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
 function gDiff(a,b){ return Math.round((gD(b)-gD(a))/86400000); }      /* b - a (일) */
 function gMD(s){ const d=gD(s); return String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0'); }
 function gDot(s){ const d=gD(s); return d.getFullYear()+'.'+gMD(d); }
@@ -140,10 +146,13 @@ function gRegion(slug){
     attractions, nearby:G_NEARBY[s]||[],
     extraExcl:sp.extraExcl||'', photoRule:sp.photoRule||'얼굴과 관광지 안내판이 함께 보이게',
     dept:sp.dept||(full+'청 관광과'),
-    links:{tour:'#',mall:'#',spots:'#'}
+    links:{tour:'region.html?r='+s,mall:'merchants.html?r='+s,spots:'region.html?r='+s+'#spots'}   /* 실제 지자체 링크는 관리자 '지역 콘텐츠'에서 입력 */
   };
   const ov=(gGet('regionCfg',{})||{})[s]||{};       /* 관리자 '지역 콘텐츠' 덮어쓰기 */
   Object.keys(ov).forEach(k=>{ if(k!=='rounds') r[k]=ov[k]; });
+  if(typeof r.nearby==='string') r.nearby=r.nearby.split(/[,·\s]+/).filter(Boolean);
+  ['nearby','attractions'].forEach(k=>{ if(!Array.isArray(r[k])) r[k]=[]; });
+  while(r.attractions.length<4) r.attractions.push(name+' 지정관광지 '+(r.attractions.length+1));
   r.rounds=gRounds(s,group,ov.rounds);
   return r;
 }
@@ -154,7 +163,7 @@ function gSetRegionCfg(slug,patch){ const all=gGet('regionCfg',{})||{}; all[slug
    관리자 '회차 일정'에서 저장하면 그 값을 쓴다. */
 function gRounds(slug,group,saved){
   if(saved&&saved.length) return saved.map(x=>Object.assign({},x));
-  const T=gToday(), h=gHash(slug), d=n=>gYmd(gAdd(T,n));
+  const T=gRealToday(), h=gHash(slug), d=n=>gYmd(gAdd(T,n));   /* 실제 날짜 기준 — dayOffset 으로 시간을 옮기면 회차가 열리고 닫혀야 한다 */
   const q=40+(h%5)*10;
   if(group==='open') return [
     {n:1,applyStart:d(-95),applyEnd:d(-70),travelStart:d(-88),travelEnd:d(-50),quota:q},
@@ -190,7 +199,7 @@ function gRegionState(r){
   return {state:'closed',round:r.rounds[r.rounds.length-1],next:null};
 }
 const G_STATE_LABEL={open:'접수중',soon:'오픈예정',closed:'마감',full:'조기마감'};
-const G_STATE_COLOR={open:'#e5452c',soon:'#2563eb',closed:'#9aa1ac',full:'#9aa1ac'};
+const G_STATE_COLOR={open:'#d63d24',soon:'#2563eb',closed:'#9aa1ac',full:'#9aa1ac'};
 
 /* 거주지로 신청 가능 여부: 'same' 관내 | 'nearby' 인접 | null 가능 */
 function gBareGu(v){ return String(v||'').replace(/\s+/g,'').replace(/(특별자치시|특별자치도|광역시|특별시)$/,'').replace(/(시|군|구)$/,''); }
@@ -346,13 +355,13 @@ function gLogout(){ try{ localStorage.removeItem(G_LOGIN_KEY); }catch(e){} locat
 const G_ST={
   received:      {nm:'접수 완료',   stage:'wait',   c:'#64748b'},
   review:        {nm:'심사중',      stage:'wait',   c:'#2563eb'},
-  fix:           {nm:'보완 필요',   stage:'fix',    c:'#e5452c'},
+  fix:           {nm:'보완 필요',   stage:'fix',    c:'#d63d24'},
   approved:      {nm:'승인 완료',   stage:'trip',   c:'#0f766e'},
-  change_review: {nm:'일정 변경 심사중',stage:'wait',c:'#7c3aed'},
+  change_review: {nm:'일정 변경 심사중',stage:'trip',c:'#7c3aed'},
   rejected:      {nm:'반려',        stage:'end',    c:'#9f1239'},
   canceled:      {nm:'신청 취소',   stage:'end',    c:'#94a3b8'},
   settle_review: {nm:'정산 심사중', stage:'settle', c:'#b45309'},
-  settle_fix:    {nm:'정산 보완 필요',stage:'fix',  c:'#e5452c'},
+  settle_fix:    {nm:'정산 보완 필요',stage:'fix',  c:'#d63d24'},
   refund_ok:     {nm:'환급 승인',   stage:'settle', c:'#15803d'},
   refunded:      {nm:'환급 완료',   stage:'done',   c:'#15803d'}
 };
@@ -369,11 +378,12 @@ function gProgress(a){
 }
 const G_INACTIVE=['rejected','canceled'];
 
-function gApps(){ return gGet('applies',[])||[]; }
-function gSaveApps(list){ gSet('applies',list); }
+function gApps(){ const l=gGet('applies',[]); return Array.isArray(l)?l.filter(a=>a&&typeof a==='object'&&a.id).map(a=>{ ['people','history','docs','visits'].forEach(k=>{ if(a[k]!=null&&!Array.isArray(a[k])) a[k]=[]; }); if(!a.people) a.people=[]; if(!a.history) a.history=[]; return a; }):[]; }   /* 필드가 빠진 레코드도 기본값으로 */   /* 형식이 깨진 값이 섞여도 화면이 멈추지 않게 */
+function gSaveApps(list){ return gSet('applies',list); }
 function gMyApps(uid){ uid=uid||gUid(); return gApps().filter(a=>a.uid===uid).sort((a,b)=>a.createdAt<b.createdAt?1:-1); }
 function gApp(id){ return gApps().find(a=>a.id===id)||null; }
-function gPutApp(app){ const l=gApps(); const i=l.findIndex(a=>a.id===app.id); if(i>=0) l[i]=app; else l.push(app); gSaveApps(l); return app; }
+/* 저장에 실패하면(용량 초과 등) null — 호출한 화면이 '접수 완료'를 띄우지 않게 */
+function gPutApp(app){ const l=gApps(); const i=l.findIndex(a=>a.id===app.id); if(i>=0) l[i]=app; else l.push(app); return gSaveApps(l)?app:null; }
 function gNewAppId(){ return 'B'+String(gToday().getFullYear()).slice(2)+'-'+gSeq(); }
 function gRoundUsed(slug,n){ return gApps().filter(a=>a.region===slug&&a.round===n&&G_INACTIVE.indexOf(a.status)<0).length; }
 /* 상태 변경 + 이력 + 알림 (알림 매트릭스 p9) */
@@ -382,9 +392,9 @@ function gSetStatus(id,st,opt){
   const a=gApp(id); if(!a) return null;
   const prev=a.status; a.status=st;
   a.history=a.history||[];
-  a.history.push({at:gNow().toISOString(),st,by:opt.by||'system',memo:opt.memo||''});
+  a.history.push({at:gLocalIso(gNow()),st,by:opt.by||'system',memo:opt.memo||''});
   if(opt.patch) Object.assign(a,opt.patch);
-  gPutApp(a);
+  if(!gPutApp(a)) return null;   /* 저장 실패 시 알림도 보내지 않는다 */
   const r=gRegion(a.region);
   const tag=(r?r.full:'')+' '+a.round+'회차';
   const N={
@@ -392,7 +402,7 @@ function gSetStatus(id,st,opt){
     rejected:['reject','반려',tag+' 신청이 반려되었습니다. 사유: '+(opt.memo||'-'),true],
     fix:['fix','보완 요청',tag+' 신청 건에 보완이 필요합니다. 사유: '+(opt.memo||'-')+(a.fix&&a.fix.due?' · 기한: '+gMD(a.fix.due):''),true],
     settle_fix:['fix','정산 보완 요청',tag+' 정산 건에 보완이 필요합니다. 사유: '+(opt.memo||'-'),true],
-    settle_review:['settle','정산 접수',tag+' 정산 신청이 접수되었습니다. 심사 후 14일 이내 지급됩니다.',true],
+    settle_review:['settle','정산 접수',tag+' 정산 신청이 접수되었습니다. 심사 후 '+(gStdNum('U1')||14)+'일 이내 지급됩니다.',true],
     refunded:['refund','환급 완료',tag+' 환급금 '+gWon(a.refund&&a.refund.amount)+'이 '+(r?r.voucher:'지역사랑상품권')+'으로 지급되었습니다.',true],
     canceled:['cancel','신청 취소',tag+' 신청이 취소되었습니다.',false]
   }[st];
@@ -402,16 +412,16 @@ function gSetStatus(id,st,opt){
 
 /* ═══ 6. 알림 — 화면 알림창 / 알림톡(모의) / 마이페이지 알림(30일) ═══════ */
 const G_NOTI_KIND={open:['오픈 알림','#7c3aed'],approve:['승인 완료','#2563eb'],reject:['반려','#9f1239'],
-  fix:['보완 요청','#e5452c'],change:['일정 변경','#0f766e'],settle:['정산 접수','#b45309'],
+  fix:['보완 요청','#d63d24'],change:['일정 변경','#0f766e'],settle:['정산 접수','#b45309'],
   refund:['환급 완료','#15803d'],answer:['문의 답변','#16a34a'],cancel:['신청 취소','#64748b']};
 function gNotis(uid){
   const cut=gAdd(gToday(),-30);
-  return (gUGet('noti',[],uid)||[]).filter(n=>new Date(n.at)>=cut).sort((a,b)=>a.at<b.at?1:-1);
+  const l=gUGet('noti',[],uid); return (Array.isArray(l)?l:[]).filter(n=>n&&new Date(n.at)>=cut).sort((a,b)=>a.at<b.at?1:-1);
 }
 function gNotify(uid,kind,region,title,body,link,talk){
   if(!uid) return;
   const l=gUGet('noti',[],uid)||[];
-  const n={id:'N'+gSeq(),kind,region,title,body,link:link||'',at:gNow().toISOString(),read:false,talk:!!talk};
+  const n={id:'N'+gSeq(),kind,region,title,body,link:link||'',at:gLocalIso(gNow()),read:false,talk:!!talk};
   l.push(n); gUSet('noti',l,uid);
   if(uid===gUid()&&talk) gTalkPreview(n);
   gRefreshBell();
@@ -426,7 +436,7 @@ function gAlerts(){ return gUGet('alert',[])||[]; }
 function gHasAlert(slug,n){ return gAlerts().some(x=>x.region===slug&&(n==null||x.round===n)); }
 function gAddAlert(slug,n){
   const l=gAlerts(); if(l.some(x=>x.region===slug&&x.round===n)) return false;
-  l.push({region:slug,round:n,at:gNow().toISOString(),sent:false}); gUSet('alert',l); return true;
+  l.push({region:slug,round:n,at:gLocalIso(gNow()),sent:false}); gUSet('alert',l); return true;
 }
 function gRemoveAlert(slug,n){ gUSet('alert',gAlerts().filter(x=>!(x.region===slug&&x.round===n))); }
 /* 페이지를 열 때마다 확인: 신청한 회차가 열렸으면 오픈 알림 1회 발송 */
@@ -449,8 +459,8 @@ function gCheckOpenAlerts(){
    공지: scope 'all'(통합) | 지역 slug.  kind: notice | faq.  pin: 상단 고정 */
 function gNotices(){
   let l=gGet('notices',null);
-  if(!l){ l=gSeedNotices(); gSet('notices',l); }
-  return l.sort((a,b)=>(b.pin?1:0)-(a.pin?1:0)||(a.date<b.date?1:-1));
+  if(!Array.isArray(l)){ l=gSeedNotices(); gSet('notices',l); }
+  return l.filter(n=>n&&n.id).slice().sort((a,b)=>(b.pin?1:0)-(a.pin?1:0)||(a.date<b.date?1:-1));
 }
 function gSaveNotices(l){ gSet('notices',l); }
 function gSeedNotices(){
@@ -471,7 +481,7 @@ function gSeedNotices(){
     N('all','faq','정산은 언제까지 해야 하나요?','여행 종료 후 10일 이내에 정산신청을 해 주세요. 심사 후 14일 이내 지역사랑상품권으로 지급됩니다.',d(-50))
   ];
 }
-function gInquiries(){ return gGet('inquiries',null)||gSeedInquiries(); }
+function gInquiries(){ const l=gGet('inquiries',null); return Array.isArray(l)?l.filter(q=>q&&q.id):gSeedInquiries(); }
 function gSaveInquiries(l){ gSet('inquiries',l); }
 function gSeedInquiries(){
   const T=gToday(), d=n=>gYmd(gAdd(T,n));
@@ -541,8 +551,10 @@ function gClassify(items,app){
 }
 function gRefundOf(app,recognized){
   const g=app.grant||gGrant(app.type,app.people);
-  const raw=Math.floor(recognized*g.rate/100);
-  return {raw,amount:Math.min(raw,g.cap),cap:g.cap,rate:g.rate,meetsMin:recognized>=g.minSpend};
+  const revisit=/재방문/.test(gStd('M11',app.region).val)&&gApps().some(a=>a.uid===app.uid&&a.id!==app.id&&a.region===app.region&&a.status==='refunded');
+  const rate=g.rate+(revisit?10:0);
+  const raw=Math.floor(recognized*rate/100);
+  return {raw,amount:Math.min(raw,g.cap),cap:g.cap,rate,revisit,meetsMin:recognized>=g.minSpend};
 }
 
 /* ═══ 9. 대기열·동시접속 (테스트 홈페이지 고도화 기능 유지) ══════════════
@@ -569,11 +581,14 @@ function gSetPersona(id){ gSet('persona',id); }
 function gSeedDemo(uid){
   uid=uid||gUid(); if(!uid||gUGet('seeded',false,uid)) return;
   const u=gUserOf(uid); if(!u) return;
-  const T=gToday(), d=n=>gYmd(gAdd(T,n)), at=n=>gAdd(T,n).toISOString();
+  const T=gToday(), d=n=>gYmd(gAdd(T,n)), at=n=>gLocalIso(gAdd(T,n));
   const me={name:u.name,birth:u.birth,rel:'본인',verified:'dju'};
   const comp={name:'김동행',birth:'1992-05-14',rel:'동행',verified:'kakao'};
   const alt=['hapcheon','geochang','goheung','haenam','jecheon','yeongam'];
   const pick=s=>{ if(!gAddrBlock(s,u.sigungu)) return s; return alt.find(x=>!gAddrBlock(x,u.sigungu)); };
+  /* 지난 건은 그 지역 회차의 여행 시작일 기준으로 — 회차 기간 밖 날짜가 되지 않게 */
+  const rs=(slug,n,k)=>{ const rg=gRegion(pick(slug)); const rd=rg&&(rg.rounds.find(x=>x.n===n)||rg.rounds[0]); return gYmd(gAdd(rd.travelStart,k)); };
+  const yS=rs('yeonggwang',1,3), wS=rs('wando',1,4), nS=rs('namhae',1,2);
   let ago=40;
   const mk=(region,round,type,people,start,end,status,extra)=>{
     region=pick(region); ago-=5;
@@ -588,26 +603,26 @@ function gSeedDemo(uid){
     mk('pyeongchang',2,'team',[me,comp],d(8),d(10),'fix',{fix:{target:'apply',reason:'동행자 신분증 사본 판독 불가(재첨부 필요)',due:d(4),files:[]}}),
     mk('miryang',2,'solo',[me],d(14),d(15),'review'),
     mk('hadong',2,'solo',[me],d(3),d(4),'approved'),
-    mk('yeonggwang',1,'solo',[me],d(-12),d(-11),'settle_review',{settle:{id:'S'+gSeq(),at:at(-8),items:[
-      {src:'localpay',merchant:'영광 한우촌',cat:'음식',amount:68000,at:d(-12)+'T12:10:00',ok:true},
-      {src:'localpay',merchant:'영광 힐링펜션',cat:'숙박',amount:90000,at:d(-12)+'T15:00:00',ok:true},
-      {src:'localpay',merchant:'영광 셀프주유소',cat:'제외',amount:50000,at:d(-11)+'T09:30:00',ok:false,reason:'제외 업종'}],
-      visits:[{spot:'영광 지정관광지 1',date:d(-12),method:'qr',gps:true},{spot:'영광 지정관광지 2',date:d(-11),method:'qr',gps:true}],
+    mk('yeonggwang',1,'solo',[me],gYmd(gAdd(yS,0)),gYmd(gAdd(yS,1)),'settle_review',{settle:{id:'S'+gSeq(),at:at(-8),items:[
+      {src:'localpay',merchant:'영광 한우촌',cat:'음식',amount:68000,at:gYmd(gAdd(yS,0))+'T12:10:00',ok:true},
+      {src:'localpay',merchant:'영광 힐링펜션',cat:'숙박',amount:90000,at:gYmd(gAdd(yS,0))+'T15:00:00',ok:true},
+      {src:'localpay',merchant:'영광 셀프주유소',cat:'제외',amount:50000,at:gYmd(gAdd(yS,1))+'T09:30:00',ok:false,reason:'제외 업종'}],
+      visits:[{spot:'영광 지정관광지 1',date:gYmd(gAdd(yS,0)),method:'qr',gps:true},{spot:'영광 지정관광지 2',date:gYmd(gAdd(yS,1)),method:'qr',gps:true}],
       recognized:158000,rejectedAmt:50000,expected:79000}}),
-    mk('wando',1,'solo',[me],d(-60),d(-59),'refunded',{settle:{id:'S'+gSeq(),at:at(-55),items:[
-      {src:'localpay',merchant:'완도 전복식당',cat:'음식',amount:80000,at:d(-60)+'T12:00:00',ok:true},
-      {src:'localpay',merchant:'완도 로컬푸드직매장',cat:'쇼핑',amount:70000,at:d(-59)+'T11:00:00',ok:true}],
-      visits:[{spot:'완도 지정관광지 1',date:d(-60),method:'qr',gps:true}],recognized:150000,rejectedAmt:0,expected:75000},
-      refund:{amount:75000,pin:'5821-0394-2210',paidAt:d(-45),registered:false}}),
-    mk('namhae',1,'solo',[me],d(-90),d(-88),'refunded',{settle:{id:'S'+gSeq(),at:at(-85),items:[
-      {src:'localpay',merchant:'남해 멸치쌈밥',cat:'음식',amount:120000,at:d(-90)+'T12:00:00',ok:true},
-      {src:'localpay',merchant:'남해 독일마을 상회',cat:'쇼핑',amount:180000,at:d(-89)+'T11:00:00',ok:true}],
+    mk('wando',1,'solo',[me],gYmd(gAdd(wS,0)),gYmd(gAdd(wS,1)),'refunded',{settle:{id:'S'+gSeq(),at:at(-55),items:[
+      {src:'localpay',merchant:'완도 전복식당',cat:'음식',amount:80000,at:gYmd(gAdd(wS,0))+'T12:00:00',ok:true},
+      {src:'localpay',merchant:'완도 로컬푸드직매장',cat:'쇼핑',amount:70000,at:gYmd(gAdd(wS,1))+'T11:00:00',ok:true}],
+      visits:[{spot:'완도 지정관광지 1',date:gYmd(gAdd(wS,0)),method:'qr',gps:true}],recognized:150000,rejectedAmt:0,expected:75000},
+      refund:{amount:75000,pin:'5821-0394-2210',paidAt:gYmd(gAdd(wS,15)),registered:false}}),
+    mk('namhae',1,'solo',[me],gYmd(gAdd(nS,0)),gYmd(gAdd(nS,2)),'refunded',{settle:{id:'S'+gSeq(),at:at(-85),items:[
+      {src:'localpay',merchant:'남해 멸치쌈밥',cat:'음식',amount:120000,at:gYmd(gAdd(nS,0))+'T12:00:00',ok:true},
+      {src:'localpay',merchant:'남해 독일마을 상회',cat:'쇼핑',amount:180000,at:gYmd(gAdd(nS,1))+'T11:00:00',ok:true}],
       visits:[],recognized:300000,rejectedAmt:0,expected:100000},
-      refund:{amount:100000,pin:'7710-2283-9015',paidAt:d(-75),registered:true}})
+      refund:{amount:100000,pin:'7710-2283-9015',paidAt:gYmd(gAdd(nS,15)),registered:true}})
   ];
   const all=gApps().concat(list); gSaveApps(all);
   const nl=gUGet('noti',[],uid)||[];
-  const push=(kind,region,title,body,link,ago,read)=>nl.push({id:'N'+gSeq(),kind,region,title,body,link,at:gAdd(gNow(),-ago).toISOString(),read:!!read,talk:true});
+  const push=(kind,region,title,body,link,ago,read)=>nl.push({id:'N'+gSeq(),kind,region,title,body,link,at:gLocalIso(new Date(gNow().getTime()-ago*86400000)),read:!!read,talk:true});
   const R=i=>gRegion(list[i].region);
   push('answer',list[0].region,'문의 답변','"동행자 변경이 가능한가요?" 문의에 답변이 등록되었습니다.','support.html?r='+list[0].region+'&tab=qna',0.1);
   push('fix',list[0].region,'보완 요청',R(0).full+' 2회차 신청 건에 보완이 필요합니다. 사유: 동행자 신분증 사본 판독 불가(재첨부 필요)','mypage.html?app='+list[0].id,1);
@@ -623,6 +638,11 @@ function gSeedDemo(uid){
    gShell({mode:'hub'|'region'|'my', slug, active})  — body 맨 앞에 헤더, 끝에 푸터를 넣는다. */
 function gShell(opt){
   opt=opt||{};
+  if(typeof ACCOUNTS==='undefined'||typeof TOUR50_REGIONS==='undefined'){   /* 배포 서버 일시 오류로 공용 데이터를 못 받은 경우 */
+    const w=document.createElement('div'); w.className='g-loadfail';
+    w.innerHTML='공용 데이터를 불러오지 못했습니다. 잠시 후 <a href="#" onclick="location.reload();return false">새로고침</a>해 주세요.';
+    document.body.insertBefore(w,document.body.firstChild);
+  }
   const u=gUser();
   const r=opt.slug?gRegion(opt.slug):null;
   const zones=G_ZONES.map(z=>'<div class="g-zone"><b>'+z+'</b>'+G_REGION_BASE.filter(b=>b[4]===z).map(b=>{
@@ -667,7 +687,7 @@ function gShell(opt){
       ?'<div class="g-rband"><div class="g-in"><b>'+gEsc(r.dept)+'</b> · '+gEsc(r.phone)+' · '+gEsc(gStd('B6',r.slug).val)+' 운영'+
         ' <a href="support.html?r='+r.slug+'&tab=qna">문의하기 ›</a> <a href="index.html">통합 메인 ›</a></div></div>':'')+
     '<div class="g-in"><div class="g-fl"><b>한국관광공사</b> · 강원특별자치도 원주시 세계로 10 · 고객센터 1330</div>'+
-    '<div class="g-fl"><a href="#">이용약관</a> · <a href="#"><b>개인정보처리방침</b></a> · <a href="../sites.html">시안 목록</a> · <a href="wireframe.html">시안 G 설명</a> · <a href="admin.html">관리자</a></div>'+
+    '<div class="g-fl"><a href="guide.html#gdNotes">이용약관</a> · <a href="guide.html#gdNotes"><b>개인정보처리방침</b></a> · <a href="../sites.html">시안 목록</a> · <a href="wireframe.html">시안 G 설명</a> · <a href="admin.html">관리자</a></div>'+
     '<div class="g-fl g-demo">시안 G — 「대한민국 반값여행 통합플랫폼 구축용역 착수보고」(’26.10.) 화면 구조를 따른 테스트용 목업입니다. 실제 인증·결제·발송은 하지 않습니다.</div></div>';
   document.body.appendChild(foot);
 
@@ -688,9 +708,10 @@ function gRefreshBell(){
   const b=document.getElementById('gBellBadge'); if(!b) return;
   const n=gUid()?gUnread():0; b.textContent=n>9?'9+':n; b.style.display=n?'':'none';
 }
+function gSafeLink(u){ u=String(u||''); return /^[a-z0-9_-]+\.html([?#][^\s"'<>]*)?$/i.test(u)?u:'mypage.html'; }   /* 같은 폴더 화면만 — javascript: 등 차단 */
 function gNotiItem(n){
   const k=G_NOTI_KIND[n.kind]||['알림','#64748b'], r=gRegion(n.region);
-  return '<a class="g-ni'+(n.read?'':' unread')+'" href="'+gEsc(n.link||'mypage.html')+'" onclick="gReadOne(\''+n.id+'\')">'+
+  return '<a class="g-ni'+(n.read?'':' unread')+'" href="'+gEsc(gSafeLink(n.link))+'" onclick="gReadOne(\''+n.id+'\')">'+
     '<i style="background:'+k[1]+'"></i><div><b>'+(r?gEsc(r.full)+' · ':'')+gEsc(n.title)+'</b><p>'+gEsc(n.body)+'</p><small>'+gAgo(n.at)+(n.talk?' · 알림톡 발송':'')+'</small></div></a>';
 }
 function gToggleBell(e){
@@ -716,15 +737,33 @@ function gTalkPreview(n){
   let box=document.getElementById('gTalk');
   if(!box){ box=document.createElement('div'); box.id='gTalk'; document.body.appendChild(box); }
   box.innerHTML='<div class="g-talk"><div class="g-th">💬 알림톡 · 반값여행 '+gEsc(n.title)+'</div><div class="g-tb">'+gEsc(n.body)+'</div>'+
-    '<a class="g-tbtn" href="'+gEsc(n.link||'mypage.html')+'">'+(n.kind==='fix'?'마이페이지에서 제출':'자세히 보기')+'</a><small>모의 발송 — 실제 알림톡은 보내지 않습니다</small></div>';
+    '<a class="g-tbtn" href="'+gEsc(gSafeLink(n.link))+'">'+(n.kind==='fix'?'마이페이지에서 제출':'자세히 보기')+'</a><small>모의 발송 — 실제 알림톡은 보내지 않습니다</small></div>';
   box.className='on'; clearTimeout(gTalkPreview._t); gTalkPreview._t=setTimeout(()=>box.className='',5200);
 }
 function gModal(html,cls){
   const m=document.getElementById('gModal'); if(!m) return;
   m.innerHTML='<div class="g-mbox '+(cls||'')+'"><button class="g-mx" onclick="gCloseModal()" aria-label="닫기">×</button>'+html+'</div>';
   m.classList.add('on'); document.body.style.overflow='hidden';
+  m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true');
+  if(!m.classList.contains('was-open')) gModal._ret=document.activeElement;
+  m.classList.add('was-open');
+  const box=m.querySelector('.g-mbox'); box.setAttribute('tabindex','-1');
+  const f=box.querySelector('input,select,textarea,button:not(.g-mx),a[href]'); (f||box).focus({preventScroll:true});
 }
-function gCloseModal(){ const m=document.getElementById('gModal'); if(m){ m.classList.remove('on'); m.innerHTML=''; } document.body.style.overflow=''; }
+function gCloseModal(){
+  const m=document.getElementById('gModal'); if(m){ m.classList.remove('on','was-open'); m.innerHTML=''; }
+  document.body.style.overflow='';
+  if(gModal._ret&&gModal._ret.focus) try{ gModal._ret.focus({preventScroll:true}); }catch(e){}
+}
+document.addEventListener('keydown',e=>{
+  const m=document.getElementById('gModal'); if(!m||!m.classList.contains('on')) return;
+  if(e.key==='Escape'){ gCloseModal(); return; }
+  if(e.key==='Tab'){   /* 모달 밖으로 포커스가 빠지지 않게 */
+    const f=[...m.querySelectorAll('a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])')].filter(x=>!x.disabled&&x.offsetParent!==null);
+    if(!f.length) return; const a=f[0], z=f[f.length-1];
+    if(e.shiftKey&&document.activeElement===a){ z.focus(); e.preventDefault(); } else if(!e.shiftKey&&document.activeElement===z){ a.focus(); e.preventDefault(); }
+  }
+});
 
 /* 상태 배지 */
 function gBadge(st){ const s=G_ST[st]||{nm:st,c:'#64748b'}; return '<span class="g-st" style="--c:'+s.c+'">'+s.nm+'</span>'; }

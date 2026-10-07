@@ -94,10 +94,12 @@ function lgBlocked(res){
   }).filter(Boolean);
 }
 
+/* 국기 이모지(지역 표시 문자 2개)는 Windows 에서 'KR' 글자로 보여 다른 이모지로 바꿔 쓴다 */
+function lgAv(v){ v=String(v||''); return (!v||/[\u{1F1E6}-\u{1F1FF}]/u.test(v))?'🙂':v; }
 function lgRender(){
   const u=gUser(), box=document.getElementById('lgBox');
   if(u){
-    box.innerHTML='<div class="lg-in"><div class="av">'+gEsc(u.av||'🙂')+'</div><h2>'+gEsc(u.name)+' 님으로 로그인됨</h2>'+
+    box.innerHTML='<div class="lg-in"><div class="av">'+gEsc(lgAv(u.av))+'</div><h2>'+gEsc(u.name)+' 님으로 로그인됨</h2>'+
       '<p class="muted" style="margin:0">디지털 관광주민증 인증 완료</p>'+
       '<dl class="lg-info"><dt>생년월일</dt><dd>'+gEsc(u.birthDot)+(u.youth?' <span class="g-st" style="--c:#7c3aed">청년</span>':'')+'</dd>'+
       '<dt>휴대폰</dt><dd>'+gEsc(u.phone)+' <span class="muted small">(알림톡 수신)</span></dd>'+
@@ -137,7 +139,7 @@ document.getElementById('lgTbl').innerHTML=ACCOUNTS.map(a=>{
   const res=G_RESIDENCE[a.id]||{sido:'서울특별시',sigungu:'종로구'};
   const sns=SNS_LOGIN.find(s=>s.userId===a.id);
   const bl=lgBlocked(res);
-  return '<tr class="'+(gUid()===a.id?'me':'')+'"><td><span class="who">'+gEsc(a.emojiAv)+' <b>'+gEsc(a.name)+'</b> <span class="muted small">'+gEsc(a.id)+'</span></span></td>'+
+  return '<tr class="'+(gUid()===a.id?'me':'')+'"><td><span class="who">'+gEsc(lgAv(a.emojiAv))+' <b>'+gEsc(a.name)+'</b> <span class="muted small">'+gEsc(a.id)+'</span></span></td>'+
     '<td>'+(sns?'<span class="snsb" style="background:'+gEsc(sns.bg)+';color:'+gEsc(sns.fg)+';border:1px solid '+gEsc(sns.border||sns.bg)+'">'+gEsc(sns.label)+'</span>':'—')+'</td>'+
     '<td>'+gEsc(res.sido+' '+res.sigungu)+'</td>'+
     (bl.length?'<td class="blk">'+bl.map(x=>gEsc(x.r.full)+' ('+(x.b==='same'?'관내':'인접')+')').join(', ')+'</td>':'<td class="okc">없음 · 25개 지역 모두 신청 가능</td>')+'</tr>';

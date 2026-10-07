@@ -159,6 +159,29 @@ const AP=(function(){
       '<p class="small muted tc">아직 회원이 아니신가요? 디지털 관광주민증 앱에서 가입 후 이용해 주세요.</p></div>',0);
   }
 
+  /* 연 1회(B4) 대상 — 올해 유효 신청(시연 데이터·취소·반려 제외). 보완 모드에서는 자기 건 제외 */
+  function b4Mine(exceptId){
+    const y=String(gToday().getFullYear());
+    return gMyApps(U.id).filter(a=>!a.demo&&a.id!==exceptId&&String(a.createdAt).slice(0,4)===y&&G_INACTIVE.indexOf(a.status)<0);
+  }
+  /* 저장 실패(용량 초과·저장소 차단) — 완료 화면 대신 재시도 안내 */
+  function saveFailView(retryLabel){
+    view='savefail';
+    show('<div class="card ap-big"><div class="ic">⚠️</div><h2>저장 공간이 부족해 접수하지 못했습니다</h2>'+
+      '<p>브라우저 저장 공간이 가득 찼거나 저장이 차단되어 신청 내용을 저장하지 못했습니다. 아직 <b>접수되지 않았습니다</b>.</p>'+
+      '<p class="small muted">브라우저의 사이트 데이터를 정리한 뒤 다시 시도해 주세요. 입력하신 내용은 이 화면을 닫기 전까지 유지됩니다.</p>'+
+      '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px"><button class="btn pri" id="apRetry" onclick="AP.retry()">'+(retryLabel||'다시 시도')+'</button>'+
+      '<button class="btn" onclick="AP.go(4)">최종 확인으로</button></div></div>',4);
+  }
+  let retryFn=null;
+  function retry(){ const f=retryFn; if(f) f(); }
+  function acctChangedView(){
+    view='acct';
+    show('<div class="card ap-big"><div class="ic">🔄</div><h2>다른 탭에서 계정이 바뀌었습니다</h2>'+
+      '<p>이 화면은 <b>'+gEsc(gMask(U.name))+'</b> 님으로 작성 중이었지만, 다른 탭에서 로그인 계정이 바뀌어 제출을 중단했습니다.</p>'+
+      '<p class="small muted">다른 사람 명의로 잘못 접수되지 않도록, 현재 로그인한 계정으로 처음부터 다시 신청해 주세요.</p>'+
+      '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px"><button class="btn pri" onclick="location.reload()">현재 계정으로 다시 시작</button><a class="btn" href="mypage.html">마이페이지</a></div></div>',0);
+  }
   function boot(){
     band();
     if(!U) return loginView();
@@ -170,6 +193,11 @@ const AP=(function(){
       if(gQueue(t.slug,t.n).some(x=>x.id===t.id)){ RD=R.rounds.find(x=>x.n===t.n)||null; band(); return queueView(); }
       gUSet('myq',null);
     }
+    /* 거주지 차단을 회차 상태보다 먼저 — 마감·오픈예정 지역이라도 관내·인접 거주자에게는 이 사유가 더 정확하다 */
+    const ab=gAddrBlock(AP_SLUG,U.sigungu);
+    if(ab) return blockView('🏠',ab==='same'?'관내 거주자는 신청할 수 없어요':'인접 지역 거주자는 신청할 수 없어요',
+      '<p>행정정보 공동이용으로 확인한 거주지: <b>'+gEsc(U.addr)+'</b></p><p>반값여행은 관외 방문객을 위한 사업으로, '+gEsc(R.full)+gJosa(R.full,'과와')+' '+(ab==='same'?'같은 시·군':'인접한 시·군('+gEsc(R.nearby.join('·'))+')')+'에 거주하시면 신청할 수 없습니다.</p>',
+      '<a class="btn pri" href="index.html#map">신청 가능한 지역 찾기</a>');
     const st=gRegionState(R);
     if(st.state!=='open'){
       if(st.state==='soon'||st.next){
@@ -183,13 +211,8 @@ const AP=(function(){
         '<a class="btn pri" href="index.html#map">접수 중인 다른 지역 보기</a>'+demoResetBtn());
     }
     RD=st.round; band();
-    const ab=gAddrBlock(AP_SLUG,U.sigungu);
-    if(ab) return blockView('🏠',ab==='same'?'관내 거주자는 신청할 수 없어요':'인접 지역 거주자는 신청할 수 없어요',
-      '<p>행정정보 공동이용으로 확인한 거주지: <b>'+gEsc(U.addr)+'</b></p><p>반값여행은 관외 방문객을 위한 사업으로, '+gEsc(R.full)+gJosa(R.full,'과와')+' '+(ab==='same'?'같은 시·군':'인접한 시·군('+gEsc(R.nearby.join('·'))+')')+'에 거주하시면 신청할 수 없습니다.</p>',
-      '<a class="btn pri" href="index.html#map">신청 가능한 지역 찾기</a>');
     if(!noB4){
-      const y=String(gToday().getFullYear());
-      const mine=gMyApps().filter(a=>!a.demo&&String(a.createdAt).slice(0,4)===y&&G_INACTIVE.indexOf(a.status)<0);   /* 시연 데이터(demo)는 횟수에 넣지 않는다 */
+      const mine=b4Mine();
       if(mine.length>=B4){
         const a=mine[0], ar=gRegion(a.region);
         return blockView('📌','올해 반값여행을 이미 신청하셨어요',
@@ -212,12 +235,27 @@ const AP=(function(){
     RD=R.rounds.find(x=>x.n===a.round)||gRegionState(R).round; band();
     S.type=a.type; S.start=a.start; S.end=a.end; S.n=a.people.length; S.plan=a.plan||'';
     S.comps=a.people.filter(p=>p.rel==='동행').map(p=>({name:p.name,birth:p.birth,phone:'',method:p.verified,verified:p.verified,idMask:true,idFile:null,minorDoc:p.doc?{name:p.doc}:null,state:'done'}));
-    if(a.type==='family'){ S.famOpen=true; const hh=household(); S.fam=a.people.filter(p=>p.rel==='가족').map(p=>{ const m=hh.find(h=>h.name===p.name); return m?m.id:null; }).filter(Boolean); }
+    if(a.type==='family'){ S.famOpen=true; S.fam=restoreFam(a.people.filter(p=>p.rel==='가족')); }
     S.check=CHECKS.map(()=>true); S.privacy=S.third=!!(a.agree&&a.agree.privacy); S.third=!!(a.agree&&a.agree.third);
     S.addrOk=true;
     go(4);
   }
 
+  /* 보완 모드 가족 복원: 세대원 id(hid) → 이름(유일하게 맞을 때) → 관계+생년월일 → 순서 폴백.
+     같은 세대원을 두 번 고르지 않는다(예전 데이터에서 부·모 이름이 같아 1명이 빠지던 문제) */
+  function restoreFam(fam){
+    const hh=household().filter(h=>h.eligible), used=[];
+    const free=h=>used.indexOf(h.id)<0;
+    const left=[];
+    fam.forEach(p=>{
+      let m=p.hid&&hh.find(h=>h.id===p.hid&&free(h));
+      if(!m){ const byName=hh.filter(h=>free(h)&&h.name===p.name); if(byName.length===1) m=byName[0]; }
+      if(!m) m=hh.find(h=>free(h)&&h.birth===p.birth&&(!p.famRel||h.rel===p.famRel));
+      if(m) used.push(m.id); else left.push(p);
+    });
+    left.forEach(()=>{ const m=hh.find(free); if(m) used.push(m.id); });
+    return used;
+  }
   function go(k){
     if(qTimer){ clearInterval(qTimer); qTimer=null; }
     view='s'+k;
@@ -252,7 +290,7 @@ const AP=(function(){
     const me={name:U.name,birth:U.birth,rel:'본인',verified:'dju'};
     if(S.type==='team') return [me].concat(S.comps.map(c=>Object.assign({name:c.name,birth:c.birth,rel:'동행',verified:c.verified||null},
         c.birth&&gAge(c.birth)<19?{minor:true,doc:c.minorDoc?c.minorDoc.name:''}:{})));
-    if(S.type==='family') return [me].concat(household().filter(h=>S.fam.indexOf(h.id)>=0).map(h=>Object.assign({name:h.name,birth:h.birth,rel:'가족',famRel:h.rel,verified:'id',doc:'주민등록등본(행정정보 공동이용)'},h.age<19?{minor:true}:{})));
+    if(S.type==='family') return [me].concat(household().filter(h=>S.fam.indexOf(h.id)>=0).map(h=>Object.assign({name:h.name,birth:h.birth,rel:'가족',famRel:h.rel,hid:h.id,verified:'id',doc:'주민등록등본(행정정보 공동이용)'},h.age<19?{minor:true}:{})));
     return [me];
   }
   function grantNow(){
@@ -333,13 +371,18 @@ const AP=(function(){
     if(S.hh) return S.hh;
     const h=gHash(U.id+'household'), sur=U.name.charAt(0), age=gAge(U.birth), y=gToday().getFullYear();
     const given=['서준','지우','하윤','도윤','서연','민준','지호','수아','예은','시우','채원','현우'];
-    const pick=k=>given[(h>>k)%given.length], p2=n=>String(n).padStart(2,'0');
+    const p2=n=>String(n).padStart(2,'0');
+    /* 세대원 이름이 서로(본인 포함) 겹치지 않게 — 마스킹한 모양(김*준)까지 달라야 화면에서 구분된다 */
+    const taken=[U.name], tMask=[gMask(U.name)];
+    const SUR=['이','박','최','정','강','조','윤','장','임','한','오','서'].filter(s=>s!==sur);
+    const nm=(s,k)=>{ for(let j=0;j<given.length;j++){ const n=s+given[((h>>k)+j)%given.length]; if(taken.indexOf(n)<0&&tMask.indexOf(gMask(n))<0){ taken.push(n); tMask.push(gMask(n)); return n; } } const n=s+given[(h>>k)%given.length]+(taken.length); taken.push(n); return n; };
+    const other=k=>SUR[(h>>k)%SUR.length];   /* 배우자·모는 본인과 다른 성 */
     const rows=[];
-    if(age>=30) rows.push({rel:'배우자',name:(sur==='김'?'이':sur)+pick(1),by:y-age+((h>>2)%5-2)});
-    if(age>=35){ rows.push({rel:'자녀',name:sur+pick(3),by:y-((h>>3)%14+6)}); if((h>>4)%2===0) rows.push({rel:'자녀',name:sur+pick(5),by:y-((h>>5)%10+3)}); }
-    rows.push({rel:'부',name:sur+pick(6),by:y-age-((h>>6)%8+25)});
-    rows.push({rel:'모',name:(sur==='김'?'박':sur)+pick(7),by:y-age-((h>>7)%8+23)});
-    rows.push({rel:'형제',name:sur+pick(8),by:y-age-((h>>8)%6-3)});
+    if(age>=30) rows.push({rel:'배우자',name:nm(other(1),1),by:y-age+((h>>2)%5-2)});
+    if(age>=35){ rows.push({rel:'자녀',name:nm(sur,3),by:y-((h>>3)%14+6)}); if((h>>4)%2===0) rows.push({rel:'자녀',name:nm(sur,5),by:y-((h>>5)%10+3)}); }
+    rows.push({rel:'부',name:nm(sur,6),by:y-age-((h>>6)%8+25)});
+    { let ms=other(7); if(rows[0]&&rows[0].rel==='배우자'&&rows[0].name.charAt(0)===ms) ms=SUR[(SUR.indexOf(ms)+1)%SUR.length]; rows.push({rel:'모',name:nm(ms,7),by:y-age-((h>>7)%8+23)}); }
+    rows.push({rel:'형제',name:nm(sur,8),by:y-age-((h>>8)%6-3)});
     const direct=['배우자','자녀','부','모','조부','조모','손자','손녀'];
     S.hh=rows.map((r,i)=>{
       const birth=r.by+'-'+p2(1+(h>>(i+1))%12)+'-'+p2(1+(h>>(i+3))%28), ok=direct.indexOf(r.rel)>=0;
@@ -371,7 +414,7 @@ const AP=(function(){
     }else if(S.type==='family'){
       body='<h3 style="margin:22px 0 0;font-size:16px">함께 여행하는 가족 <small class="muted">(본인 포함 '+S.n+'명 · '+(S.n-1)+'명 선택)</small></h3><div id="apFam">'+famHtml()+'</div>';
     }else if(S.type==='youth'){
-      body='<div class="note ok" style="margin-top:14px">🎒 만 '+gAge(U.birth)+'세 — 청년 기준(만 19~34세)을 충족해 환급률 '+gStdNum('M7')+'%, 최대 '+gMan(gStdNum('M4'))+'가 적용됩니다.</div>';
+      body='<div class="note ok" style="margin-top:14px">🎒 만 '+gAge(U.birth)+'세 — 청년 기준(만 19~34세)을 충족해 환급률 '+gStdNum('M7')+'%, 최대 '+gMan(gStdNum('M4'))+gJosa(gMan(gStdNum('M4')),'이가')+' 적용됩니다.</div>';
     }
     show(self+body+'<div class="ap-nav"><button class="btn" onclick="AP.go(1)">이전</button><button class="btn pri" id="apNext2" onclick="AP.next2()">다음 — 체크리스트·약관</button></div></div>'+fixHint(),2);
     upd2();
@@ -388,39 +431,58 @@ const AP=(function(){
   function youthHtml(){
     if(S.type!=='team') return '';
     const ps=people(), all=ps.every(p=>p.birth&&gIsYouth(p.birth)), g=gGrant('team',ps);
-    if(all) return '<div class="note ok" style="margin-top:12px">🎒 신청자와 동행자 전원이 만 19~34세입니다 — <b>청년팀</b>으로 자동 전환되어 환급률 '+g.rate+'%, 최대 '+gMan(g.cap)+'가 적용됩니다.</div>';
+    if(all) return '<div class="note ok" style="margin-top:12px">🎒 신청자와 동행자 전원이 만 19~34세입니다 — <b>청년팀</b>으로 자동 전환되어 환급률 '+g.rate+'%, 최대 '+gMan(g.cap)+gJosa(gMan(g.cap),'이가')+' 적용됩니다.</div>';
     return '<div class="note small" style="margin-top:12px">단체(팀) 기준: 환급률 '+g.rate+'%, 최대 '+gMan(g.cap)+'. 전원이 만 19~34세면 청년팀(최대 '+gMan(gStdNum('M5'))+')으로 자동 전환됩니다.</div>';
   }
-  function compHtml(c,i){
+  const COMP_M=[['kakao','카카오톡 인증'],['dju','디주 회원 조회'],['id','신분증 첨부']];
+  function compHead(c,i){
     const minor=c.birth&&gAge(c.birth)<19, ok=compOk(c);
-    const M=[['kakao','카카오톡 인증'],['dju','디주 회원 조회'],['id','신분증 첨부']];
+    return '동행자 '+(i+1)+(ok?' <span class="ap-done">✓ 인증 완료</span>':'')+(minor?' <span class="g-st" style="--c:#b45309">미성년</span>':'');
+  }
+  function compMinor(c,i){
+    const minor=c.birth&&gAge(c.birth)<19;
+    return minor?'<div class="ap-panel" style="background:#fff7ed"><b>미성년 동행자 — 가족관계 증빙 첨부 필수</b> (운영기준 A6)<br><span class="small">가족관계증명서 또는 주민등록등본을 첨부해 주세요.</span>'+
+        '<input class="inp" style="margin-top:6px" type="file" accept="image/*,.pdf" aria-label="동행자 '+(i+1)+' 가족관계 증빙" onchange="AP.compFile('+i+',this,\'minorDoc\')">'+(c.minorDoc?'<div class="small">📄 '+gEsc(c.minorDoc.name)+'</div>':'')+'</div>':'';
+  }
+  const PH={};   /* 동행자 카드 부분별 마지막 렌더 HTML */
+  function compHtml(c,i){
+    const hd=PH['apCH'+i]=compHead(c,i), pn=PH['apCP'+i+'x']=compPanel(c,i), mi=PH['apCMi'+i]=compMinor(c,i);
+    return '<div class="ap-comp'+(compOk(c)?' ok':'')+'" id="apC'+i+'"><h4 id="apCH'+i+'">'+hd+'</h4>'+
+      '<div class="ap-row"><div><label class="f" for="apCN'+i+'">이름</label><input class="inp" id="apCN'+i+'" value="'+gEsc(c.name)+'" maxlength="20" autocomplete="off" oninput="AP.compSet('+i+',\'name\',this.value)" onchange="AP.compChanged('+i+')"></div>'+
+      '<div><label class="f" for="apCB'+i+'">생년월일</label><input class="inp" type="date" id="apCB'+i+'" value="'+gEsc(c.birth)+'" max="'+gYmd(gToday())+'" onchange="AP.compSet('+i+',\'birth\',this.value);AP.compChanged('+i+')"></div></div>'+
+      '<div class="ap-meth" id="apCM'+i+'">'+COMP_M.map(m=>'<button type="button" class="chip'+(c.method===m[0]?' on':'')+'" aria-pressed="'+(c.method===m[0])+'" onclick="AP.compMethod('+i+',\''+m[0]+'\')">'+m[1]+'</button>').join('')+'</div>'+
+      '<div id="apCP'+i+'x">'+pn+'</div><div id="apCMi'+i+'">'+mi+'</div></div>';
+  }
+  /* 이름·생년월일 변경 뒤에는 바뀐 부분만 갈아 끼운다 — 입력란·인증수단 칩을 다시 그리면 blur 직후의 첫 클릭이 사라진다 */
+  function compRefresh(i){
+    const c=S.comps[i], box=$('apC'+i); if(!box) return reComps();
+    box.className='ap-comp'+(compOk(c)?' ok':'');
+    const set=(id,html)=>{ const el=$(id); if(el&&PH[id]!==html){ PH[id]=html; el.innerHTML=html; } };
+    set('apCH'+i,compHead(c,i)); set('apCP'+i+'x',compPanel(c,i)); set('apCMi'+i,compMinor(c,i));
+    const y=$('apYouth'); if(y) y.innerHTML=youthHtml(); upd2();
+  }
+  function compPanel(c,i){
     let panel='';
     if(c.verified&&c.method!=='id'){
       panel='<div class="ap-panel"><span class="ap-done">✓ '+(c.verified==='kakao'?'카카오톡 인증 완료':'디지털 관광주민증 회원 확인 완료')+'</span> <button class="btn sm ghost" onclick="AP.compReset('+i+')">다시 인증</button></div>';
     }else if(c.method==='kakao'){
-      panel='<div class="ap-panel"><label class="f" style="margin-top:0">동행자 휴대폰</label><input class="inp" id="apCP'+i+'" inputmode="numeric" maxlength="13" placeholder="010-0000-0000" value="'+gEsc(c.phone)+'" oninput="AP.compSet('+i+',\'phone\',this.value)">'+
+      panel='<div class="ap-panel"><label class="f" style="margin-top:0" for="apCP'+i+'">동행자 휴대폰</label><input class="inp" id="apCP'+i+'" inputmode="numeric" maxlength="13" placeholder="010-0000-0000" value="'+gEsc(c.phone)+'" oninput="AP.compSet('+i+',\'phone\',this.value)">'+
         (c.state==='pending'?'<p style="display:flex;gap:8px;align-items:center;margin:10px 0 0"><span class="ap-spin"></span>카카오톡으로 인증 요청을 보냈어요. 동행자가 카카오톡에서 [인증하기]를 누르면 완료됩니다.</p>'
           :'<button class="btn sm blue" style="margin-top:8px" onclick="AP.kakao('+i+')">카카오톡 인증 요청</button>')+'</div>';
     }else if(c.method==='dju'){
       panel='<div class="ap-panel">동행자의 디지털 관광주민증 가입 정보(이름)로 회원을 조회합니다. <button class="btn sm blue" onclick="AP.dju('+i+')">회원 조회</button>'+
         '<div class="small muted" style="margin-top:6px">테스트 회원: '+ACCOUNTS.filter(a=>a.id!==U.id).map(a=>gEsc(a.name)).join(' · ')+'</div><div class="ap-msg bad" id="apCD'+i+'"></div></div>';
     }else if(c.method==='id'){
-      panel='<div class="ap-panel"><label class="f" style="margin-top:0">신분증 사본 <small class="muted">(jpg·png·pdf · 10MB 이하)</small></label><input class="inp" type="file" accept="image/*,.pdf" onchange="AP.compFile('+i+',this,\'idFile\')">'+
+      panel='<div class="ap-panel"><label class="f" style="margin-top:0" for="apCI'+i+'">신분증 사본 <small class="muted">(jpg·png·pdf · 10MB 이하)</small></label><input class="inp" type="file" id="apCI'+i+'" accept="image/*,.pdf" onchange="AP.compFile('+i+',this,\'idFile\')">'+
         (c.idFile?'<div class="small" style="margin-top:4px">📄 '+gEsc(c.idFile.name)+'</div>':'')+
         '<label class="check" style="margin-top:8px"><input type="checkbox" '+(c.idMask?'checked ':'')+'onchange="AP.compMask('+i+',this.checked)"><span>주민등록번호 <b>뒷자리를 가린</b> 사본임을 확인했습니다 (운영기준 A4)</span></label>'+
         (c.verified?'<span class="ap-done">✓ 신분증 첨부 완료 — 담당자가 심사 시 확인합니다</span>':'')+'</div>';
     }
-    return '<div class="ap-comp'+(ok?' ok':'')+'"><h4>동행자 '+(i+1)+(ok?' <span class="ap-done">✓ 인증 완료</span>':'')+(minor?' <span class="g-st" style="--c:#b45309">미성년</span>':'')+'</h4>'+
-      '<div class="ap-row"><div><label class="f">이름</label><input class="inp" value="'+gEsc(c.name)+'" maxlength="20" oninput="AP.compSet('+i+',\'name\',this.value)" onchange="AP.compChanged('+i+')"></div>'+
-      '<div><label class="f">생년월일</label><input class="inp" type="date" value="'+gEsc(c.birth)+'" max="'+gYmd(gToday())+'" onchange="AP.compSet('+i+',\'birth\',this.value);AP.compChanged('+i+')"></div></div>'+
-      '<div class="ap-meth">'+M.map(m=>'<button type="button" class="chip'+(c.method===m[0]?' on':'')+'" onclick="AP.compMethod('+i+',\''+m[0]+'\')">'+m[1]+'</button>').join('')+'</div>'+panel+
-      (minor?'<div class="ap-panel" style="background:#fff7ed"><b>미성년 동행자 — 가족관계 증빙 첨부 필수</b> (운영기준 A6)<br><span class="small">가족관계증명서 또는 주민등록등본을 첨부해 주세요.</span>'+
-        '<input class="inp" style="margin-top:6px" type="file" accept="image/*,.pdf" onchange="AP.compFile('+i+',this,\'minorDoc\')">'+(c.minorDoc?'<div class="small">📄 '+gEsc(c.minorDoc.name)+'</div>':'')+'</div>':'')+
-      '</div>';
+    return panel;
   }
   function reComps(){ const el=$('apComps'); if(el) el.innerHTML=S.comps.map(compHtml).join(''); const y=$('apYouth'); if(y) y.innerHTML=youthHtml(); upd2(); }
   function compSet(i,k,v){ S.comps[i][k]=v; }
-  function compChanged(i){ const c=S.comps[i]; if(c.verified==='dju'||c.verified==='kakao'){ c.verified=null; c.state=''; gToast('정보가 바뀌어 다시 인증해 주세요'); } reComps(); }
+  function compChanged(i){ const c=S.comps[i]; if(c.verified==='dju'||c.verified==='kakao'||c.state==='pending'){ c.verified=null; c.state=''; clearTimeout(kakaoT[i]); gToast('정보가 바뀌어 다시 인증해 주세요'); } compRefresh(i); }
   function compMethod(i,m){ const c=S.comps[i]; if(c.verified&&c.method===m) return; c.method=m; c.verified=null; c.state=''; reComps(); }
   function compReset(i){ const c=S.comps[i]; c.verified=null; c.state=''; reComps(); }
   function needNB(c){ if(!c.name.trim()||!c.birth){ gToast('동행자 이름과 생년월일을 먼저 입력해 주세요','bad'); return false; } return true; }
@@ -504,7 +566,7 @@ const AP=(function(){
     S.lockV=gLockVer(AP_SLUG);
     const ps=people(), g=gGrant(S.type,ps);
     const vm={dju:'디주 회원',kakao:'카카오톡 인증',id:'신분증 첨부'};
-    const comp=ps.slice(1).map(p=>'<div>'+gEsc(S.type==='family'?gMask(p.name):p.name)+' <span class="muted small">('+gEsc(p.famRel||p.rel)+' · '+gEsc(gDot(p.birth))+' · '+(S.type==='family'?'주민등록등본 확인':vm[p.verified]||'-')+(p.minor?' · 미성년'+(p.doc&&S.type==='team'?' · 가족관계 증빙 첨부':''):'')+')</span></div>').join('')||'<span class="muted">없음 (1인 여행)</span>';
+    const comp=ps.slice(1).map(p=>'<div>'+(S.type==='family'?'<b>'+gEsc(p.famRel||'가족')+'</b> '+gEsc(gMask(p.name)):gEsc(p.name))+' <span class="muted small">('+(S.type==='family'?'':gEsc(p.rel)+' · ')+gEsc(gDot(p.birth))+' · '+(S.type==='family'?'주민등록등본 확인':vm[p.verified]||'-')+(p.minor?' · 미성년'+(p.doc&&S.type==='team'?' · 가족관계 증빙 첨부':''):'')+')</span></div>').join('')||'<span class="muted">없음 (1인 여행)</span>';
     const sec=(t,k,dl)=>'<div class="ap-sum"><h4>'+t+'<button class="btn sm" onclick="AP.go('+k+')">수정하기</button></h4><dl>'+dl+'</dl></div>';
     const fx=FIX?('<div class="card ap-fix" style="margin-bottom:14px"><h2 class="ap-h">⚠ 보완이 필요한 신청입니다</h2>'+
         '<p style="margin:6px 0"><b>사유</b> · '+gEsc(FIX.fix&&FIX.fix.reason||'-')+'</p><p style="margin:6px 0"><b>기한</b> · '+(FIX.fix&&FIX.fix.due?gDot(FIX.fix.due)+'까지 (D-'+Math.max(0,gDiff(gToday(),FIX.fix.due))+')':'-')+'</p>'+
@@ -542,14 +604,34 @@ const AP=(function(){
       agree:{check:true,privacy:S.privacy,third:S.third},grant:gGrant(S.type,ps)};
   }
   function mkApp(d,id,memo){
-    const at=gNow().toISOString();
+    const at=gLocalIso(gNow());
     return gPutApp(Object.assign({id:id||gNewAppId()},d,{status:'received',createdAt:at,history:[{at,st:'received',by:'user',memo:memo||'사전신청 접수'}]}));
+  }
+  /* 제출 직전 재검사 — ④를 연 뒤 다른 탭에서 계정이 바뀌었거나 신청이 생겼을 수 있다 */
+  function preCheck(exceptId){
+    if(gUid()!==U.id){ acctChangedView(); return false; }
+    const live=gMyApps(U.id).filter(a=>!a.demo&&a.id!==exceptId&&G_INACTIVE.indexOf(a.status)<0);
+    const same=live.find(a=>a.region===AP_SLUG&&a.round===RD.n);
+    const queued=!exceptId&&gQueue(AP_SLUG,RD.n).some(x=>x.uid===U.id&&!x.demo);
+    if(same||queued){
+      blockView('📌','이미 같은 회차에 신청하셨어요',
+        '<p><b>'+gEsc(R.full)+' '+RD.n+'회차</b>에 '+(same?'접수된 신청('+gEsc(same.id)+' '+gBadge(same.status)+')':'대기 중인 신청')+'이 있어 이번 제출은 접수하지 않았습니다.</p>'+
+        '<p class="small">다른 탭이나 창에서 먼저 제출된 신청일 수 있어요. 마이페이지에서 확인해 주세요.</p>',
+        '<a class="btn pri" href="'+(same?'mypage.html?app='+encodeURIComponent(same.id):'apply.html?r='+AP_SLUG)+'">'+(same?'기존 신청 보기':'대기 화면 보기')+'</a>');
+      return false;
+    }
+    if(!exceptId&&!noB4){
+      const mine=b4Mine();
+      if(mine.length>=B4){ noB4=false; boot(); return false; }   /* 다른 지역 신청이 그사이 생겼다 → 연 1회 안내 화면 */
+    }
+    return true;
   }
   function submit(){
     if(FIX) return submitFix();
     if(dateErr()){ gToast(dateErr(),'bad'); return go(1); }
     if(!s2ok()) return go(2);
     if(!s3ok()) return go(3);
+    if(!preCheck()) return;
     const rs=gRoundState(AP_SLUG,RD);
     if(rs==='closed'){ return blockView('📭','신청 기간이 끝났어요','<p>'+RD.n+'회차 접수가 마감되었습니다.</p>','<a class="btn pri" href="region.html?r='+AP_SLUG+'">지역 홈</a>'); }
     const btn=$('apSubmit'); if(btn) btn.disabled=true;
@@ -558,28 +640,42 @@ const AP=(function(){
       S.lockV=gLockVer(AP_SLUG); cap=gCapacity(AP_SLUG,RD);
       gToast('다른 신청자의 접수가 반영되어 남은 정원을 다시 확인했어요');
     }
+    retryFn=submit;
     if(cap.mode==='ok'){
-      gLockBump(AP_SLUG);
       const a=mkApp(draft());
+      if(!a) return saveFailView();
+      gLockBump(AP_SLUG);
       doneView(a);
     }else if(cap.mode==='queue'){
       const q=gQueue(AP_SLUG,RD.n), id='Q'+gSeq(), appId=gNewAppId();
-      q.push({id,uid:U.id,at:gNow().toISOString(),appId,draft:draft()});
+      q.push({id,uid:U.id,at:gLocalIso(gNow()),appId,draft:draft()});
       gQueueSave(AP_SLUG,RD.n,q);
+      if(!gQueue(AP_SLUG,RD.n).some(x=>x.id===id)) return saveFailView();
       gUSet('myq',{slug:AP_SLUG,n:RD.n,id,appId});
+      if(!gUGet('myq',null)){ gQueueSave(AP_SLUG,RD.n,gQueue(AP_SLUG,RD.n).filter(x=>x.id!==id)); return saveFailView(); }
       queueView();
     }else overView(cap);
   }
   function submitFix(){
     if(!s2ok()) return go(2);
-    const d=draft(), a=FIX;
+    if(gUid()!==U.id) return acctChangedView();
+    const a=gApp(FIX.id)||FIX;
+    if(a.status!=='fix') return blockView('ℹ️','이미 처리된 보완 요청이에요','<p>현재 상태: '+gBadge(a.status)+'</p><p class="small">다른 탭에서 먼저 제출했을 수 있어요.</p>','<a class="btn pri" href="mypage.html?app='+encodeURIComponent(a.id)+'">신청 상세 보기</a>');
+    if(!preCheck(a.id)) return;
+    const d=draft();
     const changed=d.type!==a.type||d.start!==a.start||d.end!==a.end||JSON.stringify(d.people.map(p=>[p.name,p.birth,p.verified]))!==JSON.stringify(a.people.map(p=>[p.name,p.birth,p.verified]))||d.plan!==(a.plan||'');
     if(!fixFiles.length&&!changed){ gToast('보완 서류를 첨부하거나 신청 내용을 수정해 주세요','bad'); return; }
     if(dateErr()&&(d.start!==a.start||d.end!==a.end)){ gToast(dateErr(),'bad'); return go(1); }
+    const sub=gLocalIso(gNow());
     const patch={type:d.type,people:d.people,start:d.start,end:d.end,plan:d.plan,grant:d.grant,
       docs:(a.docs||[]).concat(d.docs.filter(x=>!(a.docs||[]).some(y=>y.name===x.name))).concat(fixFiles),
-      fix:Object.assign({},a.fix||{},{files:fixFiles.slice(),submittedAt:gNow().toISOString()})};
-    const r=gSetStatus(a.id,'review',{memo:'보완 제출'+(fixFiles.length?' (서류 '+fixFiles.length+'건)':'')+(changed?' · 신청 내용 수정':''),by:'user',patch});
+      fix:Object.assign({},a.fix||{},{files:fixFiles.slice(),submittedAt:sub})};
+    retryFn=submitFix;
+    /* gSetStatus 는 저장 결과를 돌려주지 않으므로, 먼저 내용만 저장해 보고(상태는 그대로) 성공하면 상태를 바꾼 뒤 다시 확인한다 */
+    if(!gPutApp(Object.assign({},a,patch))) return saveFailView();
+    gSetStatus(a.id,'review',{memo:'보완 제출'+(fixFiles.length?' (서류 '+fixFiles.length+'건)':'')+(changed?' · 신청 내용 수정':''),by:'user',patch});
+    const r=gApp(a.id);
+    if(!r||r.status!=='review'||!r.fix||r.fix.submittedAt!==sub) return saveFailView();
     gToast('보완 서류가 제출되었습니다','ok');
     doneView(r,false,true);
   }
@@ -587,21 +683,24 @@ const AP=(function(){
     const t=gUGet('myq',null); if(!t) return;
     /* 자리가 나면 대기열 맨 앞부터 실제 신청(received)으로 전환 — 누가 화면을 보고 있든 같은 규칙 */
     const rd=gRegion(t.slug).rounds.find(x=>x.n===t.n); if(!rd) return;
-    const q=gQueue(t.slug,t.n); let moved=false;
+    const q=gQueue(t.slug,t.n); let moved=false, failed=false;
     while(q.length&&gRoundUsed(t.slug,t.n)<rd.quota){
-      const h=q.shift(); moved=true;
-      if(h.demo||!h.draft) continue;            /* 시연용 대기자는 접수 없이 빠진다 */
-      gLockBump(t.slug);
-      if(!gApp(h.appId)) mkApp(h.draft,h.appId,'대기열 통과 후 접수');
+      const h=q[0];
+      if(!(h.demo||!h.draft)&&!gApp(h.appId)){   /* 시연용 대기자는 접수 없이 빠진다 */
+        if(!mkApp(h.draft,h.appId,'대기열 통과 후 접수')){ failed=true; break; }   /* 저장 실패 — 순번을 지킨 채 멈춘다 */
+        gLockBump(t.slug);
+      }
+      q.shift(); moved=true;
     }
     if(moved) gQueueSave(t.slug,t.n,q);
+    if(failed){ if(qTimer){ clearInterval(qTimer); qTimer=null; } retryFn=queueView; return saveFailView('대기열 다시 확인'); }
     const done=gApp(t.appId);
     if(done){ gUSet('myq',null); if(qTimer){ clearInterval(qTimer); qTimer=null; } gToast('대기열을 통과해 접수되었어요','ok'); return doneView(done,true); }
     const pos=q.findIndex(x=>x.id===t.id)+1;
     if(pos<=0){ gUSet('myq',null); return boot(); }
     const el=$('apQ'); if(!el) return;
     const cap=gCapacity(t.slug,rd);
-    el.innerHTML='<div class="ap-qno">'+pos+'</div><p>내 앞 대기 <b>'+(pos-1)+'명</b> · 정원 '+cap.quota+'건 중 '+cap.used+'건 접수</p><p class="small muted">마지막 확인 '+gDT(gNow().toISOString()).slice(11)+' · 3초마다 자동 갱신</p>';
+    el.innerHTML='<div class="ap-qno">'+pos+'</div><p>내 앞 대기 <b>'+(pos-1)+'명</b> · 정원 '+cap.quota+'건 중 '+cap.used+'건 접수</p><p class="small muted">마지막 확인 '+gDT(gNow()).slice(11)+' · 3초마다 자동 갱신</p>';
   }
   function queueView(){
     view='queue';
@@ -649,8 +748,8 @@ const AP=(function(){
   function demoFull(){ fillToQuota(); gToast('정원을 현재 접수 건수로 맞췄어요 — 제출하면 대기열로 들어갑니다'); s4(); }
   function demoOver(){
     fillToQuota();
-    const q=gQueue(AP_SLUG,RD.n), max=Math.ceil(RD.quota*0.3);
-    while(q.length<max) q.push({id:'Q'+gSeq(),uid:'demo_q',at:gNow().toISOString(),appId:'DEMOQ-'+gSeq(),demo:true,draft:null});
+    const q=gQueue(AP_SLUG,RD.n), max=gCapacity(AP_SLUG,RD).queueMax;   /* g.js 대기열 한도(최소 3자리)와 같게 */
+    while(q.length<max) q.push({id:'Q'+gSeq(),uid:'demo_q',at:gLocalIso(gNow()),appId:'DEMOQ-'+gSeq(),demo:true,draft:null});
     gQueueSave(AP_SLUG,RD.n,q); gToast('대기열을 가득 채웠어요 — 제출하면 과부하 안내가 나옵니다'); s4();
   }
   function demoReset(){
@@ -681,15 +780,32 @@ const AP=(function(){
       '<div class="ap-no">신청번호 '+gEsc(a.id)+'</div>'+
       '<p><b>'+gEsc(R.full)+' '+a.round+'회차</b> · '+gEsc(g.label)+' '+a.people.length+'명 · '+gDot(a.start)+' ~ '+gDot(a.end)+'</p>'+
       '<p>예상 최대 지원 <b>'+gWon(g.cap)+'</b> (환급률 '+g.rate+'%)</p>'+
-      '<div class="note" style="text-align:left;max-width:520px;margin:18px auto 0">💬 '+(isFix?'담당자가 보완 서류를 다시 심사합니다. ':'')+'심사 결과는 <b>알림톡</b>으로 알려드려요. 승인 후 여행 중에는 지역화폐로 결제하고 지정관광지 '+gEsc(V4)+'를 인증해 주세요.</div>'+
+      '<div class="note" style="text-align:left;max-width:520px;margin:18px auto 0">💬 '+(isFix?'담당자가 보완 서류를 다시 심사합니다. ':'')+'심사 결과는 <b>알림톡</b>으로 알려드려요. 승인 후 여행 중에는 지역화폐로 결제하고 지정관광지 '+gEsc(V4)+gJosa(V4,'을를')+' 인증해 주세요.</div>'+
       '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:20px"><a class="btn pri lg" href="mypage.html?app='+encodeURIComponent(a.id)+'">마이페이지에서 확인</a><a class="btn lg" href="region.html?r='+AP_SLUG+'">지역 홈</a>'+demoResetBtn()+'</div></div>',5);
   }
 
-  function alertMe(n){ if(gAddAlert(AP_SLUG,n)){ gToast('알림 신청이 완료되었어요. 접수가 시작되면 알림톡으로 알려드려요','ok'); } const b=$('apAlertBtn'); if(b){ b.disabled=true; b.textContent='알림 신청 완료'; } }
+  /* 오픈 알림 신청 — 지역 홈(region.html)과 같은 알림톡 수신 동의 모달 */
+  function alertMe(n){
+    const rd=R.rounds.find(x=>x.n===n)||{};
+    const ph=String(U.phone||'').replace(/-(\d{4})-/,'-****-');
+    gModal('<h3>🔔 '+gEsc(R.full)+' '+n+'회차 오픈 알림 신청</h3>'+
+      '<p class="muted">접수 시작일 <b style="color:var(--ink)">'+(rd.applyStart?gDot(rd.applyStart):'-')+'</b>에 알림톡으로 알려 드립니다.</p>'+
+      '<div class="note">받는 번호 <b>'+gEsc(ph)+'</b> (디지털 관광주민증 연동 번호)</div>'+
+      '<label class="check"><input type="checkbox" id="apAgree"><span><b>[필수] 알림톡 수신 동의</b><br><span class="small muted">반값여행 회차 오픈 안내를 카카오 알림톡으로 받습니다. 마이페이지에서 언제든 해지할 수 있습니다.</span></span></label>'+
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px"><button class="btn" onclick="gCloseModal()">취소</button><button class="btn blue" id="apAlertGo" onclick="AP.alertDo('+n+')">알림 신청</button></div>');
+  }
+  function alertDo(n){
+    const ag=$('apAgree');
+    if(!ag||!ag.checked){ gToast('알림톡 수신 동의가 필요해요','bad'); return; }
+    gAddAlert(AP_SLUG,n);
+    if(!gHasAlert(AP_SLUG,n)){ gToast('저장 공간이 부족해 알림을 신청하지 못했어요. 잠시 후 다시 시도해 주세요','bad'); return; }
+    gCloseModal(); gToast('알림 신청이 완료되었어요','ok');
+    const b=$('apAlertBtn'); if(b){ b.disabled=true; b.textContent='알림 신청 완료'; }
+  }
 
   return {boot,go,setType,setN,setPlan,setDate,next1,next2,next3,compSet,compChanged,compMethod,compReset,kakao,dju,compFile,compMask,
-    famLookup,famToggle,ck,ag,allAgree,submit,qCancel,demoFull,demoOver,demoReset,demoSeat,fixFile,fixDel,alertMe,
-    skipB4(){ noB4=true; boot(); }, _S:S, view:()=>view};
+    famLookup,famToggle,ck,ag,allAgree,submit,qCancel,demoFull,demoOver,demoReset,demoSeat,fixFile,fixDel,alertMe,alertDo,retry,
+    skipB4(){ noB4=true; boot(); }, _S:S, _hh:()=>household(), view:()=>view};
 })();
 AP.boot();
 </script>

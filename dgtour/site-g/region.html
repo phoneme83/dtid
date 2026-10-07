@@ -17,6 +17,7 @@
 .rg-intro{margin:12px 0 0;font-size:16px;opacity:.92}
 .rg-period{margin:22px 0 0;font-size:15px;opacity:.95;display:flex;gap:6px 18px;flex-wrap:wrap}
 .rg-period b{font-weight:800}
+.rg-period .sep{font-style:normal}
 .rg-cta{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px}
 .rg-cta .btn{min-width:180px}
 .rg-cta .btn.out{background:#fff;color:var(--blue);border-color:#fff}
@@ -34,7 +35,7 @@
 .rg-dc p{margin:4px 0 0;font-size:14px;color:var(--sub);word-break:keep-all}
 .rg-tbl td{white-space:nowrap}
 .rg-tbl td.cur{font-weight:800}
-.rg-tbl .btn{white-space:nowrap}
+.rg-tbl .btn{white-space:nowrap;min-height:40px}
 .rg-tbl .rem{font-size:12.5px;color:var(--sub)}
 .rg-tbl .rem b{color:var(--ink)}
 .rg-bar{height:5px;background:#eef0f3;border-radius:3px;margin-top:4px;overflow:hidden;min-width:70px}
@@ -69,8 +70,21 @@
   .rg-diff,.rg-com{grid-template-columns:minmax(0,1fr)}
   .rg-cta .btn{flex:1 1 40%;min-width:0;white-space:nowrap;padding:14px 10px;font-size:15.5px}
   .rg-ctx{flex-basis:100%}
-  .rg-tbl td,.rg-tbl th{padding:10px 8px}
-  .rg-tbl th:nth-child(3),.rg-tbl td:nth-child(3){display:none}
+  /* 회차표 → 카드형(가로 스크롤 없이 버튼이 화면 안에) */
+  .rg-tbl,.rg-tbl tbody{display:block}
+  .rg-tbl thead{display:none}
+  .rg-tbl tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:13px 14px;border-bottom:1px solid var(--line)}
+  .rg-tbl tr:last-child{border-bottom:0}
+  .rg-tbl td{display:block;padding:0;border:0;white-space:normal;font-size:14px}
+  .rg-tbl tr:hover td{background:none}
+  .rg-tbl td[data-l]::before{content:attr(data-l);display:inline-block;min-width:62px;color:var(--sub);font-weight:500;font-size:13px}
+  .rg-tbl td.c-n{grid-column:1;grid-row:1;font-size:16px;font-weight:800}
+  .rg-tbl td.c-st{grid-column:2;grid-row:1;justify-self:end;align-self:center}
+  .rg-tbl td.c-ap,.rg-tbl td.c-tr,.rg-tbl td.c-rem,.rg-tbl td.c-btn{grid-column:1/-1}
+  .rg-tbl td.c-btn:empty,.rg-tbl td.c-rem.none{display:none}
+  .rg-tbl td.c-btn{text-align:left;margin-top:6px}
+  .rg-tbl td.c-btn .btn{width:100%;min-height:44px;font-size:15px}
+  .rg-period .sep{display:none}
 }
 </style>
 </head><body>
@@ -80,7 +94,10 @@
 <script>
 const SLUG=(gQS('r')&&gRegion(gQS('r')))?gQS('r'):'pyeongchang';
 gShell({mode:'region',slug:SLUG,active:'home'});
+if(gQS('r')!==null&&gQS('r')!==SLUG) gToast('요청한 지역을 찾을 수 없어 평창군을 보여드립니다','bad');
 
+/* 조사 '(으)로' — 받침 없음·ㄹ받침이면 '로' */
+function rgRo(w){ const c=String(w||'').trim().slice(-1).charCodeAt(0); if(!(c>=0xAC00&&c<=0xD7A3)) return '(으)로'; const j=(c-0xAC00)%28; return (j===0||j===8)?'로':'으로'; }
 function rgRoundCell(r,rd){
   const st=gRoundState(r.slug,rd);
   let btn='';
@@ -98,7 +115,7 @@ function rgRoundCell(r,rd){
 
 function rgRender(){
   const r=gRegion(SLUG), S=gRegionState(r), rd=S.round, u=gUser();
-  const pay=gStd('P7',SLUG).val, rc=gEsc(r.color);
+  const pay=gStd('P7',SLUG).val, refApp=gStd('U5',SLUG).val||pay, rc=gEsc(r.color);
   /* 배지 */
   let badge, bcls='';
   if(S.state==='open') badge=rd.n+'회차 접수중';
@@ -122,14 +139,14 @@ function rgRender(){
 
   /* 이게 달라요 4번째 카드 */
   let c4;
-  if(r.extraExcl) c4=['🚫','환급 제외 업종 추가','전국 공통 + '+r.extraExcl];
-  else {
-    const o=[['S4','인정 제외 숙박'],['S5','생활소비·특정서비스 제외'],['S6','특정시설 예외 인정']].map(x=>[x,gStd(x[0],SLUG).val]).find(x=>x[1]);
-    if(o) c4=['📌',o[0][1],o[1]];
-    else c4=['🛵','배달앱 사용 '+gStd('U7',SLUG).val,'환급 제외 업종은 전국 공통('+gStd('S2').val+')'];
-  }
+  const opts=[['S4','인정 제외 숙박'],['S5','생활소비·특정서비스 제외'],['S6','특정시설 예외 인정']].map(x=>[x[1],gStd(x[0],SLUG).val]).filter(x=>x[1]);
+  const optTxt=opts.map(x=>x[0]+': '+x[1]).join(' · ');
+  if(r.extraExcl) c4=['🚫','환급 제외 업종 추가','전국 공통 + '+r.extraExcl+(optTxt?' · '+optTxt:'')];
+  else if(opts.length) c4=['📌',opts.length===1?opts[0][0]:'인정 범위 지역 기준',opts.length===1?opts[0][1]:optTxt];
+  else c4=['🛵','배달앱 사용 '+gStd('U7',SLUG).val,'환급 제외 업종은 전국 공통('+gStd('S2').val+')'];
   const diff=[
-    ['💳','결제·환급은 '+pay+' 앱','결제부터 환급금 사용까지 '+r.voucher],
+    (refApp===pay?['💳','결제·환급은 '+pay+' 앱','결제부터 환급금 사용까지 '+r.voucher]
+      :['💳','결제는 '+pay+' · 환급은 '+refApp+' 앱','환급금은 '+refApp+' 앱에서 '+r.voucher+rgRo(r.voucher)+' 받아요']),
     ['📸','관광지 방문 인증사진',r.photoRule+' · 지정관광지 '+gStd('V4',SLUG).val+' 인증'],
     ['🏘','인접지역 거주자 불가',r.nearby.length?r.nearby.join(' · '):'관내 거주자만 제외'],
     c4
@@ -138,8 +155,8 @@ function rgRender(){
   /* 회차 표 */
   const rows=r.rounds.map(x=>{
     const c=rgRoundCell(r,x), cur=x.n===rd.n;
-    return '<tr><td class="'+(cur?'cur':'')+'">'+x.n+'회차</td><td class="'+(cur?'cur':'')+'">'+gMD(x.applyStart)+' ~ '+gMD(x.applyEnd)+'</td>'+
-      '<td>'+gMD(x.travelStart)+' ~ '+gMD(x.travelEnd)+'</td><td>'+c.rem+'</td><td>'+gStateBadge(c.st)+'</td><td class="tr">'+c.btn+'</td></tr>';
+    return '<tr><td class="c-n'+(cur?' cur':'')+'">'+x.n+'회차</td><td class="c-ap'+(cur?' cur':'')+'" data-l="신청 기간">'+gMD(x.applyStart)+' ~ '+gMD(x.applyEnd)+'</td>'+
+      '<td class="c-tr" data-l="여행 기간">'+gMD(x.travelStart)+' ~ '+gMD(x.travelEnd)+'</td><td class="c-rem'+(c.rem==='-'?' none':'')+'">'+c.rem+'</td><td class="c-st">'+gStateBadge(c.st)+'</td><td class="c-btn tr">'+c.btn+'</td></tr>';
   }).join('');
 
   /* 대표명소 */
@@ -150,9 +167,11 @@ function rgRender(){
 
   /* 커뮤니티 */
   const N=gNotices().filter(n=>n.scope==='all'||n.scope===SLUG);
-  const by=(a,b)=>a.date<b.date?1:-1;
+  /* 지역 홈이므로 이 지역 글을 먼저(고정 → 최신), 남는 칸을 통합 글(고정 → 최신)로 채운다.
+     통합 고정 공지만으로 3칸이 다 차서 지역 공지가 하나도 안 보이던 문제(10-07 시험) */
+  const by=(a,b)=>(a.scope==='all'?1:0)-(b.scope==='all'?1:0)||(b.pin?1:0)-(a.pin?1:0)||(a.date<b.date?1:-1);
   const li=(n,tab)=>'<a class="rg-li" href="support.html?r='+SLUG+'&tab='+tab+'&id='+encodeURIComponent(n.id)+'"><span class="rg-tag'+(n.scope==='all'?'':' loc')+'">'+(n.scope==='all'?'통합':'지역')+'</span>'+
-    '<span class="t">'+gEsc(n.title)+'</span><small>'+gMD(n.date)+'</small></a>';
+    '<span class="t">'+(n.pin?'📌 ':'')+gEsc(n.title)+'</span><small>'+gMD(n.date)+'</small></a>';
   const nl=N.filter(n=>n.kind==='notice').sort(by).slice(0,3).map(n=>li(n,'notice')).join('')||'<p class="muted small">등록된 공지가 없습니다.</p>';
   const fl=N.filter(n=>n.kind==='faq').sort(by).slice(0,3).map(n=>li(n,'faq')).join('')||'<p class="muted small">등록된 질문이 없습니다.</p>';
 
@@ -161,8 +180,8 @@ function rgRender(){
     '<div class="g-in">'+
       '<h1>'+gEsc(r.full)+' <span class="rg-badge '+bcls+'">'+badge+'</span></h1>'+
       '<p class="rg-intro">'+gEsc(r.intro)+'</p>'+
-      '<div class="rg-period"><span>신청 기간 <b>'+gMD(rd.applyStart)+' ~ '+gMD(rd.applyEnd)+'</b></span><span>·</span><span>여행 기간 <b>'+gMD(rd.travelStart)+' ~ '+gMD(rd.travelEnd)+'</b></span>'+
-        (S.state==='open'?'<span>· 마감 D-'+S.dday+'</span>':'')+'</div>'+
+      '<div class="rg-period"><span>신청 기간 <b>'+gMD(rd.applyStart)+' ~ '+gMD(rd.applyEnd)+'</b></span><span><i class="sep" aria-hidden="true">· </i>여행 기간 <b>'+gMD(rd.travelStart)+' ~ '+gMD(rd.travelEnd)+'</b></span>'+
+        (S.state==='open'?'<span><i class="sep" aria-hidden="true">· </i>마감 D-'+S.dday+'</span>':'')+'</div>'+
       '<div class="rg-cta">'+
         (canApply?'<a class="btn pri lg" href="apply.html?r='+SLUG+'">사전신청하기</a>':'<button class="btn lg" disabled>사전신청하기</button>')+
         '<a class="btn lg out" href="settle.html?r='+SLUG+'">정산신청하기</a>'+
@@ -173,7 +192,7 @@ function rgRender(){
   '<div class="wrap" style="padding-top:0">'+
     '<div class="rg-key">'+
       '<div>결제수단<b>'+gEsc(pay)+' 앱 QR</b></div>'+
-      '<div>환급<b>모바일 '+gEsc(r.voucher)+'</b></div>'+
+      '<div>환급<b>'+gEsc(gStd('U5',SLUG).val||pay)+' 앱 · 모바일 '+gEsc(r.voucher)+'</b></div>'+
       '<div>정산 기한<b>'+gEsc(gStd('C1').val.replace(' 이내',''))+'</b></div>'+
       '<div>환급 지급<b>최대 '+gStd('U1').num+'일 이내</b></div>'+
     '</div>'+

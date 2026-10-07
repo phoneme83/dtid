@@ -75,6 +75,7 @@
 <script>
 const SLUG=(gQS('r')&&gRegion(gQS('r')))?gQS('r'):'pyeongchang';
 gShell({mode:'region',slug:SLUG,active:'pay'});
+if(gQS('r')!==null&&gQS('r')!==SLUG) gToast('요청한 지역을 찾을 수 없어 평창군을 보여드립니다','bad');
 if(gUser()) gSeedDemo();
 const R=gRegion(SLUG), APP=gStd('P7',SLUG).val;
 const MS=gMerchants(SLUG);
@@ -108,13 +109,13 @@ function pyPayView(){
     '<input class="inp" type="date" value="'+pyDate+'" onchange="pyDate=this.value||\''+gYmd(gToday())+'\';pyRender()" aria-label="결제일">'+
     '<div class="py-days"><button class="'+(pyDate===gYmd(gToday())?'on':'')+'" onclick="pyDate=\''+gYmd(gToday())+'\';pyRender()">오늘</button>'+(days||'<span class="cap">이 지역에 승인된 여행이 없어요. 정산 시연은 승인 건의 여행기간 날짜로 결제해 주세요.</span>')+'</div>'+
     '<div class="py-lb"><span>가맹점 선택</span><span class="small" style="font-weight:500">QR 스캔 대신 선택</span></div>'+
-    '<div class="py-ms">'+all.map(m=>'<button class="py-m'+(m.id===pySel?' on':'')+(m.out?' out':'')+'" onclick="pySel=\''+m.id+'\';pyRender()">'+
+    '<div class="py-ms">'+all.map(m=>'<button class="py-m'+(m.id===pySel?' on':'')+(m.out?' out':'')+'" data-id="'+gEsc(m.id)+'" onclick="pySel=this.dataset.id;pyRender()">'+
       '<span class="c">'+gEsc(m.excluded?(m.biz||'제외'):m.cat)+'</span><span class="n">'+gEsc(m.name)+'<small>'+gEsc(m.addr||'')+'</small></span>'+
       (m.out?'<span class="w">관외</span>':m.excluded?'<span class="w">⚠ 정산 불인정</span>':'')+'</button>').join('')+'</div>'+
     (sel&&sel.excluded?'<div class="py-note warn">⚠ <b>'+gEsc(sel.biz||'제외 업종')+' 업종</b>은 반값여행 제외 업종이에요. 결제는 되지만 정산 시 불인정될 수 있어요.</div>':'')+
     (sel&&sel.out?'<div class="py-note bad">⛔ 관외 가맹점입니다. '+gEsc(R.full)+' 지역화폐는 관내 가맹점에서만 결제가 승인됩니다.</div>':'')+
     '<div class="py-lb"><span>결제 금액</span></div>'+
-    '<div class="py-amt"><input class="inp" id="pyAmt" inputmode="numeric" placeholder="0" value="'+gEsc(pyAmt)+'" oninput="this.value=this.value.replace(/[^0-9]/g,\'\');pyAmt=this.value"><span style="align-self:center;font-weight:800">원</span></div>'+
+    '<div class="py-amt"><input class="inp" id="pyAmt" aria-label="결제 금액(원)" inputmode="numeric" placeholder="0" value="'+gEsc(pyAmt)+'" oninput="this.value=this.value.replace(/[^0-9]/g,\'\');pyAmt=this.value"><span style="align-self:center;font-weight:800">원</span></div>'+
     '<div class="py-qa">'+[10000,30000,50000,100000].map(v=>'<button onclick="pyAmt=String((Number(pyAmt)||0)+'+v+');pyRender()">+'+gMan(v)+'</button>').join('')+'<button onclick="pyAmt=\'\';pyRender()">지움</button></div>'+
     '<button class="py-pay" onclick="pyPayAsk()">QR 결제</button>'+
     '<div class="py-note">관외 가맹점에서는 결제가 승인되지 않습니다. 결제내역은 정산신청 때 자동으로 불러와집니다.</div>';
@@ -169,7 +170,7 @@ function pyPinView(){
   return '<div class="py-note" style="margin:0 0 10px">① 핀번호 확인 → ② 앱 실행 → ③ 쿠폰 메뉴 → ④ 핀번호 입력 → ⑤ 등록 완료<br>본인 명의 앱만 등록 · 재발급 불가</div>'+
     (l.length?l.map(a=>'<div class="py-pin"><div class="r"><b>'+a.round+'회차 환급금</b><b style="color:#0f766e">'+gWon(a.refund.amount)+'</b></div>'+
       '<div class="small muted" style="margin:4px 0 8px">지급일 '+gDot(a.refund.paidAt)+' · PIN <code>'+gEsc(a.refund.registered?a.refund.pin:String(a.refund.pin).replace(/\d(?=(?:\D*\d){4})/g,'•'))+'</code></div>'+
-      (a.refund.registered?'<span class="g-st" style="--c:#0f766e">✓ 등록 완료</span>':'<button class="btn blue sm block" onclick="pyRegisterAsk(\''+gEsc(a.id)+'\')">PIN 등록</button>')+'</div>').join('')
+      (a.refund.registered?'<span class="g-st" style="--c:#0f766e">✓ 등록 완료</span>':'<button class="btn blue sm block" data-id="'+gEsc(a.id)+'" onclick="pyRegisterAsk(this.dataset.id)">PIN 등록</button>')+'</div>').join('')
      :'<p class="g-empty">'+gEsc(R.full)+'의 환급 완료 건이 없습니다.</p>')+
     (other.length?'<p class="small muted">다른 지역 미등록 환급금: '+other.map(a=>{ const r=gRegion(a.region); return '<a style="color:var(--blue);font-weight:700" href="pay.html?r='+a.region+'&tab=pin">'+gEsc(r?r.name:a.region)+' '+gWon(a.refund.amount)+'</a>'; }).join(' · ')+'</p>':'');
 }
@@ -178,7 +179,7 @@ function pyRegisterAsk(id){
   gModal('<h3>환급금 PIN 등록</h3><p class="muted small">'+gEsc(R.full)+' '+a.round+'회차 · '+gWon(a.refund.amount)+' · '+gEsc(R.voucher)+'</p>'+
     '<label class="f" for="pyPinIn">PIN 번호 (알림톡으로 받은 번호)</label><input class="inp" id="pyPinIn" inputmode="numeric" value="'+gEsc(a.refund.pin)+'">'+
     '<label class="check"><input type="checkbox" id="pyOwn"><span>본인 명의 앱에 등록합니다. 등록 후에는 재발급되지 않습니다.</span></label>'+
-    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn" onclick="gCloseModal()">취소</button><button class="btn blue" onclick="pyRegister(\''+gEsc(a.id)+'\')">등록 완료</button></div>');
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn" onclick="gCloseModal()">취소</button><button class="btn blue" data-id="'+gEsc(a.id)+'" onclick="pyRegister(this.dataset.id)">등록 완료</button></div>');
 }
 function pyRegister(id){
   const a=gApp(id); if(!a||!a.refund||a.refund.registered){ gCloseModal(); return; }

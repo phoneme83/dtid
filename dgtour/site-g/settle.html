@@ -118,6 +118,18 @@ const ST=(function(){
   let FIX=null, fixFiles=[], OCR=null, ocrBusy=false, upOpen=false, stay=false, prepay=false, lastDemo=null, view='';
   const $=id=>document.getElementById(id);
   const dueOf=a=>gYmd(gAdd(a.end,C1));
+  /* '(으)로' 병기 대신 받침에 맞춰 — ㄹ 받침은 '로' */
+  const stRo=w=>{ const c=String(w||'').trim().slice(-1).charCodeAt(0); if(c<0xAC00||c>0xD7A3) return '로'; const j=(c-0xAC00)%28; return j&&j!==8?'으로':'로'; };
+  /* 결제지역 표시: 판독기가 읍면동을 못 찾으면 도로명(…로/…길)을 읍면동 자리에 넣는다 → 도로명은 따로 표시 */
+  const stRgText=r=>{ if(!r) return null; const road=r.emd&&/(로|길)$/.test(r.emd); const t=[r.sgg,road?null:r.emd].filter(Boolean).join(' ')+(road?(r.sgg?' · ':'')+'도로명 '+r.emd:''); return t||null; };
+  /* 저장 실패 — 완료 화면 대신 재시도 */
+  function saveFailView(){
+    view='savefail';
+    show('<div class="card st-big"><div class="ic">⚠️</div><h2>저장 공간이 부족해 접수하지 못했습니다</h2>'+
+      '<p>브라우저 저장 공간이 가득 찼거나 저장이 차단되어 정산 내용을 저장하지 못했습니다. 아직 <b>접수되지 않았습니다</b>.</p>'+
+      '<p class="small muted">브라우저의 사이트 데이터를 정리한 뒤 다시 시도해 주세요. 입력하신 내용은 이 화면을 닫기 전까지 유지됩니다.</p>'+
+      '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px"><button class="btn pri" id="stRetry" onclick="ST.submit()">다시 시도</button><button class="btn" onclick="ST.go(4)">최종 확인으로</button></div></div>',4);
+  }
 
   function band(){
     $('stBand').style.setProperty('--rc',R.color);
@@ -176,7 +188,9 @@ const ST=(function(){
   function s1(){
     const list=gMyApps().filter(a=>a.region===ST_SLUG&&a.status!=='canceled'&&a.status!=='rejected');
     const okList=list.filter(a=>appState(a).ok);
-    if(!T.app&&okList.length===1) T.app=okList[0];
+    const pk=gQS('pick');
+    if(!T.app&&pk){ const pa=okList.find(a=>a.id===pk); if(pa){ T.app=pa; T.visits=(pa.visits||[]).slice(); } }
+    if(!T.app&&okList.length===1){ T.app=okList[0]; T.visits=(T.app.visits||[]).slice(); }
     if(T.app&&!okList.some(a=>a.id===T.app.id)) T.app=null;
     const off=Number(gGet('dayOffset',0))||0;
     const cards=list.map(a=>{
@@ -208,17 +222,19 @@ const ST=(function(){
   function demoMove(id){
     const a=gApp(id); if(!a) return;
     const off=(Number(gGet('dayOffset',0))||0)+gDiff(gToday(),a.end)+1;
-    gSet('dayOffset',off); location.reload();
+    gSet('dayOffset',off);
+    location.replace('settle.html?r='+encodeURIComponent(ST_SLUG)+'&pick='+encodeURIComponent(id));   /* 이동 후 이 건을 선택해 둔다 */
   }
-  function demoOff(){ gSet('dayOffset',0); location.reload(); }
+  function demoOff(){ gSet('dayOffset',0); location.replace('settle.html?r='+encodeURIComponent(ST_SLUG)); }
   function demoApprove(id){ gSetStatus(id,'approved',{by:'demo',memo:'시연용 승인 처리'}); gToast('시연용으로 승인 처리했어요','ok'); s1(); }
   function demoMake(){
-    const id=gNewAppId(), at=gNow().toISOString(), me={name:U.name,birth:U.birth,rel:'본인',verified:'dju'};
+    const id=gNewAppId(), at=gLocalIso(gNow()), me={name:U.name,birth:U.birth,rel:'본인',verified:'dju'};
     const rd=R.rounds[0];
     gPutApp({id,uid:U.id,userName:U.name,region:ST_SLUG,round:rd.n,type:'solo',people:[me],start:gYmd(gAdd(gToday(),-3)),end:gYmd(gAdd(gToday(),-1)),plan:'',docs:[],
       agree:{check:true,privacy:true,third:true},status:'approved',grant:gGrant('solo',[me]),createdAt:at,
-      history:[{at,st:'received',by:'demo',memo:'시연용 신청'},{at,st:'approved',by:'demo',memo:'시연용 승인'}]});
-    gToast('시연용 승인 건을 만들었어요','ok'); s1();
+      history:[{at,st:'received',by:'demo',memo:'시연용 신청'},{at,st:'approved',by:'demo',memo:'시연용 승인'}]})
+      ?gToast('시연용 승인 건을 만들었어요','ok'):gToast('저장 공간이 부족해 시연용 신청을 만들지 못했어요','bad');
+    s1();
   }
 
   /* ═══ ② 결제 증빙 ═══ */
@@ -240,7 +256,7 @@ const ST=(function(){
     return null;
   }
   function dupMsg(d){
-    const why=d.reason==='appr'?'승인번호 '+d.approval+'이(가) 이미 제출되었습니다':'카드 앞자리·금액·결제일이 모두 같은 증빙이 이미 제출되었습니다';
+    const why=d.reason==='appr'?'승인번호 '+d.approval+' 증빙이 이미 제출되었습니다':'카드 앞자리·금액·결제일이 모두 같은 증빙이 이미 제출되었습니다';
     const rr=gRegion(d.region);
     return why+' (신청번호 '+d.app+' · '+(rr?rr.full:d.region)+' · 계정 '+d.uid+' · '+(G_ST[d.status]?G_ST[d.status].nm:d.status)+')';
   }
@@ -309,7 +325,7 @@ const ST=(function(){
     const at=(k,h)=>gYmd(gAdd(a.start,Math.min(days,k)))+'T'+h+':00';
     const plan=[[by('음식')[0],38000,at(0,'12:10')],[by('관광')[0],24000,at(0,'15:30')],[by('숙박')[0],120000,at(0,'18:00')],
       [by('음식')[1]||by('음식')[0],52000,at(1,'09:20')],[by('쇼핑')[0],46000,at(1,'11:40')],[by('제외')[0],50000,at(1,'13:05')]];
-    plan.forEach(p=>{ const m=p[0]; if(!m) return; gAddPayment({region:ST_SLUG,merchantId:m.id,merchant:m.name,cat:m.cat,biz:m.biz||'',excluded:!!m.excluded,amount:p[1],at:new Date(p[2]).toISOString()},a.uid); });
+    plan.forEach(p=>{ const m=p[0]; if(!m) return; gAddPayment({region:ST_SLUG,merchantId:m.id,merchant:m.name,cat:m.cat,biz:m.biz||'',excluded:!!m.excluded,amount:p[1],at:gLocalIso(new Date(p[2]))},a.uid); });
     gToast('시연용 지역화폐 결제 '+plan.length+'건을 만들었어요 (제외 업종 1건 포함)','ok');
     fetchLp();
   }
@@ -372,7 +388,7 @@ const ST=(function(){
     if(!OCR) return '';
     const a=T.app, ex=OCR.ex||{};
     const amt=(ex.amts&&ex.amts.length)?ex.amts.map(v=>Number(v).toLocaleString('ko-KR')).join(', ')+'원':null;
-    const rgT=gOcrRegionText(ex.region), rgm=gOcrRegionMatch(ex.region,R.name);
+    const rgT=stRgText(ex.region), rgm=gOcrRegionMatch(ex.region,R.name);
     const biz=gBizCheck(ex.shop), corp=gCorpCheck(ex.card,OCR.rawText||OCR.text,false);
     const dateTxt=ex.date?ex.date+(ex.date>a.end?' ⚠️ 여행기간 밖':(ex.date<a.start?' ⚠️ 여행 시작 전 — 숙박 선결제만 인정':' ✅ 여행기간 내')):null;
     const bc=biz.result==='excluded'?'#b91c1c':biz.result==='included'?'#0f766e':'#b45309';
@@ -423,7 +439,7 @@ const ST=(function(){
     if(!OCR) return fail('영수증 이미지를 첨부해 주세요. 첨부하면 자동으로 판독합니다.');
     const ex=OCR.ex||{};
     const cash=ex.nonCard==='현금영수증';
-    if(ex.nonCard&&!cash) return fail('❌ <b>'+gEsc(ex.nonCard)+'</b>은(는) 정산 증빙으로 인정되지 않습니다(간이영수증·계좌이체·멤버십 전표 불인정, 운영기준 P3). 카드 매출전표나 현금영수증을 첨부해 주세요.');
+    if(ex.nonCard&&!cash) return fail('❌ <b>'+gEsc(ex.nonCard)+'</b>'+gJosa(ex.nonCard,'은는')+' 정산 증빙으로 인정되지 않습니다(간이영수증·계좌이체·멤버십 전표 불인정, 운영기준 P3). 카드 매출전표나 현금영수증을 첨부해 주세요.');
     if(!cash&&card.length<15) return fail('카드번호를 확인해 주세요 (15~16자리 숫자, 가려진 자리는 아무 숫자)');
     if(!/^\d{6,9}$/.test(appr)) return fail('승인번호를 확인해 주세요 (숫자 6~9자리)');
     if(amt<=0) return fail('결제금액을 입력해 주세요');
@@ -440,13 +456,13 @@ const ST=(function(){
     const shop=ex.shop||'(상호 확인 불가)', biz=gBizCheck(ex.shop);
     const it={src:'upload',merchant:shop,cat:stay?'숙박':(biz.cat||'기타'),biz:biz.result==='excluded'?biz.biz:'',excluded:biz.result==='excluded',
       amount:amt,at:(ex.date||date)+'T12:00:00',approval:appr,card:cash?'':gCardMask(card),prepay:stay&&prepay,stay,
-      ocr:{mode:OCR.mode,file:OCR.file,shop:ex.shop||null,card:ex.card||null,appr:ex.appr||null,amts:ex.amts||[],date:ex.date||null,region:gOcrRegionText(ex.region),nonCard:ex.nonCard||null,confidence:OCR.confidence},
+      ocr:{mode:OCR.mode,file:OCR.file,shop:ex.shop||null,card:ex.card||null,appr:ex.appr||null,amts:ex.amts||[],date:ex.date||null,region:stRgText(ex.region),nonCard:ex.nonCard||null,confidence:OCR.confidence},
       corp:null};
     const dup=findDup(it,-1);
     if(dup) return fail('❌ <b>이미 사용된 증빙입니다.</b> '+gEsc(dupMsg(dup))+'<br>같은 결제내역으로는 한 번만 환급받을 수 있습니다.');
     if(!cash){ const cc=gCorpCheck(ex.card||card,OCR.rawText||OCR.text,true); it.corpCheck=cc; it.corp=cc.result==='unknown'?null:cc.result; if(cc.result==='corp') it.flag='법인카드 결제(업무 목적 지출)'; }
     const d0=ex.date||date;
-    if(!it.flag&&gOcrRegionMatch(ex.region,R.name)==='mismatch') it.flag='결제지역 불일치('+gOcrRegionText(ex.region)+')';
+    if(!it.flag&&gOcrRegionMatch(ex.region,R.name)==='mismatch') it.flag='결제지역 불일치('+stRgText(ex.region)+')';
     if(!it.flag&&d0>T.app.end) it.flag='여행기간 외 결제';
     if(!it.flag&&d0<T.app.start&&!(stay&&prepay)) it.flag=stay?'여행 전 결제(숙박 선결제 미신고)':'여행기간 외 결제';
     T.items.push(it); T.dirty=true;
@@ -491,7 +507,7 @@ const ST=(function(){
     if(!f) return e.textContent='인증사진을 첨부해 주세요';
     if(!/^image\//.test(f.type)&&!/\.(jpe?g|png|heic|webp)$/i.test(f.name)) return e.textContent='이미지 파일만 첨부할 수 있어요';
     if(!$('stFace').checked) return e.textContent='얼굴이 보이게 촬영했는지 확인해 주세요';
-    T.visits.push({spot:sp,date:d,method:'photo',gps:false,photo:f.name,at:gNow().toISOString()}); T.dirty=true;
+    T.visits.push({spot:sp,date:d,method:'photo',gps:false,photo:f.name,at:gLocalIso(gNow())}); T.dirty=true;
     gToast(sp+' 인증을 추가했어요','ok'); s3();
   }
   function delVisit(i){ T.visits.splice(i,1); T.dirty=true; s3(); }
@@ -506,7 +522,7 @@ const ST=(function(){
       '<p style="margin:6px 0"><b>사유</b> · '+gEsc(FIX.fix&&FIX.fix.reason||'-')+'</p><p style="margin:6px 0"><b>기한</b> · '+(FIX.fix&&FIX.fix.due?gDot(FIX.fix.due)+'까지':'-')+'</p>'+
       '<label class="f">보완 서류 첨부 <small class="muted">(jpg·png·pdf · 10MB 이하)</small></label><input class="inp" type="file" accept="image/*,.pdf" onchange="ST.fixFile(this)"><ul class="st-files" id="stFixFiles">'+fixFilesHtml()+'</ul>'+
       '<p class="small muted">결제 증빙·관광지 인증도 아래 [수정하기]로 고칠 수 있습니다.</p></div>':'';
-    show(fx+'<div class="card"><h2 class="st-h">④ 정산 내용을 확인해 주세요</h2><p class="st-sub">접수 후 담당자가 심사하고, 승인되면 '+U1+'일 이내 모바일 '+gEsc(R.voucher)+'으로 지급됩니다.</p>'+
+    show(fx+'<div class="card"><h2 class="st-h">④ 정산 내용을 확인해 주세요</h2><p class="st-sub">접수 후 담당자가 심사하고, 승인되면 '+U1+'일 이내 모바일 '+gEsc(R.voucher)+stRo(R.voucher)+' 지급됩니다.</p>'+
       '<div class="st-sumbar"><div><span>인정 금액 ('+okN+'건)</span><b>'+gWon(t.rec)+'</b></div><div><span>불인정 ('+noN+'건)</span><b>'+gWon(t.rej)+'</b></div>'+
         '<div><span>환급률 · 지원 한도</span><b>'+t.ref.rate+'% · '+gMan(t.ref.cap)+'</b></div><div class="hl"><span>예상 환급액</span><b>'+gWon(t.ref.meetsMin?t.ref.amount:0)+'</b></div></div>'+
       (t.ref.meetsMin?'':'<div class="note warn" style="margin-top:10px">⚠ 최소 소비액 '+gWon(g.minSpend)+'에 못 미쳐 환급 대상이 아닙니다.</div>')+
@@ -541,7 +557,9 @@ const ST=(function(){
     if(!s2ok()) return go(2);
     if(spotsDone().length<NEED) return go(3);
     if(!s4ok()){ gToast('유의사항·약관 동의와 전자서명을 확인해 주세요','bad'); return; }
+    if(gUid()!==U.id) return blockView('🔄','다른 탭에서 계정이 바뀌었습니다','<p>다른 사람 명의로 잘못 접수되지 않도록 제출을 중단했습니다. 현재 로그인한 계정으로 다시 진행해 주세요.</p>','<button class="btn pri" onclick="location.reload()">현재 계정으로 다시 시작</button>');
     const a=gApp(T.app.id);
+    if(!a||a.uid!==U.id){ gToast('정산할 신청 건을 찾을 수 없어요','bad'); return go(1); }
     if(!FIX){
       const st=appState(a);
       if(!st.ok){ gToast(st.why,'bad'); return go(1); }
@@ -550,14 +568,18 @@ const ST=(function(){
     const t=totals();
     const items=t.cls.map(x=>{ const y=Object.assign({},x); return y; });
     const prev=a.settle||{};
-    const settle={id:prev.id||('S'+gSeq()),at:gNow().toISOString(),items,visits:T.visits.slice(),
+    const settle={id:prev.id||('S'+gSeq()),at:gLocalIso(gNow()),items,visits:T.visits.slice(),
       lodging:{file:T.lodging.file,prepay:T.items.some(x=>x.cat==='숙박'&&x.prepay)},
       recognized:t.rec,rejectedAmt:t.rej,expected:t.ref.meetsMin?t.ref.amount:0,agree:{fraud:true,terms:true},sign:T.sign.trim(),
       dup:T.items.filter(x=>x.dup).map(x=>Object.assign({approval:x.approval},x.dup))};
     if(FIX){ settle.fixFiles=fixFiles.slice(); settle.resubmitted=(prev.resubmitted||0)+1; }
     const patch={settle,visits:T.visits.slice()};
-    if(FIX) patch.fix=Object.assign({},a.fix||{},{files:fixFiles.slice(),submittedAt:gNow().toISOString()});
-    const r=gSetStatus(a.id,'settle_review',{by:'user',memo:FIX?'정산 보완 재접수':'정산 접수',patch});
+    if(FIX) patch.fix=Object.assign({},a.fix||{},{files:fixFiles.slice(),submittedAt:gLocalIso(gNow())});
+    /* gSetStatus 는 저장 결과를 돌려주지 않는다 → 내용만 먼저 저장해 보고(상태 그대로), 성공하면 상태 변경 후 다시 확인 */
+    if(!gPutApp(Object.assign({},a,patch))) return saveFailView();
+    gSetStatus(a.id,'settle_review',{by:'user',memo:FIX?'정산 보완 재접수':'정산 접수',patch});
+    const r=gApp(a.id);
+    if(!r||r.status!=='settle_review'||!r.settle||r.settle.at!==settle.at) return saveFailView();
     doneView(r);
   }
 

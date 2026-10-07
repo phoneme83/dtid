@@ -56,8 +56,10 @@
 <script>
 const SLUG=(gQS('r')&&gRegion(gQS('r')))?gQS('r'):'pyeongchang';
 gShell({mode:'region',slug:SLUG,active:'guide'});
+if(gQS('r')!==null&&gQS('r')!==SLUG) gToast('요청한 지역을 찾을 수 없어 평창군을 보여드립니다','bad');
 if(gUser()) gSeedDemo();
-const R=gRegion(SLUG), APP=gStd('P7',SLUG).val;
+const R=gRegion(SLUG), APP=gStd('P7',SLUG).val;          /* 결제 앱 (P7) */
+const REF=gStd('U5',SLUG).val||APP;                            /* 환급금 지급 앱 (U5) */
 
 /* 앱별 등록 방법 (데모 안내) */
 const LP_APP_GUIDE={
@@ -69,7 +71,7 @@ const LP_APP_GUIDE={
 };
 function lpAppModal(name){
   const s=LP_APP_GUIDE[name]||LP_APP_GUIDE['CHAK'];
-  gModal('<h3>📱 '+gEsc(name)+' 앱 등록 방법</h3>'+(name===APP?'<p class="small" style="color:var(--blue);font-weight:700;margin:-4px 0 8px">'+gEsc(R.full)+' 결제·환급 앱입니다</p>':'<p class="small muted" style="margin:-4px 0 8px">'+gEsc(R.full)+'은 '+gEsc(APP)+' 앱을 씁니다. 다른 지역 환급금일 때 참고하세요.</p>')+
+  gModal('<h3>📱 '+gEsc(name)+' 앱 등록 방법</h3>'+(name===REF?'<p class="small" style="color:var(--blue);font-weight:700;margin:-4px 0 8px">'+gEsc(R.full)+' 환급금 지급 앱입니다'+(REF===APP?' (결제도 같은 앱)':'')+'</p>':'<p class="small muted" style="margin:-4px 0 8px">'+gEsc(R.full)+gJosa(R.full,'은는')+' 환급금을 '+gEsc(REF)+' 앱으로 지급합니다. 다른 지역 환급금일 때 참고하세요.</p>')+
     '<ol class="lp-ast">'+s.map(x=>'<li>'+gEsc(x)+'</li>').join('')+'</ol>'+
     '<div class="note warn" style="margin-top:14px">본인 명의 앱에만 등록할 수 있고, 등록한 PIN 은 재발급되지 않습니다.</div>'+
     '<div style="text-align:right;margin-top:14px"><button class="btn navy sm" onclick="gCloseModal()">확인</button></div>');
@@ -81,12 +83,12 @@ function lpRefunds(){ return gMyApps().filter(a=>a.refund&&a.refund.pin&&(a.stat
 function lpPinMask(p){ return String(p).replace(/\d(?=(?:\D*\d){4})/g,'•'); }
 function lpRegisterAsk(id){
   const a=gApp(id); if(!a||!a.refund) return;
-  const r=gRegion(a.region), app=gStd('P7',a.region).val;
+  const r=gRegion(a.region), app=gStd('U5',a.region).val||gStd('P7',a.region).val;
   gModal('<h3>환급금 PIN 등록</h3><p class="muted">'+gEsc(r.full)+' '+a.round+'회차 환급금을 <b>'+gEsc(app)+'</b> 앱에 등록합니다.</p>'+
     '<div class="note"><div>금액 <b>'+gWon(a.refund.amount)+'</b> ('+gEsc(r.voucher)+')</div><div style="margin-top:4px">PIN <code style="font-family:Consolas,monospace;font-size:15px">'+gEsc(a.refund.pin)+'</code></div></div>'+
     '<label class="f" for="lpPinIn">PIN 번호 입력</label><input class="inp" id="lpPinIn" inputmode="numeric" placeholder="0000-0000-0000" value="'+gEsc(a.refund.pin)+'">'+
     '<label class="check"><input type="checkbox" id="lpOwn"><span>본인 명의 앱에 등록합니다. 등록 후에는 재발급되지 않습니다.</span></label>'+
-    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn" onclick="gCloseModal()">취소</button><button class="btn blue" onclick="lpRegister(\''+gEsc(a.id)+'\')">등록 완료</button></div>');
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn" onclick="gCloseModal()">취소</button><button class="btn blue" data-id="'+gEsc(a.id)+'" onclick="lpRegister(this.dataset.id)">등록 완료</button></div>');
 }
 function lpRegister(id){
   const a=gApp(id); if(!a||!a.refund||a.refund.registered){ gCloseModal(); return; }
@@ -96,7 +98,7 @@ function lpRegister(id){
   a.refund.registered=true; a.refund.registeredAt=gNow().toISOString(); gPutApp(a);
   const w=lpWallet(); w[a.region]=(Number(w[a.region])||0)+Number(a.refund.amount||0); gUSet('wallet',w);
   const tx=gUGet('wtx',[])||[]; tx.push({region:a.region,kind:'refund',label:'환급금 PIN 등록',amount:a.refund.amount,at:gNow().toISOString()}); gUSet('wtx',tx);
-  gCloseModal(); gToast(gWon(a.refund.amount)+'이 '+gStd('P7',a.region).val+' 지갑에 등록되었어요','ok'); lpRender();
+  gCloseModal(); gToast(gWon(a.refund.amount)+'이 '+(gStd('U5',a.region).val||gStd('P7',a.region).val)+' 지갑에 등록되었어요','ok'); lpRender();
 }
 
 function lpMine(){
@@ -108,8 +110,8 @@ function lpMine(){
     return '<div class="lp-pin"><div class="info"><b>'+gEsc(R.full)+' '+a.round+'회차 · '+gEsc(gTypeName(a.type))+'</b> <span class="small muted">'+gEsc(a.id)+'</span>'+
       '<div class="small muted">지급일 '+gDot(a.refund.paidAt)+' · PIN <code>'+gEsc(reg?a.refund.pin:lpPinMask(a.refund.pin))+'</code></div></div>'+
       '<div class="amt">'+gWon(a.refund.amount)+'</div>'+
-      (reg?'<span class="g-st" style="--c:#0f766e">✓ 등록 완료</span>':'<button class="btn blue sm" onclick="lpRegisterAsk(\''+gEsc(a.id)+'\')">PIN 등록</button>')+'</div>'; };
-  return '<div class="lp-wallet"><div><div class="small" style="opacity:.85">'+gEsc(u.name)+' 님의 '+gEsc(APP)+' 지갑 · '+gEsc(R.voucher)+'</div><div class="v">'+gWon(bal)+'</div></div>'+
+      (reg?'<span class="g-st" style="--c:#0f766e">✓ 등록 완료</span>':'<button class="btn blue sm" data-id="'+gEsc(a.id)+'" onclick="lpRegisterAsk(this.dataset.id)">PIN 등록</button>')+'</div>'; };
+  return '<div class="lp-wallet"><div><div class="small" style="opacity:.85">'+gEsc(u.name)+' 님의 '+gEsc(REF)+' 지갑 · '+gEsc(R.voucher)+'</div><div class="v">'+gWon(bal)+'</div></div>'+
       '<a class="btn sm" href="pay.html?r='+SLUG+'">지역화폐 앱(모의) 열기 ›</a></div>'+
     (here.length?here.map(row).join(''):'<div class="note">'+gEsc(R.full)+'의 환급 완료 건이 없어요. 정산 심사 후 환급이 지급되면 이곳에 PIN 이 표시됩니다.</div>')+
     (other.length?'<p class="small muted" style="margin:12px 0 0">다른 지역에 등록하지 않은 환급금이 있어요: '+other.map(a=>{ const r=gRegion(a.region); return '<a style="color:var(--blue);font-weight:700" href="localpay.html?r='+a.region+'#mine">'+gEsc(r?r.full:a.region)+' '+gWon(a.refund.amount)+'</a>'; }).join(' · ')+'</p>':'');
@@ -118,13 +120,13 @@ function lpMine(){
 function lpRender(){
   document.getElementById('lpMain').innerHTML=
     '<p class="small muted" style="margin:0 0 8px"><a href="region.html?r='+SLUG+'">'+gEsc(R.full)+'</a> › 사업안내</p>'+
-    '<div class="lp-ban" style="background:linear-gradient(120deg,var(--blue),'+gEsc(R.color)+')"><h1>지역화폐 사용법</h1><p>'+gEsc(R.full)+gJosa(R.full,'은는')+' <b>'+gEsc(APP)+' 앱 QR</b>로 결제, 환급금도 지역화폐로</p></div>'+
+    '<div class="lp-ban" style="background:linear-gradient(120deg,var(--blue),'+gEsc(R.color)+')"><h1>지역화폐 사용법</h1><p>'+gEsc(R.full)+gJosa(R.full,'은는')+' <b>'+gEsc(APP)+' 앱 QR</b>로 결제, 환급금도 지역화폐로'+(REF!==APP?'(<b>'+gEsc(REF)+' 앱</b>)':'')+'</p></div>'+
     '<div class="lp-two"><div><small>결제할 때</small><b>관광소비는 지역화폐로만</b><ul><li>관내 가맹점에서 '+gEsc(APP)+' 앱 QR 결제</li><li>결제내역이 정산 때 자동으로 불러와져요</li><li>카드·현금영수증은 숙박만 인정</li></ul></div>'+
-      '<div><small>환급받을 때</small><b>환급금도 지역화폐로</b><ul><li>정산 승인 후 '+gStdNum('U1')+'일 이내 모바일 '+gEsc(R.voucher)+' 지급</li><li>알림톡으로 받은 PIN 을 앱에 등록</li><li>사용 기한: '+gEsc(gStd('U3').val)+'</li></ul></div></div>'+
+      '<div><small>환급받을 때</small><b>환급금도 지역화폐로</b><ul><li>정산 승인 후 '+gStdNum('U1')+'일 이내 '+gEsc(REF)+' 앱으로 모바일 '+gEsc(R.voucher)+' 지급</li><li>알림톡으로 받은 PIN 을 앱에 등록</li><li>사용 기한: '+gEsc(gStd('U3').val)+'</li></ul></div></div>'+
     '<section class="sec card"><div class="sec-h"><h2>환급금(PIN) 등록 5단계</h2></div>'+
-      '<div class="lp-steps">'+[['핀번호 확인','알림톡·마이페이지'],['앱 실행',APP],['쿠폰 메뉴','상품권·쿠폰함'],['핀번호 입력','16자리'],['등록 완료','잔액 확인']].map((s,i)=>'<div><i>'+(i+1)+'</i>'+gEsc(s[0])+'<small>'+gEsc(s[1])+'</small></div>').join('')+'</div></section>'+
+      '<div class="lp-steps">'+[['핀번호 확인','알림톡·마이페이지'],['앱 실행',REF],['쿠폰 메뉴','상품권·쿠폰함'],['핀번호 입력','16자리'],['등록 완료','잔액 확인']].map((s,i)=>'<div><i>'+(i+1)+'</i>'+gEsc(s[0])+'<small>'+gEsc(s[1])+'</small></div>').join('')+'</div></section>'+
     '<section class="sec"><div class="sec-h"><h2>앱별 등록 방법</h2></div>'+
-      '<div class="lp-apps">'+G_PAY_APPS.map(n=>'<button class="'+(n===APP?'me':'')+'" onclick="lpAppModal(\''+gEsc(n)+'\')">'+gEsc(n)+(n===APP?'<small>'+gEsc(R.name)+' 사용 앱</small>':'')+'</button>').join('')+'</div>'+
+      '<div class="lp-apps">'+G_PAY_APPS.map(n=>'<button class="'+(n===REF?'me':'')+'" data-app="'+gEsc(n)+'" onclick="lpAppModal(this.dataset.app)">'+gEsc(n)+(n===REF?'<small>'+gEsc(R.name)+' 환급 앱</small>':'')+'</button>').join('')+'</div>'+
       '<div class="lp-caution">유의 · 본인 명의 앱만 등록 · 재발급 불가</div></section>'+
     '<section class="sec" id="mine"><div class="sec-h"><div><h2>내 환급금 PIN</h2><p>환급 완료 건을 바로 등록할 수 있어요</p></div></div>'+lpMine()+'</section>';
 }

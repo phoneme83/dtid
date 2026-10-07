@@ -1,8 +1,8 @@
 /* 시안 G — 대한민국 반값여행 통합플랫폼 (착수보고안) 공용 스타일 */
 :root{
-  --pri:#e5452c; --pri-d:#c2341d; --pri-l:#fff1ee;
+  --pri:#d63d24; --pri-d:#b5301a; --pri-l:#fff1ee;
   --navy:#1f2a44; --blue:#2563eb; --blue-l:#eef4ff;
-  --ink:#111827; --sub:#5b6472; --mute:#9aa1ac; --line:#e5e7eb; --bg:#f6f7f9; --card:#fff;
+  --ink:#111827; --sub:#5b6472; --mute:#6b7280; --line:#e5e7eb; --bg:#f6f7f9; --card:#fff;
   --ok:#0f766e; --warn:#b45309; --bad:#be123c;
   --r:14px; --max:1180px;
   --sh:0 6px 22px rgba(15,23,42,.07);
@@ -21,7 +21,7 @@ main{min-height:60vh}
 .g-head{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line)}
 .g-head .g-in{display:flex;align-items:center;gap:22px;height:64px}
 .g-logo{display:flex;align-items:center;gap:8px;font-weight:800;white-space:nowrap;font-size:15px}
-.g-logo i{font-style:normal;color:#cbd5e1;font-weight:400}
+.g-logo i{font-style:normal;color:#94a3b8;font-weight:400}
 .g-dju{color:var(--navy)} .g-bg{color:var(--pri)} .g-rg{font-weight:900}
 .g-nav{display:flex;align-items:center;gap:4px;flex:1}
 .g-nav>a,.g-dd>a{display:block;padding:8px 12px;border-radius:9px;font-weight:600;color:#334155;font-size:15px}
@@ -184,9 +184,18 @@ textarea.inp{min-height:90px;resize:vertical}
 
 /* 플로팅 메뉴: 본문 오른쪽 여백(>= 80px)이 있을 때만 옆에 세우고, 그보다 좁으면 하단 가운데 바로 내린다 */
 @media (max-width:1360px){
-  .g-float{top:auto;bottom:14px;right:50%;transform:translateX(50%);flex-direction:row;border-radius:999px}
+  .g-float{top:auto;bottom:14px;left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 24px);flex-direction:row;border-radius:999px}
   .g-float a{border-bottom:0;border-right:1px solid #f1f5f9;padding:7px 12px}
   .g-float a:last-child{border-right:0}
   body.has-float .g-foot{padding-bottom:76px}
   body.has-float #gToast{bottom:86px}
 }
+
+/* 테스트 반영 (10-07) */
+.g-float a span{white-space:nowrap}
+.tbl td,.tbl th,.steps li,.prog span{word-break:keep-all}
+.steps li{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
+.g-loadfail{background:#fef2f2;color:#991b1b;border-bottom:1px solid #fecaca;padding:10px 16px;text-align:center;font-weight:700;font-size:14px}
+.g-loadfail a{text-decoration:underline}
+.g-mbox:focus{outline:none}
+@media (max-width:600px){ .steps li{font-size:10.5px} }
