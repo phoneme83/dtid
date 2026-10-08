@@ -55,6 +55,7 @@ public class MainActivity extends Activity {
     private final Handler ui = new Handler(Looper.getMainLooper());
     private final Runnable loadTimeout = () -> showError("15초 동안 응답이 없습니다");
     private boolean pageShown;
+    private final List<String> jsErrors = new ArrayList<>();
 
     /** 웹페이지의 <input type="file"> 이 기다리는 선택 결과 */
     private ValueCallback<Uri[]> fileCallback;
@@ -96,7 +97,19 @@ public class MainActivity extends Activity {
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
 
         // 영수증·증빙 첨부(<input type="file">)는 기본 WebChromeClient 로는 아무 반응이 없어 직접 연결한다.
+        // PC 크롬 chrome://inspect 로 앱 화면을 점검할 수 있게 한다(내부 검토용 빌드).
+        WebView.setWebContentsDebuggingEnabled(true);
         web.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onConsoleMessage(android.webkit.ConsoleMessage m) {
+                // 흰 화면 진단용: 스크립트 오류를 모아 두었다가 화면이 비면 보여 준다.
+                if (m.messageLevel() == android.webkit.ConsoleMessage.MessageLevel.ERROR && jsErrors.size() < 5) {
+                    String src = m.sourceId() == null ? "" : m.sourceId().replaceAll("^.*/", "");
+                    jsErrors.add(m.message() + " (" + src + ":" + m.lineNumber() + ")");
+                }
+                return false;
+            }
+
             @Override
             public boolean onShowFileChooser(WebView v, ValueCallback<Uri[]> cb,
                                              FileChooserParams params) {
@@ -148,6 +161,7 @@ public class MainActivity extends Activity {
                     pageShown = true;
                     ui.removeCallbacks(loadTimeout);
                     errorView.setVisibility(View.GONE);
+                    ui.postDelayed(() -> checkBlank(v), 3000);
                 }
             }
 
@@ -249,10 +263,28 @@ public class MainActivity extends Activity {
         b.show();
     }
 
+    /** 다 읽었는데 화면에 글자가 하나도 없으면(흰 화면) 원인을 화면에 띄운다. */
+    private void checkBlank(WebView v) {
+        v.evaluateJavascript(
+                "(function(){var b=document.body;return b?(b.innerText||'').trim().length+'|'+document.readyState+'|'+innerWidth+'x'+innerHeight:'nobody';})()",
+                r -> {
+                    String s = r == null ? "" : r.replace("\"", "");
+                    if (s.startsWith("0|") || s.startsWith("nobody")) {
+                        StringBuilder sb = new StringBuilder("화면 내용이 비어 있습니다 (앱 " + BuildConfig.VERSION_NAME + " · " + s + ")\n" + v.getUrl());
+                        for (String e : jsErrors) sb.append("\n• ").append(e);
+                        if (jsErrors.isEmpty()) sb.append("\n• 스크립트 오류 기록 없음");
+                        sb.append("\n\n이 문구를 캡처해 담당자에게 보내 주세요. (눌러서 서버 주소 변경)");
+                        errorView.setTag("error");
+                        errorView.setText(sb.toString());
+                        errorView.setVisibility(View.VISIBLE);
+                    }
+                });
+    }
+
     /** 첫 화면을 기다리는 동안 빈 화면 대신 무엇을 여는 중인지 보여 준다. */
     private void showLoading(String url) {
         errorView.setTag(null);
-        errorView.setText("시안 화면을 불러오는 중입니다…\n" + url
+        errorView.setText("시안 화면을 불러오는 중입니다… (앱 " + BuildConfig.VERSION_NAME + ")\n" + url
                 + "\n\n오래 걸리면 이 문구를 눌러 서버 주소를 확인하세요.");
         errorView.setVisibility(View.VISIBLE);
         ui.removeCallbacks(loadTimeout);
@@ -262,7 +294,7 @@ public class MainActivity extends Activity {
     private void showError(String why) {
         ui.removeCallbacks(loadTimeout);
         errorView.setTag("error");
-        errorView.setText("시안 서버에 연결할 수 없습니다.\n(" + why + ")\n\n현재 주소: " + Prefs.baseUrl(this)
+        errorView.setText("시안 서버에 연결할 수 없습니다. (앱 " + BuildConfig.VERSION_NAME + ")\n(" + why + ")\n\n현재 주소: " + Prefs.baseUrl(this)
                 + "\n\n이 문구를 눌러 서버 주소를 변경하세요.\n공개 주소: " + BuildConfig.DEFAULT_BASE_URL);
         errorView.setVisibility(View.VISIBLE);
     }

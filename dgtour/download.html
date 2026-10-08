@@ -56,6 +56,8 @@ a.back{display:inline-block;font-size:12.5px;color:#556;margin-bottom:14px;text-
 </div>
 
 <script>
+/* APK 를 다시 빌드하면 이 값을 올린다 — 휴대폰 브라우저가 캐시된 예전 APK 를 받지 않도록 링크에 붙인다. */
+const APK_VER='1.2';
 const SITES=[
   {c:'a',n:'월렛 퍼스트',           d:'주민증 카드와 QR이 가장 먼저. 다크 월렛 UI, 어디서든 1탭 QR 제시.', g:'linear-gradient(135deg,#ea580c,#9a3412)', lb:'#ea580c', ic:'💳', web:'site-a/main.html'},
   {c:'b',n:'여행 탐색 퍼스트',       d:'지도와 추천 피드로 “어디로 갈까?”를 자극. 탐색→발급 30초 퍼널.', g:'linear-gradient(135deg,#60a5fa,#2563eb)', lb:'#2563eb', ic:'🗺️', web:'site-b/main.html'},
@@ -97,16 +99,16 @@ document.getElementById('grid').innerHTML = SITES.map(s=>`
       <h3>${s.n}</h3>
       <p>${s.d}</p>
       <div class="qr"><canvas id="qr-${s.c}" width="132" height="132"></canvas></div>
-      <div class="meta">패키지 <b>kr.knto.dtid.siteapp.${s.c}</b><br>파일 <b>dtid-site${s.c}.apk</b> · 버전 1.1</div>
+      <div class="meta">패키지 <b>kr.knto.dtid.siteapp.${s.c}</b><br>파일 <b>dtid-site${s.c}.apk</b> · 버전 ${APK_VER}</div>
       <div class="btns">
-        <a class="btn dl" href="apk/dtid-site${s.c}.apk">앱 내려받기</a>
+        <a class="btn dl" href="apk/dtid-site${s.c}.apk?v=${APK_VER}">앱 내려받기</a>
         <a class="btn web" href="${s.web}">웹으로 보기</a>
       </div>
     </div>
   </div>`).join('');
 
 /* APK 링크를 가리키는 QR 코드를 직접 그린다(외부 라이브러리·네트워크 없이 동작). */
-SITES.forEach(s=>drawQr(document.getElementById('qr-'+s.c), origin+'apk/dtid-site'+s.c+'.apk'));
+SITES.forEach(s=>drawQr(document.getElementById('qr-'+s.c), origin+'apk/dtid-site'+s.c+'.apk?v='+APK_VER));
 
 /* ── 최소 QR 인코더 (버전 자동선택, 바이트 모드, 오류정정 L) ───────────── */
 function drawQr(cv,text){
