@@ -45,7 +45,7 @@ pre{background:#0f172a;color:#d7e3f4;border-radius:10px;padding:13px;font-size:1
 <div class="wrap">
   <a class="back" href="download.html">← 시안별 앱 다운로드</a>
   <h1>앱 푸시 관리</h1>
-  <p class="sub">시안 <b>A~F</b> 앱에 알림을 보냅니다. 대상 시안을 골라 발송하면 <b>해당 시안 앱에만</b> 알림이 표시됩니다. 앱은 접속할 때와 약 15분 주기로 발송 건을 확인합니다.</p>
+  <p class="sub">시안 <b>A~G</b> 앱에 알림을 보냅니다. 대상 시안을 골라 발송하면 <b>해당 시안 앱에만</b> 알림이 표시됩니다. 앱은 접속할 때와 약 15분 주기로 발송 건을 확인합니다.</p>
 
   <div class="row">
     <!-- 발송 작성 -->
@@ -120,7 +120,7 @@ pre{background:#0f172a;color:#d7e3f4;border-radius:10px;padding:13px;font-size:1
 <script>
 const SITES=[
   {c:'a',n:'A 월렛퍼스트'},{c:'b',n:'B 여행탐색'},{c:'c',n:'C 미션'},
-  {c:'d',n:'D 공공미니멀'},{c:'e',n:'E 통합안'},{c:'f',n:'F 컨설팅안'}
+  {c:'d',n:'D 공공미니멀'},{c:'e',n:'E 통합안'},{c:'f',n:'F 컨설팅안'},{c:'g',n:'G 반값통합'}
 ];
 let target=new Set(['all']);
 let notices=[];
@@ -132,7 +132,7 @@ function renderChips(){
     '<div class="chip all'+(all?' on':'')+'" onclick="pick(\'all\')">전체</div>'
     + SITES.map(s=>'<div class="chip'+(target.has(s.c)?' on':'')+'" onclick="pick(\''+s.c+'\')">시안 '+s.n+'</div>').join('');
   document.getElementById('targetCnt').innerHTML= all
-    ? '대상 <b>시안 A~F 전체</b> (6개 앱)'
+    ? '대상 <b>시안 A~G 전체</b> (7개 앱)'
     : (target.size? '대상 <b>'+[...target].map(c=>'시안 '+c.toUpperCase()).join(', ')+'</b> ('+target.size+'개 앱)'
                   : '<span style="color:#b45309">대상을 1개 이상 선택하세요.</span>');
   preview();
@@ -180,7 +180,7 @@ function addNotice(){
   if(dup && !confirm('같은 대상에 동일한 제목·내용이 이미 있습니다. 그래도 추가하시겠습니까?')) return;
 
   // 전체 발송은 한 번 더 확인한다.
-  if(tgt==='all' && !confirm('시안 A~F 전체 앱으로 발송합니다. 계속하시겠습니까?')) return;
+  if(tgt==='all' && !confirm('시안 A~G 전체 앱으로 발송합니다. 계속하시겠습니까?')) return;
 
   notices.push({
     id:'n'+Date.now().toString(36),

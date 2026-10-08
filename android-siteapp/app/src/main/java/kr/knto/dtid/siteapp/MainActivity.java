@@ -3,14 +3,21 @@ package kr.knto.dtid.siteapp;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.text.InputType;
+import android.util.Base64;
 import android.view.KeyEvent;
 import android.view.View;
+import android.webkit.MimeTypeMap;
+import android.webkit.URLUtil;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -21,10 +28,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 시안(A~F) 홈페이지를 그대로 감싸 보여주는 앱 셸.
+ * 시안(A~G) 홈페이지를 그대로 감싸 보여주는 앱 셸.
  *
  * 시안 웹페이지를 서버에서 읽어오므로 홈페이지를 고치면 앱에서도 그대로 반영된다
  * (= UI/UX·기능 자동 업데이트). 앱 셸 자체의 갱신은 version.json 으로 안내한다.
@@ -37,6 +46,10 @@ public class MainActivity extends Activity {
     private WebView web;
     private TextView errorView;
     private boolean pendingReload;
+
+    /** 웹페이지의 <input type="file"> 이 기다리는 선택 결과 */
+    private ValueCallback<Uri[]> fileCallback;
+    private static final int REQ_FILE = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +85,27 @@ public class MainActivity extends Activity {
         // 변경된 화면이 즉시 보이도록 문서는 서버 확인을 우선한다.
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
 
-        web.setWebChromeClient(new WebChromeClient());
+        // 영수증·증빙 첨부(<input type="file">)는 기본 WebChromeClient 로는 아무 반응이 없어 직접 연결한다.
+        web.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onShowFileChooser(WebView v, ValueCallback<Uri[]> cb,
+                                             FileChooserParams params) {
+                if (fileCallback != null) {
+                    fileCallback.onReceiveValue(null);
+                }
+                fileCallback = cb;
+                try {
+                    startActivityForResult(fileIntent(params), REQ_FILE);
+                } catch (Exception e) {
+                    fileCallback = null;
+                    Toast.makeText(MainActivity.this, "파일을 고를 수 있는 앱이 없습니다.", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+                return true;
+            }
+        });
+        // 시연용 영수증 이미지 저장(data: 링크)을 다운로드 폴더에 저장한다.
+        web.setDownloadListener((url, ua, disposition, mime, length) -> saveDownload(url, disposition, mime));
         web.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest req) {
@@ -207,6 +240,105 @@ public class MainActivity extends Activity {
                 })
                 .setNegativeButton("취소", null)
                 .show();
+    }
+
+    /** accept="image/*,.pdf" 처럼 확장자가 섞인 값도 MIME 으로 바꿔 파일 선택 창에 넘긴다. */
+    private Intent fileIntent(WebChromeClient.FileChooserParams params) {
+        List<String> mimes = new ArrayList<>();
+        String[] accept = params == null ? null : params.getAcceptTypes();
+        if (accept != null) {
+            for (String raw : accept) {
+                for (String a : raw.split(",")) {
+                    String t = a.trim().toLowerCase();
+                    if (t.isEmpty()) continue;
+                    if (t.startsWith(".")) {
+                        t = MimeTypeMap.getSingleton().getMimeTypeFromExtension(t.substring(1));
+                        if (t == null) continue;
+                    }
+                    if (!mimes.contains(t)) mimes.add(t);
+                }
+            }
+        }
+        Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+        i.addCategory(Intent.CATEGORY_OPENABLE);
+        if (mimes.size() == 1) {
+            i.setType(mimes.get(0));
+        } else {
+            i.setType("*/*");
+            if (!mimes.isEmpty()) {
+                i.putExtra(Intent.EXTRA_MIME_TYPES, mimes.toArray(new String[0]));
+            }
+        }
+        if (params != null && params.getMode() == WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE) {
+            i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        }
+        return Intent.createChooser(i, "파일 선택");
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQ_FILE) {
+            if (fileCallback != null) {
+                Uri[] picked = null;
+                if (resultCode == RESULT_OK && data != null) {
+                    if (data.getClipData() != null) {
+                        int n = data.getClipData().getItemCount();
+                        picked = new Uri[n];
+                        for (int k = 0; k < n; k++) picked[k] = data.getClipData().getItemAt(k).getUri();
+                    } else if (data.getData() != null) {
+                        picked = new Uri[]{data.getData()};
+                    }
+                }
+                // 취소해도 반드시 null 로 돌려줘야 다음 선택이 다시 열린다.
+                fileCallback.onReceiveValue(picked);
+                fileCallback = null;
+            }
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    /** data: 링크는 직접 풀어 저장하고, 그 밖의 http 파일은 브라우저에 넘긴다. */
+    private void saveDownload(String url, String disposition, String mime) {
+        if (url == null) return;
+        if (url.startsWith("data:")) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                Toast.makeText(this, "이 기기(Android 9 이하)에서는 앱 안 저장을 지원하지 않습니다.", Toast.LENGTH_LONG).show();
+                return;
+            }
+            try {
+                int comma = url.indexOf(',');
+                String head = url.substring(5, comma);
+                String type = head.split(";")[0];
+                if (type.isEmpty()) type = "application/octet-stream";
+                byte[] bytes = head.endsWith(";base64")
+                        ? Base64.decode(url.substring(comma + 1), Base64.DEFAULT)
+                        : Uri.decode(url.substring(comma + 1)).getBytes("UTF-8");
+                String ext = MimeTypeMap.getSingleton().getExtensionFromMimeType(type);
+                String name = "dtid_" + System.currentTimeMillis() + (ext == null ? "" : "." + ext);
+                ContentValues cv = new ContentValues();
+                cv.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
+                cv.put(MediaStore.MediaColumns.MIME_TYPE, type);
+                cv.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+                Uri out = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
+                try (OutputStream os = getContentResolver().openOutputStream(out)) {
+                    os.write(bytes);
+                }
+                Toast.makeText(this, "다운로드 폴더에 저장했습니다: " + name, Toast.LENGTH_LONG).show();
+            } catch (Exception e) {
+                Toast.makeText(this, "파일을 저장하지 못했습니다.", Toast.LENGTH_SHORT).show();
+            }
+            return;
+        }
+        if (url.startsWith("blob:")) {
+            Toast.makeText(this, "이 파일은 앱에서 내려받을 수 없습니다. PC 웹에서 받아 주세요.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+        } catch (Exception e) {
+            Toast.makeText(this, "파일을 열 수 없습니다: " + URLUtil.guessFileName(url, disposition, mime), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void askNotificationPermission() {
