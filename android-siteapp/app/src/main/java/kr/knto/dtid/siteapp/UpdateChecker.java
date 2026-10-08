@@ -53,6 +53,10 @@ final class UpdateChecker {
             if (o.has("apkUrl")) {
                 r.apkUrl = o.optString("apkUrl");
             }
+            // "apk/..." 같은 상대경로는 시스템이 열 수 없어 갱신 버튼이 동작하지 않았다 → 서버 주소를 붙인다.
+            if (!r.apkUrl.startsWith("http://") && !r.apkUrl.startsWith("https://")) {
+                r.apkUrl = Prefs.baseUrl(c) + (r.apkUrl.startsWith("/") ? r.apkUrl.substring(1) : r.apkUrl);
+            }
 
             if (current < minCode) {
                 r.appUpdate = true;

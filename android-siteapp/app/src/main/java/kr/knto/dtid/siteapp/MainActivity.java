@@ -10,6 +10,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.text.InputType;
 import android.util.Base64;
@@ -20,6 +22,7 @@ import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -47,6 +50,12 @@ public class MainActivity extends Activity {
     private TextView errorView;
     private boolean pendingReload;
 
+    /** 첫 화면이 이 시간 안에 안 뜨면 '응답 없음'으로 보고 주소 변경 안내를 띄운다. */
+    private static final long LOAD_TIMEOUT_MS = 15000;
+    private final Handler ui = new Handler(Looper.getMainLooper());
+    private final Runnable loadTimeout = () -> showError("15초 동안 응답이 없습니다");
+    private boolean pageShown;
+
     /** 웹페이지의 <input type="file"> 이 기다리는 선택 결과 */
     private ValueCallback<Uri[]> fileCallback;
     private static final int REQ_FILE = 2;
@@ -65,6 +74,7 @@ public class MainActivity extends Activity {
         errorView = new TextView(this);
         errorView.setPadding(48, 48, 48, 48);
         errorView.setTextSize(15f);
+        errorView.setBackgroundColor(0xFFFFF7ED);
         errorView.setVisibility(View.GONE);
         errorView.setOnClickListener(v -> promptBaseUrl());
 
@@ -124,15 +134,36 @@ public class MainActivity extends Activity {
             }
 
             @Override
+            public void onPageStarted(WebView v, String url, android.graphics.Bitmap icon) {
+                if (!pageShown) {
+                    showLoading(url);
+                }
+            }
+
+            @Override
             public void onPageFinished(WebView v, String url) {
-                errorView.setVisibility(View.GONE);
+                // 연결 오류 뒤에도 onPageFinished 가 불린다. 여기서 무조건 숨기면
+                // 오류 안내가 바로 사라져 빈 화면만 남는다(2026-10-08 실기기 증상).
+                if (errorView.getTag() == null) {
+                    pageShown = true;
+                    ui.removeCallbacks(loadTimeout);
+                    errorView.setVisibility(View.GONE);
+                }
             }
 
             @Override
             public void onReceivedError(WebView v, WebResourceRequest req,
                                        android.webkit.WebResourceError err) {
                 if (req.isForMainFrame()) {
-                    showError();
+                    showError("연결 오류: " + err.getDescription());
+                }
+            }
+
+            @Override
+            public void onReceivedHttpError(WebView v, WebResourceRequest req, WebResourceResponse res) {
+                // 주소가 틀리면 서버의 404 화면이 떠서 원인을 알기 어렵다 → 안내로 바꾼다.
+                if (req.isForMainFrame() && res.getStatusCode() >= 400) {
+                    showError("서버 응답 " + res.getStatusCode() + " — 이 주소에 시안 화면이 없습니다");
                 }
             }
         });
@@ -218,24 +249,43 @@ public class MainActivity extends Activity {
         b.show();
     }
 
-    private void showError() {
-        errorView.setText("시안 서버에 연결할 수 없습니다.\n\n현재 주소: " + Prefs.baseUrl(this)
-                + "\n\n이 문구를 눌러 서버 주소를 변경하세요.");
+    /** 첫 화면을 기다리는 동안 빈 화면 대신 무엇을 여는 중인지 보여 준다. */
+    private void showLoading(String url) {
+        errorView.setTag(null);
+        errorView.setText("시안 화면을 불러오는 중입니다…\n" + url
+                + "\n\n오래 걸리면 이 문구를 눌러 서버 주소를 확인하세요.");
+        errorView.setVisibility(View.VISIBLE);
+        ui.removeCallbacks(loadTimeout);
+        ui.postDelayed(loadTimeout, LOAD_TIMEOUT_MS);
+    }
+
+    private void showError(String why) {
+        ui.removeCallbacks(loadTimeout);
+        errorView.setTag("error");
+        errorView.setText("시안 서버에 연결할 수 없습니다.\n(" + why + ")\n\n현재 주소: " + Prefs.baseUrl(this)
+                + "\n\n이 문구를 눌러 서버 주소를 변경하세요.\n공개 주소: " + BuildConfig.DEFAULT_BASE_URL);
         errorView.setVisibility(View.VISIBLE);
     }
 
     /** 서버 주소를 앱에서 직접 바꿀 수 있게 한다(검토자 PC·LAN 주소가 매번 다르므로). */
     private void promptBaseUrl() {
         EditText et = new EditText(this);
-        et.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
+        et.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         et.setText(Prefs.baseUrl(this));
         new AlertDialog.Builder(this)
                 .setTitle("시안 서버 주소")
-                .setMessage(BuildConfig.SITE_LABEL + " · 예) http://192.168.0.10:8080/")
+                .setMessage(BuildConfig.SITE_LABEL + "\n공개: " + BuildConfig.DEFAULT_BASE_URL
+                        + "\n사내망 예) http://192.168.0.10:8080/")
                 .setView(et)
+                .setNeutralButton("공개 주소로", (d, w) -> {
+                    Prefs.setBaseUrl(this, BuildConfig.DEFAULT_BASE_URL);
+                    pageShown = false;
+                    web.loadUrl(Prefs.startUrl(this));
+                })
                 .setPositiveButton("저장", (d, w) -> {
                     Prefs.setBaseUrl(this, et.getText().toString());
                     pendingReload = true;
+                    pageShown = false;
                     web.loadUrl(Prefs.startUrl(this));
                 })
                 .setNegativeButton("취소", null)

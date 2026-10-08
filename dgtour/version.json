@@ -4,7 +4,7 @@
   "webVersion": "2026-07-30.1",
   "_webVersion": "홈페이지(UI/UX·기능)를 고친 뒤 이 값을 바꾸면, 앱이 캐시를 비우고 최신 화면을 다시 읽는다.",
 
-  "latestVersionCode": 1,
+  "latestVersionCode": 2,
   "minVersionCode": 1,
   "_versionCode": "앱 셸(APK) 자체 버전. latest보다 낮으면 선택 안내, min보다 낮으면 필수 갱신(이용 제한).",
 

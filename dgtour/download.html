@@ -46,7 +46,7 @@ a.back{display:inline-block;font-size:12.5px;color:#556;margin-bottom:14px;text-
   <div class="grid" id="grid"></div>
 
   <p class="note warn"><b>설치 방법(Android)</b> — 휴대폰에서 이 페이지를 열어 QR 또는 [앱 내려받기]를 누른 뒤, <b>‘출처를 알 수 없는 앱 설치’</b>를 허용하면 설치됩니다. 내부 검토용 빌드라 스토어에 등록되어 있지 않습니다.<br>
-  앱이 <b>“시안 서버에 연결할 수 없습니다”</b>라고 표시되면, 안내 문구를 눌러 위 서버 주소를 입력하세요(뒤로가기 버튼 길게 눌러도 열립니다).</p>
+  앱은 <b>공개 주소(https://phoneme83.github.io/dtid/)</b>로 바로 열립니다. 사내망 서버를 쓰거나 앱이 <b>“시안 서버에 연결할 수 없습니다”</b>라고 표시되면, 안내 문구를 눌러 위 서버 주소를 입력하세요(뒤로가기 버튼 길게 눌러도 열립니다).</p>
 
   <p class="note" id="hostNote"></p>
 
@@ -97,7 +97,7 @@ document.getElementById('grid').innerHTML = SITES.map(s=>`
       <h3>${s.n}</h3>
       <p>${s.d}</p>
       <div class="qr"><canvas id="qr-${s.c}" width="132" height="132"></canvas></div>
-      <div class="meta">패키지 <b>kr.knto.dtid.siteapp.${s.c}</b><br>파일 <b>dtid-site${s.c}-1.0-${s.c}.apk</b></div>
+      <div class="meta">패키지 <b>kr.knto.dtid.siteapp.${s.c}</b><br>파일 <b>dtid-site${s.c}.apk</b> · 버전 1.1</div>
       <div class="btns">
         <a class="btn dl" href="apk/dtid-site${s.c}.apk">앱 내려받기</a>
         <a class="btn web" href="${s.web}">웹으로 보기</a>
