@@ -671,6 +671,7 @@ function gShell(opt){
       '<div class="g-dd"><a href="index.html#map">참여지역 ▾</a><div class="g-ddm g-zones">'+zones+'</div></div>'+
       '<a class="'+(opt.active==='notice'?'on':'')+'" href="notice.html">공지사항</a>'+
       (u?'<a class="'+(opt.active==='my'?'on':'')+'" href="mypage.html">마이페이지</a>':'')+
+      '<a class="'+(opt.active==='app'?'on':'')+'" href="app.html">앱 다운로드</a>'+
     '</nav>';
   }
   const logo='<a class="g-logo" href="index.html"><span class="g-dju">디지털 관광주민증</span><i>|</i><span class="g-bg">대한민국 반값여행</span>'+
@@ -687,7 +688,7 @@ function gShell(opt){
       ?'<div class="g-rband"><div class="g-in"><b>'+gEsc(r.dept)+'</b> · '+gEsc(r.phone)+' · '+gEsc(gStd('B6',r.slug).val)+' 운영'+
         ' <a href="support.html?r='+r.slug+'&tab=qna">문의하기 ›</a> <a href="index.html">통합 메인 ›</a></div></div>':'')+
     '<div class="g-in"><div class="g-fl"><b>한국관광공사</b> · 강원특별자치도 원주시 세계로 10 · 고객센터 1330</div>'+
-    '<div class="g-fl"><a href="guide.html#gdNotes">이용약관</a> · <a href="guide.html#gdNotes"><b>개인정보처리방침</b></a> · <a href="../sites.html">시안 목록</a> · <a href="wireframe.html">시안 G 설명</a> · <a href="admin.html">관리자</a></div>'+
+    '<div class="g-fl"><a href="guide.html#gdNotes">이용약관</a> · <a href="guide.html#gdNotes"><b>개인정보처리방침</b></a> · <a href="../sites.html">시안 목록</a> · <a href="wireframe.html">시안 G 설명</a> · <a href="app.html">앱 다운로드</a> · <a href="admin.html">관리자</a></div>'+
     '<div class="g-fl g-demo">시안 G — 「대한민국 반값여행 통합플랫폼 구축용역 착수보고」(’26.10.) 화면 구조를 따른 테스트용 목업입니다. 실제 인증·결제·발송은 하지 않습니다.</div></div>';
   document.body.appendChild(foot);
 

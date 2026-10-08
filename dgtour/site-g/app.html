@@ -1,0 +1,254 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>앱 다운로드 — 대한민국 반값여행 · 시안 G</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="g.css?v=1">
+<style>
+/* 앱 다운로드 전용 (.ad-) */
+.ad-hero{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:28px;align-items:center;background:linear-gradient(120deg,#1f2a44 0%,#3b1f44 60%,#d63d24 140%);color:#fff;border-radius:22px;padding:32px 34px}
+.ad-hero h1{margin:6px 0 10px;font-size:30px;letter-spacing:-.6px;line-height:1.3}
+.ad-hero p{margin:0;color:#e2e8f0;font-size:15px}
+.ad-tag{display:inline-block;background:rgba(255,255,255,.14);border-radius:999px;padding:4px 12px;font-size:12.5px;font-weight:700}
+.ad-icon{display:flex;align-items:center;gap:12px;margin:18px 0 20px}
+.ad-icon i{width:52px;height:52px;border-radius:14px;background:var(--pri);display:grid;place-items:center;font-style:normal;font-weight:900;font-size:24px;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.ad-icon b{display:block;font-size:16px} .ad-icon small{color:#cbd5e1;font-size:12.5px}
+.ad-btns{display:flex;flex-wrap:wrap;gap:10px}
+.ad-btns .btn{min-height:48px}
+.ad-qr{background:#fff;border-radius:18px;padding:14px;text-align:center;color:var(--sub);font-size:13px}
+.ad-qr canvas{width:100%;aspect-ratio:1;image-rendering:pixelated;display:block}
+.ad-inapp{display:none;background:var(--blue-l);border:1px solid #c7d7fe;color:#1e3a8a;border-radius:14px;padding:14px 16px;margin-top:18px;font-weight:600}
+body.in-app .ad-inapp{display:block}
+.ad-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:22px}
+.ad-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 22px}
+.ad-card h2{margin:0 0 12px;font-size:18px}
+.ad-steps{margin:0;padding:0;list-style:none;counter-reset:s}
+.ad-steps li{position:relative;padding:0 0 12px 36px;font-size:14.5px;color:#334155}
+.ad-steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;background:var(--pri);color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center}
+.ad-steps b{color:var(--ink)}
+.ad-addr{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--bg);border-radius:10px;padding:10px 12px;margin-top:4px}
+.ad-addr code{flex:1;min-width:0;word-break:break-all;font-size:13.5px;font-weight:700;color:var(--navy)}
+.ad-list{margin:0;padding-left:18px;font-size:14.5px;color:#334155}
+.ad-list li{margin-bottom:6px}
+.ad-note{margin-top:16px;font-size:13.5px;color:var(--sub)}
+.ad-note a{color:var(--blue);font-weight:700}
+@media (max-width:760px){
+  .ad-hero{grid-template-columns:minmax(0,1fr);padding:24px 20px}
+  .ad-hero h1{font-size:24px}
+  .ad-qr{max-width:240px;margin:0 auto;width:100%}
+  .ad-btns .btn{flex:1 1 100%}
+  .ad-grid{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+</head><body>
+<main><div class="wrap">
+  <section class="ad-hero">
+    <div>
+      <span class="ad-tag">Android 앱 · 내부 검토용</span>
+      <h1>반값여행을 앱으로<br>설치해 보세요</h1>
+      <p>사전신청·정산·마이페이지·알림을 휴대폰 앱으로 이용할 수 있습니다. 영수증과 증빙 서류도 앱에서 바로 첨부됩니다.</p>
+      <div class="ad-icon"><i>½</i><div><b>시안G 반값통합</b><small>kr.knto.dtid.siteapp.g · 약 20KB</small></div></div>
+      <div class="ad-btns">
+        <a class="btn pri lg" id="adDl" href="../apk/dtid-siteg.apk" download>📲 앱 내려받기 (APK)</a>
+        <a class="btn lg" href="../download.html">다른 시안 앱 보기</a>
+      </div>
+    </div>
+    <div class="ad-qr"><canvas id="adQr" width="220" height="220" aria-label="앱 내려받기 QR 코드"></canvas><div style="margin-top:8px">PC로 보고 계시면<br><b style="color:var(--ink)">휴대폰 카메라로 QR을 찍어</b> 주세요</div></div>
+  </section>
+
+  <div class="ad-inapp" role="status">✅ 지금 이미 앱으로 보고 계십니다. 새 버전이 나오면 앱이 열릴 때 자동으로 안내합니다.</div>
+
+  <div class="ad-grid">
+    <section class="ad-card">
+      <h2>설치 방법</h2>
+      <ol class="ad-steps">
+        <li>휴대폰에서 <b>[앱 내려받기]</b>를 누르거나 QR 코드를 찍습니다.</li>
+        <li>받은 <b>dtid-siteg.apk</b> 파일을 엽니다.</li>
+        <li><b>‘출처를 알 수 없는 앱 설치’</b>를 허용합니다. 스토어에 올리지 않은 검토용 앱이라 필요한 단계입니다.</li>
+        <li>홈 화면에 생긴 빨간 아이콘 <b>「시안G 반값통합」</b>을 엽니다.</li>
+      </ol>
+    </section>
+    <section class="ad-card">
+      <h2>처음 열 때 서버 주소</h2>
+      <p style="margin:0 0 8px;font-size:14.5px;color:#334155">앱이 <b>“시안 서버에 연결할 수 없습니다”</b>라고 하면 그 문구를 눌러 아래 주소를 넣고 저장하세요. 뒤로가기 버튼을 길게 눌러도 주소 창이 열립니다.</p>
+      <div class="ad-addr"><code id="adHost">-</code><button class="btn sm" onclick="adCopy()">복사</button></div>
+      <p class="ad-note" id="adHostNote"></p>
+    </section>
+    <section class="ad-card">
+      <h2>앱에서 되는 것</h2>
+      <ul class="ad-list">
+        <li>통합 메인 · 25개 지역 홈 · 사전신청 · 정산신청 · 마이페이지 — 웹과 같은 화면</li>
+        <li>영수증·숙박확인서·신분증·보완 서류 <b>파일 첨부</b>, 시연용 영수증 이미지 저장(Android 10 이상)</li>
+        <li>관리자가 보낸 <b>앱 알림</b> — 앱을 열 때와 약 15분마다 확인</li>
+        <li>홈페이지가 바뀌면 <b>다시 설치하지 않아도</b> 앱에 바로 반영</li>
+      </ul>
+    </section>
+    <section class="ad-card">
+      <h2>알아두실 점</h2>
+      <ul class="ad-list">
+        <li><b>iPhone은 지원하지 않습니다.</b> 별도 배포 절차(TestFlight 등)가 필요합니다.</li>
+        <li>관리자 화면의 CSV 내려받기는 앱 안에서 되지 않습니다. PC 웹에서 받아 주세요.</li>
+        <li>다른 시안(A~F) 앱과 패키지가 달라 <b>한 휴대폰에 함께 설치</b>할 수 있습니다.</li>
+        <li>검토용 테스트 앱입니다. 실제 인증·결제·발송은 하지 않습니다.</li>
+      </ul>
+    </section>
+  </div>
+</div></main>
+<script src="../site-assets/data.js?v=20260818a"></script>
+<script src="g.js?v=2"></script>
+<script>
+gShell({mode:'hub',active:'app'});
+/* 앱(WebView) 안에서 열리면 내려받기 대신 안내를 보여 준다. */
+if(/; wv\)/.test(navigator.userAgent)) document.body.classList.add('in-app');
+
+/* 앱에 넣을 서버 주소 = 시안 폴더들의 상위(dgtour) 주소 */
+const AD_ROOT=location.origin+location.pathname.replace(/site-g\/[^/]*$/,'');
+const AD_APK=AD_ROOT+'apk/dtid-siteg.apk';
+document.getElementById('adHost').textContent=location.protocol==='file:'?'(서버로 열어야 표시됩니다)':AD_ROOT;
+document.getElementById('adHostNote').innerHTML=location.protocol==='file:'
+  ?'파일을 직접 연 상태입니다. 휴대폰에서 설치하려면 <code>python serve.py</code>로 서버를 띄우고 <code>http://PC의_IP:8080/site-g/app.html</code>로 접속하세요.'
+  :(/^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(location.hostname)
+    ?'사내망 서버 주소입니다. 휴대폰이 같은 공유기에 연결되어 있어야 합니다.'
+    :'공개 웹 주소입니다. 어디서나 접속됩니다.');
+function adCopy(){
+  const t=document.getElementById('adHost').textContent;
+  if(!navigator.clipboard){ gToast('주소를 길게 눌러 복사해 주세요.'); return; }
+  navigator.clipboard.writeText(t).then(()=>gToast('주소를 복사했습니다.'),()=>gToast('복사하지 못했습니다. 직접 입력해 주세요.'));
+}
+drawQr(document.getElementById('adQr'),AD_APK);
+
+/* ── QR 인코더 (download.html 과 동일) ── */
+function drawQr(cv,text){
+  try{
+    const m=qrMatrix(text);
+    const n=m.length, px=Math.floor(cv.width/(n+8))||1, off=Math.floor((cv.width-px*n)/2);
+    const g=cv.getContext('2d');
+    g.fillStyle='#f7f8fa'; g.fillRect(0,0,cv.width,cv.height);
+    g.fillStyle='#111';
+    for(let y=0;y<n;y++)for(let x=0;x<n;x++) if(m[y][x]) g.fillRect(off+x*px,off+y*px,px,px);
+  }catch(e){
+    const g=cv.getContext('2d');
+    g.fillStyle='#f7f8fa'; g.fillRect(0,0,cv.width,cv.height);
+    g.fillStyle='#889'; g.font='11px sans-serif'; g.textAlign='center';
+    g.fillText('QR 생성 불가',cv.width/2,cv.height/2);
+  }
+}
+function qrMatrix(str){
+  const data=new TextEncoder().encode(str);
+  // CAP: 바이트모드 최대 "입력" 글자 수(버전 선택용, 모드·길이·종단 오버헤드 차감된 값).
+  const CAP={1:17,2:32,3:53,4:78,5:106,6:134,7:154,8:192,9:230,10:271};
+  const ECC={1:7,2:10,3:15,4:20,5:26,6:18,7:20,8:24,9:30,10:18};
+  const BLK={1:1,2:1,3:1,4:1,5:1,6:2,7:2,8:2,9:2,10:4};
+  // DCW: 실제 RS 블록에 채워야 하는 "총 데이터 코드워드" 수(버전당 고정, CAP와는 다른 값).
+  // 이전 코드는 CAP를 DCW로 잘못 재사용해 데이터가 2~3바이트씩 부족하게 채워지고
+  // RS 오류정정 바이트도 잘못 계산되어 생성된 QR이 전부 스캔 불가였다.
+  const DCW={1:19,2:34,3:55,4:80,5:108,6:136,7:156,8:194,9:232,10:274};
+  let ver=0; for(let v=1;v<=10;v++) if(data.length+2<=CAP[v]){ver=v;break;}
+  if(!ver) throw new Error('too long');
+  const size=17+ver*4;
+  // 비트스트림: 모드(0100) + 길이 + 데이터 + 종단
+  const bits=[];
+  const push=(v,len)=>{for(let i=len-1;i>=0;i--)bits.push((v>>i)&1);};
+  push(4,4); push(data.length, ver<10?8:16);
+  data.forEach(b=>push(b,8));
+  push(0,4);
+  while(bits.length%8) bits.push(0);
+  const dcw=DCW[ver];
+  const bytes=[]; for(let i=0;i<bits.length;i+=8){let v=0;for(let j=0;j<8;j++)v=(v<<1)|bits[i+j];bytes.push(v);}
+  const PAD=[0xEC,0x11]; let pi=0; while(bytes.length<dcw) bytes.push(PAD[pi++%2]);
+  // 리드-솔로몬
+  const EXP=new Array(512),LOG=new Array(256);
+  for(let i=0,x=1;i<255;i++){EXP[i]=x;LOG[x]=i;x<<=1;if(x&256)x^=0x11d;}
+  for(let i=255;i<512;i++)EXP[i]=EXP[i-255];
+  const mul=(a,b)=>(a===0||b===0)?0:EXP[LOG[a]+LOG[b]];
+  const nb=BLK[ver], ecn=ECC[ver];
+  let gen=[1]; for(let i=0;i<ecn;i++){const g2=new Array(gen.length+1).fill(0);
+    for(let j=0;j<gen.length;j++){g2[j]^=gen[j];g2[j+1]^=mul(gen[j],EXP[i]);} gen=g2;}
+  const per=Math.floor(dcw/nb), extra=dcw%nb, dblk=[], eblk=[];
+  let p=0;
+  for(let b=0;b<nb;b++){
+    const len=per+(b>=nb-extra?1:0);
+    const blk=bytes.slice(p,p+len); p+=len; dblk.push(blk);
+    const rem=new Array(ecn).fill(0), buf=blk.concat(rem);
+    for(let i=0;i<blk.length;i++){const f=buf[i]; if(f!==0) for(let j=0;j<gen.length;j++) buf[i+j]^=mul(gen[j],f);}
+    eblk.push(buf.slice(blk.length));
+  }
+  const out=[]; const maxd=Math.max(...dblk.map(b=>b.length));
+  for(let i=0;i<maxd;i++) dblk.forEach(b=>{if(i<b.length)out.push(b[i]);});
+  for(let i=0;i<ecn;i++) eblk.forEach(b=>out.push(b[i]));
+  // 배치
+  const M=Array.from({length:size},()=>new Array(size).fill(null));
+  const set=(x,y,v)=>{if(x>=0&&y>=0&&x<size&&y<size)M[y][x]=v;};
+  const finder=(cx,cy)=>{for(let dy=-1;dy<=7;dy++)for(let dx=-1;dx<=7;dx++){
+    const x=cx+dx,y=cy+dy; if(x<0||y<0||x>=size||y>=size)continue;
+    const inn=(dx>=0&&dx<=6&&dy>=0&&dy<=6);
+    const on=inn&&((dx===0||dx===6||dy===0||dy===6)||(dx>=2&&dx<=4&&dy>=2&&dy<=4));
+    set(x,y,on?1:0);}};
+  finder(0,0); finder(size-7,0); finder(0,size-7);
+  for(let i=8;i<size-8;i++){ set(i,6,i%2===0?1:0); set(6,i,i%2===0?1:0); }
+  // 얼라인먼트 패턴 — 버전7부터는 표(ALPOS)의 좌표 조합마다 하나씩(파인더와 겹치는 3곳만 제외)
+  // 여러 개가 필요하다. (이전 코드는 버전2~6에서만 맞는 우하단 1개짜리 규칙을 그대로 썼다.)
+  if(ver>1){
+    const ALPOS={7:[6,22,38],8:[6,24,42],9:[6,26,46],10:[6,28,50]};
+    const L = ver<=6 ? [6,size-7] : ALPOS[ver];
+    const first=L[0], last=L[L.length-1];
+    for(const r of L) for(const c of L){
+      if((r===first&&c===first)||(r===first&&c===last)||(r===last&&c===first)) continue;
+      for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
+        const on=(Math.abs(dx)===2||Math.abs(dy)===2||(dx===0&&dy===0));
+        set(c+dx,r+dy,on?1:0);
+      }
+    }
+  }
+  set(8,size-8,1);
+  const fmtArea=[];
+  for(let i=0;i<=8;i++){ if(M[8][i]===null)fmtArea.push([i,8]); if(M[i][8]===null)fmtArea.push([8,i]); }
+  for(let i=size-8;i<size;i++){ if(M[8][i]===null)fmtArea.push([i,8]); if(M[i][8]===null)fmtArea.push([8,i]); }
+  fmtArea.forEach(([x,y])=>set(x,y,0));
+  // 버전 정보(버전7 이상 전용, 18비트) 영역을 데이터 배치 전에 미리 예약해 둔다.
+  if(ver>=7){
+    for(let i=0;i<18;i++){
+      const a=size-11+i%3, b=Math.floor(i/3);
+      set(a,b,0); set(b,a,0);
+    }
+  }
+  let bi=0, dir=-1, col=size-1;
+  const bitAt=k=>(out[k>>3]>>(7-(k&7)))&1;
+  const totalBits=out.length*8;
+  while(col>0){
+    if(col===6)col--;
+    for(let i=0;i<size;i++){
+      const y=dir<0?size-1-i:i;
+      for(const x of [col,col-1]){
+        if(M[y][x]!==null) continue;
+        let v=bi<totalBits?bitAt(bi):0; bi++;
+        if(((x+y)%2)===0) v^=1;              // 마스크 0
+        M[y][x]=v;
+      }
+    }
+    dir=-dir; col-=2;
+  }
+  // 형식 정보(오류정정 L + 마스크 0). 표준 배치: 왼쪽 위 파인더 주위를 세로→가로로 감싸는
+  // 1차 사본, 오른쪽 위·왼쪽 아래에 걸친 2차 사본. (이전 코드는 가로·세로 좌표가 뒤바뀌어
+  // 있어 디코더가 마스크·오류정정 레벨을 읽지 못했다.)
+  const FMT=0x77C4;
+  const fbit=i=>(FMT>>i)&1;
+  for(let i=0;i<=5;i++) set(8,i,fbit(i));
+  set(8,7,fbit(6)); set(8,8,fbit(7)); set(7,8,fbit(8));
+  for(let i=9;i<15;i++) set(14-i,8,fbit(i));
+  for(let i=0;i<=7;i++) set(size-1-i,8,fbit(i));
+  for(let i=8;i<15;i++) set(8,size-15+i,fbit(i));
+  set(8,size-8,1);
+  // 버전 정보(버전7 이상 전용, BCH(18,6) — 마스크는 적용하지 않는다)
+  if(ver>=7){
+    let rem=ver;
+    for(let i=0;i<12;i++) rem=(rem<<1)^(((rem>>>11)&1)?0x1F25:0);
+    const vbits=(ver<<12)|rem;
+    for(let i=0;i<18;i++){
+      const b=(vbits>>i)&1, a=size-11+i%3, r=Math.floor(i/3);
+      set(a,r,b); set(r,a,b);
+    }
+  }
+  return M.map(r=>r.map(v=>v?1:0));
+}
+</script>
+</body></html>
