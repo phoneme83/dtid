@@ -73,7 +73,8 @@
 <script src="../site-assets/data.js?v=20260818a"></script>
 <script src="f.js?v=2"></script>
 <script src="f-t50.js?v=15"></script>
-<script src="f-t50-evidence.js?v=4"></script>
+<script src="../assets/bizno.js?v=1"></script>
+<script src="f-t50-evidence.js?v=5"></script>
 <script src="f-t50-corp.js?v=2"></script>
 <script>
 const U=fRequireUser();
@@ -974,6 +975,7 @@ function t50EvOcrHtml(a){
       warn(ex.nonCard)+
       '<div class="row"><span>가맹점</span><b>'+V(ex.shop)+'</b></div>'+
       t50BizRow(ex.shop)+
+      (function(){const bv=BIZNO.view(o.biz,ex.date);return '<div class="row"><span>사업자번호</span><b'+(bv.tone==='ok'?'':' style="color:'+(bv.tone==='bad'?'#b91c1c':'#b45309')+'"')+'>'+fEsc(bv.text)+'</b></div>';})()+
       '<div class="row"><span>결제지역</span><b>'+V(rgDisp)+'</b></div>'+
       '<div class="row"><span>카드번호</span><b>'+V(ex.card)+'</b></div>'+
       '<div class="row"><span>승인번호</span><b>'+V(ex.appr)+'</b></div>'+
@@ -988,6 +990,7 @@ function t50EvOcrHtml(a){
   return '<div class="t50e-ocr"><div class="t">📄 영수증 판독 결과 (모의 — OCR 엔진 로드 실패) — <b>'+fEsc(o.file)+'</b></div>'+
     '<div class="row"><span>가맹점</span><b>'+V(o.merchant)+'</b></div>'+
     t50BizRow(o.merchant)+
+    '<div class="row"><span>사업자번호</span><b>'+'<span style="color:#b45309;font-weight:700">확인 불가</span>'+'</b></div>'+
     '<div class="row"><span>결제지역</span><b>'+'<span style="color:#b45309;font-weight:700">확인 불가</span>'+'</b></div>'+
     '<div class="row"><span>카드번호</span><b>'+V(o.card)+'</b></div>'+
     '<div class="row"><span>승인번호</span><b>'+V(o.appr)+'</b></div>'+
@@ -1198,6 +1201,7 @@ function t50EvSubmit(){
     ocr:(t50Ocr.mode==='real'?'영수증 OCR 판독 결과와 대조 일치':'모의 판독 결과와 대조 일치'),
     ts:ft50Today()
   };
+  Object.assign(a.evidence,BIZNO.record(t50Ocr,t50Ocr.bizGate));   /* 사업자번호·국세청 조회 결과 */
   /* 법인카드 확인 결과를 신청 건에 남겨 관리자 심사에서 그대로 본다 */
   a.corpCheck=ft50CorpCheck(
     (t50Ocr.mode==='real'&&t50Ocr.ex&&t50Ocr.ex.card)?t50Ocr.ex.card:card,

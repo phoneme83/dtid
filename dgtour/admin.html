@@ -187,6 +187,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
       <select id="bizRegion" onchange="bizRender()"></select>
     </div>
     <div class="biz-form" id="bizForm"></div>
+    <div id="bizNoKey"></div>
   </div>
 
   <div class="adm-panel" id="admPanelStat" style="display:none">
@@ -217,6 +218,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f1f
 <script src="site-assets/data.js?v=20260818a"></script>
 <script src="site-a/t50-config.js?v=17"></script>
 <script src="site-a/t50-corp.js?v=2"></script>
+<script src="assets/bizno.js?v=1"></script>
 <script>/* site-a 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidA_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script>
@@ -429,7 +431,7 @@ function admRender(){
       acts='<span class="wait">여행 진행 — 신청자의 증빙 작성·환급 신청을 기다리는 중</span>';
     else if(a.status==='refund_req')
       acts=(a.evidence
-        ?'<div class="plan">🧾 제출 증빙자료 — 카드번호 '+a.evidence.card+' · 승인번호 '+a.evidence.appr+' · 결재금액 '+admWon(a.evidence.amt)+(a.evidence.date?' · 결제일 '+a.evidence.date:'')+' · 첨부 '+a.evidence.file+'<br><b style="color:#ea580c">✓ 영수증 OCR 판독 결과와 대조 일치'+(a.evidence.date?(a.evidence.date<a.start?' · 숙박 선결제 — 여행 시작 전 결제 인정 건':' · 결제일 여행기간('+a.start+'~'+a.end+') 내 확인'):'')+' (공사 대민시스템 검증 완료)</b>'+admBizLine(a)+admStayLine(a)+admCorpLine(a)+'</div>'
+        ?'<div class="plan">🧾 제출 증빙자료 — 카드번호 '+a.evidence.card+' · 승인번호 '+a.evidence.appr+' · 결재금액 '+admWon(a.evidence.amt)+(a.evidence.date?' · 결제일 '+a.evidence.date:'')+' · 첨부 '+a.evidence.file+'<br><b style="color:#ea580c">✓ 영수증 OCR 판독 결과와 대조 일치'+(a.evidence.date?(a.evidence.date<a.start?' · 숙박 선결제 — 여행 시작 전 결제 인정 건':' · 결제일 여행기간('+a.start+'~'+a.end+') 내 확인'):'')+' (공사 대민시스템 검증 완료)</b>'+admBizLine(a)+BIZNO.adminLine(a.evidence)+admStayLine(a)+admCorpLine(a)+'</div>'
         :'<div class="plan">🧾 제출 증빙(모의): 지역화폐 결재내역 '+(a.people||1)+'건 · 사용액 '+admWon(amt*2)+' · CI 대조 일치</div>')+
         (function(){
           const dp=admDup(k,i,a);
@@ -570,7 +572,7 @@ function admLocalPay(k,i){
    으로 표시해 자동 통과 건과 구분한다. */
 const ADM_OCR_FIELDS=[
   {k:'card',lb:'카드번호'},{k:'appr',lb:'승인번호'},{k:'amt',lb:'결재금액'},
-  {k:'date',lb:'결제일'},{k:'shop',lb:'가맹점'},{k:'region',lb:'결제지역'}
+  {k:'date',lb:'결제일'},{k:'shop',lb:'가맹점'},{k:'region',lb:'결제지역'},{k:'bizno',lb:'사업자번호'}
 ];
 function admOcrBox(a,K,fid){
   const e=a.evidence||{};
@@ -603,6 +605,7 @@ function admOcrFix(k,i,fid){
     if(!(f.k in after))return;
     l[i].evidence[f.k]=(f.k==='amt')?(Math.floor(Number(after[f.k]))||0):after[f.k];
   });
+  if('bizno' in after){l[i].evidence.biznoView='';l[i].evidence.biznoNote='담당자 보정(원판독 '+(before.bizno||'-')+')';}
   l[i].evidence.ocrFix=(l[i].evidence.ocrFix||[]).concat([{
     by:admPersona().name,ts:new Date().toISOString().slice(0,10),why:why,before:before,after:after}]);
   admHist(l[i],l[i].status,'판독값 보정 ('+Object.keys(after).map(function(x){
@@ -767,6 +770,7 @@ function admDetail(k,i){
       row('카드번호',a.evidence.card)+row('승인번호',a.evidence.appr)+
       row('결재금액',won(a.evidence.amt))+
       row('가맹점',a.evidence.shop||'-')+
+      ((a.evidence.bizno||a.evidence.biznoView)?row('사업자번호',BIZNO.adminLine(a.evidence).replace(/^<br>/,'')):'')+
       (function(){const c=t50BizCheck(a.evidence.shop);
         return row('소비 인정','<b style="color:'+t50BizColor(c)+'">'+t50BizIcon(c)+' '+c.label+'</b>')+
                row('판정 근거',c.detail);})()+
@@ -1209,6 +1213,7 @@ window.addEventListener('storage',function(e){if(e.key&&(e.key.indexOf(AP_PREFIX
 admPersonaInit();
 admSiteInit();
 admRender();
+BIZNO.keyBox('bizNoKey');   /* 국세청 사업자 상태조회 인증키 — 이 브라우저에만 저장 */
 </script>
 </body>
 </html>

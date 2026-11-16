@@ -1,0 +1,19 @@
+{
+  "name": "dtid-receipt-ocr-server",
+  "version": "1.0.0",
+  "description": "카드영수증 OCR 판독·대조 서버 — 카드번호·승인번호·금액·결제일·가맹점·결제지역·사업자등록번호(체크섬+국세청 상태조회)",
+  "main": "lib/service.js",
+  "bin": { "receipt-ocr": "cli.js" },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/run.js",
+    "sync": "node tools/sync-from-site.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "jimp": "0.22.12",
+    "tesseract.js": "5.1.1"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

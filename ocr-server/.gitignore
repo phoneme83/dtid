@@ -1,0 +1,7 @@
+node_modules/
+.cache/
+*.traineddata
+*.traineddata.gz
+.env
+*인증키*
+langdata/

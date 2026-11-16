@@ -216,7 +216,7 @@ function gOcrRun(file,onMsg){
   const work=gOcrLoadTess().then(()=>rec(file)).then(r=>{
     const raw=r.data.text||'', conf=r.data.confidence;
     const ex=gOcrExtract(raw);
-    if(ex.date&&ex.appr&&ex.card&&ex.amts.length) return {raw,ex,conf};
+    if(ex.date&&ex.appr&&ex.card&&ex.amts.length&&BIZNO.extract(raw).no) return {raw,ex,conf};   /* 사업자번호도 1차에서 읽혀야 2차를 건너뛴다 */
     onMsg('영수증 정밀 판독 중… (대비 강화 2차 판독)');
     return gOcrPrep(file).then(rec).then(r2=>{
       const raw2=r2.data.text||'', ex2=gOcrExtract(raw2);
@@ -225,7 +225,9 @@ function gOcrRun(file,onMsg){
       return {raw:raw+'\n'+raw2,ex,conf:Math.max(conf||0,r2.data.confidence||0)};
     }).catch(()=>({raw,ex,conf}));
   });
-  return Promise.race([work,timeout]).then(r=>({mode:'real',text:gOcrNorm(r.raw),rawText:r.raw,ex:r.ex,confidence:Math.round(r.conf||0),file:file.name}));
+  /* 사업자등록번호 판독·국세청 조회(assets/bizno.js) 결과를 o.biz 로 붙인다 — attach 는 항상 resolve */
+  return Promise.race([work,timeout]).then(r=>{ onMsg('사업자등록번호 확인 중…');
+    return BIZNO.attach({mode:'real',text:gOcrNorm(r.raw),rawText:r.raw,ex:r.ex,confidence:Math.round(r.conf||0),file:file.name}); });
 }
 /* 모의 판독 — 데모 영수증이면 인쇄한 값, 아니면 기본값(fallback) */
 function gOcrMock(file,fallback){
@@ -237,13 +239,14 @@ function gOcrMock(file,fallback){
 }
 /* 데모 영수증 이미지 → {file, dataUrl}. d: {merchant,addr,date,card,cardType,amount,approval} */
 function gOcrDemoReceipt(d){
-  const c=document.createElement('canvas'); c.width=520; c.height=640;
+  const c=document.createElement('canvas'); c.width=520; c.height=700;
   const x=c.getContext('2d');
-  x.fillStyle='#ffffff'; x.fillRect(0,0,520,640);
+  x.fillStyle='#ffffff'; x.fillRect(0,0,520,700);
   x.fillStyle='#111111'; x.textAlign='center'; x.font='bold 34px Arial'; x.fillText('RECEIPT',260,60);
   x.font='22px Arial'; x.textAlign='left';
   [ '상 호 명 : '+String(d.merchant).replace(/[^0-9A-Za-z가-힣 ]/g,'').trim(),
     '주소 : '+d.addr,
+    'BIZ NO : '+BIZNO.DEMO_NO,   /* 가상 번호 — 데모 영수증은 국세청 조회 생략 */
     'DATE : '+d.date+' 14:22',
     '--------------------------------',
     '카드종류 : '+d.cardType,

@@ -178,9 +178,9 @@ function ft50EvLoadTess(){
    숫자는 Latin 라벨로 인쇄해야 판독률이 높다 */
 function ft50EvSampleImage(a){
   const src=ft50EvSource(a), appr=ft50EvApprNo(src.amt);
-  const c=document.createElement('canvas'); c.width=520; c.height=640;
+  const c=document.createElement('canvas'); c.width=520; c.height=700;
   const x=c.getContext('2d');
-  x.fillStyle='#ffffff'; x.fillRect(0,0,520,640);
+  x.fillStyle='#ffffff'; x.fillRect(0,0,520,700);
   x.fillStyle='#111111'; x.textAlign='center';
   x.font='bold 34px Arial'; x.fillText('RECEIPT',260,60);
   x.font='22px Arial'; x.textAlign='left';
@@ -189,6 +189,7 @@ function ft50EvSampleImage(a){
   const lines=[
     '상 호 명 : '+String(src.merchant).replace(/[^0-9A-Za-z가-힣 ]/g,'').trim(),
     '주소 : '+a.region+(('제천밀양').indexOf(a.region)>=0?'시':'군')+' 중앙로 1',   /* 지자체 목록엔 접미사가 없어 전표 형식에 맞춰 붙인다 */
+    'BIZ NO : '+BIZNO.DEMO_NO,      /* 사업자등록번호(가상 번호 — 데모 영수증은 국세청 조회 생략) */
     'DATE : '+a.start+' 14:22',      /* 결제일-여행기간 검증을 통과하도록 여행 시작일로 인쇄 */
     '--------------------------------',
     '카드종류 : 신한카드개인',
@@ -348,7 +349,7 @@ function ft50EvRead(file,a,onProgress){
     ft50EvLoadTess().then(function(){ return rec(file); }).then(function(r){
       const raw=r.data.text||'';
       const ex=ft50EvExtract(raw);
-      if(ex.date&&ex.appr&&ex.card&&ex.amts.length) return {raw:raw,ex:ex};
+      if(ex.date&&ex.appr&&ex.card&&ex.amts.length&&BIZNO.extract(raw).no) return {raw:raw,ex:ex};   /* 사업자번호도 1차에서 읽혀야 2차를 건너뛴다 */
       /* 누락 필드가 있으면 전처리 이미지로 2차 판독 후 빈 필드만 병합 */
       if(onProgress) onProgress('🔍 영수증 정밀 판독 중… (대비 강화 2차 판독)');
       return ft50EvPrep(file).then(rec).then(function(r2){
@@ -361,7 +362,9 @@ function ft50EvRead(file,a,onProgress){
     }),
     timeout
   ]).then(function(res){
-    return {mode:'real',text:ft50EvNorm(res.raw),ex:res.ex,file:file.name};
+    /* 사업자등록번호 판독·국세청 조회(assets/bizno.js) 결과를 o.biz 로 붙인다 */
+    if(onProgress) onProgress('🔍 사업자등록번호 확인 중…');
+    return BIZNO.attach({mode:'real',text:ft50EvNorm(res.raw),raw:res.raw,ex:res.ex,file:file.name});
   }).catch(function(){
     /* 엔진 로드/판독 실패 시 모의 판독으로 폴백 — 데모가 멈추지 않도록 */
     const src=ft50EvSource(a);
@@ -406,6 +409,10 @@ function ft50EvVerify(o,a,input){
     if(ft50EvRegionMatch(ex.region,a.region)==='mismatch')
       return '❌ <b>결제지역이 신청 지자체와 다릅니다.</b> 영수증의 결제지역은 <b>'+ft50EvRegionText(ex.region)+
         '</b>이나, 이 신청 건의 지자체는 <b>'+a.region+'</b>입니다. 신청하신 지자체에서 결제한 영수증만 환급 대상입니다.';
+    /* 사업자등록번호 — 체크섬·국세청 조회 통과 필요. 판독 불가는 1회 재촬영 안내, 두 번째부터 담당자 확인.
+       판정 결과는 o.bizGate 에 남겨 제출 시 증빙에 기록한다 */
+    o.bizGate=BIZNO.gate(o.biz,effDate,'f-ev');
+    if(o.bizGate.block) return o.bizGate.block;
     return null;
   }
   const mbz=ft50BizCheck(o.merchant);

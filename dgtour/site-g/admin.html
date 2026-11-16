@@ -208,6 +208,7 @@ body{background:#eef1f5}
 <script src="../site-assets/data.js?v=20260818a"></script>
 <script src="g.js?v=2"></script>
 <script src="g-corp.js?v=1"></script>
+<script src="../assets/bizno.js?v=1"></script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    시안 G 관리자 (착수보고 p28 운영 기준 설정 · p21 지역 콘텐츠 + 테스트 홈페이지 고도화 심사)
@@ -282,6 +283,7 @@ function adRender(){
   const fn={apps:adViewApps,std:adViewStd,content:adViewContent,board:adViewBoard,stats:adViewStats,demo:adViewDemo}[AD.view]||adViewApps;
   document.getElementById('adMain').innerHTML=fn();
   if(AD.view==='content'){ adCtPrev(); adRndCheck(); }
+  if(document.getElementById('adBizKey')) BIZNO.keyBox('adBizKey');   /* 국세청 상태조회 인증키 */
 }
 
 /* ═══ 1. 신청 관리(심사) ═════════════════════════════════════════ */
@@ -429,7 +431,7 @@ function adChangeCheck(a){
 }
 
 /* ── 정산 심사 (고도화: 건별 전환·판독값 보정·법인카드·중복) ── */
-const AD_OCR_F=[['merchant','업소명'],['amount','금액'],['date','결제일'],['approval','승인번호'],['card','카드번호']];
+const AD_OCR_F=[['merchant','업소명'],['amount','금액'],['date','결제일'],['approval','승인번호'],['card','카드번호'],['bizno','사업자번호']];
 /* settle.html 의 OCR 키(shop·appr·amts)와 시드 키(merchant·approval·amount)를 함께 읽는다 */
 function adOcrVal(o,k){ if(!o) return null; const al={merchant:['merchant','shop'],amount:['amount','amts'],approval:['approval','appr'],date:['date'],card:['card']}[k]||[k];
   for(const x of al){ const v=o[x]; if(v!=null&&!(Array.isArray(v)&&!v.length)) return Array.isArray(v)?v.join('/'):v; } return null; }
@@ -1095,6 +1097,7 @@ function adViewDemo(){
   const off=Number(gGet('dayOffset',0))||0;
   const users=(typeof ACCOUNTS!=='undefined'?ACCOUNTS:[]).filter(a=>/^user[1-5]$/.test(a.id));
   return adCrumb('데모 도구','시연용 — 운영 화면에는 없습니다')+
+    '<div id="adBizKey"></div>'+
     '<div class="grid g2">'+
     '<div class="card"><b>데모 날짜 이동</b><p class="small muted">오늘: <b>'+gDot(gToday())+'</b> (실제 날짜에서 '+(off>=0?'+':'')+off+'일). 모든 화면의 오늘·기한·회차 상태가 이 날짜 기준으로 바뀝니다.</p>'+
       '<div style="display:flex;gap:6px;flex-wrap:wrap">'+[-7,-1,1,7,14].map(n=>'<button class="btn sm" onclick="adDay('+(off+n)+')">'+(n>0?'+':'')+n+'일</button>').join('')+'<button class="btn sm navy" onclick="adDay(0)">오늘로</button></div>'+

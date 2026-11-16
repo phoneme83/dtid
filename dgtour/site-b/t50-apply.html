@@ -237,6 +237,7 @@
 <script src="../site-assets/data.js?v=20260818a"></script>
 <script src="t50-config.js?v=17"></script>
 <script src="t50-corp.js?v=2"></script>
+<script src="../assets/bizno.js?v=1"></script>
 <script>/* site-b 테스트: 경험치를 지역화폐 전환 가능 포인트와 연동 (초기 100만P, 전환분 차감 반영) */
 try{var _pb=JSON.parse(localStorage.getItem("dtidB_pointBal2")||"{}");ACCOUNTS.forEach(function(a){a.exp=(typeof _pb[a.id]==="number")?_pb[a.id]:1000000;});var _u1=ACCOUNTS.filter(function(a){return a.id==="user1";})[0];if(_u1)_u1.name="김수지";}catch(e){}</script>
 <script src="../assets/common.js?v=20260707f"></script>
@@ -1039,6 +1040,7 @@ function apEvForm(a,i){
     ocr='<div class="ap-ocr"><div class="t">📄 영수증 판독 결과 (실제 OCR) — <b>'+o.file+'</b></div>'+ warn +
       '<div class="row"><span>가맹점</span><b>'+V(ex.shop)+'</b></div>'+
       apBizRow(ex.shop)+
+      (function(){const bv=BIZNO.view(o.biz,ex.date);return '<div class="row"><span>사업자번호</span><b'+(bv.tone==='ok'?'':' style="color:'+(bv.tone==='bad'?'#b91c1c':'#b45309')+'"')+'>'+bv.text+'</b></div>';})()+
       '<div class="row"><span>결제지역</span><b>'+V(rgDisp)+'</b></div>'+
       '<div class="row"><span>카드번호</span><b>'+V(ex.card)+'</b></div>'+
       '<div class="row"><span>승인번호</span><b>'+V(ex.appr)+'</b></div>'+
@@ -1052,6 +1054,7 @@ function apEvForm(a,i){
     ocr='<div class="ap-ocr"><div class="t">📄 영수증 판독 결과 (모의 — OCR 엔진 로드 실패) — <b>'+o.file+'</b></div>'+
       '<div class="row"><span>가맹점</span><b>'+V(o.merchant)+'</b></div>'+
       apBizRow(o.merchant)+
+      '<div class="row"><span>사업자번호</span><b>'+'<span style="color:#b45309;font-weight:700">확인 불가</span>'+'</b></div>'+
       '<div class="row"><span>결제지역</span><b>'+'<span style="color:#b45309;font-weight:700">확인 불가</span>'+'</b></div>'+
       '<div class="row"><span>카드번호</span><b>'+V(o.card)+'</b></div>'+
       '<div class="row"><span>승인번호</span><b>'+V(o.appr)+'</b></div>'+
@@ -1211,9 +1214,9 @@ function apEvToggle(i,close){
 function apEvSample(i){
   const a=apLoad()[i];if(!a)return;
   const src=apOcrSource(a),appr=apApprNo(src.amt);
-  const c=document.createElement('canvas');c.width=520;c.height=640;
+  const c=document.createElement('canvas');c.width=520;c.height=700;
   const x=c.getContext('2d');
-  x.fillStyle='#ffffff';x.fillRect(0,0,520,640);
+  x.fillStyle='#ffffff';x.fillRect(0,0,520,700);
   x.fillStyle='#111111';x.textAlign='center';
   x.font='bold 34px Arial';x.fillText('RECEIPT',260,60);
   x.font='22px Arial';x.textAlign='left';
@@ -1222,6 +1225,7 @@ function apEvSample(i){
   const lines=[
     '상 호 명 : '+src.merchant.replace(/[^0-9A-Za-z가-힣 ]/g,'').trim(),
     '주소 : '+a.region+(('제천밀양').indexOf(a.region)>=0?'시':'군')+' 중앙로 1',   /* 지자체 목록엔 접미사가 없어 전표 형식에 맞춰 붙인다 */
+    'BIZ NO : '+BIZNO.DEMO_NO,   /* 사업자등록번호(가상 번호 — 데모 영수증은 국세청 조회 생략) */
     'DATE : '+a.start+' 14:22',   /* 결제일-여행기간 검증을 통과하도록 여행 시작일로 인쇄 */
     '--------------------------------',
     '카드종류 : 신한카드개인',
@@ -1558,7 +1562,7 @@ function apOcrRead(i,input){
   }).then(function(r){
     const raw=r.data.text||'';
     const ex=apOcrExtract(raw);
-    if(ex.date&&ex.appr&&ex.card&&ex.amts.length)return {raw:raw,ex:ex};
+    if(ex.date&&ex.appr&&ex.card&&ex.amts.length&&BIZNO.extract(raw).no)return {raw:raw,ex:ex};   /* 사업자번호도 1차에서 읽혀야 2차를 건너뛴다 */
     /* 누락 필드가 있으면 전처리 이미지로 2차 판독 후 빈 필드만 병합 */
     if(wait)wait.textContent='🔍 영수증 정밀 판독 중… (대비 강화 2차 판독)';
     return apOcrPrep(file).then(rec).then(function(r2){
@@ -1569,7 +1573,10 @@ function apOcrRead(i,input){
       return {raw:raw+'\n'+raw2,ex:ex};
     }).catch(function(){return {raw:raw,ex:ex};});   /* PDF 등 이미지 로드 불가 시 1차 결과 유지 */
   }),timeout]).then(function(res){
-    done({mode:'real',text:apOcrNorm(res.raw),ex:res.ex,file:file.name},'영수증 판독이 완료되었습니다 (실제 OCR)');
+    /* 사업자등록번호 판독·국세청 조회(assets/bizno.js) 결과를 o.biz 로 붙인 뒤 화면에 반영 */
+    const o={mode:'real',text:apOcrNorm(res.raw),raw:res.raw,ex:res.ex,file:file.name};
+    if(wait)wait.textContent='🔍 사업자등록번호 확인 중…';
+    return BIZNO.attach(o).then(function(){done(o,'영수증 판독이 완료되었습니다 (실제 OCR)');});
   }).catch(function(){
     /* 엔진 로드/판독 실패 시 모의 판독으로 폴백 — 데모가 멈추지 않도록 (카드번호도 데모 영수증 기준으로 대조) */
     const a=apLoad()[i];if(!a)return;
@@ -1611,6 +1618,7 @@ function apEvSubmit(i){
   const evBiz=t50BizCheck(evShop);
   if(evBiz.result==='excluded'){err.innerHTML=t50BizRejectMsg(evBiz,evShop);return;}
   /* OCR 대조: 영수증에서 추출한 카드번호·승인번호·금액·결제일 필드와 입력값을 각각 비교 */
+  let bizG=null;
   if(o.mode==='real'){
     const ex=o.ex||{};
     /* 카드 결제 증빙이 아니면 대조 자체가 성립하지 않는다 */
@@ -1643,6 +1651,10 @@ function apEvSubmit(i){
       err.innerHTML='❌ <b>결제지역이 신청 지자체와 다릅니다.</b> 영수증의 결제지역은 <b>'+apOcrRegionText(ex.region)+'</b>이나, 이 신청 건의 지자체는 <b>'+a0.region+'</b>입니다. 신청하신 지자체에서 결제한 영수증만 환급 대상입니다.';
       return;
     }
+    /* 사업자등록번호 — 체크섬·국세청 조회를 통과해야 한다. 판독 불가는 1회 재촬영 안내,
+       두 번째부터는 제출을 받고 담당자 확인으로 넘긴다. 결제일 이전 폐업은 반려 */
+    bizG=BIZNO.gate(o.biz,effDate,'ev'+i);
+    if(bizG.block){err.innerHTML=bizG.block;return;}
   }else{
     if(appr!==o.appr||amt!==o.amt||(o.card&&!apCardMatch(card,o.card))||(o.date&&o.date!==payDate)){
       err.innerHTML='❌ <b>정보가 잘못 입력되었습니다.</b> 영수증 판독 결과와 카드번호·승인번호·결재금액·결제일 중 일치하지 않는 항목이 있습니다. 다시 확인해 주세요.';
@@ -1664,6 +1676,7 @@ function apEvSubmit(i){
   list[i].evidence={card:card.slice(0,4)+'-'+card.slice(4,6)+'**-****-'+card.slice(-4),appr:appr,amt:amt,date:(o.mode==='real'&&o.ex&&o.ex.date)?o.ex.date:payDate,file:o.file,prepay:prepay,stay:stay,stayDoc:stayDoc,
     shop:evShop,region:(o.mode==='real'?(apOcrRegionText((o.ex||{}).region)||''):''),biz:evBiz,
     subDocs:apEvSubDoc[i]||null,payMethod:t50CfgText(a0.region,'payMethod')};
+  Object.assign(list[i].evidence,BIZNO.record(o,bizG));
   /* 법인카드 판정 결과를 신청 건에 남기고, 영수증 표기로 확인된 건은 BIN 판정표에 학습시킨다 */
   list[i].corpCheck=t50CorpCheck((o.mode==='real'&&o.ex&&o.ex.card)?o.ex.card:card,o.mode==='real'?o.text:'',true);
   delete list[i].fixReason;

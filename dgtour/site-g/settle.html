@@ -100,7 +100,8 @@
 <script src="../site-assets/data.js?v=20260818a"></script>
 <script src="g.js?v=2"></script>
 <script src="g-corp.js?v=1"></script>
-<script src="g-ocr.js?v=1"></script>
+<script src="../assets/bizno.js?v=1"></script>
+<script src="g-ocr.js?v=2"></script>
 <script>
 const ST_SLUG=(gQS('r')&&gRegion(gQS('r')))?gQS('r'):'pyeongchang';
 gShell({mode:'region',slug:ST_SLUG,active:'settle'});
@@ -396,6 +397,7 @@ const ST=(function(){
       (ex.nonCard?'<div class="note warn small" style="margin:6px 0">⚠ 카드 매출전표가 아닙니다 — <b>'+gEsc(ex.nonCard)+'</b>'+(ex.nonCard==='현금영수증'?' (현금영수증은 숙박비만 인정됩니다)':' — 정산 증빙으로 인정되지 않습니다(운영기준 P3)')+'</div>':'')+
       '<div class="r"><span>가맹점</span><b>'+V(ex.shop)+'</b></div>'+
       '<div class="r"><span>소비 인정</span><b style="color:'+bc+'">'+gEsc(biz.label)+'</b></div>'+
+      (function(){ const bv=OCR.mode==='real'?BIZNO.view(OCR.biz,ex.date):null; return '<div class="r"><span>사업자번호</span><b'+(bv&&bv.tone!=='ok'?' style="color:'+(bv.tone==='bad'?'#b91c1c':'#b45309')+'"':'')+'>'+(bv?gEsc(bv.text):V(null))+'</b></div>'; })()+
       '<div class="r"><span>결제지역</span><b>'+(rgT?gEsc(rgT)+(rgm==='match'?' ✅ '+gEsc(R.full)+' 일치':rgm==='mismatch'?' ⚠️ '+gEsc(R.full)+gJosa(R.full,'과와')+' 다름':''):V(null))+'</b></div>'+
       '<div class="r"><span>카드번호</span><b>'+V(ex.card)+'</b></div>'+
       '<div class="r"><span>승인번호</span><b>'+V(ex.appr)+'</b></div>'+
@@ -453,15 +455,20 @@ const ST=(function(){
     if(!cash&&ex.card&&!gOcrCardMatch(card,ex.card)) fails.push('카드번호(영수증: '+ex.card+')');
     if(ex.date&&ex.date!==date) fails.push('결제일(영수증: '+ex.date+')');
     if(fails.length) return fail('❌ <b>입력값이 영수증 판독 결과와 다릅니다:</b> '+gEsc(fails.join(', '))+'. 영수증 표기와 같게 입력해 주세요.');
+    /* 사업자등록번호 — 체크섬·국세청 조회 통과 필요. 판독 불가는 1회 재촬영 안내, 두 번째부터 담당자 확인. 결제일 이전 폐업은 반려 */
+    const bizG=BIZNO.gate(OCR.biz,ex.date||date,'g-settle');
+    if(bizG.block) return fail(bizG.block);
     const shop=ex.shop||'(상호 확인 불가)', biz=gBizCheck(ex.shop);
     const it={src:'upload',merchant:shop,cat:stay?'숙박':(biz.cat||'기타'),biz:biz.result==='excluded'?biz.biz:'',excluded:biz.result==='excluded',
       amount:amt,at:(ex.date||date)+'T12:00:00',approval:appr,card:cash?'':gCardMask(card),prepay:stay&&prepay,stay,
-      ocr:{mode:OCR.mode,file:OCR.file,shop:ex.shop||null,card:ex.card||null,appr:ex.appr||null,amts:ex.amts||[],date:ex.date||null,region:stRgText(ex.region),nonCard:ex.nonCard||null,confidence:OCR.confidence},
+      ocr:{mode:OCR.mode,file:OCR.file,shop:ex.shop||null,card:ex.card||null,appr:ex.appr||null,amts:ex.amts||[],date:ex.date||null,region:stRgText(ex.region),nonCard:ex.nonCard||null,confidence:OCR.confidence,bizno:bizG.no||null,biznoView:BIZNO.view(OCR.biz,ex.date||date).text},
+      bizno:bizG.no||'',biznoNote:bizG.note||'',
       corp:null};
     const dup=findDup(it,-1);
     if(dup) return fail('❌ <b>이미 사용된 증빙입니다.</b> '+gEsc(dupMsg(dup))+'<br>같은 결제내역으로는 한 번만 환급받을 수 있습니다.');
     if(!cash){ const cc=gCorpCheck(ex.card||card,OCR.rawText||OCR.text,true); it.corpCheck=cc; it.corp=cc.result==='unknown'?null:cc.result; if(cc.result==='corp') it.flag='법인카드 결제(업무 목적 지출)'; }
     const d0=ex.date||date;
+    if(!it.flag&&bizG.note&&!/^국세청 미조회/.test(bizG.note)) it.flag=bizG.note;
     if(!it.flag&&gOcrRegionMatch(ex.region,R.name)==='mismatch') it.flag='결제지역 불일치('+stRgText(ex.region)+')';
     if(!it.flag&&d0>T.app.end) it.flag='여행기간 외 결제';
     if(!it.flag&&d0<T.app.start&&!(stay&&prepay)) it.flag=stay?'여행 전 결제(숙박 선결제 미신고)':'여행기간 외 결제';

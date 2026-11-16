@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>영수증 OCR 시험</title>
+<style>
+:root{--bg:#f8fafc;--fg:#0f172a;--sub:#64748b;--line:#cbd5e1;--card:#fff;--ok:#0f766e;--warn:#b45309;--bad:#b91c1c}
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--fg:#e2e8f0;--sub:#94a3b8;--line:#334155;--card:#1e293b;--ok:#5eead4;--warn:#fbbf24;--bad:#f87171}}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:'Noto Sans KR','Malgun Gothic',system-ui,sans-serif;line-height:1.6}
+main{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:20px;margin:0 0 4px}.sub{color:var(--sub);font-size:13px;margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:12px 0}
+label{display:block;font-size:13px;color:var(--sub);margin:8px 0 2px}
+input{width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font-size:14px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}@media(max-width:560px){.g{grid-template-columns:1fr}}
+button{margin-top:12px;padding:9px 16px;border:0;border-radius:8px;background:var(--ok);color:#fff;font-weight:700;font-size:14px;cursor:pointer}
+button:disabled{opacity:.5;cursor:wait}
+table{width:100%;border-collapse:collapse;font-size:14px}td{padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:top}td:first-child{color:var(--sub);width:110px;white-space:nowrap}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}pre{white-space:pre-wrap;font-size:12px;color:var(--sub)}
+</style>
+</head>
+<body>
+<main>
+<h1>영수증 OCR 시험</h1>
+<p class="sub">이미지는 판독에만 쓰고 서버에 저장하지 않습니다. 같은 영수증을 다시 올리면 몇 번째 시도인지 세어 재촬영 안내 → 담당자 확인으로 넘깁니다.</p>
+<div class="card">
+  <label for="f">영수증 이미지</label><input id="f" type="file" accept="image/*">
+  <button id="go">판독</button>
+  <div id="out"></div>
+</div>
+<div class="card">
+  <b>입력값 대조</b>
+  <div class="g">
+    <div><label for="card">카드번호</label><input id="card" inputmode="numeric"></div>
+    <div><label for="appr">승인번호</label><input id="appr" inputmode="numeric"></div>
+    <div><label for="amt">결제금액</label><input id="amt" inputmode="numeric"></div>
+    <div><label for="date">결제일</label><input id="date" type="date"></div>
+  </div>
+  <button id="vf">대조·제출 판정</button>
+  <div id="vout"></div>
+</div>
+</main>
+<script>
+let A=null, tries=0, lastName='';
+const $=id=>document.getElementById(id), esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+$('go').onclick=async()=>{
+  const f=$('f').files[0]; if(!f) return;
+  if(f.name!==lastName){ tries=0; lastName=f.name; }
+  $('go').disabled=true; $('out').innerHTML='<p class="sub">판독 중… (처음 실행 때는 언어 데이터를 내려받느라 오래 걸립니다)</p>';
+  try{
+    const r=await fetch('api/receipt/analyze',{method:'POST',headers:{'Content-Type':f.type||'application/octet-stream'},body:f});
+    A=await r.json(); if(!r.ok) throw new Error(A.error);
+    const F=A.fields, row=(k,v,c)=>'<tr><td>'+k+'</td><td class="'+(c||'')+'">'+(v==null||v===''?'<span class="warn">확인 불가</span>':esc(v))+'</td></tr>';
+    const bz=A.bizno||{}, bc=bz.state==='found'&&!/❌|⚠️/.test(A.biznoView)?'ok':/❌/.test(A.biznoView)?'bad':'warn';
+    $('out').innerHTML='<table>'+row('가맹점',F.shop)+row('사업자번호',A.biznoView,bc)+row('결제지역',F.region)+row('카드번호',F.card)+row('승인번호',F.approval)+
+      row('결제금액',F.amounts.join(', '))+row('결제일',F.date)+(F.nonCard?row('전표 종류',F.nonCard,'bad'):'')+row('소비 인정',A.spend&&A.spend.label)+
+      row('판독',A.passes+'회 · 신뢰도 '+A.confidence+'% · '+(A.ms/1000).toFixed(1)+'초')+'</table>';
+  }catch(e){ $('out').innerHTML='<p class="bad">'+esc(e.message)+'</p>'; }
+  $('go').disabled=false;
+};
+$('vf').onclick=async()=>{
+  if(!A){ $('vout').innerHTML='<p class="warn">먼저 판독하세요</p>'; return; }
+  tries++;
+  const r=await (await fetch('api/receipt/verify',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({analysis:A,attempt:tries,input:{card:$('card').value,approval:$('appr').value,amount:$('amt').value,date:$('date').value}})})).json();
+  $('vout').innerHTML=r.ok?'<p class="ok">✅ 제출 가능'+(r.notes.length?' — '+esc(r.notes.join(' / ')):'')+'</p>'
+    :'<p class="'+(r.code==='RETAKE'?'warn':'bad')+'">'+esc(r.message||r.errors.join(', '))+'</p>';
+};
+</script>
+</body>
+</html>
