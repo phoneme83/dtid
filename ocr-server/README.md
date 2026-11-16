@@ -216,7 +216,7 @@ Docker: `docker build -t receipt-ocr . && docker run -p 8080:8080 -e NTS_SERVICE
 
 ```json
 {
-  "fields": { "shop": "○○식당", "region": "횡성군 우천면", "card": "1234-56**-****-3456",
+  "fields": { "shop": "○○식당", "region": "횡성군 ○○면", "card": "1234-56**-****-3456",
               "approval": "12345678", "amounts": ["30000"], "date": "2026-10-01", "nonCard": null },
   "bizno": { "state": "found", "no": "123-45-67891", "nts": { "reg": true, "cd": "01", "stt": "계속사업자", "tax": "...", "end": "" } },
   "biznoView": "123-45-67891 ✅ 국세청 계속사업자",
